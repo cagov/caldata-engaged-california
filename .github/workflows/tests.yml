@@ -1,0 +1,31 @@
+name: tests
+on: pull_request
+
+env:
+  DBT_PROFILES_DIR: transform/ci
+  DBT_RAW_DB: RAW_ENGCA_PRD
+  SNOWFLAKE_PRIVATE_KEY: ${{ SECRETS.SNOWFLAKE_PRIVATE_KEY_DEV }}
+  SNOWFLAKE_USER: ${{ SECRETS.SNOWFLAKE_USER_DEV }}
+  SNOWFLAKE_ACCOUNT: ${{ SECRETS.SNOWFLAKE_ACCOUNT }}
+  SNOWFLAKE_ROLE: TRANSFORMER_ENGCA_DEV
+  SNOWFLAKE_WAREHOUSE: TRANSFORMING_XS_ENGCA_DEV
+  SNOWFLAKE_DATABASE: TRANSFORM_ENGCA_DEV
+  SNOWFLAKE_SCHEMA: GH_CI_PR_${{ github.event.number }}
+
+jobs:
+  build-models:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "poetry"
+      - name: Install dependencies
+        run: poetry install --no-root
+      - name: Build dbt project
+        run: |
+          poetry run dbt deps --project-dir transform
+          poetry run dbt build --project-dir transform

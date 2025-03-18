@@ -1,0 +1,4 @@
+bucket = "dse-snowflake-dev-terraform-state"
+dynamodb_table = "dse-snowflake-dev-terraform-state-lock"
+key = "doe-engca-dev.tfstate"
+region = "us-west-2"
