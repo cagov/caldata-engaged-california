@@ -18,9 +18,11 @@ segment_components as (
     select
         subscribers.list_name,
         subscribers.unique_email_id,
-        iff(interests.interest_name = 'Los Angeles fires recovery: Palisades', 1, 0) as la_fires_palisades,
-        iff(interests.interest_name = 'Los Angeles fires recovery: Eaton', 1, 0) as la_fires_eaton,
-        iff(interests.interest_name = 'Future topics', 1, 0) as future_topics
+        case interests.interest_name
+            when 'Los Angeles fires recovery: Palisades' then 'palisades'
+            when 'Los Angeles fires recovery: Eaton' then 'eaton'
+            when 'Future topics' then 'future'
+        end as interest
     from subscribers
     inner join interests
         on subscribers.member_id = interests.member_id
@@ -30,16 +32,9 @@ segment_components as (
 basic_segments as (
     select
         unique_email_id,
-        max(la_fires_palisades) as la_fires_palisades,
-        max(la_fires_eaton) as la_fires_eaton,
-        max(future_topics) as future_topics
+        listagg(distinct interest, '_') within group (order by interest) as interests
     from segment_components
     group by unique_email_id
 )
 
---build any segments that are based on combos and conditionals of more than one component here:
-select
-    *,
-    iff(la_fires_eaton + la_fires_palisades = 2, 1, 0) as la_fires_both,
-    iff(future_topics - la_fires_eaton - la_fires_palisades = -1, 1, 0) as future_topics_only
-from basic_segments
+select * from basic_segments
