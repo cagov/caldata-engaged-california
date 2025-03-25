@@ -8,39 +8,41 @@
 
 with
 
-lists as
-(select
-    ID as list_id,
-    NAME as list_name
+lists as (
+    select
+        id as list_id,
+        name as list_name
 
     from {{ source('MAILCHIMP','LIST') }}
-    where _FIVETRAN_DELETED = FALSE
-    and list_name = 'Engaged California' --this is the list name for the Engaged CA audience in Mailchimp
+    where
+        _fivetran_deleted = FALSE
+        and list_name = 'Engaged California' --this is the list name for the Engaged CA audience in Mailchimp
 ),
 
 interest as (
     select
-    ID as interest_id,
-    NAME as interest_name,
-    _FIVETRAN_SYNCED
+        id as interest_id,
+        name as interest_name,
+        _fivetran_synced
 
     from {{ source('MAILCHIMP', 'INTEREST') }}
-    where _FIVETRAN_DELETED = FALSE
-    and list_id in (select list_id from lists)
+    where
+        _fivetran_deleted = FALSE
+        and list_id in (select list_id from lists)
 ),
 
 interest_member as (
     select *
     from {{ source('MAILCHIMP', 'INTEREST_MEMBER')}}
-    where _FIVETRAN_DELETED = FALSE
+    where _fivetran_deleted = FALSE
 )
 
 select
     interest.interest_id,
-    interest_name,
-    member_id,
-    interest_member._FIVETRAN_SYNCED
+    interest.interest_name,
+    interest_member.member_id,
+    interest_member._fivetran_synced
 
 from interest
 inner join interest_member
-on interest.interest_id = interest_member.interest_id
+    on interest.interest_id = interest_member.interest_id
