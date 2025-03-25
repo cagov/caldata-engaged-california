@@ -2,11 +2,7 @@
 --All segments built in Mailchimp Paid accounts are 'dynamic' segments, which are unavailable
 --to pull directly from the API. So we have to recreate them by audience definition here.
 
---Right now we are only using Interests to define segments, so this will seem
---simple 
-
---future state: collaborate with Comms to get all segment definitions from Mailchimp into a Coda or Airtable table that we can reference here
---rather than hardcoding definitions by hand
+--Right now we are only using Interests to define segments, so we just need interests for now.
 
 with subscribers as (
     select * from {{ ref('stg_mailchimp_list_members') }}
