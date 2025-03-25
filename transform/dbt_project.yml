@@ -26,4 +26,22 @@ clean-targets: # directories to be removed by `dbt clean`
   - target
   - dbt_packages
 
-models: {}
+models: 
+ caldata_engaged_ca:
+    staging:
+      +materialized: view
+      mailchimp:
+        +schema: mailchimp
+
+    intermediate:
+      +materialized: view
+      mailchimp:
+        +schema: mailchimp
+
+    marts:
+      +materialized: table
+      +database: "{{ env_var('DBT_ANALYTICS_DB', 'ANALYTICS_ENGCA_DEV') }}"
+      mailchimp:
+        +schema: mailchimp
+      daily_report:
+        +schema: daily_report
