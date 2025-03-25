@@ -1,10 +1,10 @@
-with 
-lists as 
+with
+lists as
     (select
         ID as list_id,
         NAME as list_name
 
-        from {{ source('MAILCHIMP','LIST') }} 
+        from {{ source('MAILCHIMP','LIST') }}
         where _FIVETRAN_DELETED = FALSE
         and list_name = 'Engaged California' --this is the list name for the Engaged CA audience in Mailchimp
     ),
@@ -23,19 +23,19 @@ members as
 
         from {{ source('MAILCHIMP','MEMBER')}}
         where subscribe_status in ('subscribed', 'unsubscribed')
-        
+
     ),
 
 list_members as
-    (select 
+    (select
         members.*,
         lists.list_name
-     from members 
-    inner join lists 
+     from members
+    inner join lists
     on lists.list_id = members.list_id
     )
 
-select 
+select
     member_id,
     unique_email_id,
     list_name,

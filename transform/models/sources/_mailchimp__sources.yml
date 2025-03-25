@@ -7,7 +7,7 @@ sources:
     description: ODI Mailchimp Data, loaded into Snowflake via Fivetran every 6 hours.
     tables:
       - name: LIST
-        description: Key table of all email subscriber lists in Mailchimp. 
+        description: Key table of all email subscriber lists in Mailchimp.
         columns:
           - name: ID
             description: Unique identifier for each list.
@@ -24,19 +24,19 @@ sources:
           - name: LIST_ID
           - name: STATUS
             description: |
-                Subscriber's current status. Possible values: "subscribed", "unsubscribed", "cleaned", 
-                "pending", "transactional", or "archived".
+              Subscriber's current status. Possible values: "subscribed", "unsubscribed", "cleaned",
+              "pending", "transactional", or "archived".
           - name: SOURCE
             description: The source from which the subscriber was added to this list.
           - name: UNIQUE_EMAIL_ID
-            description: An identifier for the email address across all of Mailchimp. 
+            description: An identifier for the email address across all of Mailchimp.
           - name: TIMESTAMP_OPT
             description: |
-                The date and time the subscriber confirmed their opt-in status in ISO 8601 format.
+              The date and time the subscriber confirmed their opt-in status in ISO 8601 format.
           - name: EMAIL_CLIENT
             description: |
-                Mailchimp's best guess at the most recent email client or device type the member 
-                used to interact with an email.
+              Mailchimp's best guess at the most recent email client or device type the member
+              used to interact with an email.
           - name: UNSUBSCRIBE_REASON
           - name: _FIVETRAN_SYNCED
       - name: INTEREST
@@ -51,7 +51,7 @@ sources:
           - name: LIST_ID
             description: Unique ID for a list that is connected to the interest
           - name: SUBSCRIBER_COUNT
-            description: Count 
+            description: Count
           - name: _FIVETRAN_SYNCED
       - name: INTEREST_MEMBER
         description: One row per interest per member.
