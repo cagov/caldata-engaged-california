@@ -11,7 +11,7 @@ mailchimp_segments as (
 ),
 
 rates as (
-    select 
+    select
         unique_email_ids_sent,
         unique_opens/unique_email_ids_sent as open_rate,
         unique_clicks/unique_email_ids_sent as click_rate,
@@ -21,9 +21,9 @@ rates as (
 ),
 
 mailchimp_avg_rates as (
-select 
-    sum(unique_email_ids_sent) as total_sends, 
-    avg(open_rate) * 100 as avg_open_rate, 
+select
+    sum(unique_email_ids_sent) as total_sends,
+    avg(open_rate) * 100 as avg_open_rate,
     avg(click_rate) * 100 as avg_click_rate,
     avg(bounce_rate)* 100  as avg_bounce_rate
 
@@ -31,15 +31,15 @@ from rates
 ),
 
 mailchimp_subscriber_totals as (
-    select 
+    select
         max(iff(value = 'subscribed', number_unique_emails, 0)) as total_subscribed,
         max(iff(value = 'unsubscribed', number_unique_emails, 0)) as total_unsubscribed
-    from mailchimp_list 
+    from mailchimp_list
     where metric = 'subscribe_status'
 
 )
 
-select * 
+select *
 from mailchimp_subscriber_totals
 full outer join mailchimp_segments
 full outer join mailchimp_avg_rates

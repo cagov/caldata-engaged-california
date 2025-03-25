@@ -1,10 +1,10 @@
-with 
-lists as 
+with
+lists as
     (select
         ID as list_id,
         NAME as list_name
 
-        from {{ source('MAILCHIMP','LIST') }} 
+        from {{ source('MAILCHIMP','LIST') }}
         where _FIVETRAN_DELETED = FALSE
         and list_name = 'Engaged California' --this is the list name for the Engaged CA audience in Mailchimp
     )

@@ -10,7 +10,7 @@ models:
           - not_null
       - name: member_id
         description: |
-          Identifier for each list member / contact in Mailchimp. 
+          Identifier for each list member / contact in Mailchimp.
           There may be duplicates in this table, since one member may have multiple email addresses
       - name: subscribe_status
         description: Whether the member is either subscribed or unsubscribed from an EngagedCA list.
@@ -20,8 +20,8 @@ models:
         description: The date and time the subscriber confirmed their opt-in status in ISO 8601 format.
       - name: email_client
         description: |
-            Mailchimp's best guess at the most recent email client or device type the member 
-            used to interact with an email.
+          Mailchimp's best guess at the most recent email client or device type the member
+          used to interact with an email.
       - name: unsubscribe_reason
       - name: _FIVETRAN_SYNCED
       - name: list_name
