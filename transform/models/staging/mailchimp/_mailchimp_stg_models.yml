@@ -1,0 +1,60 @@
+version: 2
+
+models:
+  - name: stg_mailchimp_list_members
+    description: All members currently subscribed to an Engaged California list in Mailchimp.
+    columns:
+      - name: unique_email_id
+        description: Unique identifier for email addresses in Mailchimp.
+        data_tests:
+          - not_null
+      - name: member_id
+        description: |
+          Identifier for each list member / contact in Mailchimp. 
+          There may be duplicates in this table, since one member may have multiple email addresses
+      - name: subscribe_status
+        description: Whether the member is either subscribed or unsubscribed from an EngagedCA list.
+      - name: source
+        description: The source from which the subscriber was added to this list.
+      - name: subscribe_timestamp
+        description: The date and time the subscriber confirmed their opt-in status in ISO 8601 format.
+      - name: email_client
+        description: |
+            Mailchimp's best guess at the most recent email client or device type the member 
+            used to interact with an email.
+      - name: unsubscribe_reason
+      - name: _FIVETRAN_SYNCED
+      - name: list_name
+  - name: stg_mailchimp_interest_members
+    description: One row per interest per member subscribed to an Engaged California list in Mailchimp.
+    columns:
+      - name: member_id
+      - name: interest_id
+      - name: interest_name
+      - name: _fivetran_synced
+  - name: stg_mailchimp_campaign_recipients
+    description: One row per recipient per campaign from an Engaged California list in Mailchimp.
+    columns:
+      - name: member_id
+      - name: campaign_id
+      - name: type
+      - name: create_time
+      - name: archive_url
+      - name: send_time
+      - name: content_type
+      - name: list_id
+      - name: title
+      - name: subject_line
+      - name: from_name
+      - name: template_id
+  - name: stg_mailchimp_campaign_activity
+    description: One row per action per campaign per recipient from to an Engaged California list in Mailchimp.
+    columns:
+      - name: member_id
+      - name: campaign_id
+      - name: action
+      - name: timestamp
+      - name: url
+      - name: list_id
+      - name: bounce_type
+      - name: _FIVETRAN_SYNCED
