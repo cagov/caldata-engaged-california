@@ -13,21 +13,21 @@ mailchimp_segments as (
 rates as (
     select
         unique_email_ids_sent,
-        unique_opens/unique_email_ids_sent as open_rate,
-        unique_clicks/unique_email_ids_sent as click_rate,
-        unique_bounces/unique_email_ids_sent as bounce_rate
+        unique_opens / unique_email_ids_sent as open_rate,
+        unique_clicks / unique_email_ids_sent as click_rate,
+        unique_bounces / unique_email_ids_sent as bounce_rate
 
     from mailchimp_campaigns
 ),
 
 mailchimp_avg_rates as (
-select
-    sum(unique_email_ids_sent) as total_sends,
-    avg(open_rate) * 100 as avg_open_rate,
-    avg(click_rate) * 100 as avg_click_rate,
-    avg(bounce_rate)* 100  as avg_bounce_rate
+    select
+        sum(unique_email_ids_sent) as total_sends,
+        avg(open_rate) * 100 as avg_open_rate,
+        avg(click_rate) * 100 as avg_click_rate,
+        avg(bounce_rate) * 100 as avg_bounce_rate
 
-from rates
+    from rates
 ),
 
 mailchimp_subscriber_totals as (
@@ -39,7 +39,7 @@ mailchimp_subscriber_totals as (
 
 )
 
-select *
-from mailchimp_subscriber_totals
+select mc.*
+from mailchimp_subscriber_totals as mc
 full outer join mailchimp_segments
 full outer join mailchimp_avg_rates

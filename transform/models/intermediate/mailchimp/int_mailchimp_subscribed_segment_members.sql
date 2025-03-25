@@ -15,19 +15,15 @@ interests as (
 
 --convert segment components (e.g. interests, tags) into binary for easy segment building
 segment_components as (
-select
-  --  subscribers.member_id, removing unless needed for reporting
-    list_name,
-    unique_email_id,
-  --  source,  removing unless needed for reporting
-  -- subscribe_timestamp,  removing unless needed for reporting
-  --  email_client,  removing unless needed for reporting
-    iff(interest_name = 'Los Angeles fires recovery: Palisades',1,0) as la_fires_palisades,
-    iff(interest_name = 'Los Angeles fires recovery: Eaton',1,0) as la_fires_eaton,
-    iff(interest_name = 'Future topics',1,0) as future_topics
+    select
+        subscribers.list_name,
+        subscribers.unique_email_id,
+        iff(interests.interest_name = 'Los Angeles fires recovery: Palisades', 1, 0) as la_fires_palisades,
+        iff(interests.interest_name = 'Los Angeles fires recovery: Eaton', 1, 0) as la_fires_eaton,
+        iff(interests.interest_name = 'Future topics', 1, 0) as future_topics
     from subscribers
     inner join interests
-    on subscribers.member_id = interests.member_id
+        on subscribers.member_id = interests.member_id
 ),
 
 --build any segments that are based on 1 segment component here:
