@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: ETHELO
+    database: RAW_ENGCA_PRD
+    schema: AIRTABLE_ENGAGED_CA___LOS_ANGELES_FIRES_AGENDA_SETTING___SNOWFLAKE_APPZIJKCI0JPBHDTR
+    description: Ethelo data loaded into Airtable, then synched to Snowflake via Fivetran
+    tables:
+      - name: AVERAGE_WEIGHTS
+      - name: COMMENTS
+      - name: DATA_UPDATED
+      - name: ODI_ORIGINAL_INVITE_TIMES
+      - name: PARTICIPANTS
+      - name: SURVEY_BY_EMAIL
+      - name: SURVEY_BY_QUESTION
+      - name: SURVEY_TOTALS
+      - name: VOTING_SUMMARY
