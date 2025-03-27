@@ -27,7 +27,7 @@ clean-targets: # directories to be removed by `dbt clean`
   - dbt_packages
 
 models:
-  caldata_engaged_ca:
+  caldata_engaged_california:
     staging:
       +materialized: view
       mailchimp:
