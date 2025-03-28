@@ -1,0 +1,93 @@
+version: 2
+
+sources:
+  - name: ETHELO
+    database: RAW_ENGCA_PRD
+    schema: AIRTABLE_ENGAGED_CA___LOS_ANGELES_FIRES_AGENDA_SETTING___SNOWFLAKE_APPZIJKCI0JPBHDTR
+    description: Ethelo data loaded into Airtable, then synced to Snowflake via Fivetran
+    tables:
+      - name: AVERAGE_WEIGHTS
+        columns:
+          - name: AVERAGE_WEIGHTING
+          - name: ID
+          - name: TOPIC
+          - name: _FIVETRAN_SYNCED
+      - name: COMMENTS
+        columns:
+          - name: COMMENT_ID
+          - name: CONTENT
+          - name: FLAG_COUNT
+          - name: ID
+          - name: LIKE_COUNT
+          - name: POSTED_BY_ID
+          - name: POSTED_ON
+          - name: PRIVACY
+          - name: REPLY_COUNT
+          - name: REPLY_TO_ID
+          - name: TARGET
+          - name: TOPIC
+          - name: TYPE
+          - name: _FIVETRAN_SYNCED
+      - name: DATA_UPDATED
+        columns:
+          - name: DATA_UPLOADER
+          - name: DATA_UPDATED
+          - name: ID
+          - name: NOTES
+          - name: STATUS
+          - name: _FIVETRAN_SYNCED
+      - name: ODI_ORIGINAL_INVITE_TIMES
+      - name: PARTICIPANTS
+        columns:
+          - name: COMMENT_COUNT
+          - name: COMPLETION
+          - name: ID
+          - name: ID_NUMBER
+          - name: INFLUENCE
+          - name: JOINED_ON
+          - name: LAST_INVITE_SENT
+          - name: LAST_SIGN_IN
+          - name: RESENT_INVITE
+          - name: ROLES
+          - name: STATUS
+          - name: SUCCESSFUL_REINVITE
+          - name: SURVEY_COMPLETED
+          - name: VOTING_COMPLETE
+          - name: _FIVETRAN_SYNCED
+      - name: SURVEY_BY_EMAIL
+      - name: SURVEY_BY_QUESTION
+        columns:
+          - name: ANSWER
+          - name: DATE
+          - name: GROUP
+          - name: ID
+          - name: INFLUENCE
+          - name: JOINED_DATE
+          - name: PARTICIPANT
+          - name: QUESTION
+          - name: _FIVETRAN_SYNCED
+      - name: SURVEY_TOTALS
+        columns:
+          - name: ANSWER_CHOICE
+          - name: CHOSEN_BY_USERS
+          - name: ID
+          - name: ID_NUMBER
+          - name: ORDER
+          - name: QUESTION
+          - name: QUESTION_GROUP
+          - name: _FIVETRAN_SYNCED
+      - name: VOTING_SUMMARY
+        columns:
+          - name: ABSTAIN_VOTES
+          - name: APPROVAL
+          - name: AVERAGE_WEIGHTING
+          - name: CONFLICT
+          - name: CONSENSUS
+          - name: ID
+          - name: IN_BEST_SCENARIO
+          - name: NEGATIVE_VOTES
+          - name: POSITIVE_VOTES
+          - name: SUPPORT
+          - name: TOPIC
+          - name: TOTAL_VOTES
+          - name: _FIVETRAN_SYNCED
