@@ -1,0 +1,97 @@
+version: 2
+
+sources:
+  - name: MAILCHIMP
+    database: RAW_ENGCA_PRD
+    schema: MAILCHIMP
+    description: ODI Mailchimp Data, loaded into Snowflake via Fivetran every 6 hours.
+    tables:
+      - name: LIST
+        description: Key table of all email subscriber lists in Mailchimp.
+        columns:
+          - name: ID
+            description: Unique identifier for each list.
+          - name: NAME
+            description: List name
+          - name: DATE_CREATED
+          - name: SUBSCRIBE_URL_SHORT
+          - name: SUBSCRIBE_URL_LONG
+          - name: _FIVETRAN_DELETED
+          - name: _FIVETRAN_SYNCED
+      - name: MEMBER
+        description: All subscriber list members in Mailchimp. Data grain is unique_email_id and list_id.
+        columns:
+          - name: LIST_ID
+          - name: STATUS
+            description: |
+              Subscriber's current status. Possible values: "subscribed", "unsubscribed", "cleaned",
+              "pending", "transactional", or "archived".
+          - name: SOURCE
+            description: The source from which the subscriber was added to this list.
+          - name: UNIQUE_EMAIL_ID
+            description: An identifier for the email address across all of Mailchimp.
+          - name: TIMESTAMP_OPT
+            description: |
+              The date and time the subscriber confirmed their opt-in status in ISO 8601 format.
+          - name: EMAIL_CLIENT
+            description: |
+              Mailchimp's best guess at the most recent email client or device type the member
+              used to interact with an email.
+          - name: UNSUBSCRIBE_REASON
+          - name: _FIVETRAN_SYNCED
+      - name: INTEREST
+        description: Key table of all interests in Mailchimp
+        columns:
+          - name: ID
+            description: Interest ID
+          - name: NAME
+            description: Interest name
+          - name: CATEGORY_ID
+            description: Unique ID for the interest category
+          - name: LIST_ID
+            description: Unique ID for a list that is connected to the interest
+          - name: SUBSCRIBER_COUNT
+            description: Count
+          - name: _FIVETRAN_SYNCED
+      - name: INTEREST_MEMBER
+        description: One row per interest per member.
+        columns:
+          - name: INTEREST_ID
+          - name: MEMBER_ID
+          - name: _FIVETRAN_DELETED
+          - name: _FIVETRAN_SYNCED
+      - name: CAMPAIGN
+        description: All campaigns and their metadata
+        columns:
+          - name: ID
+          - name: TYPE
+          - name: ARCHIVE_URL
+          - name: STATUS
+          - name: SEND_TIME
+          - name: CONTENT_TYPE
+          - name: LIST_ID
+          - name: SUBJECT_LINE
+          - name: FROM_NAME
+          - name: TEMPLATE_ID
+          - name: _FIVETRAN_DELETED
+          - name: _FIVETRAN_SYNCED
+      - name: CAMPAIGN_RECIPIENT
+        description: All recipients of all Mailchimp campaigns
+        columns:
+          - name: CAMPAIGN_ID
+          - name: LIST_ID
+          - name: MEMBER_ID
+          - name: STATUS
+          - name: _FIVETRAN_SYNCED
+      - name: CAMPAIGN_RECIPIENT_ACTIVITY
+        description: All actions by recipients of all Mailchimp campaigns
+        columns:
+          - name: ACTION
+          - name: BOUNCE_TYPE
+          - name: CAMPAIGN_ID
+          - name: LIST_ID
+          - name: MEMBER_ID
+          - name: TIMESTAMP
+          - name: URL
+            description: If the action is "click" this column shows the URL that was clicked.
+          - name: _FIVETRAN_SYNCED
