@@ -1,4 +1,4 @@
-with 
+with
 mailchimp_list as (
     select * from {{ ref('mailchimp_list_metrics')}}
 ),
