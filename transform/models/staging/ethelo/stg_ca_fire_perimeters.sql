@@ -4,7 +4,7 @@
 
 WITH source_seed AS (
     SELECT *
-    FROM {{ ref('CA_WFIGS_Interagency_Fire_Perimeters') }}
+    FROM {{ ref('ca_fire_perimeters') }}
 )
 
 SELECT
