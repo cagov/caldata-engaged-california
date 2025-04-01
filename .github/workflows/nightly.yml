@@ -1,0 +1,40 @@
+name: nightly
+on:
+  schedule:
+    # Run a nightly job in the 5AM hour
+    - cron: "21 12 * * *"
+  # Also allow for manual triggers
+  workflow_dispatch:
+
+env:
+  SNOWFLAKE_PRIVATE_KEY: ${{ SECRETS.SNOWFLAKE_PRIVATE_KEY_PRD }}
+  SNOWFLAKE_USER: ${{ SECRETS.SNOWFLAKE_USER_PRD }}
+  SNOWFLAKE_ACCOUNT: ${{ SECRETS.SNOWFLAKE_ACCOUNT }}
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - uses: actions/cache@v4
+        with:
+          key: ${{ github.ref }}
+          path: .cache
+      - uses: snok/install-poetry@v1
+      - name: Install dependencies
+        run: |
+          poetry install
+      - name: Build dbt project
+        env:
+          DBT_PROFILES_DIR: transform/ci
+          DBT_ANALYTICS_DB: ANALYTICS_ENGCA_PRD
+          DBT_RAW_DB: RAW_ENGCA_PRD
+          SNOWFLAKE_ROLE: TRANSFORMER_ENGCA_PRD
+          SNOWFLAKE_DATABASE: TRANSFORM_ENGCA_PRD
+          SNOWFLAKE_WAREHOUSE: TRANSFORMING_XS_ENGCA_PRD
+        run: |
+          poetry run dbt deps --project-dir transform --target prd
+          poetry run dbt build --project-dir transform --target prd
