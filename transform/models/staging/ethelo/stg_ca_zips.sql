@@ -11,15 +11,15 @@ SELECT
     ZIP_CODE,
     PO_NAME,
     STATE,
-    NULLIF(POPULATION, -99) as POPULATION, 
+    NULLIF(POPULATION, -99) as POPULATION,
     POP_SQMI,
     SQMI,
 
     -- Geometry processing: Convert WKT to GEOGRAPHY
-    WKT_GEOMETRY,                                
-    TRY_TO_GEOGRAPHY(WKT_GEOMETRY) AS zip_code_geography 
+    WKT_GEOMETRY,
+    TRY_TO_GEOGRAPHY(WKT_GEOMETRY) AS zip_code_geography
 
 FROM source_seed
 
-WHERE WKT_GEOMETRY IS NOT NULL                    
-  AND zip_code_geography IS NOT NULL              
+WHERE WKT_GEOMETRY IS NOT NULL
+  AND zip_code_geography IS NOT NULL

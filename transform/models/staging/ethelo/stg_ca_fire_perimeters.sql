@@ -10,7 +10,7 @@ WITH source_seed AS (
 SELECT
     -- Polygon Attributes
     POLY_SOURCEOID,
-    POLY_INCIDENTNAME, 
+    POLY_INCIDENTNAME,
     POLY_FEATURECATEGORY,
     POLY_MAPMETHOD,
     POLY_GISACRES,
@@ -20,8 +20,8 @@ SELECT
     TRY_TO_TIMESTAMP_NTZ(POLY_CREATEDATE) AS perimeter_createdate, // Attempt basic parse, relies on Snowflake's default formats
     TRY_TO_TIMESTAMP_NTZ(POLY_DATECURRENT) AS perimeter_date_current,
     POLY_POLYGONDATETIME AS perimeter_polygon_datetime_ntz, // Already TIMESTAMP_NTZ, keep as is
-    POLY_IRWINID AS perimeter_irwinid, 
-    POLY_FORID AS perimeter_forid, 
+    POLY_IRWINID AS perimeter_irwinid,
+    POLY_FORID AS perimeter_forid,
     POLY_ACRES_AUTOCALC,
     POLY_SOURCEGLOBALID AS perimeter_sourceglobalid, // Alias to distinguish if joining
     POLY_SOURCE AS perimeter_source,

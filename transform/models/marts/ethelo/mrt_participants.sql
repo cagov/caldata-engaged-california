@@ -1,7 +1,7 @@
 {{ config(materialized='view')}}
 
 
-select  
+select
     a.PARTICIPANT_ID
     , STATUS
     , LAST_INVITE_SENT
@@ -18,7 +18,7 @@ select
     , HOUSING_STATUS
     , HOUSEHOLD_INCOME_PRETAX
     , FIRE_IMPACT_EMPLOYMENT
-    , CASE 
+    , CASE
         WHEN RACE_ETHNICITY = 'Black or African American' THEN 'Black or African American'
         WHEN RACE_ETHNICITY = 'Middle Eastern or North African' THEN 'Mdl Eastern or N. African'
         WHEN RACE_ETHNICITY = 'American Indian or Alaska Native' THEN 'Amer Indian or Alaska Ntv'

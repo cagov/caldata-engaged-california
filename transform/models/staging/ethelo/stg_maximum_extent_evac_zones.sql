@@ -14,7 +14,7 @@ SELECT
     ZONEID,
     COUNTRY_ABBR,
     STATE_ABBR,
-    COUNTY_ABB,         
+    COUNTY_ABB,
     CITY_ABBR,
     ZONE_SEQUENCE,
     CITY_ZONE_SEQUENCE,
@@ -22,11 +22,11 @@ SELECT
     MOST_EXTREME_STATUS,
 
     -- Geometry Processing
-    WKT_GEOMETRY,                               
+    WKT_GEOMETRY,
     TRY_TO_GEOGRAPHY(WKT_GEOMETRY) AS zone_geography  -- Convert WKT string to GEOGRAPHY type
-                                                
+
 
 FROM source_seed
 
-WHERE WKT_GEOMETRY IS NOT NULL         
+WHERE WKT_GEOMETRY IS NOT NULL
   AND zone_geography IS NOT NULL
