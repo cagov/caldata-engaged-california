@@ -1,4 +1,4 @@
-{{ config( materialized='table') }}
+{{ config( materialized='view') }}
 
 WITH source_participants AS (
     SELECT *
@@ -34,7 +34,6 @@ filtered_participants AS (
         ON a.ID_NUMBER = b.participant_id
     WHERE
         b.participant_id IS NULL // Keep only rows that *don't* match a test participant
-
 )
 
 SELECT * FROM filtered_participants

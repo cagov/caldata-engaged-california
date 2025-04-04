@@ -1,6 +1,4 @@
-{{ config(
-    materialized='table' 
-) }}
+{{ config(materialized='table') }}
 
 WITH source_seed AS (
 
