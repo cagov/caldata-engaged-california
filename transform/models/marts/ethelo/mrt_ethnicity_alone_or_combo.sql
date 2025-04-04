@@ -1,6 +1,4 @@
-{{ config(
-    materialized='table'
-) }}
+{{ config(materialized='view')}}
 
 WITH survey_responses AS (
     -- Upstream staging model containing cleaned survey data

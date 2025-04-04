@@ -1,0 +1,51 @@
+-- Calculate all ZIP-evacuation zone intersections first
+WITH intersection_areas AS (
+    SELECT 
+        z.ZIP_CODE,
+        z.PO_NAME,
+        z.SQMI AS ZIP_AREA_SQMILES,
+        e.MOST_EXTREME_STATUS,
+        ST_AREA(ST_INTERSECTION(z.ZIP_CODE_GEOGRAPHY, e.ZONE_GEOGRAPHY)) / 2589988.11 AS OVERLAP_SQMILES,
+        (ST_AREA(ST_INTERSECTION(z.ZIP_CODE_GEOGRAPHY, e.ZONE_GEOGRAPHY)) / ST_AREA(z.ZIP_CODE_GEOGRAPHY)) * 100 AS PERCENT_OVERLAP
+    FROM 
+        {{ ref('stg_ca_zips') }} z
+    JOIN 
+        {{ ref('stg_maximum_extent_evac_zones') }} e
+    ON 
+        ST_INTERSECTS(z.ZIP_CODE_GEOGRAPHY, e.ZONE_GEOGRAPHY)
+),
+-- Group and aggregate by ZIP code and evacuation status
+status_aggregates AS (
+    SELECT
+        ZIP_CODE,
+        PO_NAME,
+        ZIP_AREA_SQMILES,
+        MOST_EXTREME_STATUS,
+        SUM(OVERLAP_SQMILES) AS TOTAL_OVERLAP_SQMILES,
+        SUM(PERCENT_OVERLAP) AS TOTAL_PERCENT_OVERLAP
+    FROM
+        intersection_areas
+    GROUP BY
+        ZIP_CODE, PO_NAME, ZIP_AREA_SQMILES, MOST_EXTREME_STATUS
+)
+-- Pivot the results to have separate columns for each status
+SELECT
+    z.ZIP_CODE,
+    z.PO_NAME AS ZIP_NAME,
+    z.SQMI AS ZIP_AREA_SQMILES,
+    COALESCE(MAX(CASE WHEN s.MOST_EXTREME_STATUS = 'Evacuation Order' THEN s.TOTAL_OVERLAP_SQMILES END), 0) AS EVAC_ORDR_SQMILES,
+    COALESCE(MAX(CASE WHEN s.MOST_EXTREME_STATUS = 'Evacuation Order' THEN s.TOTAL_PERCENT_OVERLAP END), 0) AS EVAC_ORDR_PCT_ZIP,
+    COALESCE(MAX(CASE WHEN s.MOST_EXTREME_STATUS = 'Evacuation Warning' THEN s.TOTAL_OVERLAP_SQMILES END), 0) AS EVAC_WRN_SQMILES,
+    COALESCE(MAX(CASE WHEN s.MOST_EXTREME_STATUS = 'Evacuation Warning' THEN s.TOTAL_PERCENT_OVERLAP END), 0) AS EVAC_WRN_PCT_ZIP
+FROM
+    {{ ref('stg_ca_zips') }} z
+LEFT JOIN
+    status_aggregates s
+ON
+    z.ZIP_CODE = s.ZIP_CODE
+GROUP BY
+    z.ZIP_CODE, z.PO_NAME, z.SQMI
+ORDER BY
+    (COALESCE(MAX(CASE WHEN s.MOST_EXTREME_STATUS = 'Evacuation Order' THEN s.TOTAL_PERCENT_OVERLAP END), 0) + 
+     COALESCE(MAX(CASE WHEN s.MOST_EXTREME_STATUS = 'Evacuation Warning' THEN s.TOTAL_PERCENT_OVERLAP END), 0)) DESC,
+    COALESCE(MAX(CASE WHEN s.MOST_EXTREME_STATUS = 'Evacuation Order' THEN s.TOTAL_PERCENT_OVERLAP END), 0) DESC
