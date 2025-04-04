@@ -13,8 +13,8 @@ comments AS (
     SELECT * FROM {{ ref('stg_comments') }}
 )
 
-SELECT 
-    CONVERT_TIMEZONE('America/Los_Angeles', MAX(LATEST_DATE)) AS latest_date 
+SELECT
+    CONVERT_TIMEZONE('America/Los_Angeles', MAX(LATEST_DATE)) AS latest_date
 FROM (
     SELECT MAX(POSTED_ON) AS LATEST_DATE FROM comments WHERE POSTED_ON IS NOT NULL
     UNION

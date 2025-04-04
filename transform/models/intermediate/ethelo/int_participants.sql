@@ -9,7 +9,7 @@ WITH source_participants AS (
 seed_test_participants AS (
     // List of participant IDs known to be test accounts, from the seed file
     SELECT
-        participant_id 
+        participant_id
     FROM {{ ref('TEST_PARTICIPANTS') }}
 
 ),

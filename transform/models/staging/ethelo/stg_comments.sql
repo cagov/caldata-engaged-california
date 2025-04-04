@@ -9,7 +9,7 @@ WITH source_comments AS (
         PRIVACY,
         CONTENT,
         REPLY_TO_ID,
-        POSTED_ON, 
+        POSTED_ON,
         REPLY_COUNT,
         FLAG_COUNT,
         LIKE_COUNT
@@ -19,7 +19,7 @@ WITH source_comments AS (
 
 seed_test_participants AS (
     SELECT
-        participant_id 
+        participant_id
     FROM {{ ref('TEST_PARTICIPANTS') }}
 
 ),

@@ -63,7 +63,7 @@ SELECT
     -- Calculate % of participants who responded to the race question (handle potential division by zero)
     ROUND(100.0 * COUNT(DISTINCT lf.PARTICIPANT_ID) / NULLIF(t.total_with_race_response, 0), 1) AS percent_of_re_respondents
 FROM long_format lf
-CROSS JOIN totals t 
+CROSS JOIN totals t
 GROUP BY
     lf.race_ethnicity,
     t.total_participants, -- Need to group by denominator cols used in SELECT

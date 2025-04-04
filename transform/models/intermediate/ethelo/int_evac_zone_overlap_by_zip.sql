@@ -1,17 +1,17 @@
 -- Calculate all ZIP-evacuation zone intersections first
 WITH intersection_areas AS (
-    SELECT 
+    SELECT
         z.ZIP_CODE,
         z.PO_NAME,
         z.SQMI AS ZIP_AREA_SQMILES,
         e.MOST_EXTREME_STATUS,
         ST_AREA(ST_INTERSECTION(z.ZIP_CODE_GEOGRAPHY, e.ZONE_GEOGRAPHY)) / 2589988.11 AS OVERLAP_SQMILES,
         (ST_AREA(ST_INTERSECTION(z.ZIP_CODE_GEOGRAPHY, e.ZONE_GEOGRAPHY)) / ST_AREA(z.ZIP_CODE_GEOGRAPHY)) * 100 AS PERCENT_OVERLAP
-    FROM 
+    FROM
         {{ ref('stg_ca_zips') }} z
-    JOIN 
+    JOIN
         {{ ref('stg_maximum_extent_evac_zones') }} e
-    ON 
+    ON
         ST_INTERSECTS(z.ZIP_CODE_GEOGRAPHY, e.ZONE_GEOGRAPHY)
 ),
 -- Group and aggregate by ZIP code and evacuation status
@@ -46,6 +46,6 @@ ON
 GROUP BY
     z.ZIP_CODE, z.PO_NAME, z.SQMI
 ORDER BY
-    (COALESCE(MAX(CASE WHEN s.MOST_EXTREME_STATUS = 'Evacuation Order' THEN s.TOTAL_PERCENT_OVERLAP END), 0) + 
+    (COALESCE(MAX(CASE WHEN s.MOST_EXTREME_STATUS = 'Evacuation Order' THEN s.TOTAL_PERCENT_OVERLAP END), 0) +
      COALESCE(MAX(CASE WHEN s.MOST_EXTREME_STATUS = 'Evacuation Warning' THEN s.TOTAL_PERCENT_OVERLAP END), 0)) DESC,
     COALESCE(MAX(CASE WHEN s.MOST_EXTREME_STATUS = 'Evacuation Order' THEN s.TOTAL_PERCENT_OVERLAP END), 0) DESC

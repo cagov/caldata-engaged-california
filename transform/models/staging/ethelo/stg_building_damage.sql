@@ -3,7 +3,7 @@
 WITH source_seed AS (
     -- Source table created by dbt seed from buildings_with_dins_2023.csv
     SELECT *
-    FROM {{ ref('buildings_with_dins_2023') }} 
+    FROM {{ ref('buildings_with_dins_2023') }}
 )
 
 SELECT
@@ -25,7 +25,7 @@ SELECT
 
     -- Geometry Processing
     WKT_GEOMETRY,
-    TRY_TO_GEOGRAPHY(WKT_GEOMETRY) AS building_geography 
+    TRY_TO_GEOGRAPHY(WKT_GEOMETRY) AS building_geography
 
 FROM source_seed
 
