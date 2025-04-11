@@ -25,7 +25,6 @@ SELECT
     WKT_GEOMETRY,
     TRY_TO_GEOGRAPHY(WKT_GEOMETRY) AS zone_geography  -- Convert WKT string to GEOGRAPHY type
 
-
 FROM source_seed
 
 WHERE WKT_GEOMETRY IS NOT NULL

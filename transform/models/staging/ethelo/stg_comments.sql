@@ -1,4 +1,4 @@
-{{ config( materialized='view') }}
+
 WITH source_comments AS (
     SELECT
         COMMENT_ID,

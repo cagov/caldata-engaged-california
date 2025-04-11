@@ -1,5 +1,3 @@
-{{ config( materialized='view') }}
-
 WITH source_participants AS (
     SELECT *
     FROM {{ source('ETHELO', 'PARTICIPANTS') }}
@@ -15,7 +13,7 @@ seed_test_participants AS (
 ),
 
 filtered_participants AS (
-    // Remove test participants from the source data via left join anti-pattern
+    // Remove test participants from the source data
     SELECT
         a.ID_NUMBER as participant_id,
         a.STATUS,
