@@ -1,6 +1,3 @@
-{{ config(
-    materialized='table'
-) }}
 
 WITH source_seed AS (
     SELECT *
@@ -133,4 +130,4 @@ SELECT
 
 FROM source_seed
 
-WHERE WKT_GEOMETRY IS NOT NULL // Ensure WKT is not null before attempting conversion
+WHERE WKT_GEOMETRY IS NOT NULL 

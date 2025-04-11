@@ -1,5 +1,3 @@
--- First, calculate overlap for all ZIP-fire intersections
-WITH all_intersections AS (
   SELECT
     z.ZIP_CODE,
     z.PO_NAME AS ZIP_NAME,
@@ -16,22 +14,4 @@ WITH all_intersections AS (
     {{ ref('mrt_recent_fire_perimeters') }} f
   ON
     ST_INTERSECTS(z.ZIP_CODE_GEOGRAPHY, f.PERIMETER_GEOGRAPHY)
-)
-
-
--- Select only the top fire per ZIP code
-SELECT
-  ZIP_CODE,
-  ZIP_NAME,
-  FIRE_NAME,
-  FIRE_DISCOVERY_DATETIME,
-  FIRE_ACRES,
-  ZIP_AREA_SQMILES,
-  OVERLAP_AREA_SQMILES,
-  PERCENT_OF_ZIP_AFFECTED
-FROM
-  all_intersections
-WHERE
-  fire_rank = 1
-ORDER BY
-  PERCENT_OF_ZIP_AFFECTED DESC, ZIP_CODE
+QUALIFY fire_rank = 1

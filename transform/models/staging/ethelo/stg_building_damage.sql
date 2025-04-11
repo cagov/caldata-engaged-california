@@ -31,3 +31,4 @@ FROM source_seed
 
 WHERE WKT_GEOMETRY IS NOT NULL
   AND building_geography IS NOT NULL
+  

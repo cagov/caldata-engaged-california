@@ -23,3 +23,4 @@ FROM source_seed
 
 WHERE WKT_GEOMETRY IS NOT NULL
   AND zip_code_geography IS NOT NULL
+  

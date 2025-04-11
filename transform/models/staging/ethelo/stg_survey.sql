@@ -1,6 +1,3 @@
--- Optional: Configure as view (default) or table
-{{ config(materialized='view') }}
-
 WITH test_participants AS (
     SELECT *
     FROM {{ ref('TEST_PARTICIPANTS') }}
@@ -68,3 +65,4 @@ final AS (
 )
 
 SELECT * FROM final
+

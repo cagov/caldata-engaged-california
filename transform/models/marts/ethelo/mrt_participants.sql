@@ -1,5 +1,3 @@
-{{ config(materialized='view')}}
-
 
 select
     a.PARTICIPANT_ID
@@ -11,10 +9,9 @@ select
     , COMMENT_COUNT
     , JOINED_ON
     , FIRE_IMPACTED_ZIP_CLEAN as ZIP
-    , ASSOCIATED_FIRE_ZONE as FIRE_ZONE
-    , CITY
-    , NEIGHBORHOOD
-    , IMPACT_LEVEL as FIRE_ZONE_IMPACT_LEVEL
+    , case when FIRE_IMPACTED_ZIP_CLEAN is not null and FIRE_NAME is null then 'Outside fire zone'
+        else FIRE_NAME End as FIRE_ZONE   
+    , ZIP_NAME as CITY
     , HOUSING_STATUS
     , HOUSEHOLD_INCOME_PRETAX
     , FIRE_IMPACT_EMPLOYMENT
@@ -41,4 +38,4 @@ select
     , WHITE_WRITEIN
 from {{ ref('int_participants')}} as a
 left join {{ ref('stg_survey')}} as b on a.PARTICIPANT_ID = b.PARTICIPANT_ID
-left join RAW_ENGCA_PRD.DEMOGRAPHICS.ZIP_CODE_REFERENCE_DATA as d on b.FIRE_IMPACTED_ZIP_CLEAN = d.ZIP_CODE
+left join {{ ref('mrt_impact_by_zip')}} as d on b.FIRE_IMPACTED_ZIP_CLEAN = d.ZIP_CODE
