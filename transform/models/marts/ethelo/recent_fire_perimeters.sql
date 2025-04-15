@@ -1,9 +1,9 @@
 select
-Name
-, FIRE_DISCOVERY_DATETIME
-, CONTAINMENT_DATETIME
-, CONTROL_DATETIME
-, FIRE_OUT_DATETIME
-, Acres
-, PERIMETER_GEOGRAPHY
-FROM  {{ ref('int_recent_fire_perimeters')}}
+    Name,
+    Fire_discovery_datetime,
+    Containment_datetime,
+    Control_datetime,
+    Fire_out_datetime,
+    Acres,
+    Perimeter_geography
+from {{ ref('int_recent_fire_perimeters') }}

@@ -1,68 +1,171 @@
-WITH test_participants AS (
+WITH participants AS (
     SELECT *
-    FROM {{ ref('TEST_PARTICIPANTS') }}
+    FROM {{ ref('stg_participants') }}
 ),
 
 final AS (
     SELECT
-        -- References use exact UPPERCASE column names from the DDL
-        a.INFLUENCE AS INFLUENCE_LEVEL,
-        a.PARTICIPANT AS PARTICIPANT_ID,
-        a.JOINED_DATE AS SURVEY_JOIN_DATE,
-        a.CIVILITY_PLEDGE AS CIVILITY_PLEDGE_STATUS,
-        a.TOPIC_THEMES AS DISCUSSION_TOPICS,
-        a.WHAT_IS_YOUR_PERSPECTIVE_ON_LA_S_RECOVERY_ AS LA_RECOVERY_PERSPECTIVE,
-        a.YOUR_VIEWS AS ADDITIONAL_VIEWS,
-        a.IF_YOU_HAD_A_HOME_OR_BUSINESS_DAMAGED_OR_LOST_OR_LOST_EMPLOYMENT_OR_INCOME_TO_THE_RECENT_FIRES_IN_LA_SELECT_THE_ZIP_CODE_OF_THAT_HOME_BUSINESS_OR_PLACE_OF_EMPLOYMENT_ AS FIRE_IMPACTED_ZIP,
-        REGEXP_SUBSTR(a.IF_YOU_HAD_A_HOME_OR_BUSINESS_DAMAGED_OR_LOST_OR_LOST_EMPLOYMENT_OR_INCOME_TO_THE_RECENT_FIRES_IN_LA_SELECT_THE_ZIP_CODE_OF_THAT_HOME_BUSINESS_OR_PLACE_OF_EMPLOYMENT_, '\\b\\d{5}\\b') AS FIRE_IMPACTED_ZIP_CLEAN,
-        a.WHAT_MUST_BE_ADDRESSED_FIRST_TO_ENSURE_A_SUCCESSFUL_RECOVERY_ AS RECOVERY_PRIORITY,
+        a.influence AS influence_level,
+        a.participant AS participant_id,
+        a.joined_date AS survey_join_date,
+        a.civility_pledge AS civility_pledge_status,
+        a.topic_themes AS discussion_topics,
+        a.what_is_your_perspective_on_la_s_recovery_ AS la_recovery_perspective,
+        a.your_views AS additional_views,
+        a.if_you_had_a_home_or_business_damaged_or_lost_or_lost_employment_or_income_to_the_recent_fires_in_la_select_the_zip_code_of_that_home_business_or_place_of_employment_ -- noqa: L016
+            AS fire_impacted_zip,
+        REGEXP_SUBSTR(
+            a.if_you_had_a_home_or_business_damaged_or_lost_or_lost_employment_or_income_to_the_recent_fires_in_la_select_the_zip_code_of_that_home_business_or_place_of_employment_, -- noqa: L016
+            '\\b\\d{5}\\b'
+        ) AS fire_impacted_zip_clean,
+        a.what_must_be_addressed_first_to_ensure_a_successful_recovery_ AS recovery_priority,
 
-        -- Apply NULLIF to the exact raw UPPERCASE column names
-        NULLIF(a.AMERICAN_INDIAN_OR_ALASKA_NATIVE_WRITE_IN, '') AS AI_AN_WRITEIN,
-        NULLIF(a.TERMS_I_AGREE_TO_THE_MODERATION_POLICY, '') AS MODERATION_POLICY_AGREEMENT,
-        NULLIF(a.ARE_YOU_A_HOMEOWNER_RENTER_OR_UNHOUSED_, '') AS HOUSING_STATUS,
-        NULLIF(a.ARE_YOU_UNEMPLOYED_OR_UNDEREMPLOYED_AS_A_RESULT_OF_THE_LA_FIRES_, '') AS FIRE_IMPACT_EMPLOYMENT,
-        NULLIF(a.ASIAN_DETAILED_CATEGORIES, '') AS ASIAN_DETAILED,
-        NULLIF(a.WHAT_WAS_YOUR_HOUSEHOLD_INCOME_BEFORE_TAXES_LAST_YEAR_, '') AS HOUSEHOLD_INCOME_PRETAX,
-        NULLIF(a.ASIAN_WRITE_IN, '') AS ASIAN_WRITEIN,
-        NULLIF(a.BLACK_OR_AFRICAN_AMERICAN_DETAILED_CATEGORIES, '') AS BLACK_DETAILED,
-        NULLIF(a.BLACK_OR_AFRICAN_AMERICAN_WRITE_IN, '') AS BLACK_WRITEIN,
-        NULLIF(a.HISPANIC_OR_LATINO_DETAILED_CATEGORIES, '') AS HISP_LATINO_DETAILED,
-        NULLIF(a.HISPANIC_OR_LATINO_WRITE_IN, '') AS HISP_LATINO_WRITEIN,
-        NULLIF(a.MIDDLE_EASTERN_OR_NORTH_AFRICAN_DETAILED_CATEGORIES, '') AS MENA_DETAILED,
-        NULLIF(a.MIDDLE_EASTERN_OR_NORTH_AFRICAN_WRITE_IN, '') AS MENA_WRITEIN,
-        NULLIF(a.NATIVE_HAWAIIAN_OR_PACIFIC_ISLANDER_DETAILED_CATEGORIES, '') AS NHPI_DETAILED,
-        NULLIF(a.NATIVE_HAWAIIAN_OR_PACIFIC_ISLANDER_WRITE_IN, '') AS NHPI_WRITEIN,
-        NULLIF(a.WHITE_DETAILED_CATEGORIES, '') AS WHITE_DETAILED,
-        NULLIF(a.WHITE_WRITE_IN, '') AS WHITE_WRITEIN,
+        NULLIF(a.american_indian_or_alaska_native_write_in, '') AS ai_an_writein,
+        NULLIF(a.terms_i_agree_to_the_moderation_policy, '') AS moderation_policy_agreement,
+        NULLIF(a.are_you_a_homeowner_renter_or_unhoused_, '') AS housing_status,
+        NULLIF(a.are_you_unemployed_or_underemployed_as_a_result_of_the_la_fires_, '') AS fire_impact_employment,
+        NULLIF(a.asian_detailed_categories, '') AS asian_detailed,
+        NULLIF(a.what_was_your_household_income_before_taxes_last_year_, '') AS household_income_pretax,
+        NULLIF(a.asian_write_in, '') AS asian_writein,
+        NULLIF(a.black_or_african_american_detailed_categories, '') AS black_detailed,
+        NULLIF(a.black_or_african_american_write_in, '') AS black_writein,
+        NULLIF(a.hispanic_or_latino_detailed_categories, '') AS hisp_latino_detailed,
+        NULLIF(a.hispanic_or_latino_write_in, '') AS hisp_latino_writein,
+        NULLIF(a.middle_eastern_or_north_african_detailed_categories, '') AS mena_detailed,
+        NULLIF(a.middle_eastern_or_north_african_write_in, '') AS mena_writein,
+        NULLIF(a.native_hawaiian_or_pacific_islander_detailed_categories, '') AS nhpi_detailed,
+        NULLIF(a.native_hawaiian_or_pacific_islander_write_in, '') AS nhpi_writein,
+        NULLIF(a.white_detailed_categories, '') AS white_detailed,
+        NULLIF(a.white_write_in, '') AS white_writein,
 
-        -- CASE statement updated to use exact raw UPPERCASE column names
         CASE
             WHEN
-                (CASE WHEN a.AMERICAN_INDIAN_OR_ALASKA_NATIVE_WRITE_IN IS NOT NULL AND a.AMERICAN_INDIAN_OR_ALASKA_NATIVE_WRITE_IN != '' THEN 1 ELSE 0 END) +
-                (CASE WHEN (a.ASIAN_DETAILED_CATEGORIES IS NOT NULL ) OR (a.ASIAN_WRITE_IN IS NOT NULL AND a.ASIAN_WRITE_IN != '') THEN 1 ELSE 0 END) +
-                (CASE WHEN (a.BLACK_OR_AFRICAN_AMERICAN_DETAILED_CATEGORIES IS NOT NULL ) OR (a.BLACK_OR_AFRICAN_AMERICAN_WRITE_IN IS NOT NULL AND a.BLACK_OR_AFRICAN_AMERICAN_WRITE_IN != '') THEN 1 ELSE 0 END) +
-                (CASE WHEN (a.HISPANIC_OR_LATINO_DETAILED_CATEGORIES IS NOT NULL AND a.HISPANIC_OR_LATINO_DETAILED_CATEGORIES != '') OR (a.HISPANIC_OR_LATINO_WRITE_IN IS NOT NULL AND a.HISPANIC_OR_LATINO_WRITE_IN != '') THEN 1 ELSE 0 END) +
-                (CASE WHEN (a.MIDDLE_EASTERN_OR_NORTH_AFRICAN_DETAILED_CATEGORIES IS NOT NULL ) OR (a.MIDDLE_EASTERN_OR_NORTH_AFRICAN_WRITE_IN IS NOT NULL AND a.MIDDLE_EASTERN_OR_NORTH_AFRICAN_WRITE_IN != '') THEN 1 ELSE 0 END) +
-                (CASE WHEN (a.NATIVE_HAWAIIAN_OR_PACIFIC_ISLANDER_DETAILED_CATEGORIES IS NOT NULL ) OR (a.NATIVE_HAWAIIAN_OR_PACIFIC_ISLANDER_WRITE_IN IS NOT NULL AND a.NATIVE_HAWAIIAN_OR_PACIFIC_ISLANDER_WRITE_IN != '') THEN 1 ELSE 0 END) +
-                (CASE WHEN (a.WHITE_DETAILED_CATEGORIES IS NOT NULL ) OR (a.WHITE_WRITE_IN IS NOT NULL AND a.WHITE_WRITE_IN != '') THEN 1 ELSE 0 END) > 1
-            THEN 'Multi-Race'
-
-            WHEN a.AMERICAN_INDIAN_OR_ALASKA_NATIVE_WRITE_IN IS NOT NULL AND a.AMERICAN_INDIAN_OR_ALASKA_NATIVE_WRITE_IN != '' THEN 'American Indian or Alaska Native'
-            WHEN (a.ASIAN_DETAILED_CATEGORIES IS NOT NULL ) OR (a.ASIAN_WRITE_IN IS NOT NULL AND a.ASIAN_WRITE_IN != '') THEN 'Asian'
-            WHEN (a.BLACK_OR_AFRICAN_AMERICAN_DETAILED_CATEGORIES IS NOT NULL ) OR (a.BLACK_OR_AFRICAN_AMERICAN_WRITE_IN IS NOT NULL AND a.BLACK_OR_AFRICAN_AMERICAN_WRITE_IN != '') THEN 'Black or African American'
-            WHEN (a.HISPANIC_OR_LATINO_DETAILED_CATEGORIES IS NOT NULL AND a.HISPANIC_OR_LATINO_DETAILED_CATEGORIES != '') OR (a.HISPANIC_OR_LATINO_WRITE_IN IS NOT NULL AND a.HISPANIC_OR_LATINO_WRITE_IN != '') THEN 'Hispanic or Latino'
-            WHEN (a.MIDDLE_EASTERN_OR_NORTH_AFRICAN_DETAILED_CATEGORIES IS NOT NULL ) OR (a.MIDDLE_EASTERN_OR_NORTH_AFRICAN_WRITE_IN IS NOT NULL AND a.MIDDLE_EASTERN_OR_NORTH_AFRICAN_WRITE_IN != '') THEN 'Middle Eastern or North African'
-            WHEN (a.NATIVE_HAWAIIAN_OR_PACIFIC_ISLANDER_DETAILED_CATEGORIES IS NOT NULL ) OR (a.NATIVE_HAWAIIAN_OR_PACIFIC_ISLANDER_WRITE_IN IS NOT NULL AND a.NATIVE_HAWAIIAN_OR_PACIFIC_ISLANDER_WRITE_IN != '') THEN 'Native Hawaiian or Pacific Islander'
-            WHEN (a.WHITE_DETAILED_CATEGORIES IS NOT NULL ) OR (a.WHITE_WRITE_IN IS NOT NULL AND a.WHITE_WRITE_IN != '') THEN 'White'
-
-            ELSE NULL
-        END AS RACE_ETHNICITY
+                ( -- AI/AN
+                    CASE
+                        WHEN
+                            a.american_indian_or_alaska_native_write_in IS NOT NULL
+                            AND a.american_indian_or_alaska_native_write_in != ''
+                            THEN 1
+                        ELSE 0
+                    END
+                )
+                + ( -- Asian
+                    CASE
+                        WHEN
+                            a.asian_detailed_categories IS NOT NULL
+                            OR (a.asian_write_in IS NOT NULL AND a.asian_write_in != '')
+                            THEN 1
+                        ELSE 0
+                    END
+                )
+                + ( -- Black
+                    CASE
+                        WHEN
+                            a.black_or_african_american_detailed_categories IS NOT NULL -- noqa: L016
+                            OR (
+                                a.black_or_african_american_write_in IS NOT NULL
+                                AND a.black_or_african_american_write_in != ''
+                            )
+                            THEN 1
+                        ELSE 0
+                    END
+                )
+                + ( -- Hispanic/Latino
+                    CASE
+                        WHEN
+                            (
+                                a.hispanic_or_latino_detailed_categories IS NOT NULL
+                                AND a.hispanic_or_latino_detailed_categories != ''
+                            )
+                            OR (
+                                a.hispanic_or_latino_write_in IS NOT NULL
+                                AND a.hispanic_or_latino_write_in != ''
+                            )
+                            THEN 1
+                        ELSE 0
+                    END
+                )
+                + ( -- MENA
+                    CASE
+                        WHEN
+                            a.middle_eastern_or_north_african_detailed_categories IS NOT NULL -- noqa: L016
+                            OR (
+                                a.middle_eastern_or_north_african_write_in IS NOT NULL
+                                AND a.middle_eastern_or_north_african_write_in != ''
+                            )
+                            THEN 1
+                        ELSE 0
+                    END
+                )
+                + ( -- NHPI
+                    CASE
+                        WHEN
+                            a.native_hawaiian_or_pacific_islander_detailed_categories IS NOT NULL -- noqa: L016
+                            OR (
+                                a.native_hawaiian_or_pacific_islander_write_in IS NOT NULL
+                                AND a.native_hawaiian_or_pacific_islander_write_in != ''
+                            )
+                            THEN 1
+                        ELSE 0
+                    END
+                )
+                + ( -- White
+                    CASE
+                        WHEN
+                            a.white_detailed_categories IS NOT NULL
+                            OR (a.white_write_in IS NOT NULL AND a.white_write_in != '')
+                            THEN 1
+                        ELSE 0
+                    END
+                )
+                > 1 THEN 'Multi-Race'
+            WHEN
+                a.american_indian_or_alaska_native_write_in IS NOT NULL
+                AND a.american_indian_or_alaska_native_write_in != ''
+                THEN 'American Indian or Alaska Native'
+            WHEN
+                a.asian_detailed_categories IS NOT NULL
+                OR (a.asian_write_in IS NOT NULL AND a.asian_write_in != '')
+                THEN 'Asian'
+            WHEN
+                a.black_or_african_american_detailed_categories IS NOT NULL
+                OR (
+                    a.black_or_african_american_write_in IS NOT NULL
+                    AND a.black_or_african_american_write_in != ''
+                )
+                THEN 'Black or African American'
+            WHEN
+                (
+                    a.hispanic_or_latino_detailed_categories IS NOT NULL
+                    AND a.hispanic_or_latino_detailed_categories != ''
+                )
+                OR (
+                    a.hispanic_or_latino_write_in IS NOT NULL
+                    AND a.hispanic_or_latino_write_in != ''
+                )
+                THEN 'Hispanic or Latino'
+            WHEN
+                a.middle_eastern_or_north_african_detailed_categories IS NOT NULL
+                OR (
+                    a.middle_eastern_or_north_african_write_in IS NOT NULL
+                    AND a.middle_eastern_or_north_african_write_in != ''
+                )
+                THEN 'Middle Eastern or North African'
+            WHEN
+                a.native_hawaiian_or_pacific_islander_detailed_categories IS NOT NULL
+                OR (
+                    a.native_hawaiian_or_pacific_islander_write_in IS NOT NULL
+                    AND a.native_hawaiian_or_pacific_islander_write_in != ''
+                )
+                THEN 'Native Hawaiian or Pacific Islander'
+            WHEN
+                a.white_detailed_categories IS NOT NULL
+                OR (a.white_write_in IS NOT NULL AND a.white_write_in != '')
+                THEN 'White'
+        END AS race_ethnicity
 
     FROM {{ source('ETHELO', 'SURVEY_BY_EMAIL') }} AS a
-    LEFT JOIN test_participants AS b ON a.PARTICIPANT = b.participant_id
-    WHERE b.participant_id IS NULL AND LENGTH(a.PARTICIPANT) = 36
+    INNER JOIN participants AS b ON a.participant = b.participant_id
 )
 
 SELECT * FROM final
-

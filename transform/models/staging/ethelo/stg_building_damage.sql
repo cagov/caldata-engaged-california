@@ -8,27 +8,27 @@ WITH source_seed AS (
 
 SELECT
     -- Attributes from the seed table
-    OBJECTID,
-    CODE,
-    BLD_ID,
-    HEIGHT,
-    ELEV,
-    SOURCE,
-    DATE_ AS DATE,
-    STATUS,
-    OLD_BLD_ID,
-    AREA,
-    DAMAGE,
-    STRUCTURET AS STRUCTURE_TYPE,
-    SHAPE__AREA as SHAPE_AREA,
-    SHAPE__LENGTH as SHAPE_LENGTH,
+    objectid,
+    code,
+    bld_id,
+    height,
+    elev,
+    source,
+    date_ AS date,
+    status,
+    old_bld_id,
+    area,
+    damage,
+    structuret AS structure_type,
+    shape__area AS shape_area,
+    shape__length AS shape_length,
 
     -- Geometry Processing
-    WKT_GEOMETRY,
-    TRY_TO_GEOGRAPHY(WKT_GEOMETRY) AS building_geography
+    wkt_geometry,
+    TRY_TO_GEOGRAPHY(wkt_geometry) AS building_geography
 
 FROM source_seed
 
-WHERE WKT_GEOMETRY IS NOT NULL
-  AND building_geography IS NOT NULL
-  
+WHERE
+    wkt_geometry IS NOT NULL
+    AND building_geography IS NOT NULL
