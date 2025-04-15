@@ -10,22 +10,23 @@ WITH source_seed AS (
 
 SELECT
     -- Attributes from the seed table
-    OBJECTID,
-    ZONEID,
-    COUNTRY_ABBR,
-    STATE_ABBR,
-    COUNTY_ABB,
-    CITY_ABBR,
-    ZONE_SEQUENCE,
-    CITY_ZONE_SEQUENCE,
-    INCIDENT_NAME,
-    MOST_EXTREME_STATUS,
+    objectid,
+    zoneid,
+    country_abbr,
+    state_abbr,
+    county_abb,
+    city_abbr,
+    zone_sequence,
+    city_zone_sequence,
+    incident_name,
+    most_extreme_status,
 
     -- Geometry Processing
-    WKT_GEOMETRY,
-    TRY_TO_GEOGRAPHY(WKT_GEOMETRY) AS zone_geography  -- Convert WKT string to GEOGRAPHY type
+    wkt_geometry,
+    TRY_TO_GEOGRAPHY(wkt_geometry) AS zone_geography  -- Convert WKT string to GEOGRAPHY type
 
 FROM source_seed
 
-WHERE WKT_GEOMETRY IS NOT NULL
-  AND zone_geography IS NOT NULL
+WHERE
+    wkt_geometry IS NOT NULL
+    AND zone_geography IS NOT NULL

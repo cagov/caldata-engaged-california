@@ -1,20 +1,28 @@
-SELECT
-    PARTICIPANT,
-    TARGET,
-    CONTENT
-FROM (
-SELECT
-    PARTICIPANT,
-    WHAT_IS_YOUR_PERSPECTIVE_ON_LA_S_RECOVERY_ as "Main Recovery Perspective",
-    WHAT_MUST_BE_ADDRESSED_FIRST_TO_ENSURE_A_SUCCESSFUL_RECOVERY_ as "Main Recovery Priority"
-FROM {{ source('ETHELO', 'SURVEY_BY_EMAIL') }} a
-    LEFT JOIN  {{ ref('TEST_PARTICIPANTS') }} AS b
-        ON a.PARTICIPANT = b.participant_id
-    WHERE b.participant_id IS NULL // Keep only rows that *don't* match a test participant
-    
+with unpivoted as (
+    select
+        participant,
+        target,
+        content
+    from (
+        select
+            a.participant,
+            a.what_is_your_perspective_on_la_s_recovery_ as main_recovery_perspective,  -- noqa: RF05
+            a.what_must_be_addressed_first_to_ensure_a_successful_recovery_ as main_recovery_priority  -- noqa: RF05
+        from {{ source('ETHELO', 'SURVEY_BY_EMAIL') }} as a
+        left join {{ ref('TEST_PARTICIPANTS') }} as b
+            on a.participant = b.participant_id
+        where b.participant_id is null -- Keep only rows that *don't* match a test participant
+    ) unpivot (
+        content for target in (main_recovery_perspective, main_recovery_priority)
+    )
+    where length(trim(content)) > 0
+)
 
-) UNPIVOT(
-CONTENT FOR TARGET IN ("Main Recovery Perspective", "Main Recovery Priority")
-) 
-where  length(trim(content)) > 0
-
+select
+    participant,
+    case target
+        when 'main_recovery_perspective' then 'Main Recovery Perspective'
+        when 'main_recovery_priority' then 'Main Recovery Priority'
+    end as target,
+    content
+from unpivoted

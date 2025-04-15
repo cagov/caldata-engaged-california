@@ -1,17 +1,23 @@
-  SELECT
-    z.ZIP_CODE,
-    z.PO_NAME AS ZIP_NAME,
-    f.NAME AS FIRE_NAME,
-    f.FIRE_DISCOVERY_DATETIME,
-    f.ACRES AS FIRE_ACRES,
-    z.SQMI AS ZIP_AREA_SQMILES,
-    ST_AREA(ST_INTERSECTION(z.ZIP_CODE_GEOGRAPHY, f.PERIMETER_GEOGRAPHY)) / 2589988.11 AS OVERLAP_AREA_SQMILES,
-    (ST_AREA(ST_INTERSECTION(z.ZIP_CODE_GEOGRAPHY, f.PERIMETER_GEOGRAPHY)) / ST_AREA(z.ZIP_CODE_GEOGRAPHY)) * 100 AS PERCENT_OF_ZIP_AFFECTED,
-    ROW_NUMBER() OVER (PARTITION BY z.ZIP_CODE ORDER BY ST_AREA(ST_INTERSECTION(z.ZIP_CODE_GEOGRAPHY, f.PERIMETER_GEOGRAPHY)) DESC) AS fire_rank
-  FROM
-    {{ ref('stg_ca_zips') }} z
-  JOIN
-    {{ ref('mrt_recent_fire_perimeters') }} f
-  ON
-    ST_INTERSECTS(z.ZIP_CODE_GEOGRAPHY, f.PERIMETER_GEOGRAPHY)
+SELECT
+    z.zip_code,
+    z.po_name AS zip_name,
+    f.name AS fire_name,
+    f.fire_discovery_datetime,
+    f.acres AS fire_acres,
+    z.sqmi AS zip_area_sqmiles,
+    ST_AREA(ST_INTERSECTION(z.zip_code_geography, f.perimeter_geography)) / 2589988.11 AS overlap_area_sqmiles,
+    (ST_AREA(ST_INTERSECTION(z.zip_code_geography, f.perimeter_geography)) / ST_AREA(z.zip_code_geography))
+    * 100 AS percent_of_zip_affected,
+    ROW_NUMBER()
+        OVER (
+            PARTITION BY z.zip_code
+            ORDER BY ST_AREA(ST_INTERSECTION(z.zip_code_geography, f.perimeter_geography)) DESC
+        )
+        AS fire_rank
+FROM
+    {{ ref('stg_ca_zips') }} AS z
+INNER JOIN
+    {{ ref('recent_fire_perimeters') }} AS f
+    ON
+        ST_INTERSECTS(z.zip_code_geography, f.perimeter_geography)
 QUALIFY fire_rank = 1

@@ -1,6 +1,6 @@
 with campaigns as (
 
-    select * from {{ ref('int_mailchimp_campaign_engagements')}}
+    select * from {{ ref('int_mailchimp_campaign_engagements') }}
 )
 
 select

@@ -1,20 +1,21 @@
 SELECT
-    z.ZIP_CODE,
+    z.zip_code,
     -- Count by damage category
-    COUNT_IF(b.DAMAGE = 'Destroyed (>50%)') AS DESTROYED_BUILDINGS,
-    COUNT_IF(b.DAMAGE = 'Major (26-50%)') AS MAJOR_DAMAGE_BUILDINGS,
-    COUNT_IF(b.DAMAGE = 'Minor (10-25%)') AS MINOR_DAMAGE_BUILDINGS,
-    COUNT_IF(b.DAMAGE = 'Affected (1-9%)') AS AFFECTED_BUILDINGS,
+    COUNT_IF(b.damage = 'Destroyed (>50%)') AS destroyed_buildings,
+    COUNT_IF(b.damage = 'Major (26-50%)') AS major_damage_buildings,
+    COUNT_IF(b.damage = 'Minor (10-25%)') AS minor_damage_buildings,
+    COUNT_IF(b.damage = 'Affected (1-9%)') AS affected_buildings,
     -- Count all buildings with any damage
-    COUNT_IF(b.DAMAGE IN ('Destroyed (>50%)', 'Major (26-50%)', 'Minor (10-25%)', 'Affected (1-9%)')) AS ANY_DAMAGE_BUILDINGS,
+    COUNT_IF(b.damage IN ('Destroyed (>50%)', 'Major (26-50%)', 'Minor (10-25%)', 'Affected (1-9%)'))
+        AS any_damage_buildings
 
 FROM
-    {{ ref('stg_ca_zips') }} z
-JOIN
-    {{ ref('stg_building_damage') }} b
-ON
-    ST_INTERSECTS(z.ZIP_CODE_GEOGRAPHY, b.BUILDING_GEOGRAPHY)
+    {{ ref('stg_ca_zips') }} AS z
+INNER JOIN
+    {{ ref('stg_building_damage') }} AS b
+    ON
+        ST_INTERSECTS(z.zip_code_geography, b.building_geography)
 GROUP BY
-    z.ZIP_CODE, z.PO_NAME, z.POPULATION
+    z.zip_code, z.po_name, z.population
 ORDER BY
-    DESTROYED_BUILDINGS DESC, ANY_DAMAGE_BUILDINGS DESC
+    destroyed_buildings DESC, any_damage_buildings DESC

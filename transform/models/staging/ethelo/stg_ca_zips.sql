@@ -7,20 +7,20 @@ WITH source_seed AS (
 )
 
 SELECT
-    OBJECTID,
-    ZIP_CODE,
-    PO_NAME,
-    STATE,
-    NULLIF(POPULATION, -99) as POPULATION,
-    POP_SQMI,
-    SQMI,
+    objectid,
+    zip_code,
+    po_name,
+    state,
+    NULLIF(population, -99) AS population,
+    pop_sqmi,
+    sqmi,
 
     -- Geometry processing: Convert WKT to GEOGRAPHY
-    WKT_GEOMETRY,
-    TRY_TO_GEOGRAPHY(WKT_GEOMETRY) AS zip_code_geography
+    wkt_geometry,
+    TRY_TO_GEOGRAPHY(wkt_geometry) AS zip_code_geography
 
 FROM source_seed
 
-WHERE WKT_GEOMETRY IS NOT NULL
-  AND zip_code_geography IS NOT NULL
-  
+WHERE
+    wkt_geometry IS NOT NULL
+    AND zip_code_geography IS NOT NULL
