@@ -27,20 +27,22 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
-      - uses: actions/cache@v4
-        with:
-          key: ${{ github.ref }}
-          path: .cache
       - uses: snok/install-poetry@v1
         with:
-          virtualenvs-create: false
+          virtualenvs-path: .venv
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
-        run: |
-          poetry install
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
       - name: Build dbt docs
         run: |
-          dbt deps --project-dir=transform
-          dbt docs generate --project-dir=transform --target=prd
+          poetry run dbt deps --project-dir=transform
+          poetry run dbt docs generate --project-dir=transform --target=prd
           cp -r transform/target docs/dbt_docs
       - name: Deploy docs to GitHub Pages
         if: github.ref.name == 'refs/heads/main'
