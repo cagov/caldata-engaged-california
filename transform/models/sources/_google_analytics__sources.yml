@@ -1,0 +1,21 @@
+sources:
+  - name: GOOGLE_ANALYTICS
+    database: TRANSFORM_PRD
+    schema: GOOGLE_ANALYTICS #check this
+    description: Engages CA Google Analytics GA4 data, loaded into Snowflake via BigQuery.
+    tables:
+      - name: total_users_and_page_views
+        description: tk
+        columns:
+          - name: tk
+            description: tk
+      - name: last_click_sources_by_page_views
+        description: tk
+        columns:
+          - name: tk
+            description: tk
+      - name: ca_cities_by_page_views
+        description: tk
+        columns:
+          - name: tk
+            description: tk
