@@ -7,7 +7,7 @@ campaigns as (
 ),
 
 campaign_actions as (
-    select * from {{ ref('stg_mailchimp_campaign_activity')}}
+    select * from {{ ref('stg_mailchimp_campaign_activity') }}
 ),
 
 campaign_members as (
