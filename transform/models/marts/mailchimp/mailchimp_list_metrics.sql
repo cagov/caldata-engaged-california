@@ -1,6 +1,6 @@
 with
 list as (
-    select * from {{ ref('stg_mailchimp_list_members')}}
+    select * from {{ ref('stg_mailchimp_list_members') }}
 
 ),
 

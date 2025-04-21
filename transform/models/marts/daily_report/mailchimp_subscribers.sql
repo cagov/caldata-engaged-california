@@ -1,6 +1,6 @@
 with
 mailchimp_list as (
-    select * from {{ ref('mailchimp_list_metrics')}}
+    select * from {{ ref('mailchimp_list_metrics') }}
 ),
 
 mailchimp_subscriber_totals as (

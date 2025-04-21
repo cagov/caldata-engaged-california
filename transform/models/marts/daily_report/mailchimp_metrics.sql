@@ -1,5 +1,5 @@
 with mailchimp_campaigns as (
-    select * from {{ ref('mailchimp_campaign_summary')}}
+    select * from {{ ref('mailchimp_campaign_summary') }}
 ),
 
 rates as (

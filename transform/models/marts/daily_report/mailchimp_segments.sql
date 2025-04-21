@@ -14,4 +14,4 @@ select
     ) then total_subscribers
     else 0 end) as future_topics_only
 
-from {{ ref('mailchimp_subscribers_by_segment')}}
+from {{ ref('mailchimp_subscribers_by_segment') }}
