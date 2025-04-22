@@ -9,7 +9,7 @@
 with
 
 lists as (
-    select * from {{ ref('stg_mailchimp_list_filter')}}
+    select * from {{ ref('stg_mailchimp_list_filter') }}
 ),
 
 interest as (
@@ -26,7 +26,7 @@ interest as (
 
 interest_member as (
     select *
-    from {{ source('MAILCHIMP', 'INTEREST_MEMBER')}}
+    from {{ source('MAILCHIMP', 'INTEREST_MEMBER') }}
     where _fivetran_deleted = FALSE
 )
 
