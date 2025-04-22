@@ -1,6 +1,6 @@
 with
 lists as (
-    select * from {{ ref('stg_mailchimp_list_filter')}}
+    select * from {{ ref('stg_mailchimp_list_filter') }}
 ),
 
 members as (
@@ -15,7 +15,7 @@ members as (
         unsubscribe_reason,
         _fivetran_synced
 
-    from {{ source('MAILCHIMP','MEMBER')}}
+    from {{ source('MAILCHIMP','MEMBER') }}
     where subscribe_status in ('subscribed', 'unsubscribed')
 
 ),
