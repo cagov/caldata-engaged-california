@@ -14,14 +14,14 @@ lists as (
 
 interest as (
     select
-        id as interest_id,
-        name as interest_name,
-        _fivetran_synced
+        interest.id as interest_id,
+        interest.name as interest_name,
+        interest._fivetran_synced
 
-    from {{ source('MAILCHIMP', 'INTEREST') }}
+    from {{ source('MAILCHIMP', 'INTEREST') }} as interest
     where
-        _fivetran_deleted = FALSE
-        and list_id in (select list_id from lists)
+        interest._fivetran_deleted = FALSE
+        and interest.list_id in (select lists.list_id from lists)
 ),
 
 interest_member as (
