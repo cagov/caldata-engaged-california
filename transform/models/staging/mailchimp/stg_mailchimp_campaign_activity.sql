@@ -14,4 +14,4 @@ select
     activity._fivetran_synced
 
 from {{ source('MAILCHIMP','CAMPAIGN_RECIPIENT_ACTIVITY') }} as activity
-where activity.list_id in (select list_id from lists)
+where activity.list_id in (select lists.list_id from lists)
