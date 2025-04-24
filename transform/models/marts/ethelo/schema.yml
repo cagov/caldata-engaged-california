@@ -1,0 +1,142 @@
+version: 2
+
+models:
+  - name: impact_by_zip
+    description: ""
+    columns:
+      - name: zip_code
+        description: ""
+      - name: zip_name
+        description: ""
+      - name: population
+        description: ""
+      - name: zip_area_sqmiles
+        description: ""
+      - name: zip_code_geography
+        description: ""
+      - name: fire_name
+        description: ""
+      - name: fire_discovery_datetime
+        description: ""
+      - name: fire_acres
+        description: ""
+      - name: fire_overlap_sqmiles
+        description: ""
+      - name: fire_percent_of_zip
+        description: ""
+      - name: evac_ordr_sqmiles
+        description: ""
+      - name: evac_ordr_pct_zip
+        description: ""
+      - name: evac_wrn_sqmiles
+        description: ""
+      - name: evac_wrn_pct_zip
+        description: ""
+      - name: destroyed_buildings
+        description: ""
+      - name: major_damage_buildings
+        description: ""
+      - name: minor_damage_buildings
+        description: ""
+      - name: affected_buildings
+        description: ""
+      - name: any_damage_buildings
+        description: ""
+
+  - name: last_update_date
+    description: ""
+    columns:
+      - name: latest_date
+        description: ""
+
+  - name: participants
+    description: ""
+    columns:
+      - name: participant_id
+        description: ""
+      - name: status
+        description: ""
+      - name: last_invite_sent
+        description: ""
+      - name: voting_complete
+        description: ""
+      - name: survey_completed
+        description: ""
+      - name: completion
+        description: ""
+      - name: comment_count
+        description: ""
+      - name: joined_on
+        description: ""
+      - name: zip
+        description: ""
+      - name: fire_zone
+        description: ""
+      - name: city
+        description: ""
+      - name: housing_status
+        description: ""
+      - name: household_income_pretax
+        description: ""
+      - name: fire_impact_employment
+        description: ""
+      - name: race_ethnicity
+        description: ""
+      - name: orig_ethelo_zip
+        description: ""
+      - name: ai_an_writein
+        description: ""
+      - name: asian_detailed
+        description: ""
+      - name: asian_writein
+        description: ""
+      - name: black_detailed
+        description: ""
+      - name: black_writein
+        description: ""
+      - name: hisp_latino_detailed
+        description: ""
+      - name: hisp_latino_writein
+        description: ""
+      - name: mena_detailed
+        description: ""
+      - name: mena_writein
+        description: ""
+      - name: nhpi_detailed
+        description: ""
+      - name: nhpi_writein
+        description: ""
+      - name: white_detailed
+        description: ""
+      - name: white_writein
+        description: ""
+
+  - name: recent_fire_perimeters
+    description: ""
+    columns:
+      - name: Name
+        description: ""
+      - name: Fire_discovery_datetime
+        description: ""
+      - name: Containment_datetime
+        description: ""
+      - name: Control_datetime
+        description: ""
+      - name: Fire_out_datetime
+        description: ""
+      - name: Acres
+        description: ""
+      - name: Perimeter_geography
+        description: ""
+
+  - name: race_ethnicity_alone_or_combo
+    description: ""
+    columns:
+      - name: race_ethnicity
+        description: ""
+      - name: num_participants
+        description: ""
+      - name: percent_of_all_participants
+        description: ""
+      - name: percent_of_re_respondents
+        description: ""

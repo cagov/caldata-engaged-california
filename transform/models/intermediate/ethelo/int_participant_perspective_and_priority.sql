@@ -9,9 +9,7 @@ with unpivoted as (
             a.what_is_your_perspective_on_la_s_recovery_ as main_recovery_perspective,  -- noqa: RF05
             a.what_must_be_addressed_first_to_ensure_a_successful_recovery_ as main_recovery_priority  -- noqa: RF05
         from {{ source('ETHELO', 'SURVEY_BY_EMAIL') }} as a
-        left join {{ ref('TEST_PARTICIPANTS') }} as b
-            on a.participant = b.participant_id
-        where b.participant_id is null -- Keep only rows that *don't* match a test participant
+        inner join {{ ref('stg_participants') }} as b on a.participant = b.participant_id
     ) unpivot (
         content for target in (main_recovery_perspective, main_recovery_priority)
     )

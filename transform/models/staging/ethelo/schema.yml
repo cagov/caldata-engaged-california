@@ -1,0 +1,252 @@
+version: 2
+
+models:
+  - name: stg_building_damage
+    description: "Cleaned building damage seed; filters out null geometries and converts WKT to geography."
+    columns:
+      - name: objectid
+        description: ""
+      - name: code
+        description: ""
+      - name: bld_id
+        description: ""
+      - name: height
+        description: ""
+      - name: elev
+        description: ""
+      - name: source
+        description: ""
+      - name: date
+        description: ""
+      - name: status
+        description: ""
+      - name: old_bld_id
+        description: ""
+      - name: area
+        description: ""
+      - name: damage
+        description: ""
+      - name: structure_type
+        description: ""
+      - name: shape_area
+        description: ""
+      - name: shape_length
+        description: ""
+      - name: wkt_geometry
+        description: ""
+      - name: building_geography
+        description: ""
+
+  - name: stg_ca_fire_perimeters
+    description: "Parsed fire perimeter seed; converts timestamps and WKT to geography."
+    columns:
+      - name: poly_sourceoid
+        description: ""
+      - name: poly_incidentname
+        description: ""
+      - name: poly_featurecategory
+        description: ""
+      - name: poly_mapmethod
+        description: ""
+      - name: poly_gisacres
+        description: ""
+      - name: poly_featureaccess
+        description: ""
+      - name: poly_featurestatus
+        description: ""
+      - name: poly_isvisible
+        description: ""
+      - name: perimeter_createdate
+        description: ""
+      - name: perimeter_date_current
+        description: ""
+      - name: perimeter_polygon_datetime_ntz
+        description: ""
+      - name: perimeter_irwinid
+        description: ""
+      - name: perimeter_forid
+        description: ""
+      - name: perimeter_acres_autocalc
+        description: ""
+      - name: perimeter_sourceglobalid
+        description: ""
+      - name: perimeter_source
+        description: ""
+      - name: containment_datetime
+        description: ""
+      - name: control_datetime
+        description: ""
+      - name: fire_discovery_datetime
+        description: ""
+      - name: fire_out_datetime
+        description: ""
+      - name: perimeter_geography
+        description: ""
+
+  - name: stg_ca_zips
+    description: "Cleans California ZIP seed; null filters and WKT to geography."
+    columns:
+      - name: objectid
+        description: ""
+      - name: zip_code
+        description: ""
+      - name: po_name
+        description: ""
+      - name: state
+        description: ""
+      - name: population
+        description: ""
+      - name: pop_sqmi
+        description: ""
+      - name: sqmi
+        description: ""
+      - name: wkt_geometry
+        description: ""
+      - name: zip_code_geography
+        description: ""
+
+  - name: stg_comments
+    description: "Staging comments source, excluding test accounts."
+    columns:
+      - name: comment_id
+        description: ""
+      - name: topic
+        description: ""
+      - name: type
+        description: ""
+      - name: target
+        description: ""
+      - name: posted_by_id
+        description: ""
+      - name: privacy
+        description: ""
+      - name: content
+        description: ""
+      - name: reply_to_id
+        description: ""
+      - name: posted_on
+        description: ""
+      - name: reply_count
+        description: ""
+      - name: flag_count
+        description: ""
+      - name: like_count
+        description: ""
+
+  - name: stg_maximum_extent_evac_zones
+    description: "Processes evacuation zone seed; filters nulls and converts WKT to geography."
+    columns:
+      - name: objectid
+        description: ""
+      - name: zoneid
+        description: ""
+      - name: country_abbr
+        description: ""
+      - name: state_abbr
+        description: ""
+      - name: county_abb
+        description: ""
+      - name: city_abbr
+        description: ""
+      - name: zone_sequence
+        description: ""
+      - name: city_zone_sequence
+        description: ""
+      - name: incident_name
+        description: ""
+      - name: most_extreme_status
+        description: ""
+      - name: wkt_geometry
+        description: ""
+      - name: zone_geography
+        description: ""
+
+  - name: stg_participants
+    description: "Filters source participants by removing test and non-Participant roles."
+    columns:
+      - name: participant_id
+        description: ""
+      - name: status
+        description: ""
+      - name: roles
+        description: ""
+      - name: influence
+        description: ""
+      - name: last_invite_sent
+        description: ""
+      - name: voting_complete
+        description: ""
+      - name: survey_completed
+        description: ""
+      - name: completion
+        description: ""
+      - name: comment_count
+        description: ""
+      - name: joined_on
+        description: ""
+      - name: last_sign_in
+        description: ""
+      - name: resent_invite
+        description: ""
+      - name: successful_reinvite
+        description: ""
+
+  - name: stg_survey
+    description: "Cleans and enriches survey responses: nullifies empties, extracts zip, derives race."
+    columns:
+      - name: influence_level
+        description: ""
+      - name: participant_id
+        description: ""
+      - name: survey_join_date
+        description: ""
+      - name: civility_pledge_status
+        description: ""
+      - name: discussion_topics
+        description: ""
+      - name: la_recovery_perspective
+        description: ""
+      - name: additional_views
+        description: ""
+      - name: fire_impacted_zip
+        description: ""
+      - name: fire_impacted_zip_clean
+        description: ""
+      - name: recovery_priority
+        description: ""
+      - name: ai_an_writein
+        description: ""
+      - name: moderation_policy_agreement
+        description: ""
+      - name: housing_status
+        description: ""
+      - name: fire_impact_employment
+        description: ""
+      - name: asian_detailed
+        description: ""
+      - name: household_income_pretax
+        description: ""
+      - name: asian_writein
+        description: ""
+      - name: black_detailed
+        description: ""
+      - name: black_writein
+        description: ""
+      - name: hisp_latino_detailed
+        description: ""
+      - name: hisp_latino_writein
+        description: ""
+      - name: mena_detailed
+        description: ""
+      - name: mena_writein
+        description: ""
+      - name: nhpi_detailed
+        description: ""
+      - name: nhpi_writein
+        description: ""
+      - name: white_detailed
+        description: ""
+      - name: white_writein
+        description: ""
+      - name: race_ethnicity
+        description: ""
