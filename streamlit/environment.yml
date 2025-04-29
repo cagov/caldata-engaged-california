@@ -2,7 +2,7 @@ name: sf_env
 channels:
   - snowflake
 dependencies:
-  - pandas
-  - plotly
-  - pydeck
-  - shapely
+  - pandas=2.2.3
+  - plotly=5.24.1
+  - pydeck=0.9.1
+  - shapely=2.0.6
