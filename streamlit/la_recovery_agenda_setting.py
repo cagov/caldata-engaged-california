@@ -40,6 +40,13 @@ def apply_filter_with_nulls(df, column, selected_values):
     return df[filter_condition]
 
 session = get_active_session()
+database = session.get_current_database()
+# Determine whether we are using the production or dev environment
+env = database[-4:-1]
+# If in dev, most dbt-built schemas will be created with a prefix.
+# In prod, there is no prefix. Developers can customize this on the fly.
+# TODO: is there a better way to set the dev prefix?
+prefix = "DBT_MMARKS_" if env.lower() != "prd" else ""
 
 # Set page configuration
 st.set_page_config(page_title="Demo- Survey Data Overview", layout="wide")
@@ -51,7 +58,7 @@ st.header("Engaged California: LA Recovery - Agenda Setting")
 # Function to get the last update date
 @st.cache_data
 def get_last_update_date():
-    result = session.sql('''SELECT * from ANALYTICS_ENGCA_DEV.DBT_MMARKS_ETHELO.MRT_LAST_UPDATE_DATE''').collect()
+    result = session.sql(f'''SELECT * from ANALYTICS_ENGCA_{env}.{prefix}ETHELO.MRT_LAST_UPDATE_DATE''').collect()
 
     if result and len(result) > 0:
         return result[0]['LATEST_DATE']
@@ -69,21 +76,21 @@ if last_update:
 # Load the survey data
 @st.cache_data
 def load_data():
-    df = session.sql('''SELECT * FROM ANALYTICS_ENGCA_DEV.DBT_MMARKS_ETHELO.MRT_PARTICIPANTS''').to_pandas()
+    df = session.sql(f'''SELECT * FROM ANALYTICS_ENGCA_{env}.{prefix}ETHELO.MRT_PARTICIPANTS''').to_pandas()
     return df
 
 
 # Load the comments data
 @st.cache_data
 def load_comments_data():
-    comments_df = session.sql('''
+    comments_df = session.sql(f'''
     select
     POSTED_BY_ID as PARTICIPANT_ID
     ,count(*) as num_comments
     ,sum(reply_count) as num_replies
     ,sum(flag_count) as num_flags
     ,sum(like_count) as num_likes
-    from  TRANSFORM_ENGCA_DEV.DBT_MMARKS_ETHELO.STG_COMMENTS
+    from  TRANSFORM_ENGCA_{env}.{prefix}ETHELO.STG_COMMENTS
     group by 1
     ''').to_pandas()
 
@@ -132,7 +139,7 @@ Your output should follow this general format for each theme:
             POSTED_BY_ID as PARTICIPANT_ID,
             Target,
             SUBSTRING(CONTENT, 1, 500) as CONTENT_SUBSTRING
-        from TRANSFORM_ENGCA_DEV.DBT_MMARKS_ETHELO.STG_COMMENTS
+        from TRANSFORM_ENGCA_{env}.{prefix}ETHELO.STG_COMMENTS
         where POSTED_BY_ID in ({participant_ids_str})
         and trim(target) in ({topics_str})
 
@@ -143,7 +150,7 @@ Your output should follow this general format for each theme:
             PARTICIPANT as PARTICIPANT_ID,
             TARGET,
             SUBSTRING(CONTENT, 1, 500) as CONTENT_SUBSTRING
-        from TRANSFORM_ENGCA_DEV.DBT_MMARKS_ETHELO.INT_PARTICIPANT_PERSPECTIVE_AND_PRIORITY
+        from TRANSFORM_ENGCA_{env}.{prefix}ETHELO.INT_PARTICIPANT_PERSPECTIVE_AND_PRIORITY
         where PARTICIPANT in ({participant_ids_str})
         and trim(TARGET) in ({topics_str})
     ),
@@ -204,7 +211,7 @@ def load_source_comments(participant_ids, selected_topics):
     # Create the SQL query for STG_COMMENTS
     query_stg = f'''
     SELECT *
-    FROM TRANSFORM_ENGCA_DEV.DBT_MMARKS_ETHELO.STG_COMMENTS
+    FROM TRANSFORM_ENGCA_{env}.{prefix}ETHELO.STG_COMMENTS
     WHERE POSTED_BY_ID IN ({participant_ids_str})
     AND TARGET IN ({topics_str})
     ORDER BY TARGET
@@ -216,7 +223,7 @@ def load_source_comments(participant_ids, selected_topics):
         PARTICIPANT as POSTED_BY_ID,
         TARGET,
         CONTENT
-    FROM TRANSFORM_ENGCA_DEV.DBT_MMARKS_ETHELO.INT_PARTICIPANT_PERSPECTIVE_AND_PRIORITY
+    FROM TRANSFORM_ENGCA_{env}.{prefix}ETHELO.INT_PARTICIPANT_PERSPECTIVE_AND_PRIORITY
     WHERE PARTICIPANT IN ({participant_ids_str})
     AND TARGET IN ({topics_str})
     ORDER BY TARGET
@@ -242,8 +249,8 @@ def load_source_comments(participant_ids, selected_topics):
 # Load race/ethnicity data
 @st.cache_data
 def load_race_ethnicity_data():
-    race_df = session.sql('''
-    select * from ANALYTICS_ENGCA_DEV.ETHELO.RACE_ETHNICITY_ALONE_OR_COMBO
+    race_df = session.sql(f'''
+    select * from ANALYTICS_ENGCA_{env}.ETHELO.RACE_ETHNICITY_ALONE_OR_COMBO
     ''').to_pandas()
 
     return race_df
@@ -253,7 +260,7 @@ def load_race_ethnicity_data():
 def load_fire_perimeters():
     """Loads fire perimeter data from Snowflake, keeping geometry as WKT."""
     try:
-        query = '''
+        query = f'''
         SELECT
             NAME,
             FIRE_DISCOVERY_DATETIME,
@@ -263,7 +270,7 @@ def load_fire_perimeters():
             ACRES,
             ST_ASWKT(PERIMETER_GEOGRAPHY) as PERIMETER_WKT
         FROM
-            ANALYTICS_ENGCA_DEV.DBT_MMARKS_ETHELO.MRT_RECENT_FIRE_PERIMETERS
+            ANALYTICS_ENGCA_{env}.{prefix}ETHELO.MRT_RECENT_FIRE_PERIMETERS
         WHERE PERIMETER_GEOGRAPHY IS NOT NULL AND ST_NPOINTS(PERIMETER_GEOGRAPHY) > 2
         '''
         perimeter_df = session.sql(query).to_pandas()
@@ -280,7 +287,7 @@ def load_fire_perimeters():
 def load_zip_data_wkt():
     """Loads ZIP code geometry and impact data from Snowflake."""
     try:
-        query = '''
+        query = f'''
         SELECT
             ZIP_CODE,
             ST_ASWKT(ZIP_CODE_GEOGRAPHY) as WKT_STRING,
@@ -290,7 +297,7 @@ def load_zip_data_wkt():
             DESTROYED_BUILDINGS,
             ANY_DAMAGE_BUILDINGS
         FROM
-            ANALYTICS_ENGCA_DEV.DBT_MMARKS_ETHELO.MRT_IMPACT_BY_ZIP
+            ANALYTICS_ENGCA_{env}.{prefix}ETHELO.MRT_IMPACT_BY_ZIP
         '''
         zip_df = session.sql(query).to_pandas()
 
@@ -308,14 +315,14 @@ def load_zip_data_wkt():
 def load_evacuation_zones():
     """Loads evacuation zone data from Snowflake with WKT geometry."""
     try:
-        query = '''
+        query = f'''
         SELECT
             ZONEID,
             INCIDENT_NAME,
             MOST_EXTREME_STATUS,
             ST_ASWKT(ZONE_GEOGRAPHY) as ZONE_WKT
         FROM
-            TRANSFORM_ENGCA_DEV.DBT_MMARKS_ETHELO.STG_MAXIMUM_EXTENT_EVAC_ZONES
+            TRANSFORM_ENGCA_{env}.{prefix}ETHELO.STG_MAXIMUM_EXTENT_EVAC_ZONES
         WHERE ZONE_GEOGRAPHY IS NOT NULL
         '''
         evac_df = session.sql(query).to_pandas()
