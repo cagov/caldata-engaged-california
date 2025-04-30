@@ -134,7 +134,7 @@ Your output should follow this general format for each theme:
             SUBSTRING(CONTENT, 1, 500) as CONTENT_SUBSTRING
         from TRANSFORM_ENGCA_DEV.DBT_MMARKS_ETHELO.STG_COMMENTS
         where POSTED_BY_ID in ({participant_ids_str})
-        and trim(target) inrace ({topics_str})
+        and trim(target) in ({topics_str})
 
         UNION ALL
 
