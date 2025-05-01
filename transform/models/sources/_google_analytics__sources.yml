@@ -1,21 +1,29 @@
 sources:
   - name: GOOGLE_ANALYTICS
     database: TRANSFORM_PRD
-    schema: GOOGLE_ANALYTICS #check this
-    description: Engages CA Google Analytics GA4 data, loaded into Snowflake via BigQuery.
+    schema: GOOGLE_ANALYTICS
+    description: Google Analytics GA4 data, loaded into Snowflake via BigQuery.
     tables:
       - name: total_users_and_page_views
-        description: tk
+        description: |
+          An aggregate view of total users and pageviews to Engaged CA as a
+          whole plus only user totals filtered to Los Angeles.
         columns:
-          - name: tk
-            description: tk
+          - name: total_page_views
+            description: total count of page views.
+          - name: total_users
+            description: total count of users.
+          - name: total_users_la
+            description: total count of users in LA.
       - name: last_click_sources_by_page_views
-        description: tk
+        description: |
+          The last source a user came from before landing on
+          the Engaged CA website.
         columns:
-          - name: tk
-            description: tk
-      - name: ca_cities_by_page_views
-        description: tk
-        columns:
-          - name: tk
-            description: tk
+          - name: sources
+            description: |
+              how users found your website. 
+              e.g. a source of ‘google’ indicates a user found your 
+              website after searching on Google.
+          - name: total_page_views
+            description: total count of page views this source has generated.
