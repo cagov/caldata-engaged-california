@@ -4,19 +4,18 @@ with source_data as (
 ),
 
 totals as (
- select 
-    total_page_views,
-    total_users
- from source_data
- 
+      select
+         total_page_views,
+         total_users
+      from source_data
+
 ),
 
 la_totals as (
- select 
-    total_users as total_users_la
- from source_data
- where geo_city = 'Los Angeles'
- 
+      select total_users as total_users_la
+      from source_data
+      where geo_city = 'Los Angeles'
+
 )
 
 select * from totals, la_totals

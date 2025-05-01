@@ -4,11 +4,11 @@ with source_data as (
 ),
 
 last_click_sources_by_page_views as (
- select 
-   last_click_sources as sources,
-   total_page_views
- from source_data
- 
+    select
+      last_click_sources as sources,
+      total_page_views
+    from source_data
+
 )
 
 select * from last_click_sources_by_page_views

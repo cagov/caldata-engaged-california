@@ -22,8 +22,8 @@ sources:
         columns:
           - name: sources
             description: |
-              how users found your website. 
-              e.g. a source of ‘google’ indicates a user found your 
+              how users found your website.
+              e.g. a source of ‘google’ indicates a user found your
               website after searching on Google.
           - name: total_page_views
             description: total count of page views this source has generated.

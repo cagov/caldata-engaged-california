@@ -4,15 +4,15 @@ with source_data as (
 ),
 
 cities_by_page_views as (
- select 
-   geo_city,
-   total_page_views
- from source_data
- where
-  geo_region = 'California'
-  and length(trim(geo_city)) > 0
-  and geo_city != '(not set)'
- 
+    select
+      geo_city,
+      total_page_views
+    from source_data
+    where
+        geo_region = 'California'
+        and length(trim(geo_city)) > 0
+        and geo_city != '(not set)'
+
 )
 
 select * from cities_by_page_views
