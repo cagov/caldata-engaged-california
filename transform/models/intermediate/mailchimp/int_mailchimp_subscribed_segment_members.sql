@@ -31,7 +31,9 @@ segment_components as (
 basic_segments as (
     select
         unique_email_id,
-        listagg(distinct segment, '_') within group (order by segment) as segments
+        listagg(distinct segment, '_') within group (
+            order by segment
+        ) as segments
     from segment_components
     group by unique_email_id
 )

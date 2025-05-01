@@ -1,0 +1,32 @@
+version: 2
+
+seeds:
+  - name: buildings_with_dins_2023
+    description: >
+      This seed is based on the "2023 Buildings with DINS Data" dataset from LA County's ArcGIS Hub.
+      Geometries have been simplified to ensure WKT strings are below the Python import limit.
+    url: "https://egis-lacounty.hub.arcgis.com/datasets/2023-buildings-with-dins-data"
+
+  - name: ca_fire_perimeters
+    description: >
+      Sourced from the National Interagency Fire Center's ArcGIS Open Data site, this seed represents the
+      "WFIGS Interagency Fire Perimeters" dataset. Geometries have been simplified to ensure WKT strings are below
+      the Python import limit.
+    url: "https://data-nifc.opendata.arcgis.com/datasets/nifc::wfigs-interagency-fire-perimeters/about"
+
+  - name: california_zip_codes
+    description: >
+      Derived from the California state geospatial portal, this seed encapsulates the "California Zip Codes" dataset.
+      Geometries have been simplified to ensure WKT strings are below the Python import limit.
+    url: "https://gis.data.ca.gov/datasets/CDEGIS::california-zip-codes/about"
+
+  - name: maximum_extent_evacuation_zones
+    description: >
+      Based on the "Maximum Extent Evacuation Zones LA County Fires 2025" dataset from LA County's ArcGIS Hub, this seed
+      defines the maximum extent area of Genasys zones that received evacuation orders or warnings during the LA County
+      January 2025 fires. Geometries have been simplified to ensure WKT strings are below the Python import limit.
+    url: "https://hub.arcgis.com/datasets/lacounty::maximum-extent-evacuation-zones-la-county-fires-2025/about"
+
+  - name: TEST_PARTICIPANTS
+    description: >
+      Contains participant IDs that are known to be from test accounts and should be excluded from analysis.

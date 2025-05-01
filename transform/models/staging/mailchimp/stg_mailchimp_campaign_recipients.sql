@@ -1,26 +1,26 @@
 with
 lists as (
-    select * from {{ ref('stg_mailchimp_list_filter')}}
+    select * from {{ ref('stg_mailchimp_list_filter') }}
 ),
 
 campaigns as (
     select
-        id as campaign_id,
-        type,
-        create_time,
-        archive_url,
-        status,
-        send_time,
-        content_type,
-        list_id,
-        title,
-        subject_line,
-        from_name,
-        template_id
-    from {{ source('MAILCHIMP','CAMPAIGN') }}
+        campaign.id as campaign_id,
+        campaign.type,
+        campaign.create_time,
+        campaign.archive_url,
+        campaign.status,
+        campaign.send_time,
+        campaign.content_type,
+        campaign.list_id,
+        campaign.title,
+        campaign.subject_line,
+        campaign.from_name,
+        campaign.template_id
+    from {{ source('MAILCHIMP','CAMPAIGN') }} as campaign
     where
-        list_id in (select list_id from lists)
-        and _fivetran_deleted = FALSE
+        campaign.list_id in (select lists.list_id from lists)
+        and campaign._fivetran_deleted = FALSE
 
 ),
 
