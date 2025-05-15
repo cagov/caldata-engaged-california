@@ -1,0 +1,9 @@
+name: app_environment
+channels:
+  - snowflake
+dependencies:
+  - bertopic=*
+  - hdbscan=*
+  - scikit-learn=*
+  - sentence-transformers=*
+  - umap-learn=*
