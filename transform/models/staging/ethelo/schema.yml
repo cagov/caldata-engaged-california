@@ -95,13 +95,13 @@ models:
       - name: state
         description: ""
       - name: population
-        description: ""
+        description: "non-authoritative estimate of population"
       - name: pop_sqmi
-        description: ""
+        description: "non-authoritative estimate of population per square mile"
       - name: sqmi
         description: ""
       - name: wkt_geometry
-        description: ""
+        description: "the WKT (Well Known Text) string of the ZIP code boundary"
       - name: zip_code_geography
         description: ""
 
