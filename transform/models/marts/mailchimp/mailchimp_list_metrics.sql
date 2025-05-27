@@ -9,7 +9,8 @@ subs as (
         list_name,
         subscribe_status as value,
         'subscribe status' as metric,
-        count(distinct unique_email_id) as number_unique_emails
+        count(distinct unique_email_id) as number_unique_emails,
+        max(_fivetran_synced) as max_fivetran_sync_date
     from list
     group by all
 ),
@@ -19,7 +20,8 @@ source as (
         list_name,
         source as value,
         'subscriber source' as metric,
-        count(distinct unique_email_id) as number_unique_emails
+        count(distinct unique_email_id) as number_unique_emails,
+        max(_fivetran_synced) as max_fivetran_sync_date
     from list
     group by all
 
@@ -30,7 +32,8 @@ unsubs as (
         list_name,
         unsubscribe_reason as value,
         'unsubscribe reason' as metric,
-        count(distinct unique_email_id) as number_unique_emails
+        count(distinct unique_email_id) as number_unique_emails,
+        max(_fivetran_synced) as max_fivetran_sync_date
     from list
     where subscribe_status = 'unsubscribed'
     group by all

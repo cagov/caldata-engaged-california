@@ -23,8 +23,9 @@ select
     campaign_members.*,
     campaign_actions.action,
     campaign_actions.bounce_type,
-    campaign_actions.timestamp,
-    campaign_actions.url
+    campaign_actions.timestamp as action_timestamp,
+    campaign_actions.url,
+    campaign_actions._fivetran_synced
 
 from campaign_members
 left join campaign_actions
