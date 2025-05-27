@@ -12,18 +12,20 @@ interests as (
     select * from {{ ref('stg_mailchimp_interest_members') }}
 ),
 
---convert segment components (e.g. interests, tags) into binary for easy segment building
+--define any segment components (e.g. interests, tags) here:
 segment_components as (
     select
         subscribers.list_name,
         subscribers.unique_email_id,
+        subscribers._fivetran_synced,
         case interests.interest_name
             when 'Los Angeles fires recovery: Palisades' then 'palisades'
             when 'Los Angeles fires recovery: Eaton' then 'eaton'
             when 'Future topics' then 'future'
+            else 'no-interest'
         end as segment
     from subscribers
-    inner join interests
+    left join interests --not all subscribers have an interest, we want to count the ones that don't too
         on subscribers.member_id = interests.member_id
 ),
 
@@ -33,7 +35,8 @@ basic_segments as (
         unique_email_id,
         listagg(distinct segment, '_') within group (
             order by segment
-        ) as segments
+        ) as segments,
+        max(_fivetran_synced) as max_fivetran_sync_date
     from segment_components
     group by unique_email_id
 )
