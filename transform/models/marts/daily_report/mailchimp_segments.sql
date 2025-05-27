@@ -11,8 +11,8 @@ select
         segments like '%future%'
         and segments not like '%palisades%'
         and segments not like '%eaton%'
-        ) then total_subscribers
-        else 0 end) as future_topics_only,
-    sum(case when segments like '%no-interest%' then total_subscribers else 0 end) as no_interest_total,
+    ) then total_subscribers
+    else 0 end) as future_topics_only,
+    sum(case when segments like '%no-interest%' then total_subscribers else 0 end) as no_interest_total
 
 from {{ ref('mailchimp_subscribers_by_segment') }}
