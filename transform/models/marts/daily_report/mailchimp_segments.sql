@@ -13,6 +13,7 @@ select
         and segments not like '%eaton%'
     ) then total_subscribers
     else 0 end) as future_topics_only,
-    sum(case when segments like '%no-interest%' then total_subscribers else 0 end) as no_interest_total
+    sum(case when segments like '%no-interest%' then total_subscribers else 0 end) as no_interest_total,
+    max(max_fivetran_sync_date) as max_fivetran_sync_date
 
 from {{ ref('mailchimp_subscribers_by_segment') }}
