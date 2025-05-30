@@ -11,7 +11,8 @@ WITH source_comments AS (
         posted_on,
         reply_count,
         flag_count,
-        like_count
+        like_count,
+        _fivetran_synced
     FROM {{ source('ETHELO', 'COMMENTS') }}
 
 ),
@@ -36,7 +37,8 @@ final AS (
         a.posted_on,
         a.reply_count,
         a.flag_count,
-        a.like_count
+        a.like_count,
+        a._fivetran_synced
 
     FROM source_comments AS a
     LEFT JOIN seed_test_participants AS b
