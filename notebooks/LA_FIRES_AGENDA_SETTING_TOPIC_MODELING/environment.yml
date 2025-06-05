@@ -3,7 +3,9 @@ channels:
   - snowflake
 dependencies:
   - bertopic=*
+  - gensim=*
   - hdbscan=*
+  - optuna=*
   - scikit-learn=*
   - sentence-transformers=*
   - umap-learn=*
