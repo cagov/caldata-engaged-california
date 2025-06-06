@@ -6,6 +6,7 @@
 
 with subscribers as (
     select * from {{ ref('stg_mailchimp_list_members') }}
+    where subscribe_status = 'subscribed' --only include subscribed members
 ),
 
 interests as (
