@@ -1,7 +1,6 @@
 SELECT
     z.zip_code,
     z.po_name AS zip_name,
-    z.population,
     z.sqmi AS zip_area_sqmiles,
     z.zip_code_geography,
     -- Use COALESCE to get the primary fire name or the fire name from the perimeter data

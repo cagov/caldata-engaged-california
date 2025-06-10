@@ -1,0 +1,132 @@
+version: 2
+
+models:
+  - name: int_building_damage_by_zip
+    description: "Counts buildings by damage category per ZIP code."
+    columns:
+      - name: zip_code
+        description: "Five‑digit ZIP code."
+      - name: destroyed_buildings
+        description: "Number of buildings with >50% destruction."
+      - name: major_damage_buildings
+        description: "Number of buildings with 26–50% damage."
+      - name: minor_damage_buildings
+        description: "Number of buildings with 10–25% damage."
+      - name: affected_buildings
+        description: "Number of buildings with 1–9% damage."
+      - name: any_damage_buildings
+        description: "Total number of buildings with any damage."
+
+  - name: int_evac_zone_overlap_by_zip
+    description: "Calculates evacuation order/warning area and percentage overlap by ZIP."
+    columns:
+      - name: zip_code
+        description: "Five‑digit ZIP code."
+      - name: zip_name
+        description: "Place name for the ZIP code."
+      - name: zip_area_sqmiles
+        description: "Total ZIP area in square miles."
+      - name: evac_ordr_sqmiles
+        description: "Area under evacuation order in this ZIP (sq miles)."
+      - name: evac_ordr_pct_zip
+        description: "Percent of ZIP under evacuation order."
+      - name: evac_wrn_sqmiles
+        description: "Area under evacuation warning in this ZIP (sq miles)."
+      - name: evac_wrn_pct_zip
+        description: "Percent of ZIP under evacuation warning."
+
+  - name: int_fire_perimeter_overlap_by_zip
+    description: "Selects the largest fire perimeter overlap per ZIP, with fire metadata."
+    columns:
+      - name: zip_code
+        description: "Five‑digit ZIP code."
+      - name: zip_name
+        description: "Place name for the ZIP code."
+      - name: fire_name
+        description: "Name of the fire incident."
+      - name: fire_discovery_datetime
+        description: "Timestamp when the fire was discovered."
+      - name: fire_acres
+        description: "Total acres burned by the incident."
+      - name: zip_area_sqmiles
+        description: "Total ZIP area in square miles."
+      - name: overlap_area_sqmiles
+        description: "Overlap area between fire perimeter and ZIP (sq miles)."
+      - name: percent_of_zip_affected
+        description: "Percent of ZIP area affected by this fire."
+
+  - name: int_impact_by_zip
+    description: "Aggregates fire, evacuation, and building damage metrics per ZIP code."
+    columns:
+      - name: zip_code
+        description: "Five‑digit ZIP code."
+      - name: zip_name
+        description: "Place name for the ZIP code."
+      - name: zip_area_sqmiles
+        description: "Total ZIP area in square miles."
+      - name: zip_code_geography
+        description: "Geography object for the ZIP code."
+      - name: fire_name
+        description: "Primary fire incident name for the ZIP."
+      - name: fire_discovery_datetime
+        description: "Timestamp when the primary fire was discovered."
+      - name: fire_acres
+        description: "Acres burned by the primary fire."
+      - name: fire_overlap_sqmiles
+        description: "Overlap area between primary fire and ZIP (sq miles)."
+      - name: fire_percent_of_zip
+        description: "Percent of ZIP area affected by primary fire."
+      - name: evac_ordr_sqmiles
+        description: "Area under evacuation order in this ZIP (sq miles)."
+      - name: evac_ordr_pct_zip
+        description: "Percent of ZIP under evacuation order."
+      - name: evac_wrn_sqmiles
+        description: "Area under evacuation warning in this ZIP (sq miles)."
+      - name: evac_wrn_pct_zip
+        description: "Percent of ZIP under evacuation warning."
+      - name: destroyed_buildings
+        description: "Number of buildings with >50% destruction."
+      - name: major_damage_buildings
+        description: "Number of buildings with 26–50% damage."
+      - name: minor_damage_buildings
+        description: "Number of buildings with 10–25% damage."
+      - name: affected_buildings
+        description: "Number of buildings with 1–9% damage."
+      - name: any_damage_buildings
+        description: "Total number of buildings with any damage."
+
+  - name: int_participant_perspective_and_priority
+    description: "Unpivots participants’ recovery perspective and priority into long format."
+    columns:
+      - name: participant
+        description: "Participant identifier."
+      - name: target
+        description: "Type: 'Main Recovery Perspective' or 'Main Recovery Priority'."
+      - name: content
+        description: "Text content of the perspective or priority."
+
+  - name: int_primary_fire_by_zip
+    description: "Identifies each ZIP’s primary fire based on maximum evacuation overlap."
+    columns:
+      - name: zip_code
+        description: "Five‑digit ZIP code."
+      - name: primary_fire
+        description: "Name of the fire with highest evacuation order overlap."
+
+  - name: int_recent_fire_perimeters
+    description: "Filters recent large fire perimeters (>=2024‑11‑01, >40 acres)."
+    columns:
+      - name: NAME
+        description: "Fire incident name."
+      - name: FIRE_DISCOVERY_DATETIME
+        description: "Timestamp when fire was discovered."
+      - name: CONTAINMENT_DATETIME
+        description: "Timestamp when fire was contained."
+      - name: CONTROL_DATETIME
+        description: "Timestamp when fire was controlled."
+      - name: FIRE_OUT_DATETIME
+        description: "Timestamp when fire was declared out."
+      - name: ACRES
+        description: "Reported acres burned."
+      - name: PERIMETER_GEOGRAPHY
+        description: "Geography object of the fire perimeter."
