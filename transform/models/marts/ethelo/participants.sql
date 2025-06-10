@@ -36,7 +36,8 @@ select
     b.nhpi_detailed,
     b.nhpi_writein,
     b.white_detailed,
-    b.white_writein
+    b.white_writein,
+    a._fivetran_synced
 from {{ ref('stg_participants') }} as a
 left join {{ ref('stg_survey') }} as b on a.participant_id = b.participant_id
 left join {{ ref('int_impact_by_zip') }} as d on b.fire_impacted_zip_clean = d.zip_code

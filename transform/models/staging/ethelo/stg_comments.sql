@@ -1,3 +1,4 @@
+
 SELECT
     a.comment_id,
     a.topic,

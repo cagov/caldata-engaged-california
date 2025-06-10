@@ -32,11 +32,15 @@ models:
       +materialized: view
       mailchimp:
         +schema: mailchimp
+      ethelo:
+        +schema: ethelo
 
     intermediate:
       +materialized: view
       mailchimp:
         +schema: mailchimp
+      ethelo:
+        +schema: ethelo
 
     marts:
       +materialized: table
@@ -45,3 +49,5 @@ models:
         +schema: mailchimp
       daily_report:
         +schema: daily_report
+      ethelo:
+        +schema: ethelo
