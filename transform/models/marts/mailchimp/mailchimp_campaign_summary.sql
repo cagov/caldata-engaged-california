@@ -5,6 +5,7 @@ with campaigns as (
 
 select
     campaign_id,
+    type as campaign_type,
     title,
     subject_line,
     archive_url,
@@ -34,6 +35,7 @@ select
                 then unique_email_id
         end
     )
-        as unique_bounces
+        as unique_bounces,
+    max(_fivetran_synced) as max_fivetran_sync_date
 from campaigns
 group by all
