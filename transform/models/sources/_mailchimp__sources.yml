@@ -40,7 +40,8 @@ sources:
           - name: UNSUBSCRIBE_REASON
           - name: MERGE_EVACZONE
             description: |
-              A custom merge field for the subscriber that corresponds to the radio button options for a custom email sign up form.
+              A custom merge field for the subscriber that corresponds to the radio
+              button options for a custom email sign up form.
           - name: _FIVETRAN_SYNCED
       - name: INTEREST
         description: Key table of all interests in Mailchimp

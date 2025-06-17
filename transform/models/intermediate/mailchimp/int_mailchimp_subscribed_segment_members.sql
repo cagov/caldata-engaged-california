@@ -14,9 +14,13 @@ interests as (
 ),
 
 member_merge_fields as (
-    select id, merge_evaczone from RAW_ENGCA_PRD.MAILCHIMP.MEMBER
-    where merge_evaczone is not null --only include members with an evaczone merge field value
-    and merge_evaczone != ''
+    select
+        id,
+        merge_evaczone
+    from raw_engca_prd.mailchimp.member
+    where
+        merge_evaczone is not null --only include members with an evaczone merge field value
+        and merge_evaczone != ''
 ),
 
 --define any segment components (e.g. interests, tags) here:
@@ -25,19 +29,21 @@ segment_components as (
         subscribers.list_name,
         subscribers.unique_email_id,
         subscribers._fivetran_synced,
-        case 
+        case
             when interests.interest_name = 'Los Angeles fires recovery: Palisades' then 'palisades'
             when interests.interest_name = 'Los Angeles fires recovery: Eaton' then 'eaton'
             when interests.interest_name = 'Future topics' then 'future'
             when member_merge_fields.merge_evaczone = 'Yes, I was in the Eaton fire evacuation zone' then 'eatonphase2'
-            when member_merge_fields.merge_evaczone = 'Yes, I was in the Palisades fire evacuation zone' then 'palisadesphase2'
+            when
+                member_merge_fields.merge_evaczone = 'Yes, I was in the Palisades fire evacuation zone'
+                then 'palisadesphase2'
             when member_merge_fields.merge_evaczone = 'No' then 'nofirephase2'
             else 'nosegment'
         end as segment
     from subscribers
     left join interests --not all subscribers have an interest, we want to count the ones that don't too
         on subscribers.member_id = interests.member_id
-    left join member_merge_fields 
+    left join member_merge_fields
         on subscribers.member_id = member_merge_fields.id
 
 

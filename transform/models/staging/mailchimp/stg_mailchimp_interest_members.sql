@@ -39,4 +39,3 @@ select
 from interest
 inner join interest_member
     on interest.interest_id = interest_member.interest_id
-    
