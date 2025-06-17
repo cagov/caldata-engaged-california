@@ -1,4 +1,4 @@
---ODI may define segments using a combination of Interests and Tags.
+--ODI may define segments using a combination of Interests, Tags, Merge Fields, and more.
 --All segments built in Mailchimp Paid accounts are 'dynamic' segments, which are unavailable
 --to pull directly from the API. So we have to recreate them by audience definition here.
 
