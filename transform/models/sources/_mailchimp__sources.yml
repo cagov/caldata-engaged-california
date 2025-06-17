@@ -38,6 +38,9 @@ sources:
               Mailchimp's best guess at the most recent email client or device type the member
               used to interact with an email.
           - name: UNSUBSCRIBE_REASON
+          - name: MERGE_EVACZONE
+            description: |
+              A custom merge field for the subscriber that corresponds to the radio button options for a custom email sign up form.
           - name: _FIVETRAN_SYNCED
       - name: INTEREST
         description: Key table of all interests in Mailchimp
