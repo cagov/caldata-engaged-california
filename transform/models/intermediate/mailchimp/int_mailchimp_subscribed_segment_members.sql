@@ -17,10 +17,10 @@ member_merge_fields as (
     select
         id,
         merge_evaczone
-    from raw_engca_prd.mailchimp.member
+    from {{ source('MAILCHIMP', 'MEMBER') }}
     where
-        merge_evaczone is not null --only include members with an evaczone merge field value
-        and merge_evaczone != ''
+        merge_evaczone is not null
+        and merge_evaczone != '' --only include members with an evaczone merge field value
 ),
 
 --define any segment components (e.g. interests, tags) here:
