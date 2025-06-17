@@ -31,7 +31,8 @@ interest_segments as (
             when interests.interest_name = 'Los Angeles fires recovery: Palisades' then 'palisades'
             when interests.interest_name = 'Los Angeles fires recovery: Eaton' then 'eaton'
             when interests.interest_name = 'Future topics' then 'future'
-            else 'nointerest' end as segment
+            else 'nointerest'
+        end as segment
     from subscribers
     left join interests --not all subscribers have an interest, we want to count the ones that don't too
         on subscribers.member_id = interests.member_id
@@ -43,12 +44,14 @@ mergefield_segments as (
         subscribers.list_name,
         subscribers.unique_email_id,
         subscribers._fivetran_synced,
-        case member_merge_fields.merge_evaczone
-            'Yes, I was in the Eaton fire evacuation zone' then 'eatonphase2'
-            'Yes, I was in the Palisades fire evacuation zone' then 'palisadesphase2'
-            'No' then 'nofirephase2'
-            end as segment -- currently, this works because users MUST select an option
-            --and can ONLY select one value in this field
+        case
+            when member_merge_fields.merge_evaczone = 'Yes, I was in the Eaton fire evacuation zone' then 'eatonphase2'
+            when
+                member_merge_fields.merge_evaczone = 'Yes, I was in the Palisades fire evacuation zone'
+                then 'palisadesphase2'
+            when member_merge_fields.merge_evaczone = 'No' then 'nofirephase2'
+        end as segment -- currently, this works because users MUST select an option
+    --and can ONLY select one value in this field
     from subscribers
     inner join member_merge_fields --only include members with a merge field value,
     --since the interests cte already captures those without a value
