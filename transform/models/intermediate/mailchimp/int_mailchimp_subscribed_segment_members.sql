@@ -2,8 +2,6 @@
 --All segments built in Mailchimp Paid accounts are 'dynamic' segments, which are unavailable
 --to pull directly from the API. So we have to recreate them by audience definition here.
 
---Right now we are only using Interests to define segments, so we just need interests for now.
-
 with subscribers as (
     select * from {{ ref('stg_mailchimp_list_members') }}
     where subscribe_status = 'subscribed' --only include subscribed members
@@ -61,7 +59,7 @@ segment_components as (
     select * from interest_segments
     union all
     select * from mergefield_segments
-)
+),
 
 --create a string that captures all segments a member is a part of:
 basic_segments as (
