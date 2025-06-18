@@ -28,9 +28,9 @@ interest_segments as (
         subscribers.unique_email_id,
         subscribers._fivetran_synced,
         case
-            when interests.interest_name = 'Los Angeles fires recovery: Palisades' then 'palisades'
-            when interests.interest_name = 'Los Angeles fires recovery: Eaton' then 'eaton'
-            when interests.interest_name = 'Future topics' then 'future'
+            when interests.interest_name = 'Los Angeles fires recovery: Palisades' then 'palisadesphase1'
+            when interests.interest_name = 'Los Angeles fires recovery: Eaton' then 'eatonphase1'
+            when interests.interest_name = 'Future topics' then 'futurephase1'
             else 'nointerest'
         end as segment
     from subscribers
