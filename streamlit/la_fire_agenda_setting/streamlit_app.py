@@ -17,6 +17,7 @@ MODEL_COSTS = {
     'snowflake-llama-3.1-405b': 3.792,
     'snowflake-llama-3.3-70b': 1.1455
 }
+#test change
 
 # Helper function to apply filter with "No Response" handling
 def apply_filter_with_nulls(df, column, selected_values):
