@@ -8,8 +8,6 @@ models:
         description: ""
       - name: zip_name
         description: ""
-      - name: population
-        description: ""
       - name: zip_area_sqmiles
         description: ""
       - name: zip_code_geography
@@ -112,22 +110,22 @@ models:
         description: ""
 
   - name: recent_fire_perimeters
-    description: ""
+    description: "Large fire perimeters (>=2024‑11‑01, >40 acres) around the time of the LA fires."
     columns:
       - name: Name
-        description: ""
+        description: "Fire incident name."
       - name: Fire_discovery_datetime
-        description: ""
+        description: "Timestamp when fire was discovered"
       - name: Containment_datetime
-        description: ""
+        description: "Timestamp when fire was contained."
       - name: Control_datetime
-        description: ""
+        description: "Timestamp when fire was controlled."
       - name: Fire_out_datetime
-        description: ""
+        description: "Timestamp when fire was declared out."
       - name: Acres
-        description: ""
+        description: "Reported acres burned."
       - name: Perimeter_geography
-        description: ""
+        description: "Geography object of the fire perimeter."
 
   - name: race_ethnicity_alone_or_combo
     description: ""
