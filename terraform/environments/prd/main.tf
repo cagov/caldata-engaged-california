@@ -81,7 +81,7 @@ provider "snowflake" {
 ############################
 
 module "elt" {
-  source = "github.com/cagov/data-infrastructure.git//terraform/snowflake/modules/elt?ref=4086e1c"
+  source = "github.com/cagov/data-infrastructure.git//terraform/snowflake/modules/elt?ref=abe430fd"
   providers = {
     snowflake.accountadmin  = snowflake.accountadmin,
     snowflake.securityadmin = snowflake.securityadmin,
