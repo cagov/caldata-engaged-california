@@ -1,0 +1,10 @@
+name: app_environment
+channels:
+  - snowflake
+dependencies:
+  - bertopic=*
+  - hdbscan=*
+  - optuna=*
+  - scikit-learn=*
+  - snowflake-ml-python=*
+  - umap-learn=*
