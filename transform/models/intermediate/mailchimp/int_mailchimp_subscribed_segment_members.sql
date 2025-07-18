@@ -45,9 +45,9 @@ mergefield_segments as (
         subscribers.unique_email_id,
         subscribers._fivetran_synced,
         case
-            when member_merge_fields.merge_evaczone = 'Yes, I was in the Eaton fire evacuation zone' then 'eatonphase2'
+            when member_merge_fields.merge_evaczone = 'Yes, in the Eaton fire evacuation zone' then 'eatonphase2'
             when
-                member_merge_fields.merge_evaczone = 'Yes, I was in the Palisades fire evacuation zone'
+                member_merge_fields.merge_evaczone = 'Yes, in the Palisades fire evacuation zone'
                 then 'palisadesphase2'
             when member_merge_fields.merge_evaczone = 'No' then 'nofirephase2'
         end as segment -- currently, this works because users MUST select an option
