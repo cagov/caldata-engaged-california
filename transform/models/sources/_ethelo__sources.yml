@@ -4,8 +4,8 @@ sources:
   - name: ETHELO
     database: RAW_ENGCA_PRD
     schema: AIRTABLE_ENGAGED_CA___LOS_ANGELES_FIRES_AGENDA_SETTING___SNOWFLAKE_APPZIJKCI0JPBHDTR
-    description: | 
-      Ethelo data for the LA Fires Agenda Setting engagement (Feb - May 2025) manually loaded into Airtable, 
+    description: |
+      Ethelo data for the LA Fires Agenda Setting engagement (Feb - May 2025) manually loaded into Airtable,
       then synced to Snowflake via Fivetran.
     tables:
       - name: AVERAGE_WEIGHTS
@@ -95,8 +95,8 @@ sources:
           - name: _FIVETRAN_SYNCED
   - name: ETHELO_LA_DELIBERATION
     schema: AIRTABLE_SENSITIVE___LOS_ANGELES_FIRES_RECOVERY_DELIBERATION___SNOWFLAKE_DATA_APPKMTPH1VALYNZLY
-    description: | 
-      Ethelo data for the LA Fires Deliberation engagement (July 2025 -) manually loaded into Airtable, 
+    description: |
+      Ethelo data for the LA Fires Deliberation engagement (July 2025 -) manually loaded into Airtable,
       then synced to Snowflake via Fivetran.
     tables:
       - name: AVERAGE_WEIGHTS
@@ -107,10 +107,10 @@ sources:
           - name: _FIVETRAN_SYNCED
       - name: BETA_TESTERS
         description: |
-          Invited users into the Ethelo platform for testing and feedback. 
+          Invited users into the Ethelo platform for testing and feedback.
           Many of these users are ODI or GovOps staff who should be filtered out of most data reports.
         columns:
-          - name: ORGANIZATION 
+          - name: ORGANIZATION
             description: |
               An organization tag for the beta tester, if applicable.
           - name: ID
@@ -220,4 +220,3 @@ sources:
           - name: SOMEWHAT_SUPPORTIVE
           - name: CONFLICT
           - name: OPTION
-
