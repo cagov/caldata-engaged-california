@@ -105,6 +105,9 @@ sources:
           - name: TOPIC
           - name: _FIVETRAN_SYNCED
       - name: BETA_TESTERS
+        description: |
+          Invited users into the Ethelo platform for testing and feedback. 
+          Many of these users are ODI or GovOps staff who should be filtered out of most data reports.
         columns:
           - name: ORGANIZATION 
             description: |
