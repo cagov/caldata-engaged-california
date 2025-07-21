@@ -93,6 +93,7 @@ sources:
           - name: TOPIC
           - name: TOTAL_VOTES
           - name: _FIVETRAN_SYNCED
+  - name: ETHELO_LA_DELIBERATION
     schema: AIRTABLE_SENSITIVE___LOS_ANGELES_FIRES_RECOVERY_DELIBERATION___SNOWFLAKE_DATA_APPKMTPH1VALYNZLY
     description: | 
       Ethelo data for the LA Fires Deliberation engagement (July 2025 -) manually loaded into Airtable, 
