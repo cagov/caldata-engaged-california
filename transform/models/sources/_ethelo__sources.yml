@@ -4,7 +4,9 @@ sources:
   - name: ETHELO
     database: RAW_ENGCA_PRD
     schema: AIRTABLE_ENGAGED_CA___LOS_ANGELES_FIRES_AGENDA_SETTING___SNOWFLAKE_APPZIJKCI0JPBHDTR
-    description: Ethelo data loaded into Airtable, then synced to Snowflake via Fivetran
+    description: |
+      Ethelo data for the LA Fires Agenda Setting engagement (Feb - May 2025) manually loaded into Airtable,
+      then synced to Snowflake via Fivetran.
     tables:
       - name: AVERAGE_WEIGHTS
         columns:
@@ -91,3 +93,130 @@ sources:
           - name: TOPIC
           - name: TOTAL_VOTES
           - name: _FIVETRAN_SYNCED
+  - name: ETHELO_LA_DELIBERATION
+    schema: AIRTABLE_SENSITIVE___LOS_ANGELES_FIRES_RECOVERY_DELIBERATION___SNOWFLAKE_DATA_APPKMTPH1VALYNZLY
+    description: |
+      Ethelo data for the LA Fires Deliberation engagement (July 2025 -) manually loaded into Airtable,
+      then synced to Snowflake via Fivetran.
+    tables:
+      - name: AVERAGE_WEIGHTS
+        columns:
+          - name: AVERAGE_WEIGHTING
+          - name: ID
+          - name: TOPIC
+          - name: _FIVETRAN_SYNCED
+      - name: BETA_TESTERS
+        description: |
+          Invited users into the Ethelo platform for testing and feedback.
+          Many of these users are ODI or GovOps staff who should be filtered out of most data reports.
+        columns:
+          - name: ORGANIZATION
+            description: |
+              An organization tag for the beta tester, if applicable.
+          - name: ID
+          - name: POLICY_COMMUNITY
+            description: |
+              The role or community the beta tester has in relation to EngagedCA.
+          - name: _FIVETRAN_SYNCED
+      - name: COMMENTS
+        columns:
+          - name: COMMENT_ID
+          - name: COMMENT_CONTENT
+          - name: FLAG_COUNT
+          - name: ID
+          - name: LIKE_COUNT
+          - name: POSTED_BY_ID
+          - name: POSTED_ON
+          - name: PRIVACY
+          - name: REPLY_COUNT
+          - name: REPLY_TO_ID
+          - name: TARGET
+          - name: TARGET_DESCRIPTION
+          - name: TOPIC
+          - name: TYPE
+          - name: _FIVETRAN_SYNCED
+          - name: ODI_LAST_MODIFIED
+      - name: PARTICIPANTS
+        columns:
+          - name: COMMENT_COUNT
+          - name: COMPLETION
+          - name: ID
+          - name: ID_NUMBER
+          - name: INFLUENCE
+          - name: JOINED_ON
+          - name: LAST_INVITE_SENT
+          - name: LAST_SIGN_IN
+          - name: ODI_FIRST_INVITE_SENT
+          - name: ODI_COMMENTS
+          - name: ODI_COMMENT_COUNT_CURRENT
+          - name: ODI_LAST_MODIFIED
+          - name: ROLES
+          - name: STATUS
+          - name: SUCCESSFUL_REINVITE
+          - name: SURVEY_COMPLETED
+          - name: VOTING_COMPLETE
+          - name: _FIVETRAN_SYNCED
+      - name: REMOVED_COMMENTS
+        columns:
+          - name: COMMENT_ID
+          - name: CREATED
+          - name: STATUS
+          - name: ID
+          - name: _FIVETRAN_SYNCED
+      - name: SURVEY_BY_QUESTION
+        columns:
+          - name: ANSWER
+          - name: DATE
+          - name: GROUP
+          - name: ID
+          - name: INFLUENCE
+          - name: JOINED_DATE
+          - name: PARTICIPANT
+          - name: QUESTION
+          - name: _FIVETRAN_SYNCED
+      - name: SURVEY_TOTALS
+        columns:
+          - name: ANSWER_CHOICE
+          - name: CHOSEN_BY_USERS
+          - name: ID
+          - name: ID_NUMBER
+          - name: ORDER
+          - name: QUESTION
+          - name: QUESTION_GROUP
+          - name: _FIVETRAN_SYNCED
+      - name: TOPIC
+        columns:
+          - name: ID
+          - name: NAME
+          - name: TOPIC_OPTIONS
+          - name: _FIVETRAN_SYNCED
+      - name: TOPIC_OPTIONS
+        columns:
+          - name: ID
+          - name: TOPICS
+          - name: DESCRIPTION
+          - name: TARGET
+          - name: _FIVETRAN_SYNCED
+      - name: VOTING_SUMMARY
+        columns:
+          - name: ID
+          - name: _FIVETRAN_SYNCED
+          - name: SUPPORTIVE
+          - name: OPPOSED
+          - name: STRONGLY_OPPOSED
+          - name: APPROVAL
+          - name: IN_BEST_SCENARIO
+          - name: NEUTRAL
+          - name: CONSENSUS
+          - name: TOTAL_VOTES
+          - name: STRONGLY_SUPPORTIVE
+          - name: SOMEWHAT_OPPOSED
+          - name: NEGATIVE_VOTES
+          - name: AVERAGE_WEIGHTING
+          - name: TOPIC
+          - name: POSITIVE_VOTES
+          - name: SUPPORT
+          - name: ABSTAIN_VOTES
+          - name: SOMEWHAT_SUPPORTIVE
+          - name: CONFLICT
+          - name: OPTION
