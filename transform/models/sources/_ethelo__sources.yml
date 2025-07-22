@@ -94,7 +94,8 @@ sources:
           - name: TOTAL_VOTES
           - name: _FIVETRAN_SYNCED
   - name: ETHELO_LA_DELIBERATION
-    schema: AIRTABLE_SENSITIVE___LOS_ANGELES_FIRES_RECOVERY_DELIBERATION___SNOWFLAKE_DATA_APPKMTPH1VALYNZLY
+    schema: |
+      AIRTABLE_SENSITIVE_PII___LOS_ANGELES_FIRES_RECOVERY_DELIBERATION___SNOWFLAKE_SYNC___ADMIN_ONLY_APPKMTPH1VALYNZLY
     description: |
       Ethelo data for the LA Fires Deliberation engagement (July 2025 -) manually loaded into Airtable,
       then synced to Snowflake via Fivetran.
@@ -136,6 +137,36 @@ sources:
           - name: TYPE
           - name: _FIVETRAN_SYNCED
           - name: ODI_LAST_MODIFIED
+      - name: INVITATION_EVENTS
+        description: derived table in Airtable that tracks the history of invitations sent to participants.
+        columns:
+          - name: ID
+          - name: INVITATION_ACTIVITY
+          - name: PARTICIPANT_ID
+          - name: FIRST_INVITATION_BATCH
+          - name: REINVITATION_BATCH
+          - name: _FIVETRAN_SYNCED
+      - name: MODERATION_STATUSES
+        description: |
+          Table uploaded from the Moderation Coda that tracks the moderation status of comments.
+          This is used to determine if a comment has been approved or removed by moderators.
+          It can also be used to track comments that have not yet been moderated.
+        columns:
+          - name: ID
+          - name: AIRTABLE_RECORD_CREATED
+            description: |
+              The date and time the record was uploaded to Airtable.
+          - name: AIRTABLE_LAST_MODIFIED
+            description: |
+              The date and time the record was last modified Airtable.
+          - name: CODA_STATUS_MODIFIED_ON
+            description: |
+              The date and time the record was last modified in Coda.
+          - name: STATUS
+            description: |
+              The moderation status of the comment.
+          - name: COMMENT_ID
+          - name: _FIVETRAN_SYNCED
       - name: PARTICIPANTS
         columns:
           - name: COMMENT_COUNT
