@@ -1,0 +1,116 @@
+version: 2
+
+models:
+  - name: stg_ethelo_la_deliberation_participants
+    description: "Staging participants source, excluding test accounts."
+    columns:
+      - name: participant_id
+        description: ""
+      - name: first_name
+        description: ""
+      - name: last_name
+        description: ""
+      - name: email
+        description: ""
+      - name: phone_number
+        description: ""
+      - name: city
+        description: ""
+      - name: state
+        description: ""
+      - name: zip_code
+        description: ""
+      - name: created_at
+        description: ""
+      - name: updated_at
+        description: ""
+      - name: is_test_account
+        description: "Indicates if the account is a test account."
+        
+  - name: stg_ethelo_la_deliberation_comments
+    description: "Staging comments source, excluding test accounts."
+    columns:
+      - name: comment_id
+        description: ""
+      - name: topic
+        description: ""
+      - name: type
+        description: ""
+      - name: target
+        description: ""
+      - name: posted_by_id
+        description: ""
+      - name: privacy
+        description: ""
+      - name: content
+        description: ""
+      - name: reply_to_id
+        description: ""
+      - name: posted_on
+        description: ""
+      - name: reply_count
+        description: ""
+      - name: flag_count
+        description: ""
+      - name: like_count
+        description: ""
+
+  - name: stg_ethelo_la_deliberation_survey
+    description: "Cleans and enriches survey responses: nullifies empties, extracts zip, derives race."
+    columns:
+      - name: influence_level
+        description: ""
+      - name: participant_id
+        description: ""
+      - name: survey_join_date
+        description: ""
+      - name: civility_pledge_status
+        description: ""
+      - name: discussion_topics
+        description: ""
+      - name: la_recovery_perspective
+        description: ""
+      - name: additional_views
+        description: ""
+      - name: fire_impacted_zip
+        description: ""
+      - name: fire_impacted_zip_clean
+        description: ""
+      - name: recovery_priority
+        description: ""
+      - name: ai_an_writein
+        description: ""
+      - name: moderation_policy_agreement
+        description: ""
+      - name: housing_status
+        description: ""
+      - name: fire_impact_employment
+        description: ""
+      - name: asian_detailed
+        description: ""
+      - name: household_income_pretax
+        description: ""
+      - name: asian_writein
+        description: ""
+      - name: black_detailed
+        description: ""
+      - name: black_writein
+        description: ""
+      - name: hisp_latino_detailed
+        description: ""
+      - name: hisp_latino_writein
+        description: ""
+      - name: mena_detailed
+        description: ""
+      - name: mena_writein
+        description: ""
+      - name: nhpi_detailed
+        description: ""
+      - name: nhpi_writein
+        description: ""
+      - name: white_detailed
+        description: ""
+      - name: white_writein
+        description: ""
+      - name: race_ethnicity
+        description: ""
