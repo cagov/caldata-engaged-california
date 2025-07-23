@@ -10,13 +10,13 @@ WITH source_participants AS (
 
 --List of participant IDs known to be test accounts
 test_participants AS (
-    SELECT array_to_string(participant, ',') as id
+    SELECT array_to_string(participant, ',') AS id
     FROM {{ source('ETHELO_LA_DELIBERATION', 'BETA_TESTERS') }}
 ),
 
 filtered_participants AS (
     SELECT
-        a.id_number as participant_id,
+        a.id_number AS participant_id,
         a.status,
         a.influence,
         a.roles,
@@ -26,7 +26,7 @@ filtered_participants AS (
         a.last_invite_sent,
         a.last_sign_in,
         a.joined_on,
-        a.id as airtable_id,
+        a.id AS airtable_id,
         a._fivetran_synced
     FROM source_participants AS a
     --Remove ODI, GovOps, GO, and Ethelo test accounts by beta_testers list:
