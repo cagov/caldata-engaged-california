@@ -3,6 +3,8 @@ on:
   schedule:
     # Run a nightly job in the 5AM hour
     - cron: "21 12 * * *"
+    # Run a daily job in the 2pm hour
+    - cron: "33 14 * * *"
   # Also allow for manual triggers
   workflow_dispatch:
 
