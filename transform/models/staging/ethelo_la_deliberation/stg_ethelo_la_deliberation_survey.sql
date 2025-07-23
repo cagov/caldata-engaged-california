@@ -10,7 +10,7 @@ participants_filtered AS (
 
 final AS (
     SELECT
-    a.group as survey_group,
+    a."GROUP" as survey_group,
     a.question,
     a.answer, 
     a.participant as participant_id, 
