@@ -1,48 +1,41 @@
+/*This model preps the Participants data from Ethelo by removing all users likely to be ODI staff members,
+moderators, or Ethelo staff.
+*/ 
+
+--Pull all participants from the Participants table in Airtable
 WITH source_participants AS (
     SELECT *
     FROM {{ source('ETHELO_LA_DELIBERATION', 'PARTICIPANTS') }}
-
 ),
 
+--List of participant IDs known to be test accounts
 test_participants AS (
-    --// List of participant IDs known to be test accounts, from the seed file
-    SELECT participant_id
+    SELECT array_to_string(participant, ',') as id
     FROM {{ source('ETHELO_LA_DELIBERATION', 'BETA_TESTERS') }}
-
 ),
-
-
----FILTER ON:
---certain labels in beta testers table
--- Participant-only role in Ethelo
--- Influence > 0 in Ethelo
 
 filtered_participants AS (
-    --// Remove test participants from the source data
     SELECT
-        a.id_number AS participant_id,
+        a.id as airtable_id,
+        a.id_number as participant_id,
         a.status,
-        a.roles,
         a.influence,
-        a.last_invite_sent,
+        a.roles,
         a.voting_complete,
         a.survey_completed,
-        a.completion,
-        a.comment_count,
-        a.joined_on,
+        a.completion, 
+        a.last_invite_sent,
         a.last_sign_in,
-        a.resent_invite,
-        a.successful_reinvite,
+        a.joined_on,
         a._fivetran_synced
     FROM source_participants AS a
-    --// We have some records that are from test accounts that are marked as ['Participant'].
-    --// Remove them via the seed table that identifies them by participant_id
-    LEFT JOIN seed_test_participants AS b
-        ON a.id_number = b.participant_id
-    WHERE
-        b.participant_id IS NULL --// Keep only rows that *don't* match a test participant
-        --// there are some records not in our seed table that are not participants. Remove them as well.
-        AND a.roles = ['Participant']
+    --Remove ODI, GovOps, GO, and Ethelo test accounts by beta_testers list:
+    LEFT JOIN test_participants AS b
+        ON a.id = b.id
+    --Remove any user who has a role in Ethelo other than just 'Participant'
+    WHERE a.roles = ['Participant']
+    --Remove any user whose Influence is set to 0
+    AND a.influence > 0
 )
 
 SELECT * FROM filtered_participants

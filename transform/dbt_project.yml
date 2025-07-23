@@ -34,6 +34,9 @@ models:
         +schema: mailchimp
       ethelo:
         +schema: ethelo
+        +enabled: false 
+      ethelo_la_deliberation:
+        +schema: ethelo_la_deliberation
 
     intermediate:
       +materialized: view
@@ -41,6 +44,7 @@ models:
         +schema: mailchimp
       ethelo:
         +schema: ethelo
+        +enabled: false
 
     marts:
       +materialized: table
@@ -51,3 +55,4 @@ models:
         +schema: daily_report
       ethelo:
         +schema: ethelo
+        +enabled: false 
