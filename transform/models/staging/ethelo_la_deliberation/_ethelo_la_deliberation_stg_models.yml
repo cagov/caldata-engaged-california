@@ -30,51 +30,51 @@ models:
         description: The date the participant joined.
       - name: _fivetran_synced
         description: Last fivetran sync timestamp.
-        
+
   - name: stg_ethelo_la_deliberation_comments
     description: >
-      Comments data with reformatted columns, all values brought in from key tables, and with comments 
+      Comments data with reformatted columns, all values brought in from key tables, and with comments
       from test accounts excluded
     columns:
-    - name: comment_id
-      description: The unique identifier for the comment.
-    - name: reply_to_id
-      description: The identifier for the comment this comment is replying to.
-    - name: comment_content
-      description: The content of the comment.
-    - name: topic
-      description: The topic associated with the comment. Topic is the highest level of organization
-    - name: target
-      description: The target of the comment. Target is the second level of organization for comments.
-    - name: target_description
-      description: A longer description of the target.
-    - name: posted_by_id
-      description: The unique identifier for the participant who posted the comment.
-    - name: posted_on
-      description: The date and time when the comment was posted.
-    - name: reply_count
-      description: "The number of replies to the comment."
-    - name: flag_count
-      description: The number of times the comment has been flagged in Ethelo.
-    - name: like_count
-      description: The number of likes the comment has received.
-    - name: _fivetran_synced
-      description: Last fivetran sync timestamp.
+      - name: comment_id
+        description: The unique identifier for the comment.
+      - name: reply_to_id
+        description: The identifier for the comment this comment is replying to.
+      - name: comment_content
+        description: The content of the comment.
+      - name: topic
+        description: The topic associated with the comment. Topic is the highest level of organization
+      - name: target
+        description: The target of the comment. Target is the second level of organization for comments.
+      - name: target_description
+        description: A longer description of the target.
+      - name: posted_by_id
+        description: The unique identifier for the participant who posted the comment.
+      - name: posted_on
+        description: The date and time when the comment was posted.
+      - name: reply_count
+        description: "The number of replies to the comment."
+      - name: flag_count
+        description: The number of times the comment has been flagged in Ethelo.
+      - name: like_count
+        description: The number of likes the comment has received.
+      - name: _fivetran_synced
+        description: Last fivetran sync timestamp.
 
   - name: stg_ethelo_la_deliberation_survey
     description: Cleans and enriches survey responses -- nullifies empties, extracts zip, derives race.
     columns:
-    - name: survey_group
-      description: The category name for the survey question.
-    - name: question
-      description: The survey question being answered.
-    - name: answer
-      description: The response given to the survey question.
-    - name: participant_id
-      description: The unique identifier for the participant providing the response.
-    - name: response_date
-      description: The date when the survey response was submitted.
-    - name: joined_date
-      description: The date when the participant joined.
-    - name: _fivetran_synced
-      description: Last fivetran sync timestamp.
+      - name: survey_group
+        description: The category name for the survey question.
+      - name: question
+        description: The survey question being answered.
+      - name: answer
+        description: The response given to the survey question.
+      - name: participant_id
+        description: The unique identifier for the participant providing the response.
+      - name: response_date
+        description: The date when the survey response was submitted.
+      - name: joined_date
+        description: The date when the participant joined.
+      - name: _fivetran_synced
+        description: Last fivetran sync timestamp.

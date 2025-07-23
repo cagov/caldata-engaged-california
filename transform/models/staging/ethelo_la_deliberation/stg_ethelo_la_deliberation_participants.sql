@@ -1,6 +1,6 @@
 /*This model preps the Participants data from Ethelo by removing all users likely to be ODI staff members,
 moderators, or Ethelo staff.
-*/ 
+*/
 
 --Pull all participants from the Participants table in Airtable
 WITH source_participants AS (
@@ -22,7 +22,7 @@ filtered_participants AS (
         a.roles,
         a.voting_complete,
         a.survey_completed,
-        a.completion, 
+        a.completion,
         a.last_invite_sent,
         a.last_sign_in,
         a.joined_on,

@@ -31,7 +31,7 @@ seeds:
     #resource-paths
     ethelo_la_agenda_setting:
       +enabled: false
-  
+
 models:
   caldata_engaged_california:
     staging:
@@ -40,7 +40,7 @@ models:
         +schema: mailchimp
       ethelo:
         +schema: ethelo
-        +enabled: false 
+        +enabled: false
       ethelo_la_deliberation:
         +schema: ethelo_la_deliberation
 
@@ -57,10 +57,10 @@ models:
       +database: "{{ env_var('DBT_ANALYTICS_DB', 'ANALYTICS_ENGCA_DEV') }}"
       mailchimp:
         +schema: mailchimp
-        
+
       ethelo:
         +schema: ethelo
-        +enabled: false 
+        +enabled: false
 
       daily_report:
         +schema: daily_report
