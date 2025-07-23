@@ -26,6 +26,12 @@ clean-targets: # directories to be removed by `dbt clean`
   - target
   - dbt_packages
 
+seeds:
+  caldata_engaged_california:
+    #resource-paths
+    ethelo_la_agenda_setting:
+      +enabled: false
+
 models:
   caldata_engaged_california:
     staging:
@@ -34,6 +40,9 @@ models:
         +schema: mailchimp
       ethelo:
         +schema: ethelo
+        +enabled: false
+      ethelo_la_deliberation:
+        +schema: ethelo_la_deliberation
 
     intermediate:
       +materialized: view
@@ -41,13 +50,24 @@ models:
         +schema: mailchimp
       ethelo:
         +schema: ethelo
+        +enabled: false
+      ethelo_la_deliberation:
+        +schema: ethelo_la_deliberation
 
     marts:
       +materialized: table
       +database: "{{ env_var('DBT_ANALYTICS_DB', 'ANALYTICS_ENGCA_DEV') }}"
       mailchimp:
         +schema: mailchimp
-      daily_report:
-        +schema: daily_report
+
       ethelo:
         +schema: ethelo
+        +enabled: false
+
+      ethelo_la_deliberation:
+        +schema: ethelo_la_deliberation
+
+      daily_report:
+        +schema: daily_report
+        ethelo_la_agenda_setting:
+          +enabled: false

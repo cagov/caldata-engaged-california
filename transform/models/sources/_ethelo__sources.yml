@@ -94,6 +94,7 @@ sources:
           - name: TOTAL_VOTES
           - name: _FIVETRAN_SYNCED
   - name: ETHELO_LA_DELIBERATION
+    database: RAW_ENGCA_PRD
     schema: |
       AIRTABLE_SENSITIVE_PII___LOS_ANGELES_FIRES_RECOVERY_DELIBERATION___SNOWFLAKE_SYNC___ADMIN_ONLY_APPKMTPH1VALYNZLY
     description: |
@@ -115,9 +116,9 @@ sources:
             description: |
               An organization tag for the beta tester, if applicable.
           - name: ID
-          - name: POLICY_COMMUNITY
+          - name: PARTICIPANT
             description: |
-              The role or community the beta tester has in relation to EngagedCA.
+              an Airtable cross-reference ID to the PARTICIPANTS table
           - name: _FIVETRAN_SYNCED
       - name: COMMENTS
         columns:
