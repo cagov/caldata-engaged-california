@@ -21,21 +21,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.10"
-      - uses: snok/install-poetry@v1
+          enable-cache: true
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          virtualenvs-path: .venv
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v4
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-      - name: Install dependencies
-        run: poetry install --no-interaction --no-root
+          python-version-file: ".python-version"
       - name: Cleanup after tests
         run: |
-          poetry run python -m jobs.utils.drop_schemas_with_prefix $SNOWFLAKE_DATABASE $SNOWFLAKE_SCHEMA
-          poetry run python -m jobs.utils.drop_schemas_with_prefix $DBT_ANALYTICS_DB $SNOWFLAKE_SCHEMA
+          uv run python -m jobs.utils.drop_schemas_with_prefix $SNOWFLAKE_DATABASE $SNOWFLAKE_SCHEMA
+          uv run python -m jobs.utils.drop_schemas_with_prefix $DBT_ANALYTICS_DB $SNOWFLAKE_SCHEMA
