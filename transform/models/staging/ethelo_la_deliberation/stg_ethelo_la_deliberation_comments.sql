@@ -1,10 +1,10 @@
 /*This model preps the Comments data from Ethelo by removing all users likely to be ODI staff members,
 moderators, or Ethelo staff, and re-formatting and joining data that was split across multiple tables in Airtable.
-*/ 
+*/
 
 --Pull all comments from the Comments table in Airtable
 WITH raw_comments AS (
-    SELECT 
+    SELECT
         to_varchar(comment_id) as comment_id,
         to_varchar(reply_to_id) as reply_to_id,
         comment_content,
@@ -23,21 +23,21 @@ WITH raw_comments AS (
 
 --Bring in key tables to include descriptive values for Topics and Targets
 topics AS (
-    SELECT 
+    SELECT
         id as airtable_topic_id,
         name,
     FROM {{ source('ETHELO_LA_DELIBERATION', 'TOPIC') }}
 ),
 
 targets AS (
-    SELECT 
+    SELECT
         id as airtable_target_id,
         target
     FROM {{ source('ETHELO_LA_DELIBERATION', 'TOPIC_OPTIONS') }}
 ),
 
 participants_filtered as (
-    select 
+    select
         participant_id,
         airtable_id
     from {{ ref('stg_ethelo_la_deliberation_participants') }}

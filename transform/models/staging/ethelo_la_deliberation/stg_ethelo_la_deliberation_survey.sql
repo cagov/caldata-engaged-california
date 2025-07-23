@@ -12,8 +12,8 @@ final AS (
     SELECT
     a."GROUP" as survey_group,
     a.question,
-    a.answer, 
-    a.participant as participant_id, 
+    a.answer,
+    a.participant as participant_id,
     a.date as response_date,
     a.joined_date,
     a._fivetran_synced
