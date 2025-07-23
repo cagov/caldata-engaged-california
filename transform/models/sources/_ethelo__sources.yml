@@ -94,6 +94,7 @@ sources:
           - name: TOTAL_VOTES
           - name: _FIVETRAN_SYNCED
   - name: ETHELO_LA_DELIBERATION
+    database: RAW_ENGCA_PRD
     schema: |
       AIRTABLE_SENSITIVE_PII___LOS_ANGELES_FIRES_RECOVERY_DELIBERATION___SNOWFLAKE_SYNC___ADMIN_ONLY_APPKMTPH1VALYNZLY
     description: |

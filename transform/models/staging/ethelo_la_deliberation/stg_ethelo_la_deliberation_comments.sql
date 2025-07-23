@@ -51,11 +51,11 @@ SELECT
     b.name as topic,
     c.target,
     a.target_description,
-    d.participant_id AS posted_by_id,
-    a.posted_on,
     a.reply_count,
     a.flag_count,
     a.like_count,
+    d.participant_id AS posted_by_id,
+    a.posted_on,
     a._fivetran_synced
 
 FROM raw_comments as a
