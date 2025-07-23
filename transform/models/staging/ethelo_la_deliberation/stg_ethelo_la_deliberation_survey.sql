@@ -1,4 +1,4 @@
-WITH survey_responses as (
+WITH survey_responses AS (
     SELECT *
     FROM {{ source('ETHELO_LA_DELIBERATION', 'SURVEY_BY_QUESTION') }}
 ),
@@ -10,13 +10,13 @@ participants_filtered AS (
 
 final AS (
     SELECT
-    a."GROUP" as survey_group,
-    a.question,
-    a.answer,
-    a.participant as participant_id,
-    a.date as response_date,
-    a.joined_date,
-    a._fivetran_synced
+        a."GROUP" AS survey_group,
+        a.question,
+        a.answer,
+        a.participant AS participant_id,
+        a.date AS response_date,
+        a.joined_date,
+        a._fivetran_synced
     FROM survey_responses AS a
     --filter out staff and test accounts:
     INNER JOIN participants_filtered AS b ON a.participant = b.participant_id
