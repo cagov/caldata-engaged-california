@@ -51,6 +51,8 @@ models:
       ethelo:
         +schema: ethelo
         +enabled: false
+      ethelo_la_deliberation:
+        +schema: ethelo_la_deliberation
 
     marts:
       +materialized: table
@@ -62,7 +64,10 @@ models:
         +schema: ethelo
         +enabled: false
 
+      ethelo_la_deliberation:
+        +schema: ethelo_la_deliberation
+
       daily_report:
         +schema: daily_report
-        previous_ethelo_engagements:
+        ethelo_la_agenda_setting:
           +enabled: false
