@@ -43,7 +43,6 @@ participants_filtered AS (
     FROM {{ ref('stg_ethelo_la_deliberation_participants') }}
 )
 
-
 SELECT
     a.comment_id,
     a.reply_to_id,
