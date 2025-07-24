@@ -51,28 +51,22 @@ other_demographics AS (
     )
     PIVOT (
         MAX(answer) FOR question IN (
-            'Moderation policy - 18 or older',
             'Demographics - Income',
-            'Moderation policy - Agree to terms',
             'Demographics - Age',
             'Demographics - Gender identity',
             'Final thoughts - Did taking the survey increase your confidence in Los Angeles fires recovery efforts, in general?',-- noqa: LT05
             'Demographics - Evacuation zone',
-            'Civility pledge agreement',
             'Final thoughts - How do you feel about the community''s top recovery options as they stand now?',
             'Opening questions - How would you describe your overall outlook on Los Angeles''s recovery from the wildfires?',-- noqa: LT05
             'Final thoughts - Share more about your general outlook on fires recovery'
         )
     ) AS p (
         participant_id,
-        age_18_or_older,
         income,
-        agree_terms,
         age,
         gender_identity,
         confidence_increase,
         evacuation_zone,
-        civility_pledge,
         recovery_options_feeling,
         opening_outlook,
         final_outlook
@@ -83,14 +77,11 @@ other_demographics AS (
 SELECT
     COALESCE(r.participant_id, o.participant_id) AS participant_id,
     r.race_ethnicity_array,
-    o.age_18_or_older,
     o.income,
-    o.agree_terms,
     o.age,
     o.gender_identity,
     o.confidence_increase,
     o.evacuation_zone,
-    o.civility_pledge,
     o.recovery_options_feeling,
     o.opening_outlook,
     o.final_outlook
