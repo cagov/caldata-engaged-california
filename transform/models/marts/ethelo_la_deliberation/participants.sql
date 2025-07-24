@@ -14,12 +14,9 @@ select
         when int.evacuation_zone like '%Palisades%' then 'Palisades'
         when int.evacuation_zone like 'No' then 'Other'
     end as evacuation_zone,
-    int.civility_pledge,
     int.recovery_options_feeling,
     int.opening_outlook,
     int.final_outlook,
-    int.agree_terms,
-    int.age_18_or_older,
     stg.last_invite_sent,
     stg.last_sign_in,
     stg.joined_on,
