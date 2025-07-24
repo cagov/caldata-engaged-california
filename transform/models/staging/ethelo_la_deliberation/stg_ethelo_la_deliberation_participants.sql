@@ -12,6 +12,7 @@ WITH source_participants AS (
 test_participants AS (
     SELECT array_to_string(participant, ',') AS id
     FROM {{ source('ETHELO_LA_DELIBERATION', 'BETA_TESTERS') }}
+    where participant is not null
 ),
 
 filtered_participants AS (
