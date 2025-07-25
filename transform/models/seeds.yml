@@ -31,7 +31,7 @@ seeds:
     description: >
       Contains participant IDs that are known to be from test accounts and should be excluded from analysis.
 
-  - name: fire_evacuation_demographic_targets
+  - name: demographic_targets
     description: "Demographic targets for fire evacuation zones"
     columns:
       - name: fire_area
