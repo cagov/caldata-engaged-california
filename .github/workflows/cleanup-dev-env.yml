@@ -1,8 +1,8 @@
-name: cleanup-tests
+name: cleanup-dev-env
 on:
-  pull_request:
-    types:
-      - closed
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 1" # 8PM PT on Sundays (3AM UTC on Mondays)
 
 env:
   DBT_PROFILES_DIR: transform/ci
@@ -14,10 +14,9 @@ env:
   SNOWFLAKE_ROLE: TRANSFORMER_ENGCA_DEV
   SNOWFLAKE_WAREHOUSE: TRANSFORMING_XS_ENGCA_DEV
   SNOWFLAKE_DATABASE: TRANSFORM_ENGCA_DEV
-  SNOWFLAKE_SCHEMA: GH_CI_PR_${{ github.event.number }}
 
 jobs:
-  cleanup-tests:
+  cleanup-dev-env:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,9 +28,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version-file: ".python-version"
-      - name: Cleanup after tests
+      - name: Cleanup Developers schemas
         run: |
-          uv run dbt run-operation drop_schemas_with_prefix \
-          --args '{database_name: $SNOWFLAKE_DATABASE, prefix: $SNOWFLAKE_SCHEMA}'
-          uv run dbt run-operation drop_schemas_with_prefix \
-          --args '{database_name: $DBT_ANALYTICS_DB, prefix: $SNOWFLAKE_SCHEMA}'
+          uv run dbt run-operation drop_schemas_with_prefix --args '{database_name: $SNOWFLAKE_DATABASE, prefix: DBT_}'
+          uv run dbt run-operation drop_schemas_with_prefix --args '{database_name: $DBT_ANALYTICS_DB, prefix: DBT_}'
