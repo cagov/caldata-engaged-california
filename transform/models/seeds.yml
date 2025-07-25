@@ -30,3 +30,19 @@ seeds:
   - name: TEST_PARTICIPANTS
     description: >
       Contains participant IDs that are known to be from test accounts and should be excluded from analysis.
+
+  - name: demographic_targets
+    description: "Demographic targets for fire evacuation zones"
+    columns:
+      - name: fire_area
+        description: "Fire evacuation area name"
+        data_type: varchar
+      - name: demographic_category
+        description: "Category of demographic (Age, Race and Ethnicity, Gender, Income Level, Housing Status)"
+        data_type: varchar
+      - name: demographic_group
+        description: "Specific demographic group within the category"
+        data_type: varchar
+      - name: target_count
+        description: "Target count for this demographic group in the fire area"
+        data_type: integer
