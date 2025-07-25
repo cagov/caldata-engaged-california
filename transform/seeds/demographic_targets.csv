@@ -1,0 +1,41 @@
+fire_area,demographic_category,demographic_group,target_count
+Eaton,Age,18-24,32
+Eaton,Age,25-44,176
+Eaton,Age,45-64,116
+Eaton,Age,65+,76
+Eaton,Race and Ethnicity,American Indian or Alaskan Native,8
+Eaton,Race and Ethnicity,Asian,68
+Eaton,Race and Ethnicity,Black,24
+Eaton,Race and Ethnicity,Hispanic or Latino,104
+Eaton,Race and Ethnicity,Middle Eastern or North African,28
+Eaton,Race and Ethnicity,Native Hawaiian or Pacific Islander,1
+Eaton,Race and Ethnicity,White,172
+Eaton,Gender,Male,196
+Eaton,Gender,Female,204
+Eaton,Gender,I identify another way,0
+Eaton,Income Level,<$35000,64
+Eaton,Income Level,$35000-75000,76
+Eaton,Income Level,$75000-$150000,116
+Eaton,Income Level,$150000+,148
+Eaton,Housing Status,Renter,116
+Eaton,Housing Status,Home Owner,284
+Palisades,Age,18-24,28
+Palisades,Age,25-44,140
+Palisades,Age,45-64,136
+Palisades,Age,65+,96
+Palisades,Race and Ethnicity,American Indian or Alaskan Native,4
+Palisades,Race and Ethnicity,Asian,36
+Palisades,Race and Ethnicity,Black,16
+Palisades,Race and Ethnicity,Hispanic or Latino,36
+Palisades,Race and Ethnicity,Middle Eastern or North African,32
+Palisades,Race and Ethnicity,Native Hawaiian or Pacific Islander,1
+Palisades,Race and Ethnicity,White,272
+Palisades,Gender,Male,196
+Palisades,Gender,Female,204
+Palisades,Gender,I identify another way,0
+Palisades,Income Level,<$35000,64
+Palisades,Income Level,$35000-75000,56
+Palisades,Income Level,$75000-$150000,100
+Palisades,Income Level,$150000+,180
+Palisades,Housing Status,Renter,192
+Palisades,Housing Status,Home Owner,208
