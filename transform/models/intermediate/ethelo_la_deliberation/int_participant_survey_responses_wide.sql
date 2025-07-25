@@ -56,7 +56,7 @@ other_demographics AS (
             'Demographics - Gender identity',
             'Final thoughts - Did taking the survey increase your confidence in Los Angeles fires recovery efforts, in general?',-- noqa: LT05
             'Demographics - Evacuation zone',
-            'Final thoughts - How do you feel about the community''s top recovery options as they stand now?',
+            'Final thoughts - How do you feel about the community’s top recovery options as they stand now?',
             'Opening questions - How would you describe your overall outlook on Los Angeles''s recovery from the wildfires?',-- noqa: LT05
             'Final thoughts - Share more about your general outlook on fires recovery'
         )
