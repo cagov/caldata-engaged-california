@@ -13,7 +13,7 @@ final AS (
         a."GROUP" AS survey_group,
         a.question,
         a.answer,
-        a.participant AS participant_id,
+        array_to_string(a.participant, ',') AS participant_id,
         a.date AS response_date,
         a.joined_date,
         a._fivetran_synced
