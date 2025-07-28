@@ -1,5 +1,7 @@
 WITH survey_responses AS (
-    SELECT *
+    SELECT
+        *,
+        array_to_string(participant, ',') AS airtable_id
     FROM {{ source('ETHELO_LA_DELIBERATION', 'SURVEY_BY_QUESTION') }}
 ),
 
@@ -13,13 +15,13 @@ final AS (
         a."GROUP" AS survey_group,
         a.question,
         a.answer,
-        array_to_string(a.participant, ',') AS participant_id,
+        b.participant_id,
         a.date AS response_date,
         a.joined_date,
         a._fivetran_synced
     FROM survey_responses AS a
     --filter out staff and test accounts:
-    INNER JOIN participants_filtered AS b ON a.participant = b.participant_id
+    INNER JOIN participants_filtered AS b ON a.airtable_id = b.airtable_id
 )
 
 SELECT * FROM final
