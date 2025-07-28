@@ -30,5 +30,9 @@ jobs:
           python-version-file: ".python-version"
       - name: Cleanup Developers schemas
         run: |
-          uv run dbt run-operation drop_schemas_with_prefix --args '{database_name: $SNOWFLAKE_DATABASE, prefix: DBT_}'
-          uv run dbt run-operation drop_schemas_with_prefix --args '{database_name: $DBT_ANALYTICS_DB, prefix: DBT_}'
+          uv run dbt run-operation drop_schemas_with_prefix \
+          --project-dir transform \
+          --args "{\"database_name\": \"$SNOWFLAKE_DATABASE\", \"prefix\": \"DBT_\"}"
+          uv run dbt run-operation drop_schemas_with_prefix \
+          --project-dir transform \
+          --args "{\"database_name\": \"$DBT_ANALYTICS_DB\", \"prefix\": \"DBT_\"}"
