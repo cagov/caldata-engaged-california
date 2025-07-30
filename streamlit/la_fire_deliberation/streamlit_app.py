@@ -32,7 +32,7 @@ SELECT
     COUNT(*) as total_joined,
     MAX(JOINED_ON) as latest_join_date
 FROM ANALYTICS_ENGCA_PRD.ETHELO_LA_DELIBERATION.PARTICIPANTS
-WHERE STATUS = 'Joined' AND EVACUATION_ZONE IN ('Eaton','Palisades','Other')
+WHERE STATUS = 'Joined' --AND EVACUATION_ZONE IN ('Eaton','Palisades','Other')
 '''
 
 # Get total invited participants (all participants in table were invited)
@@ -79,7 +79,7 @@ if not data_info.empty and not invited_info.empty and not comments_info.empty:
     with col2:
         total_joined = data_info.iloc[0]['TOTAL_JOINED']
         join_rate = (total_joined / total_invited * 100) if total_invited > 0 else 0
-        st.metric("Total Joined", total_joined, f"{join_rate:.1f}% join rate", delta_color="off")
+        st.metric("Total Joined", total_joined, f"{join_rate:.1f}% join rate", delta_color="off", help = "Participants who joined regardless of whether they started the survey.")
 
     with col3:
         total_comments = comments_info.iloc[0]['TOTAL_COMMENTS']
@@ -472,7 +472,7 @@ with tab1:
 
         with col3:
             other_count = fire_breakdown[fire_breakdown['EVACUATION_ZONE'] == 'Other']['PARTICIPANTS'].iloc[0] if len(fire_breakdown[fire_breakdown['EVACUATION_ZONE'] == 'Other']) > 0 else 0
-            st.metric("Other Participants", other_count, delta_color="off")
+            st.metric("Other Participants", other_count, delta_color="off", help = "Participants who said they did NOT live in Eaton or Palisades evacuation zone")
     else:
         st.markdown(f"### Participation for {selected_fire_area}")
         col1, col2 = st.columns(2)
@@ -598,7 +598,7 @@ with tab2:
                 # Use Age category targets as the total (each person is in exactly one age group)
                 total_target = sum(combined_targets.get('Age', {}).values())
                 total_current = len(filtered_df)
-                st.metric("Total Participants", total_current, f"Target: {total_target}", delta_color="off")
+                st.metric("Total Participants", total_current, f"Target: {total_target}", delta_color="off", help = "Participants who at least answered question about their evacuation zone")
 
             with col2:
                 targets_met = len(progress_df[progress_df['Status'] == 'Met'])
