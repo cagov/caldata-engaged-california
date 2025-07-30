@@ -32,7 +32,7 @@ SELECT
     COUNT(*) as total_joined,
     MAX(JOINED_ON) as latest_join_date
 FROM ANALYTICS_ENGCA_PRD.ETHELO_LA_DELIBERATION.PARTICIPANTS
-WHERE STATUS = 'Joined' AND EVACUATION_ZONE IN ('Eaton','Palisades','Other')
+WHERE STATUS = 'Joined' --AND EVACUATION_ZONE IN ('Eaton','Palisades','Other')
 '''
 
 # Get total invited participants (all participants in table were invited)
@@ -79,7 +79,7 @@ if not data_info.empty and not invited_info.empty and not comments_info.empty:
     with col2:
         total_joined = data_info.iloc[0]['TOTAL_JOINED']
         join_rate = (total_joined / total_invited * 100) if total_invited > 0 else 0
-        st.metric("Total Joined", total_joined, f"{join_rate:.1f}% join rate", delta_color="off")
+        st.metric("Total Joined", total_joined, f"{join_rate:.1f}% join rate", delta_color="off", help = "Participants who joined regardless of whether they started the survey.")
 
     with col3:
         total_comments = comments_info.iloc[0]['TOTAL_COMMENTS']
@@ -225,7 +225,7 @@ def load_voting_data():
     FROM ANALYTICS_ENGCA_PRD.ETHELO_LA_DELIBERATION.VOTING_SUMMARY
     ORDER BY TOPIC, OPTION
     '''
-
+    
     df = session.sql(query).to_pandas()
     return df
 
@@ -249,24 +249,24 @@ def load_comments_data(fire_area_filter=None):
         c._FIVETRAN_SYNCED,
         p.EVACUATION_ZONE
     FROM ANALYTICS_ENGCA_PRD.ETHELO_LA_DELIBERATION.COMMENTS c
-    LEFT JOIN ANALYTICS_ENGCA_PRD.ETHELO_LA_DELIBERATION.PARTICIPANTS p
+    LEFT JOIN ANALYTICS_ENGCA_PRD.ETHELO_LA_DELIBERATION.PARTICIPANTS p 
         ON c.POSTED_BY_ID = p.PARTICIPANT_ID
     WHERE p.STATUS = 'Joined' AND p.EVACUATION_ZONE IN ('Eaton','Palisades','Other')
     '''
-
+    
     if fire_area_filter and fire_area_filter != 'All':
         query = base_query + f" AND p.EVACUATION_ZONE = '{fire_area_filter}'"
     else:
         query = base_query
-
+    
     query += " ORDER BY c.POSTED_ON DESC"
-
+    
     df = session.sql(query).to_pandas()
-
+    
     # Convert POSTED_ON to datetime if it's not already
     if 'POSTED_ON' in df.columns:
         df['POSTED_ON'] = pd.to_datetime(df['POSTED_ON'])
-
+    
     return df
 
 # Function to process race/ethnicity array data
@@ -446,8 +446,8 @@ current_counts = calculate_current_counts(filtered_df, filtered_race_df, selecte
 
 # Create tabs
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "General Participation",
-    "Demographics Progress Overview",
+    "General Participation", 
+    "Demographics Progress Overview", 
     "Comments Browser",
     "Voting Results Overview",
     "Data Export"
@@ -456,12 +456,12 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # Tab 1: General Participation
 with tab1:
     st.subheader("General Participation Overview")
-
+    
     # Fire area participation breakdown
     if selected_fire_area == 'All':
         st.markdown("### Participation by Fire Area")
         col1, col2, col3 = st.columns(3)
-
+        
         with col1:
             palisades_count = fire_breakdown[fire_breakdown['EVACUATION_ZONE'] == 'Palisades']['PARTICIPANTS'].iloc[0] if len(fire_breakdown[fire_breakdown['EVACUATION_ZONE'] == 'Palisades']) > 0 else 0
             st.metric("Palisades Participants", palisades_count, delta_color="off")
@@ -472,90 +472,90 @@ with tab1:
 
         with col3:
             other_count = fire_breakdown[fire_breakdown['EVACUATION_ZONE'] == 'Other']['PARTICIPANTS'].iloc[0] if len(fire_breakdown[fire_breakdown['EVACUATION_ZONE'] == 'Other']) > 0 else 0
-            st.metric("Other Participants", other_count, delta_color="off")
+            st.metric("Other Participants", other_count, delta_color="off", help = "Participants who said they did NOT live in Eaton or Palisades evacuation zone")
     else:
         st.markdown(f"### Participation for {selected_fire_area}")
         col1, col2 = st.columns(2)
-
+        
         with col1:
             area_count = len(filtered_df)
             st.metric(f"{selected_fire_area} Participants", area_count, delta_color="off")
-
+        
         with col2:
             if not comments_df.empty:
                 area_comments = len(comments_df)
                 st.metric(f"{selected_fire_area} Comments", area_comments, delta_color="off")
             else:
                 st.metric(f"{selected_fire_area} Comments", 0, delta_color="off")
-
+    
     st.divider()
-
+    
     # Comments analysis
     if not comments_df.empty:
         st.subheader("Comments Analysis")
-
+        
         # Comments by topic
         st.markdown("### Comments by Topic")
         topic_counts = comments_df['TOPIC'].value_counts().reset_index()
         topic_counts.columns = ['Topic', 'Comment Count']
-
+        
         fig_topics = px.bar(
-            topic_counts,
-            x='Topic',
+            topic_counts, 
+            x='Topic', 
             y='Comment Count',
             title='Number of Comments by Topic'
         )
         fig_topics.update_layout(xaxis_tickangle=-45)
         st.plotly_chart(fig_topics, use_container_width=True)
-
+        
         # Comments by target/option
         st.markdown("### Comments by Option")
         target_counts = comments_df['TARGET'].value_counts().reset_index()
         target_counts.columns = ['Option', 'Comment Count']
         target_counts = target_counts.head(15)  # Show top 15 to avoid overcrowding
-
+        
         fig_targets = px.bar(
-            target_counts,
-            x='Option',
+            target_counts, 
+            x='Option', 
             y='Comment Count',
             title='Number of Comments by Option (Top 15)'
         )
         fig_targets.update_layout(xaxis_tickangle=-45, height=500)
         st.plotly_chart(fig_targets, use_container_width=True)
-
+        
         # Engagement metrics
         col1, col2, col3, col4 = st.columns(4)
-
+        
         with col1:
             avg_likes = comments_df['LIKE_COUNT'].mean()
             st.metric("Avg Likes per Comment", f"{avg_likes:.1f}", delta_color="off")
-
+        
         with col2:
             avg_replies = comments_df['REPLY_COUNT'].mean()
             st.metric("Avg Replies per Comment", f"{avg_replies:.1f}", delta_color="off")
-
+        
         with col3:
             flagged_comments = (comments_df['FLAG_COUNT'] > 0).sum()
             st.metric("Flagged Comments", flagged_comments, delta_color="off")
-
+        
         with col4:
             comments_with_replies = (comments_df['REPLY_COUNT'] > 0).sum()
             st.metric("Comments with Replies", comments_with_replies, delta_color="off")
-
+        
         # Top engaged comments
         st.markdown("### Most Engaged Comments")
-
+        
         # Calculate engagement score (likes + replies)
         comments_df['engagement_score'] = comments_df['LIKE_COUNT'] + comments_df['REPLY_COUNT']
         top_comments = comments_df.nlargest(10, 'engagement_score')[
             ['TOPIC', 'TARGET', 'COMMENT_CONTENT', 'LIKE_COUNT', 'REPLY_COUNT', 'engagement_score']
         ].copy()
-
+        
         # Keep full comment content (no truncation)
         top_comments.columns = ['Topic', 'Option', 'Comment', 'Likes', 'Replies', 'Engagement Score']
-
+        
         st.dataframe(top_comments, use_container_width=True, hide_index=True)
-
+    
     else:
         area_text = f" for {selected_fire_area}" if selected_fire_area != 'All' else ""
         st.info(f"No comments data available{area_text}.")
@@ -563,25 +563,25 @@ with tab1:
 # Tab 2: Demographics Progress Overview (with subtabs)
 with tab2:
     st.subheader("Demographics Progress Overview")
-
+    
     # Add explanation about filtering
     st.info("💡 **Tip:** Select a specific Fire Area in the sidebar to see detailed demographic progress tracking and charts for that area. 'All' shows combined totals across fire areas with targets.")
-
+    
     # Create subtabs for demographic analysis
     subtab1, subtab2, subtab3, subtab4 = st.tabs([
-        "Progress Overview",
-        "Time Series",
-        "Data Quality",
+        "Progress Overview", 
+        "Time Series", 
+        "Data Quality", 
         "Target Reference"
     ])
-
+    
     # Subtab 1: Progress Overview
     with subtab1:
         st.subheader("Progress to Demographic Target Goals")
-
+        
         # Add explanation about metrics
         st.markdown("""
-        **Understanding the Metrics:** The numbers below show current participation counts with target goals for comparison.
+        **Understanding the Metrics:** The numbers below show current participation counts with target goals for comparison. 
         Percentages indicate progress toward demographic representation goals.
         """)
 
@@ -598,7 +598,7 @@ with tab2:
                 # Use Age category targets as the total (each person is in exactly one age group)
                 total_target = sum(combined_targets.get('Age', {}).values())
                 total_current = len(filtered_df)
-                st.metric("Total Participants", total_current, f"Target: {total_target}", delta_color="off")
+                st.metric("Total Participants", total_current, f"Target: {total_target}", delta_color="off", help = "Participants who at least answered question about their evacuation zone")
 
             with col2:
                 targets_met = len(progress_df[progress_df['Status'] == 'Met'])
@@ -983,48 +983,48 @@ with tab2:
 # Tab 3: Comments Browser
 with tab3:
     st.subheader("Comments Browser")
-
+    
     if not comments_df.empty:
         # Filters for comments
         col1, col2, col3 = st.columns(3)
-
+        
         with col1:
             # Topic filter
             topic_options = ['All'] + sorted(comments_df['TOPIC'].dropna().unique().tolist())
             selected_topic = st.selectbox("Filter by Topic", topic_options, key="browser_topic_filter")
-
+        
         with col2:
             # Target/Option filter
             target_options = ['All'] + sorted(comments_df['TARGET'].dropna().unique().tolist())
             selected_target = st.selectbox("Filter by Option", target_options, key="browser_target_filter")
-
+        
         with col3:
             # Sort options
             sort_options = {
                 'Most Recent': 'POSTED_ON',
-                'Most Liked': 'LIKE_COUNT',
+                'Most Liked': 'LIKE_COUNT', 
                 'Most Replies': 'REPLY_COUNT',
                 'Most Engagement': 'engagement_score'
             }
             selected_sort = st.selectbox("Sort by", list(sort_options.keys()), key="browser_sort_filter")
-
+        
         # Apply filters
         filtered_comments = comments_df.copy()
-
+        
         if selected_topic != 'All':
             filtered_comments = filtered_comments[filtered_comments['TOPIC'] == selected_topic]
-
+        
         if selected_target != 'All':
             filtered_comments = filtered_comments[filtered_comments['TARGET'] == selected_target]
-
+        
         # Calculate engagement score for sorting
         filtered_comments['engagement_score'] = filtered_comments['LIKE_COUNT'] + filtered_comments['REPLY_COUNT']
-
+        
         # Apply sorting
         sort_column = sort_options[selected_sort]
         ascending = False
         filtered_comments = filtered_comments.sort_values(sort_column, ascending=ascending)
-
+        
         # Display filter info
         filter_info = f"**Showing {len(filtered_comments)} comments"
         if selected_fire_area != 'All':
@@ -1034,13 +1034,13 @@ with tab3:
         if selected_target != 'All':
             filter_info += f" | Option: {selected_target}"
         filter_info += "**"
-
+        
         st.markdown(filter_info)
-
+        
         # Pagination
         comments_per_page = 10
         total_pages = (len(filtered_comments) - 1) // comments_per_page + 1 if len(filtered_comments) > 0 else 1
-
+        
         if total_pages > 1:
             page = st.number_input("Page", min_value=1, max_value=total_pages, value=1, key="browser_comments_page")
             start_idx = (page - 1) * comments_per_page
@@ -1048,31 +1048,31 @@ with tab3:
             page_comments = filtered_comments.iloc[start_idx:end_idx]
         else:
             page_comments = filtered_comments
-
+        
         # Display comments
         for idx, comment in page_comments.iterrows():
             with st.container():
                 col1, col2 = st.columns([3, 1])
-
+                
                 with col1:
                     st.markdown(f"**Topic:** {comment['TOPIC']}")
                     st.markdown(f"**Option:** {comment['TARGET']}")
                     if pd.notna(comment['TARGET_DESCRIPTION']) and comment['TARGET_DESCRIPTION']:
                         st.markdown(f"*{comment['TARGET_DESCRIPTION']}*")
                     st.markdown(f"{comment['COMMENT_CONTENT']}")
-
+                
                 with col2:
                     st.markdown(f"**Posted:** {comment['POSTED_ON'].strftime('%Y-%m-%d %H:%M') if pd.notna(comment['POSTED_ON']) else 'Unknown'}")
                     st.markdown(f"👍 {comment['LIKE_COUNT']} | 💬 {comment['REPLY_COUNT']} | 🚩 {comment['FLAG_COUNT']}")
                     if selected_fire_area == 'All' and 'EVACUATION_ZONE' in comment:
                         st.markdown(f"**Area:** {comment['EVACUATION_ZONE']}")
-
+                
                 st.divider()
-
+        
         # Show pagination info
         if total_pages > 1:
             st.markdown(f"Page {page} of {total_pages} | Total comments: {len(filtered_comments)}")
-
+    
     else:
         area_text = f" for {selected_fire_area}" if selected_fire_area != 'All' else ""
         st.info(f"No comments data available{area_text}.")
@@ -1080,62 +1080,62 @@ with tab3:
 # Tab 4: Voting Results Overview
 with tab4:
     st.subheader("Voting Results Overview")
-
+    
     if not voting_df.empty:
         # Overall voting metrics
         st.markdown("### Overall Voting Summary")
-
+        
         # Separate topic-level and option-level data
         topic_level_df = voting_df[voting_df['OPTION'].isna()].copy()
         option_level_df = voting_df[voting_df['OPTION'].notna()].copy()
-
+        
         col1, col2, col3, col4 = st.columns(4)
-
+        
         with col1:
             total_topics = len(topic_level_df)
             st.metric("Policy Topics", total_topics, delta_color="off")
-
+        
         with col2:
             total_options = len(option_level_df)
             st.metric("Policy Options", total_options, delta_color="off")
-
+        
         with col3:
             if not option_level_df.empty:
                 total_votes = option_level_df['TOTAL_VOTES'].sum()
                 st.metric("Total Votes Cast", f"{total_votes:,}", delta_color="off")
             else:
                 st.metric("Total Votes Cast", 0, delta_color="off")
-
+        
         with col4:
             if not option_level_df.empty:
                 avg_support = option_level_df['SUPPORT'].mean()
                 st.metric("Average Support Score", f"{avg_support:.2f}", delta_color="off")
             else:
                 st.metric("Average Support Score", "N/A", delta_color="off")
-
+        
         st.divider()
-
+        
         # Vote Distribution by Option (ordered by consensus)
         st.markdown("### Vote Distribution by Option (Ordered by Consensus)")
-
+        
         if not option_level_df.empty:
             # Prepare data for stacked bar chart
-            likert_columns = ['STRONGLY_OPPOSED', 'OPPOSED', 'SOMEWHAT_OPPOSED', 'NEUTRAL',
+            likert_columns = ['STRONGLY_OPPOSED', 'OPPOSED', 'SOMEWHAT_OPPOSED', 'NEUTRAL', 
                             'SOMEWHAT_SUPPORTIVE', 'SUPPORTIVE', 'STRONGLY_SUPPORTIVE']
-
+            
             # Filter out rows with null values and sort by consensus
             chart_data = option_level_df.dropna(subset=likert_columns).copy()
             chart_data = chart_data.sort_values('CONSENSUS', ascending=True)  # Ascending for horizontal chart
-
+            
             if not chart_data.empty:
                 # Create option labels with topic for clarity
                 chart_data['Option_Label'] = chart_data['TOPIC'].str[:25] + ': ' + chart_data['OPTION'].str[:40]
-
+                
                 # Create horizontal stacked bar chart
                 fig = go.Figure()
-
+                
                 colors = ['#d62728', '#ff7f0e', '#ffbb78', '#bcbd22', '#98df8a', '#2ca02c', '#1f77b4']
-
+                
                 for i, col in enumerate(likert_columns):
                     if col in chart_data.columns:
                         fig.add_trace(go.Bar(
@@ -1145,7 +1145,7 @@ with tab4:
                             marker_color=colors[i % len(colors)],
                             orientation='h'  # horizontal orientation
                         ))
-
+                
                 fig.update_layout(
                     barmode='stack',
                     title='Vote Distribution by Option (Highest Consensus at Top)',
@@ -1155,14 +1155,14 @@ with tab4:
                     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                     margin=dict(l=200)  # Left margin for long option labels
                 )
-
+                
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.info("No valid voting data available for visualization.")
-
+        
         # Topic Summary
         st.markdown("### Summary by Policy Topic")
-
+        
         if not option_level_df.empty:
             # Calculate topic-level aggregations
             topic_summary = option_level_df.groupby('TOPIC').agg({
@@ -1174,10 +1174,10 @@ with tab4:
             }).round(2)
             topic_summary.columns = ['Avg Support', 'Avg Consensus', 'Avg Conflict', 'Total Votes', 'Num Options']
             topic_summary = topic_summary.reset_index()
-
+            
             # Display topic summary table
             st.dataframe(topic_summary, use_container_width=True, hide_index=True)
-
+            
             # Simple topic comparison chart
             fig_topics = go.Figure()
             fig_topics.add_trace(go.Bar(
@@ -1186,7 +1186,7 @@ with tab4:
                 name='Average Support',
                 marker_color='steelblue'
             ))
-
+            
             fig_topics.update_layout(
                 title="Average Support by Policy Topic",
                 xaxis_title='Policy Topics',
@@ -1195,24 +1195,24 @@ with tab4:
                 height=400
             )
             st.plotly_chart(fig_topics, use_container_width=True)
-
+        
         # Detailed Options Table
         st.markdown("### Detailed Voting Results")
-
+        
         if not option_level_df.empty:
             # Prepare detailed table
-            detailed_df = option_level_df[['TOPIC', 'OPTION', 'TOTAL_VOTES', 'SUPPORT', 'CONSENSUS',
+            detailed_df = option_level_df[['TOPIC', 'OPTION', 'TOTAL_VOTES', 'SUPPORT', 'CONSENSUS', 
                                          'CONFLICT', 'APPROVAL', 'IN_BEST_SCENARIO']].copy()
             detailed_df['SUPPORT'] = detailed_df['SUPPORT'].round(3)
             detailed_df['CONSENSUS'] = detailed_df['CONSENSUS'].round(3)
             detailed_df['CONFLICT'] = detailed_df['CONFLICT'].round(3)
             detailed_df['APPROVAL'] = detailed_df['APPROVAL'].round(3)
-
+            
             # Sort by consensus (highest first)
             detailed_df = detailed_df.sort_values('CONSENSUS', ascending=False)
-
+            
             st.dataframe(detailed_df, use_container_width=True, hide_index=True)
-
+    
     else:
         st.info("No voting data available.")
 
