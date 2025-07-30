@@ -524,7 +524,7 @@ with tab1:
         st.plotly_chart(fig_targets, use_container_width=True)
 
         # Engagement metrics
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3 = st.columns(3)
 
         with col1:
             avg_likes = comments_df['LIKE_COUNT'].mean()
@@ -535,12 +535,9 @@ with tab1:
             st.metric("Avg Replies per Comment", f"{avg_replies:.1f}", delta_color="off")
 
         with col3:
-            flagged_comments = (comments_df['FLAG_COUNT'] > 0).sum()
-            st.metric("Flagged Comments", flagged_comments, delta_color="off")
-
-        with col4:
             comments_with_replies = (comments_df['REPLY_COUNT'] > 0).sum()
             st.metric("Comments with Replies", comments_with_replies, delta_color="off")
+
 
         # Top engaged comments
         st.markdown("### Most Engaged Comments")
@@ -1063,7 +1060,7 @@ with tab3:
 
                 with col2:
                     st.markdown(f"**Posted:** {comment['POSTED_ON'].strftime('%Y-%m-%d %H:%M') if pd.notna(comment['POSTED_ON']) else 'Unknown'}")
-                    st.markdown(f"👍 {comment['LIKE_COUNT']} | 💬 {comment['REPLY_COUNT']} | 🚩 {comment['FLAG_COUNT']}")
+                    st.markdown(f"👍 {comment['LIKE_COUNT']} | 💬 {comment['REPLY_COUNT']}")
                     if selected_fire_area == 'All' and 'EVACUATION_ZONE' in comment:
                         st.markdown(f"**Area:** {comment['EVACUATION_ZONE']}")
 
