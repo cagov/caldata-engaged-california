@@ -18,7 +18,7 @@ sources:
           - name: REFERENCE
             description: "URLs pointing to related Bitly resources"
           - name: _FIVETRAN_DELETED
-            description: "Indicates if the record was deleted in the Bitly source system. Fivetran uses this flag to preserve deleted rows in the destination."
+            description: "Indicates if the record was deleted in the Bitly source system."
           - name: _FIVETRAN_SYNCED
             description: "Timestamp when the record was last synced by Fivetran"
           - name: ARCHIVED
@@ -43,7 +43,7 @@ sources:
           - name: REFERENCE
             description: "URLs pointing to related Bitly resources"
           - name: _FIVETRAN_DELETED
-            description: "Indicates if the record was deleted in the Bitly source system. Fivetran uses this flag to preserve deleted rows in the destination."
+            description: "Indicates if the record was deleted in the Bitly source system."
           - name: ORGANIZATION_GUID
             description: "Unique identifier for the associated organization"
           - name: _FIVETRAN_SYNCED
@@ -66,7 +66,7 @@ sources:
           - name: DATE
             description: "Day when the clicks were recorded"
           - name: _FIVETRAN_DELETED
-            description: "Indicates if the record was deleted in the Bitly source system. Fivetran uses this flag to preserve deleted rows in the destination."
+            description: "Indicates if the record was deleted in the Bitly source system."
           - name: _FIVETRAN_SYNCED
             description: "Timestamp when the record was last synced by Fivetran"
           - name: CLICKS
@@ -79,7 +79,7 @@ sources:
           - name: REFERENCE
             description: "URLs pointing to related Bitly resources"
           - name: _FIVETRAN_DELETED
-            description: "Indicates if the record was deleted in the Bitly source system. Fivetran uses this flag to preserve deleted rows in the destination."
+            description: "Indicates if the record was deleted in the Bitly source system."
           - name: _FIVETRAN_SYNCED
             description: "Timestamp when the record was last synced by Fivetran"
           - name: TIER_DISPLAY_NAME
@@ -104,7 +104,7 @@ sources:
           - name: LOGIN
             description: "Unique username for the Bitly user"
           - name: _FIVETRAN_DELETED
-            description: "Indicates if the record was deleted in the Bitly source system. Fivetran uses this flag to preserve deleted rows in the destination."
+            description: "Indicates if the record was deleted in the Bitly source system."
           - name: DEFAULT_GROUP_GUID
             description: "Default group GUID for the user"
           - name: _FIVETRAN_SYNCED
@@ -127,7 +127,7 @@ sources:
           - name: EMAIL
             description: "Email address"
           - name: _FIVETRAN_DELETED
-            description: "Indicates if the record was deleted in the Bitly source system. Fivetran uses this flag to preserve deleted rows in the destination."
+            description: "Indicates if the record was deleted in the Bitly source system."
           - name: _FIVETRAN_SYNCED
             description: "Timestamp when the record was last synced by Fivetran"
           - name: IS_PRIMARY
