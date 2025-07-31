@@ -1,5 +1,5 @@
 # Changes here will be overwritten by Copier
-_commit: 67d45ed
+_commit: cdb1adc
 _src_path: https://github.com/cagov/caldata-infrastructure-template
 dbt_profile_name: caldata_engaged_california
 email_address: odi-caldata-dse@innovation.ca.gov
