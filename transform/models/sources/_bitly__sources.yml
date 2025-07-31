@@ -2,9 +2,9 @@ version: 2
 
 sources:
   - name: BITLY
-    database: RAW_BITLY_PRD
+    database: RAW_ENGCA_PRD
     schema: BITLY
-    description: ODI bitly data, loaded into Snowflake via Fivetran every 6 hours.
+    description: ODI Bitly data, loaded into Snowflake via Fivetran every 6 hours.
     tables:
       - name: BITLINK
         description: "Bitly shortened links and their metadata"
