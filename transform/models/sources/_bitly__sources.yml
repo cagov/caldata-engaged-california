@@ -1,0 +1,136 @@
+version: 2
+
+sources:
+  - name: BITLY
+    database: RAW_ENGCA_PRD
+    schema: BITLY
+    description: ODI Bitly data, loaded into Snowflake via Fivetran every 6 hours.
+    tables:
+      - name: BITLINK
+        description: "Bitly shortened links and their metadata"
+        columns:
+          - name: GROUP_GUID
+            description: "Unique identifier for the associated Bitly group"
+          - name: ID
+            description: "Unique identifier for the Bitly link"
+          - name: CUSTOM_BITLINKS
+            description: "Custom Bitly links created by the user"
+          - name: REFERENCE
+            description: "URLs pointing to related Bitly resources"
+          - name: _FIVETRAN_DELETED
+            description: "Indicates if the record was deleted in the Bitly source system."
+          - name: _FIVETRAN_SYNCED
+            description: "Timestamp when the record was last synced by Fivetran"
+          - name: ARCHIVED
+            description: "Indicates if the Bitly link is archived"
+          - name: LINK
+            description: "The Bitly short link"
+          - name: CREATED_AT
+            description: "Timestamp when the Bitly link was created"
+          - name: LONG_URL
+            description: "The original long URL"
+          - name: TITLE
+            description: "Title of the Bitly link"
+          - name: CREATED_BY
+            description: "User who created the Bitly link"
+          - name: CLIENT_ID
+            description: "Client ID that was used to manage the Bitly link"
+      - name: GROUPS
+        description: "Bitly groups information"
+        columns:
+          - name: GUID
+            description: "Unique identifier for the group"
+          - name: REFERENCE
+            description: "URLs pointing to related Bitly resources"
+          - name: _FIVETRAN_DELETED
+            description: "Indicates if the record was deleted in the Bitly source system."
+          - name: ORGANIZATION_GUID
+            description: "Unique identifier for the associated organization"
+          - name: _FIVETRAN_SYNCED
+            description: "Timestamp when the record was last synced by Fivetran"
+          - name: IS_ACTIVE
+            description: "Indicates if the group is active"
+          - name: ROLE
+            description: "Role of the group"
+          - name: CREATED
+            description: "Timestamp when the group was created"
+          - name: NAME
+            description: "Name of the group"
+          - name: MODIFIED
+            description: "Timestamp when the group was last modified"
+      - name: LINK_CLICK
+        description: "Daily aggregated click counts for Bitly links"
+        columns:
+          - name: BITLINK_ID
+            description: "Unique identifier for the Bitly link"
+          - name: DATE
+            description: "Day when the clicks were recorded"
+          - name: _FIVETRAN_DELETED
+            description: "Indicates if the record was deleted in the Bitly source system."
+          - name: _FIVETRAN_SYNCED
+            description: "Timestamp when the record was last synced by Fivetran"
+          - name: CLICKS
+            description: "Number of clicks"
+      - name: ORGANIZATION
+        description: "Bitly organization information"
+        columns:
+          - name: GUID
+            description: "Unique identifier for the organization"
+          - name: REFERENCE
+            description: "URLs pointing to related Bitly resources"
+          - name: _FIVETRAN_DELETED
+            description: "Indicates if the record was deleted in the Bitly source system."
+          - name: _FIVETRAN_SYNCED
+            description: "Timestamp when the record was last synced by Fivetran"
+          - name: TIER_DISPLAY_NAME
+            description: "Display name for the organization's tier"
+          - name: ROLE
+            description: "Role of the organization"
+          - name: IS_ACTIVE
+            description: "Indicates if the organization is active"
+          - name: TIER
+            description: "Tier of the organization"
+          - name: CREATED
+            description: "Timestamp when the organization was created"
+          - name: NAME
+            description: "Name of the organization"
+          - name: MODIFIED
+            description: "Timestamp when the organization was last modified"
+          - name: TIER_FAMILY
+            description: "Family of the organization's tier"
+      - name: USERS
+        description: "Bitly users information"
+        columns:
+          - name: LOGIN
+            description: "Unique username for the Bitly user"
+          - name: _FIVETRAN_DELETED
+            description: "Indicates if the record was deleted in the Bitly source system."
+          - name: DEFAULT_GROUP_GUID
+            description: "Default group GUID for the user"
+          - name: _FIVETRAN_SYNCED
+            description: "Timestamp when the record was last synced by Fivetran"
+          - name: IS_ACTIVE
+            description: "Indicates if the user is active"
+          - name: CREATED
+            description: "Timestamp when the user was created"
+          - name: NAME
+            description: "Name of the user"
+          - name: MODIFIED
+            description: "Timestamp when the user was last modified"
+          - name: IS_SSO_USER
+            description: "Indicates if the user is a Single Sign-On user"
+      - name: USER_EMAIL
+        description: "Email addresses associated with Bitly users"
+        columns:
+          - name: USER_LOGIN
+            description: "Username for the Bitly user"
+          - name: EMAIL
+            description: "Email address"
+          - name: _FIVETRAN_DELETED
+            description: "Indicates if the record was deleted in the Bitly source system."
+          - name: _FIVETRAN_SYNCED
+            description: "Timestamp when the record was last synced by Fivetran"
+          - name: IS_PRIMARY
+            description: "Indicates if this is the user's primary email"
+          - name: IS_VERIFIED
+            description: "Indicates if the email address is verified"
