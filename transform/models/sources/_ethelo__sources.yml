@@ -18,6 +18,8 @@ sources:
         columns:
           - name: COMMENT_ID
           - name: CONTENT
+          - name: COMMENT_CONTENT
+          - name: TARGET_DESCRIPTION
           - name: FLAG_COUNT
           - name: ID
           - name: LIKE_COUNT
@@ -33,30 +35,54 @@ sources:
       - name: DATA_UPDATED
         columns:
           - name: DATA_UPLOADER
-          - name: DATA_UPDATED
+          - name: DATE_UPDATED
           - name: ID
           - name: NOTES
           - name: STATUS
           - name: _FIVETRAN_SYNCED
       - name: ODI_ORIGINAL_INVITE_TIMES
-      - name: PARTICIPANTS
         columns:
-          - name: COMMENT_COUNT
-          - name: COMPLETION
           - name: ID
-          - name: ID_NUMBER
-          - name: INFLUENCE
-          - name: JOINED_ON
-          - name: LAST_INVITE_SENT
-          - name: LAST_SIGN_IN
-          - name: RESENT_INVITE
-          - name: ROLES
-          - name: STATUS
-          - name: SUCCESSFUL_REINVITE
-          - name: SURVEY_COMPLETED
-          - name: VOTING_COMPLETE
+          # - name: ODI_ORIGINAL_INVITE_TIMES
+          # - name: ODI_ORIGINAL_INVITE_TIMES_UPDATED
           - name: _FIVETRAN_SYNCED
+          - name: ID_NUMBER
+          - name: LAST_INVITE_SENT_3_26_2025_2_53_PM_
+          - name: ODI_LAST_INVITE_SENT_PDT_FROM_PARTICIPANT_LOOKUP_
+          - name: LAST_INVITE_SENT
+          - name: PARTICIPANT_LOOKUP
+
       - name: SURVEY_BY_EMAIL
+        columns:
+          - name: ID
+          - name: _FIVETRAN_SYNCED
+          - name: CIVILITY_PLEDGE
+          - name: TERMS_18_OR_OLDER
+          - name: ASIAN_DETAILED_CATEGORIES
+          - name: PARTICIPANT
+          - name: BLACK_OR_AFRICAN_AMERICAN_DETAILED_CATEGORIES
+          - name: MIDDLE_EASTERN_OR_NORTH_AFRICAN_DETAILED_CATEGORIES
+          - name: JOINED_DATE
+          - name: TERMS_I_AGREE_TO_THE_MODERATION_POLICY
+          - name: INFLUENCE
+          - name: NATIVE_HAWAIIAN_OR_PACIFIC_ISLANDER_DETAILED_CATEGORIES
+          - name: WHITE_DETAILED_CATEGORIES
+          - name: CIVILITY_PLEDGE_AGREEMENT
+          - name: WHAT_MUST_BE_ADDRESSED_FIRST_TO_ENSURE_A_SUCCESSFUL_RECOVERY_
+          - name: YOUR_VIEWS
+          - name: WHITE_WRITE_IN
+          - name: WHAT_WAS_YOUR_HOUSEHOLD_INCOME_BEFORE_TAXES_LAST_YEAR_
+          - name: WHAT_IS_YOUR_PERSPECTIVE_ON_LA_S_RECOVERY_
+          - name: ARE_YOU_UNEMPLOYED_OR_UNDEREMPLOYED_AS_A_RESULT_OF_THE_LA_FIRES_
+          - name: ARE_YOU_A_HOMEOWNER_RENTER_OR_UNHOUSED_
+          - name: AMERICAN_INDIAN_OR_ALASKA_NATIVE_WRITE_IN
+          - name: HISPANIC_OR_LATINO_DETAILED_CATEGORIES
+          - name: MIDDLE_EASTERN_OR_NORTH_AFRICAN_WRITE_IN
+          - name: ASIAN_WRITE_IN
+          - name: HISPANIC_OR_LATINO_WRITE_IN
+          - name: BLACK_OR_AFRICAN_AMERICAN_WRITE_IN
+          - name: NATIVE_HAWAIIAN_OR_PACIFIC_ISLANDER_WRITE_IN
+          - name: TOPIC_THEMES
       - name: SURVEY_BY_QUESTION
         columns:
           - name: ANSWER
@@ -93,6 +119,20 @@ sources:
           - name: TOPIC
           - name: TOTAL_VOTES
           - name: _FIVETRAN_SYNCED
+          - name: AIRTABLE_ID
+          - name: NOT_IMPORTANT
+          - name: SOMEWHAT_IMPORTANT
+          - name: SLIGHTLY_SUPPORT
+          - name: SLIGHTLY_OPPOSE
+          - name: ESSENTIAL
+          - name: OPTION
+          - name: STRONGLY_OPPOSED
+          - name: OPPOSED
+          - name: SOMEWHAT_OPPOSED
+          - name: NEUTRAL
+          - name: SOMEWHAT_SUPPORTIVE
+          - name: SUPPORTIVE
+          - name: STRONGLY_SUPPORTIVE
   - name: ETHELO_LA_DELIBERATION
     database: RAW_ENGCA_PRD
     schema: |
@@ -137,7 +177,8 @@ sources:
           - name: TOPIC
           - name: TYPE
           - name: _FIVETRAN_SYNCED
-          - name: ODI_LAST_MODIFIED
+          - name: CONTENT
+          # - name: ODI_LAST_MODIFIED
       - name: INVITATION_EVENTS
         description: derived table in Airtable that tracks the history of invitations sent to participants.
         columns:
@@ -178,23 +219,35 @@ sources:
           - name: JOINED_ON
           - name: LAST_INVITE_SENT
           - name: LAST_SIGN_IN
-          - name: ODI_FIRST_INVITE_SENT
-          - name: ODI_COMMENTS
-          - name: ODI_COMMENT_COUNT_CURRENT
-          - name: ODI_LAST_MODIFIED
+          # - name: ODI_FIRST_INVITE_SENT
+          # - name: ODI_COMMENTS
+          # - name: ODI_COMMENT_COUNT_CURRENT
+          # - name: ODI_LAST_MODIFIED
           - name: ROLES
           - name: STATUS
           - name: SUCCESSFUL_REINVITE
           - name: SURVEY_COMPLETED
           - name: VOTING_COMPLETE
           - name: _FIVETRAN_SYNCED
-      - name: REMOVED_COMMENTS
-        columns:
-          - name: COMMENT_ID
-          - name: CREATED
-          - name: STATUS
-          - name: ID
-          - name: _FIVETRAN_SYNCED
+          - name: PARTICIPANT_ID
+          - name: RACE_ETHNICITY_ARRAY
+          - name: INCOME
+          - name: AGE
+          - name: GENDER_IDENTITY
+          - name: CONFIDENCE_INCREASE
+          - name: EVACUATION_ZONE
+          - name: RECOVERY_OPTIONS_FEELING
+          - name: OPENING_OUTLOOK
+          - name: FINAL_OUTLOOK
+          - name: AIRTABLE_ID
+          - name: RESENT_INVITE
+      # - name: REMOVED_COMMENTS
+      #   columns:
+      #     - name: COMMENT_ID
+      #     - name: CREATED
+      #     - name: STATUS
+      #     - name: ID
+      #     - name: _FIVETRAN_SYNCED
       - name: SURVEY_BY_QUESTION
         columns:
           - name: ANSWER
@@ -252,3 +305,9 @@ sources:
           - name: SOMEWHAT_SUPPORTIVE
           - name: CONFLICT
           - name: OPTION
+          - name: AIRTABLE_ID
+          - name: NOT_IMPORTANT
+          - name: SOMEWHAT_IMPORTANT
+          - name: SLIGHTLY_SUPPORT
+          - name: SLIGHTLY_OPPOSE
+          - name: ESSENTIAL

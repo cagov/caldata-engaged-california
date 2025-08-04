@@ -47,6 +47,7 @@ models:
       - name: subject_line
       - name: from_name
       - name: template_id
+      - name: status
   - name: stg_mailchimp_campaign_activity
     description: One row per action per campaign per recipient from to an Engaged California list in Mailchimp.
     columns:
@@ -58,3 +59,10 @@ models:
       - name: list_id
       - name: bounce_type
       - name: _FIVETRAN_SYNCED
+  - name: stg_mailchimp_list_filter
+    description: "Filters Mailchimp lists to only include the 'Engaged California' audience."
+    columns:
+      - name: list_id
+        description: "Unique identifier for the Mailchimp list."
+      - name: list_name
+        description: "Name of the Mailchimp list (should be 'Engaged California')."
