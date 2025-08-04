@@ -78,3 +78,49 @@ models:
         description: The date when the participant joined.
       - name: _fivetran_synced
         description: Last fivetran sync timestamp.
+
+  - name: stg_ethelo_la_deliberation_voting_summary
+    description: "Staging model for voting summary, including Likert scale totals, vote metrics, and scenario flags."
+    columns:
+      - name: TOPIC
+        description: "Topic of the vote."
+      - name: OPTION
+        description: "Option being voted on."
+      - name: STRONGLY_OPPOSED
+        description: "Number of strongly opposed votes."
+      - name: OPPOSED
+        description: "Number of opposed votes."
+      - name: SOMEWHAT_OPPOSED
+        description: "Number of somewhat opposed votes."
+      - name: NEUTRAL
+        description: "Number of neutral votes."
+      - name: SOMEWHAT_SUPPORTIVE
+        description: "Number of somewhat supportive votes."
+      - name: SUPPORTIVE
+        description: "Number of supportive votes."
+      - name: STRONGLY_SUPPORTIVE
+        description: "Number of strongly supportive votes."
+      - name: ABSTAIN_VOTES
+        description: "Number of abstain votes."
+      - name: TOTAL_VOTES
+        description: "Total number of votes."
+      - name: POSITIVE_VOTES
+        description: "Number of positive votes."
+      - name: NEGATIVE_VOTES
+        description: "Number of negative votes."
+      - name: SUPPORT
+        description: "Support metric."
+      - name: CONSENSUS
+        description: "Consensus metric."
+      - name: CONFLICT
+        description: "Conflict metric."
+      - name: APPROVAL
+        description: "Approval metric."
+      - name: AVERAGE_WEIGHTING
+        description: "Average weighting metric."
+      - name: IN_BEST_SCENARIO
+        description: "Best scenario flag."
+      - name: AIRTABLE_ID
+        description: "Airtable record ID."
+      - name: _fivetran_synced
+        description: "Last fivetran sync timestamp."

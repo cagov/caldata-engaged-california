@@ -1,0 +1,29 @@
+version: 2
+models:
+  - name: int_participant_survey_responses_wide
+    description: "Wide-format participant survey responses, including race/ethnicity and other demographics."
+    columns:
+      - name: participant_id
+        description: "Unique identifier for each survey participant."
+      - name: race_ethnicity_array
+        description: |
+          "Array of race/ethnicity values selected by the participant,
+          excluding 'I'd rather not say' if other values are present."
+      - name: income
+        description: "Reported income of the participant."
+      - name: age
+        description: "Reported age of the participant."
+      - name: gender_identity
+        description: "Reported gender identity of the participant."
+      - name: confidence_increase
+        description: |
+          "Participant's response to whether taking the survey increased
+           their confidence in Los Angeles fires recovery efforts."
+      - name: evacuation_zone
+        description: "Reported evacuation zone of the participant."
+      - name: recovery_options_feeling
+        description: "Participant's feelings about the community’s top recovery options."
+      - name: opening_outlook
+        description: "Participant's overall outlook on Los Angeles's recovery from the wildfires."
+      - name: final_outlook
+        description: "Participant's general outlook on fires recovery, shared in final thoughts."
