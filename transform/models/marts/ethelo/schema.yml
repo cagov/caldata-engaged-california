@@ -66,47 +66,41 @@ models:
         description: ""
       - name: joined_on
         description: ""
-      - name: zip
+      - name: race_ethnicity_array
         description: ""
-      - name: fire_zone
+      - name: income
         description: ""
-      - name: city
+      - name: age
         description: ""
-      - name: housing_status
+      - name: gender_identity
         description: ""
-      - name: household_income_pretax
+      - name: confidence_increase
         description: ""
-      - name: fire_impact_employment
+      - name: evacuation_zone
         description: ""
-      - name: race_ethnicity
+      - name: recovery_options_feeling
         description: ""
-      - name: orig_ethelo_zip
+      - name: opening_outlook
         description: ""
-      - name: ai_an_writein
+      - name: final_outlook
         description: ""
-      - name: asian_detailed
+      - name: last_sign_in
         description: ""
-      - name: asian_writein
+      - name: airtable_id
         description: ""
-      - name: black_detailed
+      - name: _fivetran_synced
         description: ""
-      - name: black_writein
+      - name: id
         description: ""
-      - name: hisp_latino_detailed
+      - name: roles
         description: ""
-      - name: hisp_latino_writein
+      - name: id_number
         description: ""
-      - name: mena_detailed
+      - name: resent_invite
         description: ""
-      - name: mena_writein
+      - name: successful_reinvite
         description: ""
-      - name: nhpi_detailed
-        description: ""
-      - name: nhpi_writein
-        description: ""
-      - name: white_detailed
-        description: ""
-      - name: white_writein
+      - name: influence
         description: ""
 
   - name: recent_fire_perimeters

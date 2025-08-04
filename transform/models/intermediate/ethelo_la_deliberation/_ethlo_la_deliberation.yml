@@ -1,0 +1,38 @@
+version: 2
+models:
+  - name: int_participant_survey_responses_wide
+    description: ""
+    columns:
+      - name: participant_id
+        description: ""
+      - name: race_ethnicity_array
+        description: ""
+      - name: income
+        description: ""
+      - name: age
+        description: ""
+      - name: gender_identity
+        description: ""
+      - name: confidence_increase
+        description: ""
+      - name: evacuation_zone
+        description: ""
+      - name: recovery_options_feeling
+        description: ""
+      - name: opening_outlook
+        description: ""
+      - name: final_outlook
+        description: ""
+  - name: int_participant_voting_responses_wide
+    description: "."
+    columns:
+      - name: participant_id
+        description: ""
+      - name: vote_option
+        description: ""
+      - name: vote
+        description: ""
+      - name: target_name
+        description: ""
+      - name: _fivetran_synced
+        description: ""
