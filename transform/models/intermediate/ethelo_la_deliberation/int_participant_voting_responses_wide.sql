@@ -1,24 +1,27 @@
-
 --Unpivot votes table to make wide table long
 with votes_wide as (
     select * from {{ ref('stg_ethelo_la_deliberation_voting') }}
-    unpivot(vote for vote_option in 
-    (MANDATORY_GREYWATER, ENHANCED_FIRE_DETECTION, ENHANCED_WATER_INFRASTRUCTURE, 
-    INCREASED_HOUSING_DENSITY, UNDERGROUND_POWER_SAFETY, HOMEOWNER_EDUCATION, 
-    PERMITTING_SUPPORT_TEAMS, HOME_EMBER_PROTECTION, FIRE_RESISTANT_GARDENS,
-    EMERGENCY_COMMUNICATION_NETWORKS, CONSTRUCTION_TRAINING_PROGRAMS, 
-    FIRE_RESISTANT_DESIGNS, PRIORITIZE_FAMILIES, FINANCIAL_ASSISTANCE_LONG_TERM, 
-    ACCELERATED_PERMITTING, TEMPORARY_HOUSING, DEFENSIBLE_SPACE_INCENTIVES, 
-    EMERGENCY_COMMUNICATION_HUBS, FIND_FINANCIAL_SUPPORT))
+    unpivot (
+        vote for vote_option in
+        (
+            mandatory_greywater, enhanced_fire_detection, enhanced_water_infrastructure,
+            increased_housing_density, underground_power_safety, homeowner_education,
+            permitting_support_teams, home_ember_protection, fire_resistant_gardens,
+            emergency_communication_networks, construction_training_programs,
+            fire_resistant_designs, prioritize_families, financial_assistance_long_term,
+            accelerated_permitting, temporary_housing, defensible_space_incentives,
+            emergency_communication_hubs, find_financial_support
+        )
+    )
 ),
 
---enable matching vote options to comments 
+--enable matching vote options to comments
 vote_targets as (
-    select 
+    select
         participant_id,
         vote_option,
         vote,
-        case 
+        case
             when vote_option = 'ACCELERATED_PERMITTING' then 'Accelerated ADU and duplex permitting'
             when vote_option = 'HOMEOWNER_EDUCATION' then 'Comprehensive homeowner education program'
             when vote_option = 'PERMITTING_SUPPORT_TEAMS' then 'Dedicated permitting support teams'
@@ -39,8 +42,8 @@ vote_targets as (
             when vote_option = 'TEMPORARY_HOUSING' then 'Temporary housing'
             when vote_option = 'UNDERGROUND_POWER_SAFETY' then 'Underground power lines and equipment safety'
         end as target_name,
-        _FIVETRAN_SYNCED
-    
+        _fivetran_synced
+
     from votes_wide
 )
 
