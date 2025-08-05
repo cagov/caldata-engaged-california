@@ -29,6 +29,9 @@ sources:
           - name: TARGET
           - name: TOPIC
           - name: TYPE
+          - name: ODI_MODERATION_STATUS
+            description: |
+              column brought in from the Moderation Coda to denote which comments have been approved
           - name: _FIVETRAN_SYNCED
       - name: DATA_UPDATED
         columns:
