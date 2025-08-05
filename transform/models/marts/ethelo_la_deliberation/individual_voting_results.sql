@@ -35,27 +35,23 @@ comments as (
         target,
         ROW_NUMBER() over (partition by posted_by_id, target order by like_count asc, reply_count desc) as comment_rank
     from {{ ref('stg_ethelo_la_deliberation_comments') }}
-),
-
-comments_ranked as (
-    select * from comments
-    where comment_rank = 1
+    qualify comment_rank = 1
 ),
 
 final_table as (
     select
         votes.*,
         vote_summary.consensus,
-        comments_ranked.comment_id,
-        comments_ranked.comment_content,
-        comments_ranked.like_count,
-        comments_ranked.reply_count
+        comments.comment_id,
+        comments.comment_content,
+        comments.like_count,
+        comments.reply_count
     from votes
     inner join vote_summary on votes.target_name = vote_summary.option
-    left join comments_ranked
+    left join comments
         on
-            votes.participant_id = comments_ranked.posted_by_id
-            and votes.target_name = comments_ranked.target
+            votes.participant_id = comments.posted_by_id
+            and votes.target_name = comments.target
 
 )
 
