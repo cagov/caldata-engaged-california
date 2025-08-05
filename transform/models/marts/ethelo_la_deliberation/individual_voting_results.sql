@@ -39,7 +39,7 @@ comments as (
 
 comments_ranked as (
     select * from comments
-    where comment_ranked = 1
+    where comment_rank = 1
 ),
 
 final_table as (
