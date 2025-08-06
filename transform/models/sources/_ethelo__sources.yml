@@ -136,6 +136,9 @@ sources:
           - name: TARGET_DESCRIPTION
           - name: TOPIC
           - name: TYPE
+          - name: ODI_MODERATION_STATUS
+            description: |
+              column brought in from the Moderation Coda to denote which comments have been approved
           - name: _FIVETRAN_SYNCED
           - name: ODI_LAST_MODIFIED
       - name: INVITATION_EVENTS
@@ -252,3 +255,64 @@ sources:
           - name: SOMEWHAT_SUPPORTIVE
           - name: CONFLICT
           - name: OPTION
+  - name: FIVETRAN_EMAIL_CONNECTOR
+    database: RAW_ENGCA_PRD
+    schema: EMAIL
+    description: |
+      Ethelo data for the LA Fires Deliberation engagement (July 2025 -) emailed once daily to
+      the Fivetran address for the email connector.
+    tables:
+      - name: ETHELO_EMAILED_REPORTS
+        columns:
+          - name: PARTICIPANT
+            description: "Identifier for the survey participant."
+          - name: _DIRECTORY
+            description: "Path to the Fivetran directory containing relevant files."
+          - name: _FIVETRAN_SYNCED
+            description: "Timestamp indicating when the data was last synced with Fivetran."
+          - name: MANDATORY_GREYWATER_SYSTEMS_FOR_NEW_BUILDINGS
+            description: "How the participant voted for the option indicated by this column."
+          - name: FINAL_THOUGHTS_HOW_DO_YOU_FEEL_ABOUT_THE_COMMUNITY_S_TOP_RECOVERY_OPTIONS_AS_THEY_STAND_NOW_
+            description: "Participant's final thoughts on the effectiveness of recovery options."
+          - name: CIVILITY_PLEDGE_AGREEMENT
+            description: "Agreement to adhere to community civility standards."
+          - name: RESILIENT_EMERGENCY_COMMUNICATION_NETWORKS
+            description: "How the participant voted for the option indicated by this column."
+          - name: _MODIFIED
+            description: "Indicates whether the data has been modified since the last update."
+          - name: MODERATION_POLICY_AGREE_TO_TERMS
+            description: "Confirmation of agreement to the moderation policy terms."
+          - name: MODERATION_POLICY_18_OR_OLDER
+            description: "Confirmation that the participant is 18 years or older."
+          - name: ENHANCED_FIRE_DETECTION_INFRASTRUCTURE
+            description: "How the participant voted for the option indicated by this column."
+          - name: _FILE
+            description: "Reference to the associated file for the data entry."
+          - name: FINAL_THOUGHTS_SHARE_MORE_ABOUT_YOUR_GENERAL_OUTLOOK_ON_FIRES_RECOVERY
+            description: "Participant's reflection on their outlook in recovery efforts."
+          - name: _LINE
+            description: "Line number in the source data file."
+          - name: _SHEET_NAME
+            description: "Name of the sheet from which the data was extracted."
+          - name: ENHANCED_WATER_INFRASTRUCTURE_FOR_FIRE_PROTECTION
+            description: "How the participant voted for the option indicated by this column."
+          - name: INCREASED_HOUSING_DENSITY_AND_EXPEDITED_PERMITS
+            description: "How the participant voted for the option indicated by this column."
+          - name: UNDERGROUND_POWER_LINES_AND_EQUIPMENT_SAFETY
+            description: "How the participant voted for the option indicated by this column."
+          - name: COMPREHENSIVE_HOMEOWNER_EDUCATION_PROGRAM
+            description: "How the participant voted for the option indicated by this column."
+          - name: DEDICATED_PERMITTING_SUPPORT_TEAMS
+            description: "How the participant voted for the option indicated by this column."
+          - name: MANDATORY_HOME_EMBER_PROTECTION_STANDARDS
+            description: "How the participant voted for the option indicated by this column."
+          - name: FIRE_RESISTANT_AND_WATER_FRIENDLY_DEMONSTRATION_GARDENS
+            description: "How the participant voted for the option indicated by this column."
+          - name: |
+              FINAL_THOUGHTS_DID_TAKING_THE_SURVEY_INCREASE_YOUR_CONFIDENCE_IN_LOS_ANGELES_FIRES_RECOVERY_EFFORTS_IN_GENERAL_
+            description: |
+              "Participant's reflection on whether the survey increased their confidence in recovery efforts."
+          - name: EXPANDED_CONSTRUCTION_TRAINING_PROGRAMS
+            description: "How the participant voted for the option indicated by this column."
+          - name: PRE_APPROVED_FIRE_RESISTANT_BUILDING_DESIGNS
+            description: "How the participant voted for the option indicated by this column."

@@ -6,6 +6,7 @@ moderators, or Ethelo staff, and re-formatting and joining data that was split a
 WITH raw_comments AS (
     SELECT
         to_varchar(comment_id) AS comment_id,
+        array_to_string(odi_moderation_status, ',') AS odi_moderation_status,
         to_varchar(reply_to_id) AS reply_to_id,
         comment_content,
         array_to_string(posted_by_id, ',') AS airtable_posted_by_id,
@@ -65,3 +66,5 @@ INNER JOIN targets AS c
 --  filter out comments from testers and bring in participant id
 INNER JOIN participants_filtered AS d
     ON a.airtable_posted_by_id = d.airtable_id
+--filter out any comment that is either removed or still pending moderation
+WHERE a.odi_moderation_status = 'Approved'
