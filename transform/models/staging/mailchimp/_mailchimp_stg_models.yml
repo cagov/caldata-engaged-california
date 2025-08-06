@@ -60,9 +60,9 @@ models:
       - name: bounce_type
       - name: _FIVETRAN_SYNCED
   - name: stg_mailchimp_list_filter
-    description: "Filters Mailchimp lists to only include the 'Engaged California' audience."
+    description: "Filters Mailchimp lists to only include relevant audiences."
     columns:
       - name: list_id
         description: "Unique identifier for the Mailchimp list."
       - name: list_name
-        description: "Name of the Mailchimp list (should be 'Engaged California')."
+        description: "Name of the Mailchimp lists to be included in the model."
