@@ -43,8 +43,6 @@ sources:
       - name: ODI_ORIGINAL_INVITE_TIMES
         columns:
           - name: ID
-          # - name: ODI_ORIGINAL_INVITE_TIMES
-          # - name: ODI_ORIGINAL_INVITE_TIMES_UPDATED
           - name: _FIVETRAN_SYNCED
           - name: ID_NUMBER
           - name: LAST_INVITE_SENT_3_26_2025_2_53_PM_
@@ -178,7 +176,6 @@ sources:
           - name: TYPE
           - name: _FIVETRAN_SYNCED
           - name: CONTENT
-          # - name: ODI_LAST_MODIFIED
       - name: INVITATION_EVENTS
         description: derived table in Airtable that tracks the history of invitations sent to participants.
         columns:
@@ -219,10 +216,6 @@ sources:
           - name: JOINED_ON
           - name: LAST_INVITE_SENT
           - name: LAST_SIGN_IN
-          # - name: ODI_FIRST_INVITE_SENT
-          # - name: ODI_COMMENTS
-          # - name: ODI_COMMENT_COUNT_CURRENT
-          # - name: ODI_LAST_MODIFIED
           - name: ROLES
           - name: STATUS
           - name: SUCCESSFUL_REINVITE
@@ -241,13 +234,6 @@ sources:
           - name: FINAL_OUTLOOK
           - name: AIRTABLE_ID
           - name: RESENT_INVITE
-      # - name: REMOVED_COMMENTS
-      #   columns:
-      #     - name: COMMENT_ID
-      #     - name: CREATED
-      #     - name: STATUS
-      #     - name: ID
-      #     - name: _FIVETRAN_SYNCED
       - name: SURVEY_BY_QUESTION
         columns:
           - name: ANSWER
