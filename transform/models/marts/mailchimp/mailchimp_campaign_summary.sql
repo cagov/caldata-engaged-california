@@ -5,6 +5,8 @@ with campaigns as (
 
 select
     campaign_id,
+    list_name,
+    list_id,
     type as campaign_type,
     title,
     subject_line,
