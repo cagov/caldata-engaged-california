@@ -32,6 +32,7 @@ sources:
           - name: TOPIC
           - name: TYPE
           - name: _FIVETRAN_SYNCED
+          - name: ODI_MODERATION_STATUS
       - name: DATA_UPDATED
         columns:
           - name: DATA_UPLOADER
@@ -81,6 +82,7 @@ sources:
           - name: BLACK_OR_AFRICAN_AMERICAN_WRITE_IN
           - name: NATIVE_HAWAIIAN_OR_PACIFIC_ISLANDER_WRITE_IN
           - name: TOPIC_THEMES
+          - name: IF_YOU_HAD_A_HOME_OR_BUSINESS_DAMAGED_OR_LOST_OR_LOST_EMPLOYMENT_OR_INCOME_TO_THE_RECENT_FIRES_IN_LA_SELECT_THE_ZIP_CODE_OF_THAT_HOME_BUSINESS_OR_PLACE_OF_EMPLOYMENT_ # yamllint disable-line rule:line-length
       - name: SURVEY_BY_QUESTION
         columns:
           - name: ANSWER
@@ -176,6 +178,7 @@ sources:
           - name: TYPE
           - name: _FIVETRAN_SYNCED
           - name: CONTENT
+          - name: ODI_MODERATION_STATUS
       - name: INVITATION_EVENTS
         description: derived table in Airtable that tracks the history of invitations sent to participants.
         columns:
