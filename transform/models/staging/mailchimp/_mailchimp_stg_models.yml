@@ -65,4 +65,4 @@ models:
       - name: list_id
         description: "Unique identifier for the Mailchimp list."
       - name: list_name
-        description: "Name of the Mailchimp list (should be 'Engaged California')."
+        description: "Name of the Mailchimp lists to be included in the model."
