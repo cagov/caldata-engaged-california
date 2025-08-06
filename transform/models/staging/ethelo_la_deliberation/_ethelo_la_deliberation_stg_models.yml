@@ -80,47 +80,47 @@ models:
         description: Last fivetran sync timestamp.
 
   - name: stg_ethelo_la_deliberation_voting_summary
-    description: "Staging model for voting summary, including Likert scale totals, vote metrics, and scenario flags."
+    description: ""
     columns:
       - name: TOPIC
-        description: "Topic of the vote."
+        description: ""
       - name: OPTION
-        description: "Option being voted on."
+        description: ""
       - name: STRONGLY_OPPOSED
-        description: "Number of strongly opposed votes."
+        description: ""
       - name: OPPOSED
-        description: "Number of opposed votes."
+        description: ""
       - name: SOMEWHAT_OPPOSED
-        description: "Number of somewhat opposed votes."
+        description: ""
       - name: NEUTRAL
-        description: "Number of neutral votes."
+        description: ""
       - name: SOMEWHAT_SUPPORTIVE
-        description: "Number of somewhat supportive votes."
+        description: ""
       - name: SUPPORTIVE
-        description: "Number of supportive votes."
+        description: ""
       - name: STRONGLY_SUPPORTIVE
-        description: "Number of strongly supportive votes."
+        description: ""
       - name: ABSTAIN_VOTES
-        description: "Number of abstain votes."
+        description: ""
       - name: TOTAL_VOTES
-        description: "Total number of votes."
+        description: ""
       - name: POSITIVE_VOTES
-        description: "Number of positive votes."
+        description: ""
       - name: NEGATIVE_VOTES
-        description: "Number of negative votes."
+        description: ""
       - name: SUPPORT
-        description: "Support metric."
+        description: ""
       - name: CONSENSUS
-        description: "Consensus metric."
+        description: ""
       - name: CONFLICT
-        description: "Conflict metric."
+        description: ""
       - name: APPROVAL
-        description: "Approval metric."
+        description: ""
       - name: AVERAGE_WEIGHTING
-        description: "Average weighting metric."
+        description: ""
       - name: IN_BEST_SCENARIO
-        description: "Best scenario flag."
+        description: ""
       - name: AIRTABLE_ID
-        description: "Airtable record ID."
+        description: ""
       - name: _fivetran_synced
-        description: "Last fivetran sync timestamp."
+        description: ""
