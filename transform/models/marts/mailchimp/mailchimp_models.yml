@@ -3,6 +3,10 @@ models:
   - name: mailchimp_campaign_summary
     description: "Summary of Mailchimp campaigns, including engagement metrics."
     columns:
+      - name: list_name
+        description: "Name of the Mailchimp list/audience."
+      - name: LIST_ID
+        description: "Unique identifier for the Mailchimp list/audience."
       - name: campaign_id
         description: "Unique identifier for the campaign."
       - name: campaign_type
@@ -27,9 +31,11 @@ models:
         description: "Count of unique email addresses that bounced."
       - name: max_fivetran_sync_date
         description: "Latest Fivetran sync date."
-  - name: mailchimp_subscribers_by_segment
+  - name: mailchimp_engaged_california_subscribers_by_segment
     description: "Subscriber counts by Mailchimp segment."
     columns:
+      - name: list_name
+        description: "Name of the Mailchimp list/audience."
       - name: segments
         description: "Segment string for Mailchimp subscribers."
       - name: total_subscribers

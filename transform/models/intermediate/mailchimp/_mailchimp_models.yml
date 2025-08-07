@@ -35,9 +35,26 @@ models:
   - name: int_mailchimp_subscribed_segment_members
     description: "Mailchimp subscribed segment members, with segment membership details."
     columns:
+      - name: list_name
+        description: "Name of the Mailchimp list/audience."
+      - name: LIST_ID
+        description: "Unique identifier for the Mailchimp list/audience."
       - name: unique_email_id
         description: "Unique identifier for each email address."
       - name: segments
-        description: "String listing all segments a member is part of, separated by underscores."
+        description: "String listing all segments a member is part of."
+      - name: max_fivetran_sync_date
+        description: "Latest Fivetran sync date for the member."
+  - name: int_mailchimp_engaged_california_subscribed_segment_members
+    description: "Engaged California Mailchimp subscribed segment members, with segment membership details."
+    columns:
+      - name: list_name
+        description: "Name of the Mailchimp list/audience."
+      - name: list_id
+        description: "Unique identifier for the Mailchimp list/audience."
+      - name: unique_email_id
+        description: "Unique identifier for each email address."
+      - name: segments
+        description: "String listing all segments a member is part of"
       - name: max_fivetran_sync_date
         description: "Latest Fivetran sync date for the member."

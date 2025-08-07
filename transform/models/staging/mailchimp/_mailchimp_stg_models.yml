@@ -25,12 +25,14 @@ models:
       - name: unsubscribe_reason
       - name: _FIVETRAN_SYNCED
       - name: list_name
+      - name: list_id
   - name: stg_mailchimp_interest_members
     description: One row per interest per member subscribed to an Engaged California list in Mailchimp.
     columns:
       - name: member_id
       - name: interest_id
       - name: interest_name
+      - name: list_id
       - name: _fivetran_synced
   - name: stg_mailchimp_campaign_recipients
     description: One row per recipient per campaign from an Engaged California list in Mailchimp.
@@ -60,9 +62,9 @@ models:
       - name: bounce_type
       - name: _FIVETRAN_SYNCED
   - name: stg_mailchimp_list_filter
-    description: "Filters Mailchimp lists to only include relevant audiences."
+    description: One row per Mailchimp list (aka audience) with a filter applied for Engaged California.
     columns:
       - name: list_id
-        description: "Unique identifier for the Mailchimp list."
+        description: Unique identifier for the Mailchimp list.
       - name: list_name
-        description: "Name of the Mailchimp lists to be included in the model."
+        description: Name of the Mailchimp list.
