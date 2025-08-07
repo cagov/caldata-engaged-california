@@ -4,10 +4,10 @@
 
 --This view contains logic specific to the Engaged California Mailchimp audience ("list").
 
-with 
+with
 
 lists as (
-    select id as list_id from RAW_ENGCA_PRD.MAILCHIMP.LIST
+    select list_id from {{ ref('stg_mailchimp_list_filter') }}
     where name = 'Engaged California'
 ),
 
@@ -47,8 +47,9 @@ interest_segments as (
     inner join lists
         on subscribers.list_id = lists.list_id
     left join interests --not all subscribers have an interest, we want to count the ones that don't too
-        on subscribers.member_id = interests.member_id
-        and subscribers.list_id = interests.list_id
+        on
+            subscribers.member_id = interests.member_id
+            and subscribers.list_id = interests.list_id
 ),
 
 --define any segments that rely on merge fields here:
