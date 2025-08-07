@@ -5,14 +5,11 @@
 --This view contains logic specific to the Engaged California Mailchimp audience ("list").
 
 with
-lists as (
-    select list_id from {{ ref('stg_mailchimp_list_filter') }}
-    where list_name = 'Engaged California'
-),
-
 subscribers as (
     select * from {{ ref('stg_mailchimp_list_members') }}
-    where subscribe_status = 'subscribed' --only include subscribed members
+    where
+        subscribe_status = 'subscribed' --only include subscribed members
+        and list_name = 'Engaged California' --only include members from the Engaged California list
 ),
 
 interests as (
@@ -43,8 +40,6 @@ interest_segments as (
             else 'nointerest'
         end as segment
     from subscribers
-    inner join lists
-        on subscribers.list_id = lists.list_id
     left join interests --not all subscribers have an interest, we want to count the ones that don't too
         on
             subscribers.member_id = interests.member_id
@@ -67,8 +62,6 @@ mergefield_segments as (
         end as segment -- currently, this works because users MUST select an option
     --and can ONLY select one value in this field
     from subscribers
-    inner join lists
-        on subscribers.list_id = lists.list_id
     inner join member_merge_fields --only include members with a merge field value,
     --since the interests cte already captures those without a value
         on subscribers.member_id = member_merge_fields.id
