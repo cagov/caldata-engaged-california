@@ -2,9 +2,14 @@
 --All segments built in Mailchimp Paid accounts are 'dynamic' segments, which are unavailable
 --to pull directly from the API. So we have to recreate them by audience definition here.
 
-with subscribers as (
+--This view contains logic specific to the Engaged California Mailchimp audience ("list").
+
+with
+subscribers as (
     select * from {{ ref('stg_mailchimp_list_members') }}
-    where subscribe_status = 'subscribed' --only include subscribed members
+    where
+        subscribe_status = 'subscribed' --only include subscribed members
+        and list_name = 'Engaged California' --only include members from the Engaged California list
 ),
 
 interests as (
@@ -25,6 +30,7 @@ member_merge_fields as (
 interest_segments as (
     select
         subscribers.list_name,
+        subscribers.list_id,
         subscribers.unique_email_id,
         subscribers._fivetran_synced,
         case
@@ -35,13 +41,16 @@ interest_segments as (
         end as segment
     from subscribers
     left join interests --not all subscribers have an interest, we want to count the ones that don't too
-        on subscribers.member_id = interests.member_id
+        on
+            subscribers.member_id = interests.member_id
+            and subscribers.list_id = interests.list_id
 ),
 
 --define any segments that rely on merge fields here:
 mergefield_segments as (
     select
         subscribers.list_name,
+        subscribers.list_id,
         subscribers.unique_email_id,
         subscribers._fivetran_synced,
         case
@@ -67,13 +76,15 @@ segment_components as (
 --create a string that captures all segments a member is a part of:
 basic_segments as (
     select
+        list_name,
+        list_id,
         unique_email_id,
         listagg(distinct segment, '_') within group (
             order by segment
         ) as segments,
         max(_fivetran_synced) as max_fivetran_sync_date
     from segment_components
-    group by unique_email_id
+    group by list_name, list_id, unique_email_id
 )
 
 --final output
