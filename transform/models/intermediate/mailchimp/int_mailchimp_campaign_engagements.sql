@@ -30,6 +30,6 @@ select
 from campaign_members
 left join campaign_actions
     on
-        campaign_members.list_id = campaign_actions.list_id  -- campaign_id appears to be unique, this may be unnecessary
-        campaign_members.campaign_id = campaign_actions.campaign_id
+        campaign_members.list_id = campaign_actions.list_id -- campaign_id may be already unique
+        and campaign_members.campaign_id = campaign_actions.campaign_id
         and campaign_members.member_id = campaign_actions.member_id

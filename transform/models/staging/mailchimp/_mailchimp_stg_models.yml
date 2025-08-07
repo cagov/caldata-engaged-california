@@ -58,3 +58,10 @@ models:
       - name: list_id
       - name: bounce_type
       - name: _FIVETRAN_SYNCED
+  - name: stg_mailchimp_list_filter
+    description: One row per Mailchimp list (aka audience) with a filter applied for Engaged California.
+    columns:
+      - name: list_id
+        description: Unique identifier for the Mailchimp list.
+      - name: list_name
+        description: Name of the Mailchimp list.

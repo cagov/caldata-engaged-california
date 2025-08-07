@@ -32,6 +32,7 @@ list_members as (
 select
     member_id,
     unique_email_id,
+    list_id,
     list_name,
     subscribe_status,
     source,
