@@ -33,6 +33,8 @@ sources:
           - name: TYPE
           - name: _FIVETRAN_SYNCED
           - name: ODI_MODERATION_STATUS
+            description: |
+              column brought in from the Moderation Coda to denote which comments have been approved
       - name: DATA_UPDATED
         columns:
           - name: DATA_UPLOADER
@@ -180,6 +182,8 @@ sources:
           - name: _FIVETRAN_SYNCED
           - name: CONTENT
           - name: ODI_MODERATION_STATUS
+            description: |
+              column brought in from the Moderation Coda to denote which comments have been approved
       - name: INVITATION_EVENTS
         description: derived table in Airtable that tracks the history of invitations sent to participants.
         columns:

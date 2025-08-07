@@ -39,6 +39,9 @@ models:
       - name: TYPE
       - name: CONTENT
       - name: ODI_MODERATION_STATUS
+        description: |
+          column brought in from the Moderation Coda to denote which comments have been approved
+
   - name: voting_summary
     description: "Voting summary and metrics for LA deliberation topics/options."
     columns:
