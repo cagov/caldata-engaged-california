@@ -16,6 +16,7 @@ interest as (
     select
         interest.id as interest_id,
         interest.name as interest_name,
+        interest.list_id,
         interest._fivetran_synced
 
     from {{ source('MAILCHIMP', 'INTEREST') }} as interest
@@ -33,6 +34,7 @@ interest_member as (
 select
     interest.interest_id,
     interest.interest_name,
+    interest.list_id,
     interest_member.member_id,
     interest_member._fivetran_synced
 
