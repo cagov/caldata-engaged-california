@@ -24,4 +24,4 @@ select
     sum(case when segments like '%nointerest%' then total_subscribers else 0 end) as no_segment_total,
     max(max_fivetran_sync_date) as max_fivetran_sync_date
 
-from {{ ref('mailchimp_subscribers_by_segment') }}
+from {{ ref('mailchimp_engaged_california_subscribers_by_segment') }}
