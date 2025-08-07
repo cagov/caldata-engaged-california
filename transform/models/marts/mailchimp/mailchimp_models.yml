@@ -16,7 +16,7 @@ models:
       - name: subject_line
         description: "Subject line of the campaign email."
       - name: archive_url
-        description: "URL to the archived campaign."
+        description: ""
       - name: template_id
         description: "Template identifier used for the campaign."
       - name: send_time
