@@ -4,6 +4,7 @@ with mailchimp_campaigns as (
 
 rates as (
     select
+        list_name,
         unique_email_ids_sent,
         unique_opens / unique_email_ids_sent as open_rate,
         unique_clicks / unique_email_ids_sent as click_rate,
@@ -16,6 +17,7 @@ rates as (
 
 mailchimp_avg_rates as (
     select
+        list_name,
         sum(unique_email_ids_sent) as total_sends,
         avg(open_rate) as avg_open_rate,
         avg(click_rate) as avg_click_rate,
@@ -24,7 +26,7 @@ mailchimp_avg_rates as (
         max(max_fivetran_sync_date) as max_fivetran_sync_date
 
     from rates
-    group by campaign_type
+    group by list_name, campaign_type
 )
 
 select * from mailchimp_avg_rates
