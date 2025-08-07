@@ -5,10 +5,9 @@
 --This view contains logic specific to the Engaged California Mailchimp audience ("list").
 
 with
-
 lists as (
     select list_id from {{ ref('stg_mailchimp_list_filter') }}
-    where name = 'Engaged California'
+    where list_name = 'Engaged California'
 ),
 
 subscribers as (
