@@ -18,6 +18,15 @@ sources:
           - name: SUBSCRIBE_URL_LONG
           - name: _FIVETRAN_DELETED
           - name: _FIVETRAN_SYNCED
+          - name: VISIBILITY
+          - name: PERMISSION_REMINDER
+          - name: USE_ARCHIVE_BAR
+          - name: DEFAULT_SUBJECT
+          - name: DEFAULT_LANGUAGE
+          - name: NOTIFY_ON_SUBSCRIBE
+          - name: NOTIFY_ON_UNSUBSCRIBE
+          - name: LIST_RATING
+          - name: EMAIL_TYPE_OPTION
       - name: MEMBER
         description: All subscriber list members in Mailchimp. Data grain is unique_email_id and list_id.
         columns:
@@ -43,6 +52,14 @@ sources:
               A custom merge field for the subscriber that corresponds to the radio
               button options for a custom email sign up form.
           - name: _FIVETRAN_SYNCED
+          - name: ID
+          - name: LANGUAGE
+          - name: VIP
+          - name: EMAIL_TYPE
+          - name: TIMESTAMP_SIGNUP
+          - name: MEMBER_RATING
+          - name: LAST_CHANGED
+          - name: WEB_ID
       - name: INTEREST
         description: Key table of all interests in Mailchimp
         columns:
@@ -57,6 +74,8 @@ sources:
           - name: SUBSCRIBER_COUNT
             description: Count
           - name: _FIVETRAN_SYNCED
+          - name: _FIVETRAN_DELETED
+          - name: DISPLAY_ORDER
       - name: INTEREST_MEMBER
         description: One row per interest per member.
         columns:
@@ -79,6 +98,31 @@ sources:
           - name: TEMPLATE_ID
           - name: _FIVETRAN_DELETED
           - name: _FIVETRAN_SYNCED
+          - name: CREATE_TIME
+          - name: LONG_ARCHIVE_URL
+          - name: SEGMENT_TEXT
+          - name: SEGMENT_ID
+          - name: TITLE
+          - name: AUTHENTICATE
+          - name: TIMEWARP
+          - name: REPLY_TO
+          - name: USE_CONVERSATION
+          - name: FOLDER_ID
+          - name: AUTO_FOOTER
+          - name: INLINE_CSS
+          - name: DRAG_AND_DROP
+          - name: CLICKTALE
+          - name: TRACK_HTML_CLICKS
+          - name: TRACK_TEXT_CLICKS
+          - name: TRACK_GOALS
+          - name: TRACK_OPENS
+          - name: TRACK_ECOMM_360
+          - name: GOOGLE_ANALYTICS
+          - name: WINNING_COMBINATION_ID
+          - name: WINNING_CAMPAIGN_ID
+          - name: WINNER_CRITERIA
+          - name: WAIT_TIME
+          - name: TEST_SIZE
       - name: CAMPAIGN_RECIPIENT
         description: All recipients of all Mailchimp campaigns
         columns:
@@ -87,6 +131,7 @@ sources:
           - name: MEMBER_ID
           - name: STATUS
           - name: _FIVETRAN_SYNCED
+          - name: COMBINATION_ID
       - name: CAMPAIGN_RECIPIENT_ACTIVITY
         description: All actions by recipients of all Mailchimp campaigns
         columns:
@@ -99,3 +144,4 @@ sources:
           - name: URL
             description: If the action is "click" this column shows the URL that was clicked.
           - name: _FIVETRAN_SYNCED
+          - name: COMBINATION_ID

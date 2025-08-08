@@ -78,3 +78,98 @@ models:
         description: The date when the participant joined.
       - name: _fivetran_synced
         description: Last fivetran sync timestamp.
+
+  - name: stg_ethelo_la_deliberation_voting_summary
+    description: ""
+    columns:
+      - name: TOPIC
+        description: ""
+      - name: OPTION
+        description: ""
+      - name: STRONGLY_OPPOSED
+        description: ""
+      - name: OPPOSED
+        description: ""
+      - name: SOMEWHAT_OPPOSED
+        description: ""
+      - name: NEUTRAL
+        description: ""
+      - name: SOMEWHAT_SUPPORTIVE
+        description: ""
+      - name: SUPPORTIVE
+        description: ""
+      - name: STRONGLY_SUPPORTIVE
+        description: ""
+      - name: ABSTAIN_VOTES
+        description: ""
+      - name: TOTAL_VOTES
+        description: ""
+      - name: POSITIVE_VOTES
+        description: ""
+      - name: NEGATIVE_VOTES
+        description: ""
+      - name: SUPPORT
+        description: ""
+      - name: CONSENSUS
+        description: ""
+      - name: CONFLICT
+        description: ""
+      - name: APPROVAL
+        description: ""
+      - name: AVERAGE_WEIGHTING
+        description: ""
+      - name: IN_BEST_SCENARIO
+        description: ""
+      - name: AIRTABLE_ID
+        description: ""
+      - name: _fivetran_synced
+        description: ""
+  - name: stg_ethelo_la_deliberation_voting
+    description: ""
+    columns:
+      - name: participant_id
+        description: ""
+      - name: mandatory_greywater
+        description: ""
+      - name: enhanced_fire_detection
+        description: ""
+      - name: enhanced_water_infrastructure
+        description: ""
+      - name: increased_housing_density
+        description: ""
+      - name: underground_power_safety
+        description: ""
+      - name: homeowner_education
+        description: ""
+      - name: permitting_support_teams
+        description: ""
+      - name: home_ember_protection
+        description: ""
+      - name: fire_resistant_gardens
+        description: ""
+      - name: emergency_communication_networks
+        description: ""
+      - name: construction_training_programs
+        description: ""
+      - name: fire_resistant_designs
+        description: ""
+      - name: prioritize_families
+        description: ""
+      - name: financial_assistance_long_term
+        description: ""
+      - name: accelerated_permitting
+        description: ""
+      - name: temporary_housing
+        description: ""
+      - name: defensible_space_incentives
+        description: ""
+      - name: emergency_communication_hubs
+        description: ""
+      - name: find_financial_support
+        description: ""
+      - name: _directory
+        description: ""
+      - name: _file
+        description: ""
+      - name: _fivetran_synced
+        description: ""
