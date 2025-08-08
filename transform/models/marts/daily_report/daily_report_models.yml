@@ -1,0 +1,111 @@
+version: 2
+models:
+  - name: mailchimp_subscribers
+    description: "Aggregated Mailchimp subscriber totals by status."
+    columns:
+      - name: list_name
+        description: "Name of the Mailchimp list/audience."
+      - name: total_subscribed
+        description: "Total number of subscribed emails."
+      - name: total_unsubscribed
+        description: "Total number of unsubscribed emails."
+      - name: max_fivetran_sync_date
+        description: "Latest Fivetran sync date."
+  - name: mailchimp_segments
+    description: "Mailchimp segment subscriber counts for LA Wildfire phases and topics."
+    columns:
+      - name: eaton_phase1_total
+        description: "Total subscribers in Eaton Phase 1 segment."
+      - name: palisades_phase1_total
+        description: "Total subscribers in Palisades Phase 1 segment."
+      - name: eaton_and_palisades_phase1_total
+        description: "Total subscribers in both Eaton and Palisades Phase 1 segments."
+      - name: future_topics
+        description: "Total subscribers in future topics segment."
+      - name: future_topics_only
+        description: "Total subscribers in future topics only segment."
+      - name: eaton_phase2_total
+        description: "Total subscribers in Eaton Phase 2 segment."
+      - name: palisades_phase2_total
+        description: "Total subscribers in Palisades Phase 2 segment."
+      - name: no_fire_phase2_total
+        description: "Total subscribers in no fire Phase 2 segment."
+      - name: no_segment_total
+        description: "Total subscribers with no segment."
+      - name: max_fivetran_sync_date
+        description: "Latest Fivetran sync date."
+  - name: mailchimp_metrics
+    description: "Mailchimp campaign metrics averages by campaign type."
+    columns:
+      - name: list_name
+        description: "Name of the Mailchimp list/audience."
+      - name: total_sends
+        description: "Total number of emails sent."
+      - name: avg_open_rate
+        description: "Average open rate across campaigns."
+      - name: avg_click_rate
+        description: "Average click rate across campaigns."
+      - name: avg_bounce_rate
+        description: "Average bounce rate across campaigns."
+      - name: campaign_type
+        description: "Type of campaign."
+      - name: max_fivetran_sync_date
+        description: "Latest Fivetran sync date."
+  - name: ethelo_la_deliberation_participants
+    description: "Participant counts and join status for LA deliberation."
+    columns:
+      - name: num_invited
+        description: "Number of invited participants."
+      - name: num_joined
+        description: "Number of participants who joined."
+      - name: num_invited_before_today
+        description: "Number of participants invited before today."
+      - name: num_invited_before_today_and_joined
+        description: "Number of participants invited before today and joined."
+      - name: max_fivetran_sync
+        description: "Latest Fivetran sync date."
+  - name: ethelo_la_deliberation_comments
+    description: "Comment counts and participant engagement by evacuation zone."
+    columns:
+      - name: num_comments
+        description: "Number of comments posted."
+      - name: num_participants_w_commments
+        description: "Number of participants who posted comments."
+      - name: evacuation_zone
+        description: "Evacuation zone of participants."
+      - name: max_fivetran_sync
+        description: "Latest Fivetran sync date."
+  - name: email_report_metrics
+    description: "Mailchimp subscriber counts for specific dates and previous day."
+    columns:
+      - name: subcribers_up_to_july_15
+        description: "Subscribers up to July 15, 2025."
+      - name: subcribers_since_july_16
+        description: "Subscribers since July 16, 2025."
+      - name: prev_day_subcribers
+        description: "Subscribers for the previous day."
+      - name: prev_day
+        description: "Date of previous day."
+  - name: mailchimp_engaged_california_segments
+    description: "Mailchimp segment subscriber counts for Engaged California LA Wildfire phases and topics."
+    columns:
+      - name: eaton_phase1_total
+        description: "Total subscribers in Eaton Phase 1 segment."
+      - name: palisades_phase1_total
+        description: "Total subscribers in Palisades Phase 1 segment."
+      - name: eaton_and_palisades_phase1_total
+        description: "Total subscribers in both Eaton and Palisades Phase 1 segments."
+      - name: future_topics
+        description: "Total subscribers in future topics segment."
+      - name: future_topics_only
+        description: "Total subscribers in future topics only segment."
+      - name: eaton_phase2_total
+        description: "Total subscribers in Eaton Phase 2 segment."
+      - name: palisades_phase2_total
+        description: "Total subscribers in Palisades Phase 2 segment."
+      - name: no_fire_phase2_total
+        description: "Total subscribers in no fire Phase 2 segment."
+      - name: no_segment_total
+        description: "Total subscribers with no segment."
+      - name: max_fivetran_sync_date
+        description: "Latest Fivetran sync date."

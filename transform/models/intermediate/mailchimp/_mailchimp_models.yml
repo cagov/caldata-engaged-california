@@ -1,0 +1,60 @@
+version: 2
+models:
+  - name: int_mailchimp_campaign_engagements
+    description: "Mailchimp campaign engagements, joining members, campaigns, and campaign actions."
+    columns:
+      - name: list_name
+        description: "Name of the Mailchimp list/audience."
+      - name: unique_email_id
+        description: "Unique identifier for each email address."
+      - name: member_id
+        description: "Unique identifier for each Mailchimp member."
+      - name: campaign_id
+        description: "Unique identifier for each Mailchimp campaign."
+      - name: action
+        description: "Type of campaign action (e.g., open, click, bounce)."
+      - name: bounce_type
+        description: "Type of bounce if applicable."
+      - name: action_timestamp
+        description: "Timestamp of the campaign action."
+      - name: url
+        description: "URL associated with the campaign action, if any."
+      - name: _fivetran_synced
+        description: "Timestamp when the record was last synced by Fivetran."
+      - name: TYPE
+      - name: CREATE_TIME
+      - name: ARCHIVE_URL
+      - name: STATUS
+      - name: SEND_TIME
+      - name: CONTENT_TYPE
+      - name: LIST_ID
+      - name: TITLE
+      - name: SUBJECT_LINE
+      - name: FROM_NAME
+      - name: TEMPLATE_ID
+  - name: int_mailchimp_subscribed_segment_members
+    description: "Mailchimp subscribed segment members, with segment membership details."
+    columns:
+      - name: list_name
+        description: "Name of the Mailchimp list/audience."
+      - name: LIST_ID
+        description: "Unique identifier for the Mailchimp list/audience."
+      - name: unique_email_id
+        description: "Unique identifier for each email address."
+      - name: segments
+        description: "String listing all segments a member is part of."
+      - name: max_fivetran_sync_date
+        description: "Latest Fivetran sync date for the member."
+  - name: int_mailchimp_engaged_california_subscribed_segment_members
+    description: "Engaged California Mailchimp subscribed segment members, with segment membership details."
+    columns:
+      - name: list_name
+        description: "Name of the Mailchimp list/audience."
+      - name: list_id
+        description: "Unique identifier for the Mailchimp list/audience."
+      - name: unique_email_id
+        description: "Unique identifier for each email address."
+      - name: segments
+        description: "String listing all segments a member is part of"
+      - name: max_fivetran_sync_date
+        description: "Latest Fivetran sync date for the member."

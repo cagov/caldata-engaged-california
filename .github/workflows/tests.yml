@@ -29,3 +29,4 @@ jobs:
         run: |
           uv run dbt deps --project-dir transform
           uv run dbt build --project-dir transform
+          uv run dbt run-operation validate_all_schemas --project-dir transform
