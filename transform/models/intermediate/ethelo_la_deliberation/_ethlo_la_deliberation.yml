@@ -23,7 +23,7 @@ models:
         description: ""
       - name: final_outlook
         description: ""
-  - name: int_participant_voting_responses_wide
+  - name: int_participant_voting_responses
     description: "."
     columns:
       - name: participant_id

@@ -32,7 +32,7 @@ models:
       - name: SUBJECT_LINE
       - name: FROM_NAME
       - name: TEMPLATE_ID
-  - name: int_mailchimp_subscribed_segment_members
+  - name: int_mailchimp_engaged_california_subscribed_segment_members
     description: "Mailchimp subscribed segment members, with segment membership details."
     columns:
       - name: list_name
