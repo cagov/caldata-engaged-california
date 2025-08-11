@@ -11,7 +11,7 @@ with votes as (
             when vote = 'Supportive' then 6
             when vote = 'Strongly supportive' then 7
         end as vote_number
-    from {{ ref('int_participant_voting_responses_wide') }}
+    from {{ ref('int_participant_voting_responses') }}
 
 ),
 

@@ -11,7 +11,7 @@ models:
         description: "Total number of unsubscribed emails."
       - name: max_fivetran_sync_date
         description: "Latest Fivetran sync date."
-  - name: mailchimp_segments
+  - name: mailchimp_engaged_california_segments
     description: "Mailchimp segment subscriber counts for LA Wildfire phases and topics."
     columns:
       - name: eaton_phase1_total

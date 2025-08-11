@@ -305,46 +305,32 @@ sources:
           - name: SLIGHTLY_SUPPORT
           - name: SLIGHTLY_OPPOSE
           - name: ESSENTIAL
-  - name: FIVETRAN_EMAIL_CONNECTOR
+  - name: GOOGLE_DRIVE_CONNECTOR
     database: RAW_ENGCA_PRD
-    schema: EMAIL
+    schema: ENGAGEDCA_GOOGLE_DRIVE
     description: |
-      Ethelo data for the LA Fires Deliberation engagement (July 2025 -) emailed once daily to
-      the Fivetran address for the email connector.
+      Ethelo data for the LA Fires Deliberation engagement (July - August 2025) uploaded once daily to
+      an ODI-owned Google Drive folder by Ethelo.
     tables:
-      - name: ETHELO_EMAILED_REPORTS
+      - name: DISAGGREGATED_VOTES_DATA
         columns:
-          - name: PARTICIPANT
-            description: "Identifier for the survey participant."
-          - name: _DIRECTORY
-            description: "Path to the Fivetran directory containing relevant files."
-          - name: _FIVETRAN_SYNCED
-            description: "Timestamp indicating when the data was last synced with Fivetran."
-          - name: MANDATORY_GREYWATER_SYSTEMS_FOR_NEW_BUILDINGS
-            description: "How the participant voted for the option indicated by this column."
-          - name: FINAL_THOUGHTS_HOW_DO_YOU_FEEL_ABOUT_THE_COMMUNITY_S_TOP_RECOVERY_OPTIONS_AS_THEY_STAND_NOW_
-            description: "Participant's final thoughts on the effectiveness of recovery options."
-          - name: CIVILITY_PLEDGE_AGREEMENT
-            description: "Agreement to adhere to community civility standards."
-          - name: RESILIENT_EMERGENCY_COMMUNICATION_NETWORKS
-            description: "How the participant voted for the option indicated by this column."
-          - name: _MODIFIED
-            description: "Indicates whether the data has been modified since the last update."
-          - name: MODERATION_POLICY_AGREE_TO_TERMS
-            description: "Confirmation of agreement to the moderation policy terms."
-          - name: MODERATION_POLICY_18_OR_OLDER
-            description: "Confirmation that the participant is 18 years or older."
-          - name: ENHANCED_FIRE_DETECTION_INFRASTRUCTURE
-            description: "How the participant voted for the option indicated by this column."
           - name: _FILE
-            description: "Reference to the associated file for the data entry."
-          - name: FINAL_THOUGHTS_SHARE_MORE_ABOUT_YOUR_GENERAL_OUTLOOK_ON_FIRES_RECOVERY
-            description: "Participant's reflection on their outlook in recovery efforts."
+            description: Name of file in the Google Drive folder
           - name: _LINE
             description: "Line number in the source data file."
-          - name: _SHEET_NAME
-            description: "Name of the sheet from which the data was extracted."
+          - name: _MODIFIED
+            description: Timestamp of when the file was last modified in Google Drive
+          - name: _FIVETRAN_SYNCED
+            description: "Timestamp indicating when the data was last synced with Fivetran."
+          - name: PARTICIPANT
+            description: Ethelo platform identifier for the participant.
+          - name: JOINED_DATE
+            description: date on which the participant joined Ethelo
+          - name: INFLUENCE
+            description: influence flag for participant
           - name: ENHANCED_WATER_INFRASTRUCTURE_FOR_FIRE_PROTECTION
+            description: "How the participant voted for the option indicated by this column."
+          - name: ENHANCED_FIRE_DETECTION_INFRASTRUCTURE
             description: "How the participant voted for the option indicated by this column."
           - name: INCREASED_HOUSING_DENSITY_AND_EXPEDITED_PERMITS
             description: "How the participant voted for the option indicated by this column."
@@ -354,34 +340,39 @@ sources:
             description: "How the participant voted for the option indicated by this column."
           - name: DEDICATED_PERMITTING_SUPPORT_TEAMS
             description: "How the participant voted for the option indicated by this column."
-          - name: MANDATORY_HOME_EMBER_PROTECTION_STANDARDS
+          - name: MANDATORY_GREYWATER_SYSTEMS_FOR_NEW_BUILDINGS
             description: "How the participant voted for the option indicated by this column."
           - name: FIRE_RESISTANT_AND_WATER_FRIENDLY_DEMONSTRATION_GARDENS
             description: "How the participant voted for the option indicated by this column."
-          - name: |
-              FINAL_THOUGHTS_DID_TAKING_THE_SURVEY_INCREASE_YOUR_CONFIDENCE_IN_LOS_ANGELES_FIRES_RECOVERY_EFFORTS_IN_GENERAL_
-            description: |
-              "Participant's reflection on whether the survey increased their confidence in recovery efforts."
+          - name: RESILIENT_EMERGENCY_COMMUNICATION_NETWORKS
+            description: "How the participant voted for the option indicated by this column."
           - name: EXPANDED_CONSTRUCTION_TRAINING_PROGRAMS
+            description: "How the participant voted for the option indicated by this column."
+          - name: MANDATORY_HOME_EMBER_PROTECTION_STANDARDS
             description: "How the participant voted for the option indicated by this column."
           - name: PRE_APPROVED_FIRE_RESISTANT_BUILDING_DESIGNS
             description: "How the participant voted for the option indicated by this column."
           - name: PRIORITIZE_FAMILIES
-            description: ""
+            description: "How the participant voted for the option indicated by this column."
           - name: GIVE_FINANCIAL_ASSISTANCE_TO_LONG_TERM_RESIDENTS
-            description: ""
+            description: "How the participant voted for the option indicated by this column."
           - name: ACCELERATED_ADU_AND_DUPLEX_PERMITTING
-            description: ""
+            description: "How the participant voted for the option indicated by this column."
           - name: TEMPORARY_HOUSING
-            description: ""
-          # yamllint disable-line rule:line-length
-          - name: OPENING_QUESTIONS_HOW_WOULD_YOU_DESCRIBE_YOUR_OVERALL_OUTLOOK_ON_LOS_ANGELES_S_RECOVERY_FROM_THE_WILDFIRES_
-            description: ""
+            description: "How the participant voted for the option indicated by this column."
           - name: DEFENSIBLE_SPACE_TAX_INCENTIVES
-            description: ""
+            description: "How the participant voted for the option indicated by this column."
           - name: EMERGENCY_COMMUNICATION_HUBS_IN_COMMUNITIES
-            description: ""
+            description: "How the participant voted for the option indicated by this column."
           - name: HELP_PEOPLE_FIND_FINANCIAL_SUPPORT_PROGRAMS
-            description: ""
-          - name: FINAL_THOUGHTS_HOW_DO_YOU_FEEL_ABOUT_THE_COMMUNITY_AOS_TOP_RECOVERY_OPTIONS_AS_THEY_STAND_NOW_
-            description: ""
+            description: "How the participant voted for the option indicated by this column."
+          - name: UTILITIES_OPTIONS_WEIGHT
+            description: NA - do not use
+          - name: BUILDING_PERMITS_OPTIONS_WEIGHT
+            description: NA - do not use
+          - name: FIRE_PROOFING_OPTIONS_WEIGHT
+            description: NA - do not use
+          - name: REBUILDING_OPTIONS_WEIGHT
+            description: NA - do not use
+          - name: COMMUNITY_FINANCIAL_SUPPORT_OPTIONS_WEIGHT
+            description: NA - do not use
