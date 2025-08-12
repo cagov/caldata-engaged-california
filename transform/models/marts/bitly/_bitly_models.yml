@@ -16,8 +16,6 @@ models:
   - name: bitly_link_clicks
     description: Total all-time click counts for each Bitly link, including link metadata.
     columns:
-      - name: id
-        description: Unique identifier for the Bitly link.
       - name: link
         description: Bitly shortened URL.
       - name: long_url
