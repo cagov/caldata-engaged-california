@@ -1,0 +1,86 @@
+version: 2
+
+models:
+  - name: stg_ethelo_e3_participants
+    description: >
+      This model preps the Participants data from Ethelo by removing all users likely to be ODI staff members,
+      moderators, or Ethelo staff.
+    columns:
+      - name: participant_id
+        description: The unique identifier for the participant in Ethelo.
+      - name: status
+        description: The current status of the participant.
+      - name: influence
+        description: The influence score assigned to the participant. 1 is the highest, 0 is the lowest
+      - name: roles
+        description: The roles assigned to the participant in Ethelo.
+      - name: voting_completed
+        description: Percentage of voting tasks completed by the participant.
+      - name: survey_completed
+        description: Percentage of survey questions completed by the participant.
+      - name: completion
+        description: Percentage of both voting and survey tasks completed by the participant.
+      - name: last_invite_sent
+        description: The date the last invite was sent to the participant.
+      - name: last_sign_in
+        description: The date the participant last signed in.
+      - name: joined_on
+        description: The date the participant joined.
+      - name: _fivetran_synced
+        description: Last fivetran sync timestamp.
+      - name: _file_upload_date
+        description: Date on which this data was downloaded from Ethelo and uploaded to Drive
+
+  - name: stg_ethelo_e3_comments
+    description: >
+      Comments data with reformatted timestamp, an added moderation column, and with comments
+      from test accounts excluded
+    columns:
+      - name: comment_id
+        description: The unique identifier for the comment.
+      - name: reply_to_id
+        description: The identifier for the comment this comment is replying to.
+      - name: comment_content
+        description: The content of the comment.
+      - name: type
+        description: The type associated with the comment. Topic is the highest level of organization
+      - name: target
+        description: The target of the comment. Target is the second level of organization for comments.
+      - name: posted_by_id
+        description: The unique identifier for the participant who posted the comment.
+      - name: posted_on
+        description: The date and time when the comment was posted.
+      - name: reply_count
+        description: "The number of replies to the comment."
+      - name: flag_count
+        description: The number of times the comment has been flagged in Ethelo.
+      - name: like_count
+        description: The number of likes the comment has received.
+      - name: odi_moderation_status
+        description: |
+          Marks a comment as 'moderator approved' if it was posted on or before 5pm the previous day
+          or 'not yet moderated' if posted after 5pm the day before
+      - name: _fivetran_synced
+        description: Last fivetran sync timestamp.
+      - name: _file_upload_date
+        description: Date on which this data was downloaded from Ethelo and uploaded to Drive
+
+  - name: stg_ethelo_e3_survey
+    description: Cleans and enriches survey responses -- nullifies empties, extracts zip, derives race.
+    columns:
+      - name: survey_group
+        description: The category name for the survey question.
+      - name: question
+        description: The survey question being answered.
+      - name: answer
+        description: The response given to the survey question.
+      - name: participant_id
+        description: The unique identifier for the participant providing the response.
+      - name: response_date
+        description: The date when the survey response was submitted.
+      - name: joined_date
+        description: The date when the participant joined.
+      - name: _fivetran_synced
+        description: Last fivetran sync timestamp.
+      - name: _file_upload_date
+        description: Date on which this data was downloaded from Ethelo and uploaded to Drive
