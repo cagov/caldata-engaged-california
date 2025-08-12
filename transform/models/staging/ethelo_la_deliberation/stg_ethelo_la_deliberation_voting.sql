@@ -28,10 +28,13 @@ WITH voting_data AS (
         help_people_find_financial_support_programs AS find_financial_support,
 
         --fivetran metadata
-        _directory,
         _file,
+        _line,
         _fivetran_synced
-    FROM {{ source('FIVETRAN_EMAIL_CONNECTOR', 'ETHELO_EMAILED_REPORTS') }}
+    FROM {{ source('GOOGLE_DRIVE_CONNECTOR', 'DISAGGREGATED_VOTES_DATA') }}
+    QUALIFY
+        _file = MAX(_file) OVER () -- every file name is identical
+        --except for the date (in YYYYMMDD format), so this should grab the latest data
 ),
 
 --bring in the filtered list of participants (no beta testers)
