@@ -1,4 +1,4 @@
-with 
+with
 links as (
     select * from {{ ref('stg_bitly_links') }}
 ),
@@ -13,4 +13,4 @@ select
     clicks.click_date,
     clicks.clicks
 from links
-    join clicks on links.id = clicks.bitlink_id
+inner join clicks on links.id = clicks.bitlink_id
