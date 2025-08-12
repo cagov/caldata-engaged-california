@@ -1,9 +1,8 @@
 WITH survey_responses AS (
-    SELECT
-        *
+    SELECT *
     FROM {{ source('GOOGLE_DRIVE_CONNECTOR', 'E_3_SURVEY_BY_QUESTION') }}
     QUALIFY
-        _modified = max(_modified) over () -- filter to latest upload
+        _modified = max(_modified) OVER () -- filter to latest upload
 ),
 
 participants_filtered AS (
@@ -25,14 +24,16 @@ final AS (
     --filter out staff and test accounts:
     INNER JOIN participants_filtered AS b ON a.participant = b.participant_id
     --filter out test and since-deleted questions:
-    WHERE a.question in ('State of California employee certification',
+    WHERE a.question IN (
+        'State of California employee certification',
         'Civility pledge agreement',
         'Moderation policy agreement',
         'Moderation policy agreement - I am 18 or older',
-        'Opening questions - Position type', 
+        'Opening questions - Position type',
         'Opening questions - How long have you worked for the State of California? ',
         'Opening questions - What makes you proud about your role in public service?',
-        'State of California departments - Which department or agency does your idea apply to?')
+        'State of California departments - Which department or agency does your idea apply to?'
+    )
 )
 
 SELECT * FROM final

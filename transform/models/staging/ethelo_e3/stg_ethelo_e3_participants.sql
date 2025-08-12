@@ -7,7 +7,7 @@ WITH source_participants AS (
     SELECT *
     FROM {{ source('GOOGLE_DRIVE_CONNECTOR', 'E_3_PARTICIPANTS') }}
     QUALIFY
-        _modified = max(_modified) over () -- filter to latest upload
+        _modified = max(_modified) OVER () -- filter to latest upload
 ),
 
 filtered_participants AS (
@@ -16,14 +16,14 @@ filtered_participants AS (
         source_participants.status,
         source_participants.influence,
         source_participants.roles,
-        source_participants.voting_complete as voting_completed,
+        source_participants.voting_complete AS voting_completed,
         source_participants.survey_completed,
         source_participants.completion,
         source_participants.last_invite_sent,
         source_participants.last_sign_in,
         source_participants.joined_on,
         source_participants._fivetran_synced,
-        source_participants._modified as _file_upload_date
+        source_participants._modified AS _file_upload_date
     FROM source_participants
     WHERE
         --Remove any user who has a role in Ethelo other than just 'Participant'
