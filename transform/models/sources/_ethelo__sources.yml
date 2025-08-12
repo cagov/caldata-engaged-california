@@ -448,7 +448,6 @@ sources:
             description: Question category
           - name: QUESTION
           - name: ANSWER
-          - name: ID
           - name: INFLUENCE
           - name: JOINED_DATE
           - name: PARTICIPANT

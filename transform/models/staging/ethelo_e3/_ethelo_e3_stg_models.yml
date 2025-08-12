@@ -52,8 +52,6 @@ models:
         description: The date and time when the comment was posted.
       - name: reply_count
         description: "The number of replies to the comment."
-      - name: flag_count
-        description: The number of times the comment has been flagged in Ethelo.
       - name: like_count
         description: The number of likes the comment has received.
       - name: odi_moderation_status
