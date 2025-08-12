@@ -1,4 +1,4 @@
-with 
+with
 links as (
     select * from {{ ref('stg_bitly_links') }}
 ),
@@ -17,7 +17,7 @@ select
     links.created_by,
     sum(clicks.clicks) as total_clicks
 from links
-    join clicks on links.id = clicks.bitlink_id
+inner join clicks on links.id = clicks.bitlink_id
 group by
     links.link,
     links.long_url,
