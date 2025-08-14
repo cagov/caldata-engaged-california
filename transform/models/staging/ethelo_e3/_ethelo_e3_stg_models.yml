@@ -64,7 +64,7 @@ models:
         description: Date on which this data was downloaded from Ethelo and uploaded to Drive
 
   - name: stg_ethelo_e3_survey
-    description: Cleans and enriches survey responses -- nullifies empties, extracts zip, derives race.
+    description: Filters survey responses to exclude test accounts and remove deleted platform questions.
     columns:
       - name: survey_group
         description: The category name for the survey question.
