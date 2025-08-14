@@ -3,15 +3,15 @@ links as (
     select * from {{ source('BITLY','BITLINK') }}
 ),
 
-groups as (
+bitly_groups as (
     select * from {{ source('BITLY','GROUPS') }}
 ),
 
-orgs as (
+bitly_orgs as (
     select * from {{ source('BITLY','ORGANIZATION') }}
 ),
 
-users as (
+bitly_users as (
     select * from {{ source('BITLY','USERS') }}
 )
 
@@ -20,12 +20,12 @@ select
     links.link,
     links.long_url,
     links.title,
-    orgs.name as organization_name,
-    groups.name as group_name,
+    bitly_orgs.name as organization_name,
+    bitly_groups.name as group_name,
     links.created_at,
-    COALESCE(users.name, 'Unknown User') as created_by
+    COALESCE(bitly_users.name, 'Unknown User') as created_by
 from links
-inner join groups on links.group_guid = groups.guid
-inner join orgs on groups.organization_guid = orgs.guid
-left join users on links.created_by = users.login  -- not all created_by values are in the USERS table
+inner join bitly_groups on links.group_guid = bitly_groups.guid
+inner join bitly_orgs on bitly_groups.organization_guid = bitly_orgs.guid
+left join bitly_users on links.created_by = bitly_users.login  -- not all created_by values are in the USERS table
 where links._fivetran_deleted = FALSE
