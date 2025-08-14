@@ -1,5 +1,5 @@
 /*This model preps the Comments data from Ethelo by removing all users likely to be ODI staff members,
-moderators, or Ethelo staff, and marking comments that were posted before 5pm the day before as 
+moderators, or Ethelo staff, and marking comments that were posted before 5pm the day before as
 "moderator approved".
 */
 
