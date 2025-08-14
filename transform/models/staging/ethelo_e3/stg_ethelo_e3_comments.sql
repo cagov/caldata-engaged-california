@@ -1,5 +1,6 @@
 /*This model preps the Comments data from Ethelo by removing all users likely to be ODI staff members,
-moderators, or Ethelo staff, and re-formatting and joining data that was split across multiple tables in Airtable.
+moderators, or Ethelo staff, and marking comments that were posted before 5pm the day before as 
+"moderator approved".
 */
 
 --Pull all comments from the Comments table in Airtable

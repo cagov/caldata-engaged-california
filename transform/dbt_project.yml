@@ -47,6 +47,8 @@ models:
         +schema: bitly
       facebook_ads:
         +schema: facebook_ads
+      ethelo_e3:
+        +schema: ethelo_e3
 
     intermediate:
       +materialized: view
