@@ -3,7 +3,7 @@ models:
   - name: int_ethelo_e3_comments_and_responses
     description: |
       "all didactic responses in the E3 platform -- includes
-      some comments and some write-in survey responses"
+      all comments and write-in survey responses"
     columns:
       - name: COMMENT_ID
         description: "if response was a comment, this is the unique identifier"
