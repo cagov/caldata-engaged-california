@@ -88,7 +88,7 @@ models:
         description: "Latest Fivetran sync date."
 
   - name: ethelo_e3_comments_counts
-    description: "Comment counts and participant engagement by evacuation zone."
+    description: "Comment counts for E3 engagement"
     columns:
       - name: num_comments
         description: "Number of comments posted."
@@ -112,7 +112,7 @@ models:
         description: "Latest data download date."
 
   - name: ethelo_e3_participants_counts
-    description: "Comment counts and participant engagement by evacuation zone."
+    description: "Participant counts for E3 engagement"
     columns:
       - name: num_invited
         description: "Number of invited participants."
