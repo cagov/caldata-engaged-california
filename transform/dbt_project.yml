@@ -59,6 +59,8 @@ models:
         +enabled: false
       ethelo_la_deliberation:
         +schema: ethelo_la_deliberation
+      ethelo_e3:
+        +schema: ethelo_e3
       bitly:
         +schema: bitly
       facebook_ads:

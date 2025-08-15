@@ -40,7 +40,10 @@ SELECT
     a.reply_count,
     a.like_count,
     a.type,
-    a.target,
+    CASE WHEN
+        a.target LIKE '%been working - Examples'
+        THEN 'Share what has been working - Examples'
+    ELSE a.target END AS target,
     a.posted_on,
     --create a column that marks any comment posted before 5pm the day before as approved:
     CASE

@@ -86,3 +86,9 @@ models:
         description: "Total subscribers with no segment."
       - name: max_fivetran_sync_date
         description: "Latest Fivetran sync date."
+
+  - name: ethelo_e3_comments_counts
+    description: "Comment counts and participant engagement by evacuation zone."
+
+  - name: ethelo_e3_participants_counts
+    description: "Comment counts and participant engagement by evacuation zone."
