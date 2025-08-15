@@ -29,10 +29,10 @@ final AS (
         'Civility pledge agreement',
         'Moderation policy agreement',
         'Moderation policy agreement - I am 18 or older',
-        'Opening questions - Position type',
-        'Opening questions - How long have you worked for the State of California? ',
-        'Opening questions - What makes you proud about your role in public service?',
-        'State of California departments - Which department or agency does your idea apply to?'
+        'About you - Position type',
+        'About you - How long have you worked for the State of California?',
+        'Opening question - What makes you proud about your role in public service?',
+        'Share your idea - Which department or agency does your idea apply to?'
     )
 )
 
