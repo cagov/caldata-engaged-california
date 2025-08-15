@@ -309,10 +309,12 @@ sources:
     database: RAW_ENGCA_PRD
     schema: ENGAGEDCA_GOOGLE_DRIVE
     description: |
-      Ethelo data for the LA Fires Deliberation engagement (July - August 2025) uploaded once daily to
-      an ODI-owned Google Drive folder by Ethelo.
+      Ethelo data from various ODI-owned Google Drive folders.
     tables:
       - name: DISAGGREGATED_VOTES_DATA
+        description: |
+          Ethelo data for the LA Fires Deliberation engagement (July - August 2025) uploaded once daily to
+          an ODI-owned Google Drive folder by Ethelo.
         columns:
           - name: _FILE
             description: Name of file in the Google Drive folder
@@ -376,3 +378,76 @@ sources:
             description: NA - do not use
           - name: COMMUNITY_FINANCIAL_SUPPORT_OPTIONS_WEIGHT
             description: NA - do not use
+      - name: E_3_COMMENTS
+        description: |
+          Ethelo survey response data for the E3 Government
+          Efficiencies engagement (August 2025) uploaded twice
+          daily to an ODI-owned Google Drive folder by ODI teammembers.
+        columns:
+          - name: _FILE
+            description: Name of file in the Google Drive folder
+          - name: _LINE
+            description: "Line number in the source data file."
+          - name: _MODIFIED
+            description: Timestamp of when the file was last modified in Google Drive
+          - name: _FIVETRAN_SYNCED
+            description: "Timestamp indicating when the data was last synced with Fivetran."
+          - name: COMMENT_ID
+          - name: CONTENT
+          - name: FLAG_COUNT
+          - name: LIKE_COUNT
+          - name: POSTED_BY_ID
+          - name: POSTED_ON
+          - name: PRIVACY
+          - name: REPLY_COUNT
+          - name: REPLY_TO_ID
+          - name: TARGET
+          - name: TYPE
+      - name: E_3_PARTICIPANTS
+        description: |
+          Ethelo survey response data for the E3 Government
+          Efficiencies engagement (August 2025) uploaded twice
+          daily to an ODI-owned Google Drive folder by ODI teammembers.
+        columns:
+          - name: _FILE
+            description: Name of file in the Google Drive folder
+          - name: _LINE
+            description: "Line number in the source data file."
+          - name: _MODIFIED
+            description: Timestamp of when the file was last modified in Google Drive
+          - name: _FIVETRAN_SYNCED
+            description: "Timestamp indicating when the data was last synced with Fivetran."
+          - name: COMMENT_COUNT
+          - name: COMPLETION
+          - name: ID_NUMBER
+          - name: INFLUENCE
+          - name: JOINED_ON
+          - name: LAST_INVITE_SENT
+          - name: LAST_SIGN_IN
+          - name: ROLES
+          - name: STATUS
+          - name: SURVEY_COMPLETED
+          - name: VOTING_COMPLETE
+      - name: E_3_SURVEY_BY_QUESTION
+        description: |
+          Ethelo survey response data for the E3 Government
+          Efficiencies engagement (August 2025) uploaded twice
+          daily to an ODI-owned Google Drive folder by ODI teammembers.
+        columns:
+          - name: _FILE
+            description: Name of file in the Google Drive folder
+          - name: _LINE
+            description: "Line number in the source data file."
+          - name: _MODIFIED
+            description: Timestamp of when the file was last modified in Google Drive
+          - name: _FIVETRAN_SYNCED
+            description: "Timestamp indicating when the data was last synced with Fivetran."
+          - name: DATE
+            description: Timestamp of survey response
+          - name: GROUP
+            description: Question category
+          - name: QUESTION
+          - name: ANSWER
+          - name: INFLUENCE
+          - name: JOINED_DATE
+          - name: PARTICIPANT
