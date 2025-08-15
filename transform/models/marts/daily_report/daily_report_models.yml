@@ -92,7 +92,7 @@ models:
     columns:
       - name: num_comments
         description: "Number of comments posted."
-      - name: num_participants_w_comments
+      - name: NUM_PARTICIPANTS_W_COMMMENTS
         description: "Number of participants who posted comments."
       - name: num_what_makes_you_proud_responses
         description: "Number of responses to the question about what makes you proud"
