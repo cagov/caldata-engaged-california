@@ -13,5 +13,5 @@ select
     --        status = 'Joined'
     --        and last_invite_sent < current_date then participant_id
     --end) as num_invited_before_today_and_joined,
-     max(_file_upload_date) as latest_data_download
+    max(_file_upload_date) as latest_data_download
 from participants
