@@ -108,8 +108,8 @@ models:
         description: "Number of comments on the anything else prompt."
       - name: num_anything_else_replies
         description: "Number of replies to anything else prompt comments."
-      - name: max_data_download
-        description: "Latest data download date."
+      - name: latest_data_download
+        description: "Latest data download date from Ethelo."
 
   - name: ethelo_e3_participants_counts
     description: "Participant counts for E3 engagement"
@@ -118,5 +118,5 @@ models:
         description: "Number of invited participants."
       - name: num_joined
         description: "Number of participants who joined."
-      - name: max_fivetran_sync
-        description: "Latest Fivetran sync date."
+      - name: latest_data_download
+        description: "Latest  data download date from Ethelo."

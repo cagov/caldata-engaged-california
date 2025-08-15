@@ -67,6 +67,6 @@ select
     end)
         as num_anything_else_replies,
 
-    max(_file_upload_date) as max_data_download
+    max(_file_upload_date) as latest_data_download
 
 from comments
