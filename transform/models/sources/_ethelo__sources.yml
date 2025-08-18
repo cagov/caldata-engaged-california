@@ -242,6 +242,8 @@ sources:
             description: "Overall completion status"
           - name: JOINED_ON
             description: "Date joined"
+          - name: RESENT_INVITE
+          - name: SUCCESSFUL_INVITE
       - name: SURVEY_BY_QUESTION
         columns:
           - name: ANSWER
