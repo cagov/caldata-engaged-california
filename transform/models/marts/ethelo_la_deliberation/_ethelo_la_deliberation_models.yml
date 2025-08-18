@@ -34,13 +34,6 @@ models:
         description: "Timestamp when the comment was posted."
       - name: _FIVETRAN_SYNCED
         description: "Latest Fivetran sync date."
-      - name: PRIVACY
-      - name: ID
-      - name: TYPE
-      - name: CONTENT
-      - name: ODI_MODERATION_STATUS
-        description: |
-          column brought in from the Moderation Coda to denote which comments have been approved
 
   - name: voting_summary
     description: "Voting summary and metrics for LA deliberation topics/options."
@@ -87,12 +80,6 @@ models:
         description: "Airtable record ID."
       - name: _FIVETRAN_SYNCED
         description: "Latest Fivetran sync date."
-      - name: ID
-      - name: NOT_IMPORTANT
-      - name: SOMEWHAT_IMPORTANT
-      - name: SLIGHTLY_SUPPORT
-      - name: SLIGHTLY_OPPOSE
-      - name: ESSENTIAL
   - name: individual_voting_results
     description: ""
     columns:
@@ -118,3 +105,30 @@ models:
         description: ""
       - name: reply_count
         description: ""
+  - name: la_deliberation_participants
+    columns:
+      - name: PARTICIPANT_ID
+        description: The unique identifier for the participant
+      - name: STATUS
+      - name: VOTING_COMPLETE
+        description: Whether the participant has completed voting
+      - name: SURVEY_COMPLETED
+        description: Whether the participent has completed the survey
+      - name: COMPLETION
+      - name: RACE_ETHNICITY_ARRAY
+      - name: INCOME
+      - name: AGE
+      - name: GENDER_IDENTITY
+      - name: CONFIDENCE_INCREASE
+      - name: EVACUATION_ZONE
+      - name: RECOVERY_OPTIONS_FEELING
+      - name: OPENING_OUTLOOK
+      - name: FINAL_OUTLOOK
+      - name: LAST_INVITE_SENT
+        description: The last time an invite was sent to the participant
+      - name: LAST_SIGN_IN
+        description: The last time the participant signed in
+      - name: JOINED_ON
+        description: What time the participant joined the platform
+      - name: AIRTABLE_ID
+      - name: _FIVETRAN_SYNCED
