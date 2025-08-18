@@ -118,3 +118,59 @@ models:
         description: ""
       - name: reply_count
         description: ""
+
+- name: deliberation_participants
+    description: ""
+    columns:
+      - name: participant_id
+        description: ""
+      - name: status
+        description: ""
+      - name: last_invite_sent
+        description: ""
+      - name: voting_complete
+        description: ""
+      - name: survey_completed
+        description: ""
+      - name: completion
+        description: ""
+      - name: comment_count
+        description: ""
+      - name: joined_on
+        description: ""
+      - name: race_ethnicity_array
+        description: ""
+      - name: income
+        description: ""
+      - name: age
+        description: ""
+      - name: gender_identity
+        description: ""
+      - name: confidence_increase
+        description: ""
+      - name: evacuation_zone
+        description: ""
+      - name: recovery_options_feeling
+        description: ""
+      - name: opening_outlook
+        description: ""
+      - name: final_outlook
+        description: ""
+      - name: last_sign_in
+        description: ""
+      - name: airtable_id
+        description: ""
+      - name: _fivetran_synced
+        description: ""
+      - name: id
+        description: ""
+      - name: roles
+        description: ""
+      - name: id_number
+        description: ""
+      - name: resent_invite
+        description: ""
+      - name: successful_reinvite
+        description: ""
+      - name: influence
+        description: ""
