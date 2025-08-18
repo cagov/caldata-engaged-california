@@ -216,32 +216,32 @@ sources:
           - name: _FIVETRAN_SYNCED
       - name: PARTICIPANTS
         columns:
-          - name: COMMENT_COUNT
-          - name: COMPLETION
           - name: ID
-          - name: ID_NUMBER
-          - name: INFLUENCE
-          - name: JOINED_ON
-          - name: LAST_INVITE_SENT
-          - name: LAST_SIGN_IN
-          - name: ROLES
-          - name: STATUS
-          - name: SUCCESSFUL_REINVITE
-          - name: SURVEY_COMPLETED
-          - name: VOTING_COMPLETE
+            description: "Unique identifier"
           - name: _FIVETRAN_SYNCED
-          - name: PARTICIPANT_ID
-          - name: RACE_ETHNICITY_ARRAY
-          - name: INCOME
-          - name: AGE
-          - name: GENDER_IDENTITY
-          - name: CONFIDENCE_INCREASE
-          - name: EVACUATION_ZONE
-          - name: RECOVERY_OPTIONS_FEELING
-          - name: OPENING_OUTLOOK
-          - name: FINAL_OUTLOOK
-          - name: AIRTABLE_ID
-          - name: RESENT_INVITE
+            description: "Timestamp of Fivetran sync"
+          - name: ID_NUMBER
+            description: "Identification number"
+          - name: STATUS
+            description: "Current status"
+          - name: INFLUENCE
+            description: "Influence score"
+          - name: ROLES
+            description: "User roles"
+          - name: LAST_INVITE_SENT
+            description: "Timestamp of last invite sent"
+          - name: COMMENT_COUNT
+            description: "Number of comments"
+          - name: LAST_SIGN_IN
+            description: "Timestamp of last sign-in"
+          - name: VOTING_COMPLETE
+            description: "Voting completion status"
+          - name: SURVEY_COMPLETED
+            description: "Survey completion status"
+          - name: COMPLETION
+            description: "Overall completion status"
+          - name: JOINED_ON
+            description: "Date joined"
       - name: SURVEY_BY_QUESTION
         columns:
           - name: ANSWER
