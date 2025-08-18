@@ -1,0 +1,24 @@
+version: 2
+models:
+  - name: e3_comments
+    description: |
+      "Clean, mart-ready comments and responses from the Ethelo E3 engagement platform.
+      This model provides a simplified view of participant comments and responses for
+      analysis and reporting purposes."
+    columns:
+      - name: COMMENT_ID
+        description:
+          "Unique identifier for each comment or response. NULL for the
+          survey questions that are included in this comments table."
+      - name: REPLY_TO_ID
+        description: "Identifier of the comment this is a reply to. NULL for top-level comments"
+      - name: PARTICIPANT_ID
+        description: "Unique identifier for the participant who posted the comment"
+      - name: CONTENT
+        description: "The actual text content of the comment or response provided by the participant"
+      - name: QUESTION
+        description: "The question or prompt that this comment is responding to"
+      - name: POSTED_ON
+        description: "Timestamp when the comment was originally posted by the participant"
+      - name: _FILE_UPLOAD_DATE
+        description: "Technical field indicating when this data was uploaded/ingested into the system"
