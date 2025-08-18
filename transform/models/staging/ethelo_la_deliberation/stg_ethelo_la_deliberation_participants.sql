@@ -5,7 +5,7 @@ moderators, or Ethelo staff.
 --Pull all participants from the Participants table in Airtable
 WITH source_participants AS (
     SELECT *
-    FROM {{ source('ETHELO_LA_DELIBERATION', 'PARTICIPANTS') }}
+    FROM {{ source('ETHELO_LA_DELIBERATION', 'DELIBERATION_PARTICIPANTS') }}
 ),
 
 --List of participant IDs known to be test accounts

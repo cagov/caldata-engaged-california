@@ -214,7 +214,8 @@ sources:
               The moderation status of the comment.
           - name: COMMENT_ID
           - name: _FIVETRAN_SYNCED
-      - name: PARTICIPANTS
+      - name: DELIBERATION_PARTICIPANTS
+        identifier: PARTICIPANTS
         columns:
           - name: COMMENT_COUNT
           - name: COMPLETION
