@@ -119,7 +119,7 @@ models:
       - name: reply_count
         description: ""
 
-- name: deliberation_participants
+  - name: deliberation_participants
     description: ""
     columns:
       - name: participant_id
