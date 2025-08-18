@@ -18,8 +18,6 @@ sources:
         columns:
           - name: COMMENT_ID
           - name: CONTENT
-          - name: COMMENT_CONTENT
-          - name: TARGET_DESCRIPTION
           - name: FLAG_COUNT
           - name: ID
           - name: LIKE_COUNT
@@ -32,9 +30,6 @@ sources:
           - name: TOPIC
           - name: TYPE
           - name: _FIVETRAN_SYNCED
-          - name: ODI_MODERATION_STATUS
-            description: |
-              column brought in from the Moderation Coda to denote which comments have been approved
       - name: DATA_UPDATED
         columns:
           - name: DATA_UPLOADER
@@ -122,20 +117,12 @@ sources:
           - name: TOPIC
           - name: TOTAL_VOTES
           - name: _FIVETRAN_SYNCED
-          - name: AIRTABLE_ID
           - name: NOT_IMPORTANT
           - name: SOMEWHAT_IMPORTANT
           - name: SLIGHTLY_SUPPORT
           - name: SLIGHTLY_OPPOSE
           - name: ESSENTIAL
           - name: OPTION
-          - name: STRONGLY_OPPOSED
-          - name: OPPOSED
-          - name: SOMEWHAT_OPPOSED
-          - name: NEUTRAL
-          - name: SOMEWHAT_SUPPORTIVE
-          - name: SUPPORTIVE
-          - name: STRONGLY_SUPPORTIVE
   - name: ETHELO_LA_DELIBERATION
     database: RAW_ENGCA_PRD
     schema: |
@@ -180,7 +167,7 @@ sources:
           - name: TOPIC
           - name: TYPE
           - name: _FIVETRAN_SYNCED
-          - name: CONTENT
+          - name: COMMENT_CONTENT
           - name: ODI_MODERATION_STATUS
             description: |
               column brought in from the Moderation Coda to denote which comments have been approved
@@ -286,12 +273,6 @@ sources:
           - name: SOMEWHAT_SUPPORTIVE
           - name: CONFLICT
           - name: OPTION
-          - name: AIRTABLE_ID
-          - name: NOT_IMPORTANT
-          - name: SOMEWHAT_IMPORTANT
-          - name: SLIGHTLY_SUPPORT
-          - name: SLIGHTLY_OPPOSE
-          - name: ESSENTIAL
   - name: GOOGLE_DRIVE_CONNECTOR
     database: RAW_ENGCA_PRD
     schema: ENGAGEDCA_GOOGLE_DRIVE
