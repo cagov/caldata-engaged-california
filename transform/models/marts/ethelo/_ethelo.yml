@@ -47,7 +47,7 @@ models:
       - name: latest_date
         description: ""
 
-  - name: participants
+  - name: la_phase_1_participants
     description: ""
     columns:
       - name: participant_id
