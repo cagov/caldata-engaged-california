@@ -47,8 +47,6 @@ models:
       - name: latest_date
         description: ""
 
-  
-
   - name: recent_fire_perimeters
     description: "Large fire perimeters (>=2024‑11‑01, >40 acres) around the time of the LA fires."
     columns:
