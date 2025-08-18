@@ -216,32 +216,19 @@ sources:
           - name: _FIVETRAN_SYNCED
       - name: PARTICIPANTS
         columns:
-          - name: COMMENT_COUNT
-          - name: COMPLETION
           - name: ID
-          - name: ID_NUMBER
-          - name: INFLUENCE
-          - name: JOINED_ON
-          - name: LAST_INVITE_SENT
-          - name: LAST_SIGN_IN
-          - name: ROLES
-          - name: STATUS
-          - name: SUCCESSFUL_REINVITE
-          - name: SURVEY_COMPLETED
-          - name: VOTING_COMPLETE
           - name: _FIVETRAN_SYNCED
-          - name: PARTICIPANT_ID
-          - name: RACE_ETHNICITY_ARRAY
-          - name: INCOME
-          - name: AGE
-          - name: GENDER_IDENTITY
-          - name: CONFIDENCE_INCREASE
-          - name: EVACUATION_ZONE
-          - name: RECOVERY_OPTIONS_FEELING
-          - name: OPENING_OUTLOOK
-          - name: FINAL_OUTLOOK
-          - name: AIRTABLE_ID
-          - name: RESENT_INVITE
+          - name: ID_NUMBER
+          - name: STATUS
+          - name: INFLUENCE
+          - name: ROLES
+          - name: LAST_INVITE_SENT
+          - name: COMMENT_COUNT
+          - name: LAST_SIGN_IN
+          - name: VOTING_COMPLETE
+          - name: SURVEY_COMPLETED
+          - name: COMPLETION
+          - name: JOINED_ON
       - name: SURVEY_BY_QUESTION
         columns:
           - name: ANSWER
