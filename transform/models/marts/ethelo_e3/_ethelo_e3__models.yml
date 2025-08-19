@@ -22,3 +22,34 @@ models:
         description: "Timestamp when the comment was originally posted by the participant"
       - name: _FILE_UPLOAD_DATE
         description: "Technical field indicating when this data was uploaded/ingested into the system"
+
+  - name: e3_participant_responses
+    description: |
+      "One row per participant with pivoted survey responses and top-level comments
+      from the Ethelo E3 engagement platform. This model aggregates all participant
+      responses into a single row for analysis and demographic profiling."
+    columns:
+      - name: PARTICIPANT_ID
+        description: "Unique identifier for each participant in the E3 engagement"
+      - name: POINT_OF_PRIDE
+        description: "Response to 'Opening question - What makes you proud about your role in public service?'"
+      - name: IDEA_DEPT
+        description: "Response to 'Share your idea - Which department or agency does your idea apply to?'"
+      - name: POS_TYPE
+        description: "Response to 'About you - Position type'"
+      - name: CA_TENURE
+        description: "Response to 'About you - How long have you worked for the State of California?'"
+      - name: MAIN_IDEA
+        description: "Top-level comment for 'Share your idea - Primary problem and ideas to solve the problem'"
+      - name: WHATS_WORKING
+        description: "Top-level comment for 'Share what has been working - Examples'"
+      - name: OTHER_IDEAS
+        description:
+          "Top-level comment for 'Anything else? - Would you add any other ideas,
+          including from your perspective as a California resident?'"
+      - name: LAST_SURVEY_RESPONSE_DATE
+        description: "Timestamp of the participant's most recent survey response"
+      - name: LAST_COMMENT_DATE
+        description: "Timestamp of the participant's most recent top-level comment"
+      - name: _FILE_UPLOAD_DATE
+        description: "Technical field indicating when this data was uploaded/ingested into the system"
