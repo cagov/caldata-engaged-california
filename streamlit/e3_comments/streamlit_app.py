@@ -67,7 +67,6 @@ def load_participant_responses_data():
         LAST_COMMENT_DATE,
         _FILE_UPLOAD_DATE
     FROM ANALYTICS_ENGCA_PRD.ETHELO_E3.E3_PARTICIPANT_RESPONSES
-    WHERE MAIN_IDEA IS NOT NULL AND TRIM(MAIN_IDEA) != ''
     ORDER BY LAST_COMMENT_DATE DESC
     '''
 
@@ -197,9 +196,18 @@ except Exception as e:
 
 # Calculate summary statistics
 total_participants = len(participant_responses_df)
-participants_with_ideas = len(participant_responses_df[participant_responses_df['MAIN_IDEA'].notna()])
-participants_with_working_examples = len(participant_responses_df[participant_responses_df['WHATS_WORKING'].notna()])
-participants_with_other_ideas = len(participant_responses_df[participant_responses_df['OTHER_IDEAS'].notna()])
+participants_with_ideas = len(participant_responses_df[
+    participant_responses_df['MAIN_IDEA'].notna() &
+    (participant_responses_df['MAIN_IDEA'].str.strip() != '')
+])
+participants_with_working_examples = len(participant_responses_df[
+    participant_responses_df['WHATS_WORKING'].notna() &
+    (participant_responses_df['WHATS_WORKING'].str.strip() != '')
+])
+participants_with_other_ideas = len(participant_responses_df[
+    participant_responses_df['OTHER_IDEAS'].notna() &
+    (participant_responses_df['OTHER_IDEAS'].str.strip() != '')
+])
 
 # Date range
 if participant_responses_df['LAST_COMMENT_DATE'].notna().any():
@@ -407,38 +415,15 @@ with tab2:
         if '_FILE_UPLOAD_DATE' in export_df.columns:
             export_df['_FILE_UPLOAD_DATE'] = export_df['_FILE_UPLOAD_DATE'].dt.strftime('%Y-%m-%d %H:%M:%S')
 
-        # Create download options
-        col1, col2 = st.columns(2)
-
-        with col1:
-            # CSV download
-            csv_data = export_df.to_csv(index=False)
-            st.download_button(
-                label="Download Participant Responses as CSV",
-                data=csv_data,
-                file_name=f"e3_participant_responses_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                mime="text/csv",
-                use_container_width=True
-            )
-
-        with col2:
-            # Participant summary download
-            if not participant_summary_df.empty:
-                participant_export = participant_summary_df.copy()
-
-                # Format dates
-                for date_col in ['LAST_SURVEY_RESPONSE_DATE', 'LAST_COMMENT_DATE']:
-                    if date_col in participant_export.columns:
-                        participant_export[date_col] = participant_export[date_col].dt.strftime('%Y-%m-%d %H:%M:%S')
-
-                participant_csv = participant_export.to_csv(index=False)
-                st.download_button(
-                    label="Download Participant Summary as CSV",
-                    data=participant_csv,
-                    file_name=f"e3_participant_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                    mime="text/csv",
-                    use_container_width=True
-                )
+        # CSV download
+        csv_data = export_df.to_csv(index=False)
+        st.download_button(
+            label="Download Participant Responses as CSV",
+            data=csv_data,
+            file_name=f"e3_participant_responses_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
 
         # Preview of export data
         st.markdown("### Preview of Export Data")
