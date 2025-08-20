@@ -38,6 +38,18 @@ session = get_active_session()
 # Page title
 st.header("Engaged CA - E3 Comments Analysis")
 
+# Add introductory text
+st.markdown("""
+This dashboard analyzes responses from California state employees participating in the **E3 (Efficiency, Engagement, and Effectiveness)** platform.
+Use this tool to:
+
+- 🤖 **Generate AI-powered thematic analysis** of main ideas using advanced language models
+- 📋 **Browse and export participant data** for further analysis
+- 💡 **Identify emerging themes** and patterns in employee feedback
+
+**Quick Start:** Navigate to the "LLM Comment Analysis" tab to generate insights, or go to "Data Export" to download the raw data.
+""")
+
 # ⬇️ Hide the delta arrow globally
 st.markdown(
     """
@@ -116,7 +128,7 @@ def load_main_ideas_analysis(participant_ids, selected_llm, custom_prompt=None):
         participant_ids_str = "'" + "','".join(map(str, participant_ids)) + "'"
 
     # System prompt that provides background context and output format
-    system_prompt = '''You are analyzing ideas from participants in an E3 (Engagement, Education, and Empowerment) civic engagement platform. These are ideas for improving government services and operations from California state employees.
+    system_prompt = '''You are analyzing ideas from participants in an E3 (Efficiency, Engagement, and Effectiveness) civic engagement platform. These are ideas for improving government services and operations from California state employees.
 
 Each idea includes the department/agency it applies to. The ideas are semi-colon separated.
 
@@ -217,6 +229,12 @@ else:
     earliest_date = None
     latest_date = None
 
+# Get most recent file upload date
+if participant_responses_df['_FILE_UPLOAD_DATE'].notna().any():
+    most_recent_upload = participant_responses_df['_FILE_UPLOAD_DATE'].max()
+else:
+    most_recent_upload = None
+
 # Display header metrics
 col1, col2, col3, col4, col5 = st.columns(5)
 
@@ -224,13 +242,13 @@ with col1:
     st.metric("Total Participants", total_participants, delta_color="off")
 
 with col2:
-    st.metric("With Main Ideas", participants_with_ideas, delta_color="off")
+    st.metric('''"Share Your Idea" Responses (Top-Level)''', participants_with_ideas, delta_color="off")
 
 with col3:
-    st.metric("With Working Examples", participants_with_working_examples, delta_color="off")
+    st.metric('''"What's Working" Responses (Top-Level)''', participants_with_working_examples, delta_color="off")
 
 with col4:
-    st.metric("With Other Ideas", participants_with_other_ideas, delta_color="off")
+    st.metric('''"Anything Else?" Responses (Top-Level)''', participants_with_other_ideas, delta_color="off")
 
 with col5:
     departments = participant_responses_df['IDEA_DEPT'].dropna().nunique()
@@ -238,7 +256,10 @@ with col5:
 
 # Display date range if available
 if earliest_date and latest_date:
-    st.caption(f"Comments from {earliest_date.strftime('%B %d, %Y')} to {latest_date.strftime('%B %d, %Y')}")
+    date_info = f"Comments from {earliest_date.strftime('%B %d, %Y')} to {latest_date.strftime('%B %d, %Y')}"
+    if most_recent_upload:
+        date_info += f" | Current as of {most_recent_upload.strftime('%B %d, %Y')}"
+    st.caption(date_info)
 
 st.divider()
 
@@ -255,10 +276,20 @@ tab1, tab2 = st.tabs([
 with tab1:
     st.subheader("LLM Analysis of Main Ideas")
 
+    st.markdown("""
+    Select a model and click "Generate Analysis" to identify themes in the top-level "Share Your Idea" responses (with department). Other text fields and threaded replies aren't included yet.
+    """)
+
     # Create sub-tabs for analysis and source data
     llm_tab1, llm_tab2 = st.tabs(["Idea Analysis", "Source Data"])
 
     with llm_tab1:
+        st.markdown("""
+        **Default Analysis:** The standard prompt performs open-coding analysis to identify 3-6 emerging themes with descriptions and representative quotes.
+
+        **Custom Analysis:** Enable "Use custom prompt" below to create your own analysis approach (e.g., focus on specific topics, different analytical frameworks, sentiment analysis, etc.).
+        """)
+
         # Filter to only participants with main ideas
         participants_with_main_ideas = filtered_df[filtered_df['MAIN_IDEA'].notna() & (filtered_df['MAIN_IDEA'].str.strip() != '')]
 
@@ -278,28 +309,35 @@ with tab1:
                     return "Claude 4 Sonnet (Most capable & Costly)"
                 return option  # Fallback for any other options
 
-            # Create columns for dropdowns
-            col1, col2, col3 = st.columns([2, 1, 1])  # Proportional widths
+            # Create columns for dropdowns and tips
+            col1, col2, col3 = st.columns([1, 1, 1])  # Adjusted proportions
 
             with col1:
-                st.info(f"Analyzing {len(participants_with_main_ideas)} main ideas from participants")
-
-            with col2:
-                # LLM selector
-                selected_llm = st.selectbox("Select LLM Model", llm_options, format_func=format_llm_option)
-
-            with col3:
+                # Add toggle for using custom prompt
+                if ENABLE_CUSTOM_PROMPT:
+                    use_custom_prompt = st.checkbox("Use custom prompt", value=False,
+                        help="Enable this to write your own analysis instructions instead of using the default thematic analysis")
+                else:
+                    use_custom_prompt = False
+                st.info(f"Analyzing {len(participants_with_main_ideas)} main ideas")
                 # Cost display area
                 st.write("")  # Add some space for alignment with other elements
                 if 'last_query_tokens' not in st.session_state:
                     st.session_state.last_query_tokens = 0
                     st.session_state.last_query_cost = 0.0
+            with col2:
+                # LLM selector
+                selected_llm = st.selectbox("Select LLM Model", llm_options, format_func=format_llm_option)
+            with col3:
+                # Model selection tips
+                st.markdown("""
+                **💡 Model Tips:** Choose from different models based on your needs for speed, cost, and analytical depth.
+                - **Llama 4 Maverick**: Fast & low-cost
+                - **Snowflake Llama 3**: Balanced option
+                - **Claude 4 Sonnet**: Most sophisticated
+                """)
 
-            # Add toggle for using custom prompt
-            if ENABLE_CUSTOM_PROMPT:
-                use_custom_prompt = st.checkbox("Use custom prompt", value=False)
-            else:
-                use_custom_prompt = False
+
 
             # Default user prompt template
             default_user_prompt = '''Perform an open-coding analysis on these comments and identify 3–6 emerging themes.
@@ -316,21 +354,28 @@ Your output should follow this general format for each theme:
             # Custom prompt input (show only if use_custom_prompt is checked)
             custom_prompt = ""
             if use_custom_prompt:
+                st.markdown("**📝 Custom Prompt Mode**")
+                st.markdown("Write your own analysis instructions. Examples: focus on specific departments, analyze sentiment, identify implementation barriers, etc.")
+
                 # Show default prompt for reference
-                st.caption("Default prompt (for reference):")
-                st.code(default_user_prompt, language="text")
+                with st.expander("View default prompt for reference"):
+                    st.code(default_user_prompt, language="text")
+
                 # Custom prompt text area
                 custom_prompt = st.text_area(
-                    "Enter your custom prompt:",
-                    height=300,
-                    help="Focus on your analysis instructions. Background information about E3 engagement platform and data format is automatically included."
+                    "Enter your custom analysis prompt:",
+                    height=200,
+                    placeholder="Example: Analyze these ideas focusing on technology and digital transformation initiatives. Group similar suggestions and identify implementation challenges...",
+                    help="Focus on your specific analysis needs. Background information about E3 platform and data format is automatically included."
                 )
 
             # Get the list of participant IDs from the filtered dataframe
             participant_ids_with_ideas = participants_with_main_ideas['PARTICIPANT_ID'].unique().tolist()
 
+
             # Add button to generate analysis
             generate_button = st.button("Generate Main Ideas Analysis")
+
 
             if generate_button:
                 # Check if we have a valid custom prompt when the toggle is on
@@ -364,8 +409,8 @@ Your output should follow this general format for each theme:
                             cost_per_million = MODEL_COSTS.get(selected_llm, 0)
                             query_cost = (total_tokens / 1000000) * cost_per_million
                             st.session_state.last_query_cost = query_cost
-                            # Update the cost display in the third column
-                            with col3:
+                            # Update the cost display in the first column
+                            with col1:
                                 st.info(f"The last query used {total_tokens:,} tokens and cost ${query_cost:.4f}")
 
                         # Display the analysis
@@ -374,32 +419,39 @@ Your output should follow this general format for each theme:
     # Source Data Tab
     with llm_tab2:
         st.subheader("Source Data")
+        st.markdown("""
+        Browse the participant responses that will be analyzed. This table shows all participants who provided main ideas,
+        along with their department affiliation and other relevant details.
+        """)
 
         # Display the participant responses with main ideas
         if participants_with_main_ideas.empty:
             st.warning("No participants with main ideas found.")
         else:
-            # Add button to load source data
-            load_data_button = st.button("Load Source Data")
+            # Display the data without requiring a button click
+            st.info(f"Found {len(participants_with_main_ideas)} participants with main ideas")
 
-            if load_data_button:
-                with st.spinner("Loading participant response data..."):
-                    # Display the data
-                    st.info(f"Found {len(participants_with_main_ideas)} participants with main ideas")
+            # Display the participants table
+            display_columns = ['PARTICIPANT_ID', 'IDEA_DEPT', 'MAIN_IDEA', 'POS_TYPE', 'CA_TENURE', 'LAST_COMMENT_DATE']
+            available_columns = [col for col in display_columns if col in participants_with_main_ideas.columns]
 
-                    # Display the participants table
-                    display_columns = ['PARTICIPANT_ID', 'IDEA_DEPT', 'MAIN_IDEA', 'POS_TYPE', 'CA_TENURE', 'LAST_COMMENT_DATE']
-                    available_columns = [col for col in display_columns if col in participants_with_main_ideas.columns]
-
-                    st.dataframe(
-                        participants_with_main_ideas[available_columns],
-                        use_container_width=True,
-                        hide_index=True
-                    )
+            st.dataframe(
+                participants_with_main_ideas[available_columns],
+                use_container_width=True,
+                hide_index=True
+            )
 
 # Tab 2: Data Export
 with tab2:
     st.subheader("Data Export")
+
+    st.markdown("""
+    Download the complete participant dataset for external analysis. The export includes all survey responses,
+    comment text, demographic information, and participation timestamps.
+
+    **What's included:** Participant IDs, survey responses (Point of Pride, Position Type, CA Tenure),
+    comment text (Main Ideas, What's Working, Other Ideas), and activity dates.
+    """)
 
     st.write(f"**Total records to export:** {len(filtered_df)}")
 
