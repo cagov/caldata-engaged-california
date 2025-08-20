@@ -242,13 +242,13 @@ with col1:
     st.metric("Total Participants", total_participants, delta_color="off")
 
 with col2:
-    st.metric('''"Share Your Idea" Responses (Top-Level)''', participants_with_ideas, delta_color="off")
+    st.metric('''"Share Your Idea" Responses''', participants_with_ideas, delta_color="off")
 
 with col3:
-    st.metric('''"What's Working" Responses (Top-Level)''', participants_with_working_examples, delta_color="off")
+    st.metric('''"What's Working" Responses''', participants_with_working_examples, delta_color="off")
 
 with col4:
-    st.metric('''"Anything Else?" Responses (Top-Level)''', participants_with_other_ideas, delta_color="off")
+    st.metric('''"Anything Else?" Responses''', participants_with_other_ideas, delta_color="off")
 
 with col5:
     departments = participant_responses_df['IDEA_DEPT'].dropna().nunique()
