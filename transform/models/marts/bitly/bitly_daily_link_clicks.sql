@@ -10,7 +10,10 @@ clicks as (
 select
     links.link,
     links.title,
+    links.created_date,
     clicks.click_date,
+    clicks.click_date - links.created_date as days_since_creation,
     clicks.clicks
 from links
 inner join clicks on links.id = clicks.bitlink_id
+where clicks.click_date >= links.created_date  -- remove daily counts before the link was created
