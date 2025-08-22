@@ -118,5 +118,9 @@ models:
         description: "Number of invited participants."
       - name: num_joined
         description: "Number of participants who joined."
+      - name: num_invited_before_today
+        description: "Number of participants invited before today."
+      - name: num_invited_before_today_and_joined
+        description: "Number of participants invited before today who joined."
       - name: latest_data_download
         description: "Latest  data download date from Ethelo."
