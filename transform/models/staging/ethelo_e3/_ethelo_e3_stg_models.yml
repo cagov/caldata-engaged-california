@@ -21,11 +21,11 @@ models:
       - name: completion
         description: Percentage of both voting and survey tasks completed by the participant.
       - name: last_invite_sent
-        description: The date the last invite was sent to the participant.
+        description: The UTC timestamp of when the last invite was sent to the participant.
       - name: last_sign_in
-        description: The date the participant last signed in.
+        description: The UTC timestamp of when the participant last signed in.
       - name: joined_on
-        description: The date the participant joined.
+        description: The UTC timestamp of when the participant joined.
       - name: _fivetran_synced
         description: Last fivetran sync timestamp.
       - name: _file_upload_date
