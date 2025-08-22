@@ -24,5 +24,5 @@ group by
     links.title,
     links.organization_name,
     links.group_name,
-    links.created_at,
+    links.created_date,
     links.created_by
