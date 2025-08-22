@@ -19,9 +19,9 @@ filtered_participants AS (
         source_participants.voting_complete AS voting_completed,
         source_participants.survey_completed,
         source_participants.completion,
-        source_participants.last_invite_sent,
-        source_participants.last_sign_in,
-        source_participants.joined_on,
+        to_timestamp_tz(source_participants.last_invite_sent, 'YYYY-MM-DD"T"HH24:MI:SSTZHTZM') AS last_invite_sent,
+        to_timestamp_tz(source_participants.last_sign_in, 'YYYY-MM-DD"T"HH24:MI:SSTZHTZM') AS last_sign_in,
+        to_timestamp_tz(source_participants.joined_on, 'YYYY-MM-DD"T"HH24:MI:SSTZHTZM') AS joined_on,
         source_participants._fivetran_synced,
         source_participants._modified AS _file_upload_date
     FROM source_participants
