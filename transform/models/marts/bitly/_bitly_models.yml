@@ -30,8 +30,8 @@ models:
         description: Name of the organization associated with the link.
       - name: group_name
         description: Name of the group associated with the link.
-      - name: created_at
-        description: Timestamp when the link was created.
+      - name: created_date
+        description: Date when the Bitly link was created.
       - name: created_by
         description: Name of the user who created the link (or 'Unknown User').
       - name: total_clicks
