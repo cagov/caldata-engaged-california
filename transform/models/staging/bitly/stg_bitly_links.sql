@@ -22,7 +22,7 @@ select
     links.title,
     bitly_orgs.name as organization_name,
     bitly_groups.name as group_name,
-    links.created_at,
+    TO_DATE(links.created_at, 'YYYY-MM-DD"T"HH24:MI:SSTZHTZM') as created_date,
     COALESCE(bitly_users.name, 'Unknown User') as created_by
 from links
 inner join bitly_groups on links.group_guid = bitly_groups.guid
