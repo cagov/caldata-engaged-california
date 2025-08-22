@@ -8,8 +8,12 @@ models:
         description: Bitly shortened URL.
       - name: title
         description: Title of the Bitly link.
+      - name: created_date
+        description: Date when the Bitly link was created.
       - name: click_date
         description: Date of the click event.
+      - name: days_since_creation
+        description: Number of days between click date and date Bitly link was created.
       - name: clicks
         description: Number of clicks for the link on the given date.
 
