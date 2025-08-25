@@ -10,6 +10,7 @@ clicks as (
 select
     links.link,
     links.title,
+    links.link_tags,
     links.created_date,
     clicks.click_date,
     clicks.click_date - links.created_date as days_since_creation,

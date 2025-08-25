@@ -30,3 +30,15 @@ models:
         description: Date when the link was created.
       - name: created_by
         description: Name of the user who created the link (or 'Unknown User').
+      - name: link_tags
+        description: Comma-separated list of tags associated with the Bitly link.
+
+  - name: stg_bitly_tags
+    description: Tags associated with Bitly links.
+    columns:
+      - name: bitlink_id
+        description: Unique identifier for the Bitly link.
+      - name: group_guid
+        description: Unique identifier for the Bitly group.
+      - name: tags
+        description: Tags associated with the Bitly link.

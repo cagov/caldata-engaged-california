@@ -13,6 +13,7 @@ select
     links.title,
     links.organization_name,
     links.group_name,
+    links.link_tags,
     links.created_date,
     links.created_by,
     sum(clicks.clicks) as total_clicks
@@ -24,5 +25,6 @@ group by
     links.title,
     links.organization_name,
     links.group_name,
+    links.link_tags,
     links.created_date,
     links.created_by
