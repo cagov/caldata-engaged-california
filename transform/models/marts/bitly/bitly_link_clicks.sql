@@ -23,7 +23,7 @@ select
     sum(clicks.clicks) as total_clicks
 from links
 inner join clicks on links.id = clicks.bitlink_id
-left join tags on links.id = tags.id
+left join tags on links.id = tags.link_id
 group by
     links.link,
     links.long_url,
