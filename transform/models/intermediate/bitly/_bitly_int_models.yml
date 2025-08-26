@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: int_bitly_link_alias_map
+    description: Provides a mapping between bitly link aliases and their corresponding bitly link IDs
+    columns:
+      - name: link_id
+        description: Canonical bitly link ID from the custom bitlink array of the bitlinks table
+      - name: alias_id
+        description: Alias bitly link ID
+
+  - name: int_bitly_link_tags
+    description: Aggregates all tags into a single list per canonical link
+    columns:
+      - name: link_id
+        description: Unique identifier. The canonical bitly link ID
+      - name: link_tags
+        description: A sorted, comma-separated list of all tags associated with the bitly link
