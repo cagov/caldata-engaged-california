@@ -21,5 +21,5 @@ select
     clicks.clicks
 from links
 inner join clicks on links.id = clicks.bitlink_id
-left join tags on links.id = tags.id
+left join tags on links.id = tags.link_id
 where clicks.click_date >= links.created_date  -- remove daily counts before the link was created

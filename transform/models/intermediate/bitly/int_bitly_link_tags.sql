@@ -9,7 +9,7 @@ alias_map as (
 
 tags_agg as (
     select
-        coalesce(m.link_id, t.bitlink_id) as id,
+        coalesce(m.link_id, t.bitlink_id) as link_id,
         listagg(distinct t.tags, ', ') within group (order by t.tags) as link_tags
     from bitly_tags as t
     left join alias_map as m
