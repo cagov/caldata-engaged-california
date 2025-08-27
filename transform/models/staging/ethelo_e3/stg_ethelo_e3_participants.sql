@@ -27,7 +27,7 @@ filtered_participants AS (
     FROM source_participants
     WHERE
         --Remove any user who does not have the 'Participant' role in Ethelo
-        source_participants.roles like '%Participant%'
+        source_participants.roles LIKE '%Participant%'
         --Remove any user whose Influence is set to 0
         AND source_participants.influence > 0
 
