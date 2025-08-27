@@ -36,3 +36,22 @@ jobs:
           uv run dbt deps --project-dir transform --target prd
           uv run dbt build --project-dir transform --target prd
           uv run dbt run-operation validate_all_schemas --project-dir transform --target prd
+
+  slack-notification:
+    runs-on: ubuntu-latest
+    needs: nightly
+    if: ${{  failure() || cancelled()  }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_USERNAME: cagov Slackbot
+          SLACK_TITLE: ⚠️ Engaged California nightly load error! ⚠️
+          SLACK_MESSAGE: |
+            ${{ vars.EN_CA_SLACK_AT_LIST }}
+            nightly workflow failed or was cancelled. See details at:
+            ${{ github.event.workflow_run.html_url }}
+          MSG_MINIMAL: actions url
+          SLACK_WEBHOOK: >
+            ${{ secrets.CALDATA_DATASERVICES_BOT_NOTIFICATIONS_SLACK_WEBHOOK_URL }}
