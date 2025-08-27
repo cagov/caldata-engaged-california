@@ -5,6 +5,10 @@ links as (
 
 clicks as (
     select * from {{ ref('stg_bitly_clicks') }}
+),
+
+tags as (
+    select * from {{ ref('int_bitly_link_tags') }}
 )
 
 select
@@ -13,18 +17,19 @@ select
     links.title,
     links.organization_name,
     links.group_name,
-    links.link_tags,
+    tags.link_tags,
     links.created_date,
     links.created_by,
     sum(clicks.clicks) as total_clicks
 from links
 inner join clicks on links.id = clicks.bitlink_id
+left join tags on links.id = tags.link_id
 group by
     links.link,
     links.long_url,
     links.title,
     links.organization_name,
     links.group_name,
-    links.link_tags,
+    tags.link_tags,
     links.created_date,
     links.created_by
