@@ -2,43 +2,43 @@ version: 2
 
 models:
   - name: stg_bitly_clicks
-    description: Daily click counts for each Bitly link, by link ID and date.
+    description: Daily click counts for each Bitly link, by link ID and date
     columns:
       - name: bitlink_id
-        description: Unique identifier for the Bitly link.
+        description: Unique identifier for the Bitly link
       - name: click_date
-        description: Date of the click event (aggregated).
+        description: Date of the click event (aggregated)
       - name: clicks
-        description: Number of clicks for the link on the given date.
+        description: Number of clicks for the link on the given date
 
   - name: stg_bitly_links
-    description: Details of bitly links. One row per link.
+    description: Details of bitly links One row per link
     columns:
       - name: id
-        description: Unique identifier for the Bitly link.
+        description: Unique identifier for the Bitly link
       - name: link
-        description: Bitly shortened URL. Similar to 'id', but in URL format.
+        description: Bitly shortened URL Similar to 'id', but in URL format
       - name: long_url
-        description: Original long URL.
+        description: Original long URL
       - name: title
-        description: Title of the link.
+        description: Title of the link
+      - name: custom_bitlinks
+        description: Array of any custom Bitly links, including canonical links if record is an alias
       - name: organization_name
-        description: Name of the bitly organization associated with the link.
+        description: Name of the bitly organization associated with the link
       - name: group_name
-        description: Name of the bitly group associated with the link.
+        description: Name of the bitly group associated with the link
       - name: created_date
-        description: Date when the link was created.
+        description: Date when the link was created
       - name: created_by
-        description: Name of the user who created the link (or 'Unknown User').
-      - name: link_tags
-        description: Comma-separated list of tags associated with the Bitly link.
+        description: Name of the user who created the link (or 'Unknown User')
 
   - name: stg_bitly_tags
-    description: Tags associated with Bitly links.
+    description: Tags associated with Bitly links
     columns:
       - name: bitlink_id
-        description: Unique identifier for the Bitly link.
+        description: Unique identifier for the Bitly link
       - name: group_guid
-        description: Unique identifier for the Bitly group.
+        description: Unique identifier for the Bitly group
       - name: tags
-        description: Tags associated with the Bitly link.
+        description: Tags associated with the Bitly link
