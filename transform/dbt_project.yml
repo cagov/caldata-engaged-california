@@ -43,6 +43,7 @@ models:
         +enabled: false
       ethelo_la_deliberation:
         +schema: ethelo_la_deliberation
+        +enabled: false
       bitly:
         +schema: bitly
       facebook_ads:
@@ -59,6 +60,7 @@ models:
         +enabled: false
       ethelo_la_deliberation:
         +schema: ethelo_la_deliberation
+        +enabled: false
       ethelo_e3:
         +schema: ethelo_e3
       bitly:
@@ -76,6 +78,7 @@ models:
         +enabled: false
       ethelo_la_deliberation:
         +schema: ethelo_la_deliberation
+        +enabled: false
       ethelo_e3:
         +schema: ethelo_e3
       bitly:
