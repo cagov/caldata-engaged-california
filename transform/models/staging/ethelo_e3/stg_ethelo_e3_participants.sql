@@ -26,10 +26,8 @@ filtered_participants AS (
         source_participants._modified AS _file_upload_date
     FROM source_participants
     WHERE
-        --Remove any user who has a role in Ethelo other than just 'Participant'
-        source_participants.roles = 'Participant'
         --Remove any user whose Influence is set to 0
-        AND source_participants.influence > 0
+        source_participants.influence > 0
 
 )
 
