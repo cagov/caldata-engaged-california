@@ -89,3 +89,5 @@ models:
         +schema: daily_report
         ethelo_la_agenda_setting:
           +enabled: false
+        ethelo_la_deliberation:
+          +enabled: false
