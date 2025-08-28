@@ -115,7 +115,7 @@ ai_consolidated as (
         -- Use AI to consolidate and synthesize solutions
         try_parse_json(
             ai_complete(
-                model => 'claude-4-sonnet',
+                model => '{{ var("llm_model") }}',
                 prompt => concat(
                     'You are analyzing solutions proposed for a specific government efficiency problem. ',
                     'Your task is to consolidate multiple related solutions into a coherent, comprehensive solution set.\n\n',  -- noqa: LT05

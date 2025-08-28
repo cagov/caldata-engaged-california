@@ -171,7 +171,7 @@ semantic_matches as (
         -- Use AI to determine if solution addresses the problem
         try_parse_json(
             ai_complete(
-                model => 'claude-4-sonnet',
+                model => '{{ var("llm_model") }}',
                 prompt => concat(
                     'Analyze whether the following solution could address the given problem. ',
                     'Rate the relevance and provide reasoning.\n\n',
