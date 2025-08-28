@@ -53,3 +53,52 @@ models:
         description: "Timestamp of the participant's most recent top-level comment"
       - name: _FILE_UPLOAD_DATE
         description: "Technical field indicating when this data was uploaded/ingested into the system"
+
+  - name: e3_consolidated_problem_solutions
+    description: |
+      "Consolidated problem-solution pairs from the E3 engagement platform.
+      Each row represents one unique problem with AI-consolidated solutions and full traceability.
+      Solutions are aggregated and synthesized using AI to provide coherent, actionable recommendations."
+    columns:
+      - name: PROBLEM_COMMENT_ID
+        description: "Unique identifier of the comment where the problem was identified"
+      - name: PROBLEM_PARTICIPANT_ID
+        description: "Participant who posted the comment containing the problem"
+      - name: PROBLEM_POSTED_ON
+        description: "Date when the problem comment was posted"
+      - name: PROBLEM_SEQUENCE
+        description: "Sequence number of the problem within its source comment"
+      - name: PROBLEM_TEXT
+        description: "Original text of the identified problem"
+      - name: PROBLEM_LENGTH
+        description: "Character length of the problem text"
+      - name: EXPLICIT_DEPARTMENT
+        description: "Department/agency specified by participant for main idea comments"
+      - name: INFERRED_DEPARTMENTS
+        description: "Array of departments inferred by AI from problem context"
+      - name: ALL_DEPARTMENTS
+        description: "Combined array of explicit and inferred departments with duplicates removed"
+      - name: SOLUTION_COUNT
+        description: "Number of solutions linked to this problem"
+      - name: AVG_CONFIDENCE_SCORE
+        description: "Average confidence score of all problem-solution links (0.0-1.0)"
+      - name: LINK_TYPES_USED
+        description: "Types of linking methods used (DIRECT_REPLY, SAME_COMMENT, THREAD_REPLY, SEMANTIC_MATCH)"
+      - name: EARLIEST_SOLUTION_DATE
+        description: "Date of the earliest solution linked to this problem"
+      - name: LATEST_SOLUTION_DATE
+        description: "Date of the latest solution linked to this problem"
+      - name: CONSOLIDATED_SOLUTIONS
+        description: "AI-generated array of 1-5 consolidated solution descriptions"
+      - name: SOLUTION_THEMES
+        description: "AI-identified key themes across all solutions for this problem"
+      - name: SOLUTION_TRACE_IDS
+        description: "Semicolon-separated list of solution IDs with confidence scores for traceability"
+      - name: ORIGINAL_SOLUTIONS_DETAIL
+        description: "Full text of all original solutions for transparency and debugging"
+      - name: CONSOLIDATION_STATUS
+        description: "Status of LLM consolidation process (SUCCESS or FAILED)"
+      - name: PROBLEM_ID
+        description: "Unique identifier combining comment ID and problem sequence"
+      - name: CONSOLIDATED_AT
+        description: "Timestamp when the AI consolidation was performed"
