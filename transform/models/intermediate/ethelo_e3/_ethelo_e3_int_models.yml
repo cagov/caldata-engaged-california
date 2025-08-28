@@ -19,3 +19,165 @@ models:
         description: "date of comment or response"
       - name: _FILE_UPLOAD_DATE
         description: "date of last ethelo data upload"
+
+  - name: int_participant_survey_responses
+    description: |
+      "pivoted survey responses for E3 participants with one row per participant.
+      This intermediate table consolidates all survey question responses and can be
+      reused across multiple marts and models."
+    columns:
+      - name: PARTICIPANT_ID
+        description: "unique ethelo participant identifier"
+        tests:
+          - not_null
+          - unique
+      - name: POINT_OF_PRIDE
+        description: "response to 'Opening question - What makes you proud about your role in public service?'"
+      - name: IDEA_DEPT
+        description: "response to 'Share your idea - Which department or agency does your idea apply to?'"
+      - name: POS_TYPE
+        description: "response to 'About you - Position type'"
+      - name: CA_TENURE
+        description: "response to 'About you - How long have you worked for the State of California?'"
+      - name: LAST_SURVEY_RESPONSE_DATE
+        description: "timestamp of participant's most recent survey response"
+      - name: _FILE_UPLOAD_DATE
+        description: "date of last ethelo data upload"
+
+  - name: int_extracted_problems
+    description: |
+      "problems extracted from E3 comments and survey responses using Snowflake LLM.
+      Each row represents one specific problem identified in a comment. Multiple problems
+      can be extracted from a single comment, resulting in multiple rows per comment."
+    config:
+      materialized: incremental
+      unique_key:
+        ["comment_id", "participant_id", "posted_on", "problem_sequence"]
+    columns:
+      - name: COMMENT_ID
+        description: "unique identifier of the source comment (null for survey responses)"
+      - name: PARTICIPANT_ID
+        description: "ethelo participant id who made the comment"
+        tests:
+          - not_null
+      - name: POSTED_ON
+        description: "date when the comment was posted"
+        tests:
+          - not_null
+      - name: PROBLEM_SEQUENCE
+        description: "sequence number for problems extracted from the same comment (1, 2, 3, etc.)"
+        tests:
+          - not_null
+      - name: REPLY_TO_ID
+        description: "if comment is a reply, this is the comment_id of the parent"
+      - name: SOURCE_COMMENT
+        description: "original comment or survey response content"
+      - name: SOURCE_QUESTION
+        description: "original prompt or question in Ethelo"
+      - name: _FILE_UPLOAD_DATE
+        description: "date of last ethelo data upload"
+      - name: PROBLEM_TEXT
+        description: "specific problem identified by the LLM"
+        tests:
+          - not_null
+      - name: PROBLEM_LENGTH
+        description: "character length of the extracted problem text"
+      - name: EXPLICIT_DEPARTMENT
+        description: "department/agency specified by participant for main idea comments, null for replies"
+      - name: INFERRED_DEPARTMENTS
+        description: "array of departments inferred by AI from problem context"
+      - name: ALL_DEPARTMENTS
+        description: "combined array of explicit and inferred departments with duplicates removed"
+      - name: PROBLEMS_JSON
+        description: "raw JSON response from the LLM containing all extracted problems"
+      - name: EXTRACTION_STATUS
+        description: "status of the LLM extraction (SUCCESS or FAILED)"
+      - name: PROCESSED_AT
+        description: "timestamp when the LLM processing occurred"
+
+  - name: int_extracted_solutions
+    description: |
+      "solutions extracted from E3 comments and survey responses using Snowflake LLM.
+      Each row represents one specific solution identified in a comment. Multiple solutions
+      can be extracted from a single comment, resulting in multiple rows per comment.
+      Solutions can be linked back to problems via comment threading."
+    config:
+      materialized: incremental
+      unique_key:
+        ["comment_id", "participant_id", "posted_on", "solution_sequence"]
+    columns:
+      - name: COMMENT_ID
+        description: "unique identifier of the source comment (null for survey responses)"
+      - name: PARTICIPANT_ID
+        description: "ethelo participant id who made the comment"
+        tests:
+          - not_null
+      - name: POSTED_ON
+        description: "date when the comment was posted"
+        tests:
+          - not_null
+      - name: SOLUTION_SEQUENCE
+        description: "sequence number for solutions extracted from the same comment (1, 2, 3, etc.)"
+        tests:
+          - not_null
+      - name: REPLY_TO_ID
+        description: "if comment is a reply, this is the comment_id of the parent"
+      - name: PARENT_COMMENT_ID
+        description: "comment_id of the parent comment for linking solutions to problem discussions"
+      - name: SOURCE_COMMENT
+        description: "original comment or survey response content"
+      - name: SOURCE_QUESTION
+        description: "original prompt or question in Ethelo"
+      - name: _FILE_UPLOAD_DATE
+        description: "date of last ethelo data upload"
+      - name: SOLUTION_TEXT
+        description: "specific solution identified by the LLM"
+        tests:
+          - not_null
+      - name: SOLUTION_LENGTH
+        description: "character length of the extracted solution text"
+      - name: SOLUTIONS_JSON
+        description: "raw JSON response from the LLM containing all extracted solutions"
+      - name: EXTRACTION_STATUS
+        description: "status of the LLM extraction (SUCCESS or FAILED)"
+      - name: PROCESSED_AT
+        description: "timestamp when the LLM processing occurred"
+
+  - name: int_problem_solution_links
+    description: |
+      "links between extracted problems and solutions using multiple approaches:
+      direct replies, same comment, thread replies, and AI-powered semantic matching.
+      Each row represents one problem-solution relationship with confidence scoring."
+    columns:
+      - name: PROBLEM_COMMENT_ID
+        description: "comment_id where the problem was identified"
+      - name: PROBLEM_PARTICIPANT_ID
+        description: "participant who posted the comment containing the problem"
+      - name: PROBLEM_POSTED_ON
+        description: "date when the problem comment was posted"
+      - name: PROBLEM_SEQUENCE
+        description: "sequence number of the problem within its comment"
+      - name: PROBLEM_TEXT
+        description: "text of the identified problem"
+      - name: SOLUTION_COMMENT_ID
+        description: "comment_id where the solution was identified"
+      - name: SOLUTION_PARTICIPANT_ID
+        description: "participant who posted the comment containing the solution"
+      - name: SOLUTION_POSTED_ON
+        description: "date when the solution comment was posted"
+      - name: SOLUTION_SEQUENCE
+        description: "sequence number of the solution within its comment"
+      - name: SOLUTION_TEXT
+        description: "text of the identified solution"
+      - name: LINK_TYPE
+        description: "type of relationship: DIRECT_REPLY, SAME_COMMENT, THREAD_REPLY, or SEMANTIC_MATCH"
+      - name: CONFIDENCE_SCORE
+        description: "confidence score for the problem-solution relationship (0.0-1.0)"
+      - name: LINK_EXPLANATION
+        description: "explanation of why this problem and solution are linked"
+      - name: FINAL_LINK_SCORE
+        description: "composite score considering both confidence and link type"
+      - name: LINK_ID
+        description: "unique identifier for this problem-solution link"
+      - name: LINKED_AT
+        description: "timestamp when the link was created"
