@@ -65,7 +65,7 @@ solution_extraction as (
         -- Extract solutions using Snowflake Cortex AI
         try_parse_json(
             ai_complete(
-                model => 'claude-4-sonnet',
+                model => '{{ var("llm_model") }}',
                 prompt => concat(
                     'You are analyzing comments from California state employees about government efficiency. ',  -- noqa: LT05
                     'Extract the PRIMARY solutions described in this comment as concise summaries that preserve key details.\n\n',  -- noqa: LT05
