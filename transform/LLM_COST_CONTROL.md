@@ -47,7 +47,7 @@ The following models automatically use the appropriate model based on target:
 
 ## Cost Monitoring
 - Monitor your Snowflake Cortex AI credits usage
-- Development model should cost ~70% less than production model
+- Development model should cost ~90% less than production model
 - Use `--target dev` for all development and testing
 - Only use `--target prd` for final production runs
 
