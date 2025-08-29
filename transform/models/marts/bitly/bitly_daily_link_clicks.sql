@@ -14,6 +14,7 @@ tags as (
 select
     links.link,
     links.title,
+    array_to_string(links.custom_bitlinks, ', ') as custom_bitlinks,
     tags.link_tags,
     links.created_date,
     clicks.click_date,

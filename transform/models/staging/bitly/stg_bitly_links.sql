@@ -1,18 +1,28 @@
 with
-links as (
+grps as (
+    select * from {{ ref('stg_bitly_groups') }}
+),
+
+orgs as (
+    select * from {{ ref('stg_bitly_organizations') }}
+),
+
+usrs as (
+    select * from {{ ref('stg_bitly_users') }}
+),
+
+links_odi as (
     select * from {{ source('BITLY','BITLINK') }}
 ),
 
-bitly_groups as (
-    select * from {{ source('BITLY','GROUPS') }}
+links_ci as (
+    select * from {{ source('BITLY_CALINNOVATE','BITLINK') }}
 ),
 
-bitly_orgs as (
-    select * from {{ source('BITLY','ORGANIZATION') }}
-),
-
-bitly_users as (
-    select * from {{ source('BITLY','USERS') }}
+links as (
+    select * from links_odi
+    union distinct
+    select * from links_ci
 )
 
 select
@@ -21,12 +31,12 @@ select
     links.long_url,
     links.title,
     links.custom_bitlinks,
-    bitly_orgs.name as organization_name,
-    bitly_groups.name as group_name,
+    orgs.organization_name,
+    grps.group_name,
     to_date(links.created_at, 'YYYY-MM-DD"T"HH24:MI:SSTZHTZM') as created_date,
-    coalesce(bitly_users.name, 'Unknown User') as created_by
+    coalesce(usrs.name, 'Unknown User') as created_by
 from links
-inner join bitly_groups on links.group_guid = bitly_groups.guid
-inner join bitly_orgs on bitly_groups.organization_guid = bitly_orgs.guid
-left join bitly_users on links.created_by = bitly_users.login  -- not all created_by values are in the USERS table
+inner join grps on links.group_guid = grps.group_guid
+inner join orgs on grps.organization_guid = orgs.organization_guid
+left join usrs on links.created_by = usrs.login  -- not all created_by values are in the USERS table
 where links._fivetran_deleted = FALSE
