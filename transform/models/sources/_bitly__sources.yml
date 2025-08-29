@@ -181,19 +181,6 @@ sources:
             description: User who created the Bitly link
           - name: CLIENT_ID
             description: Client ID that was used to manage the Bitly link
-      - name: BITLINK_TAG
-        description: Tags associated with Bitly links
-        columns:
-          - name: BITLINK_ID
-            description: Unique identifier for the Bitly link
-          - name: GROUP_GUID
-            description: Unique identifier for the associated Bitly group
-          - name: TAGS
-            description: Tag associated with the Bitly link
-          - name: _FIVETRAN_DELETED
-            description: Indicates if the record was deleted in the Bitly source system
-          - name: _FIVETRAN_SYNCED
-            description: Timestamp when the record was last synced by Fivetran
       - name: GROUPS
         description: Bitly groups information
         columns:
