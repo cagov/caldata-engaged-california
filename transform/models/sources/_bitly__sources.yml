@@ -14,7 +14,7 @@ sources:
           - name: ID
             description: Unique identifier for the Bitly link
           - name: CUSTOM_BITLINKS
-            description: Array of any custom Bitly links, including canonical links if record is an alias
+            description: Array of custom shortlinks linked to this bitlink
           - name: REFERENCE
             description: URLs pointing to related Bitly resources
           - name: _FIVETRAN_DELETED
@@ -160,7 +160,7 @@ sources:
           - name: ID
             description: Unique identifier for the Bitly link
           - name: CUSTOM_BITLINKS
-            description: Array of any custom Bitly links, including canonical links if record is an alias
+            description: Array of custom shortlinks linked to this bitlink
           - name: REFERENCE
             description: URLs pointing to related Bitly resources
           - name: _FIVETRAN_DELETED
