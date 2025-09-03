@@ -1,7 +1,8 @@
 -- noqa: disable=LT05
 {{ config(
     materialized='incremental',
-    unique_key=['comment_id', 'participant_id', 'posted_on', 'problem_sequence'],
+    incremental_strategy='delete+insert',
+    unique_key=['comment_id'],
     on_schema_change='fail'
 ) }}
 
@@ -50,8 +51,7 @@ source_comments as (
     {% if is_incremental() %}
         -- Only process new records since last run
         and (
-            c._file_upload_date > (select max(t._file_upload_date) from {{ this }} as t)
-            or c.posted_on > (select max(t.posted_on) from {{ this }} as t)
+            c.posted_on > (select max(t.posted_on) from {{ this }} as t)
         )
     {% endif %}
     order by c.posted_on desc
@@ -70,13 +70,15 @@ problem_extraction as (
         sc.explicit_department,
 
         -- Extract problems using Snowflake Cortex AI
+        -- model is determined by which environment you are in (i.e. dev or prd). See LLM_COST_CONTOL.md
         try_parse_json(
             ai_complete(
+
                 model => '{{ var("llm_model") }}',
                 prompt => concat(
                     'You are analyzing comments from California state employees about government efficiency. ',
                     'Extract the PRIMARY problems described in this comment as concise summaries that preserve key details.\n\n',
-                    'Extract ONLY the problems, issues, and inefficiencies. Ignore proposed solutions.\n',  -- noqa: LT05
+                    'Extract ONLY the problems, issues, and inefficiencies. Ignore proposed solutions.\n',
 
                     'COMMENT CONTEXT:\n',
                     'Question/Prompt: ', coalesce(sc.question, '[No context]'), '\n',
@@ -97,7 +99,7 @@ problem_extraction as (
                     '• If multiple issues stem from the same root cause or system, combine them\n',
                     '• Summarize comprehensively but as concisely as possible\n',
                     '• Focus on substantial, actionable problems\n\n',
-                    '• if a comment does not contain a problem or one that cannot be reasonably inferred from the solution, return an empty JSON object\n\n',  -- noqa: LT05
+                    '• if a comment does not contain a problem or one that cannot be reasonably inferred from the solution, return an empty JSON object\n\n',
 
                     case
                         when sc.explicit_department is null
@@ -109,40 +111,45 @@ problem_extraction as (
                     end,
 
                     'EXAMPLES OF COMPREHENSIVE EXTRACTION:\n',
-                    'Input: "We are very poorly trained and lack operational consistency. Every office is doing something different, every agency does the same process different ways, there needs to be a smoother process on how we do things in each agency. There are too many hands in the pot, just to get something approved as simple as office supplies, it has a minimum of 5 people processing an order, we are spending more money in labor then what the supply request cost. There should be statewide system for things like procurement, timesheets, basically any common function that is takes to run an agency."\n',  -- noqa: LT05
+                    'Input: "We are very poorly trained and lack operational consistency. Every office is doing something different, every agency does the same process different ways, there needs to be a smoother process on how we do things in each agency. There are too many hands in the pot, just to get something approved as simple as office supplies, it has a minimum of 5 people processing an order, we are spending more money in labor then what the supply request cost. There should be statewide system for things like procurement, timesheets, basically any common function that is takes to run an agency."\n',
 
-                    'Output: "Lack of statewide standardized systems for common functions like procurement and timesheets results in every office and agency operating differently, with excessive approval workflows for simple administrative tasks"\n\n',  -- noqa: LT05
-                    'Input: "The procurement process is overly complicated, time consuming, and often not the most cost efficient. For example, we are required to purchase chairs from CalPIA. CalPIA charges $500+ for one desk chair and then another $30 per chair to deliver. The same chair could be purchased from another retailer for a fraction of the price. In addition, the ordering time is outrageous. Purchases go through many levels of approval before getting to the vendor and many times the required vendor''s turn around time is 60+ business days. Small businesses and disabled veteran-owned businesses get preference, and many times, these small businesses order from retailers like Amazon and then upcharge the State. There is nothing cost efficient about the procurement process. We should be able to buy small things ourselves without going through CalPIA."\n',  -- noqa: LT05
-                    'Output: "Mandatory procurement through CalPIA and preferred small/disabled veteran-owned businesses results in significantly higher costs with additional delivery fees and vendor markups that waste taxpayer funds"\n\n',  -- noqa: LT05
-                    'INCORRECT - Fragmentation (DO NOT DO THIS):\n',
-                    'Input: [same procurement comment]\n',
-                    'Wrong Output: {"problems": [{"problem_text": "CalPIA charges too much for chairs"}, {"problem_text": "Approval process takes too long"}, {"problem_text": "Small businesses mark up prices"}]}\n\n',  -- noqa: LT05
+                    'Expected: "Lack of statewide standardized systems for common functions like procurement and timesheets results in every office and agency operating differently, with excessive approval workflows for simple administrative tasks"\n\n',
+                    'Input: "The procurement process is overly complicated, time consuming, and often not the most cost efficient. For example, we are required to purchase chairs from CalPIA. CalPIA charges $500+ for one desk chair and then another $30 per chair to deliver. The same chair could be purchased from another retailer for a fraction of the price. In addition, the ordering time is outrageous. Purchases go through many levels of approval before getting to the vendor and many times the required vendor turn around time is 60+ business days. Small businesses and disabled veteran-owned businesses get preference, and many times, these small businesses order from retailers like Amazon and then upcharge the State. There is nothing cost efficient about the procurement process. We should be able to buy small things ourselves without going through CalPIA."\n',
+                    'Expected: "Mandatory procurement through CalPIA and preferred small/disabled veteran-owned businesses results in significantly higher costs with additional delivery fees and vendor markups that waste taxpayer funds"\n\n',
 
-
-                    'OUTPUT FORMAT:\n',
-                    'Return ONLY valid JSON without markdown formatting or code blocks:\n',
-                    '{\n',
-                    '  "problems": [\n',
-                    '    {\n',
-                    '      "problem_text": "concise problem summary preserving key details",\n',
-                    '      "inferred_departments": ["Department 1", "Department 2"] or null\n',
-                    '    }\n',
-                    '  ]\n',
-                    '}\n',
-                    'Do not wrap in ```json or ``` - return raw JSON only.\n',
                     'Return exactly 1 consolidated problem per comment unless the source comment contains multiple, truly unrelated problems.'
                 ),
+                -- use lower temp and top_p to reduce the stochastic nature of LLM output.
                 model_parameters => object_construct(
                     'temperature', 0.1,
                     'max_tokens', 1500,
                     'top_p', 0.1
-                )
+                ),
+                response_format => {
+                    'type': 'json',
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'problems': {
+                                'type': 'array',
+                                'items': {
+                                    'type': 'object',
+                                    'properties': {
+                                        'problem_text': { 'type': 'string' },
+                                        'inferred_departments': { 'type': 'array', 'items': { 'type': 'string' } }
+                                    },
+                                    'required': ['problem_text']
+                                }
+                            }
+                        },
+                        'required': ['problems']
+                    }
+                }
             )
         ) as problems_json
     from source_comments as sc
 ),
 
--- Flatten the problems array to create one row per problem
 flattened_problems as (
     select
         pe.comment_id,
@@ -164,7 +171,7 @@ flattened_problems as (
 
         -- Generate problem sequence numbers
         row_number() over (
-            partition by pe.comment_id, pe.participant_id, pe.posted_on
+            partition by pe.comment_id
             order by f.value:problem_text
         ) as problem_sequence,
 

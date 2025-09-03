@@ -111,117 +111,6 @@ thread_links as (
     )
 ),
 
--- Approach 4: AI-powered semantic matching for problems and solutions posted close in time
-semantic_candidates as (
-    select
-        p.comment_id as problem_comment_id,
-        p.participant_id as problem_participant_id,
-        p.posted_on as problem_posted_on,
-        p.problem_sequence,
-        p.problem_text,
-        s.comment_id as solution_comment_id,
-        s.participant_id as solution_participant_id,
-        s.posted_on as solution_posted_on,
-        s.solution_sequence,
-        s.solution_text
-    from problems as p
-    cross join solutions as s
-    where
-        -- Only consider solutions posted within 7 days of the problem
-        abs(datediff(
-            'day',
-            try_to_timestamp(p.posted_on),
-            try_to_timestamp(s.posted_on)
-        )) <= 7
-        -- Exclude already linked items
-        and not exists (
-            select 1 from direct_reply_links as d
-            where
-                d.problem_comment_id = p.comment_id
-                and d.solution_comment_id = s.comment_id
-        )
-        and not exists (
-            select 1 from same_comment_links as d
-            where
-                d.problem_comment_id = p.comment_id
-                and d.solution_comment_id = s.comment_id
-        )
-        and not exists (
-            select 1 from thread_links as d
-            where
-                d.problem_comment_id = p.comment_id
-                and d.solution_comment_id = s.comment_id
-        )
-),
-
-semantic_matches as (
-    select
-        problem_comment_id,
-        problem_participant_id,
-        problem_posted_on,
-        problem_sequence,
-        problem_text,
-        solution_comment_id,
-        solution_participant_id,
-        solution_posted_on,
-        solution_sequence,
-        solution_text,
-        'SEMANTIC_MATCH' as link_type,
-
-        -- Use AI to determine if solution addresses the problem
-        try_parse_json(
-            ai_complete(
-                model => '{{ var("llm_model") }}',
-                prompt => concat(
-                    'Analyze whether the following solution could address the given problem. ',
-                    'Rate the relevance and provide reasoning.\n\n',
-
-                    'PROBLEM:\n',
-                    problem_text, '\n\n',
-
-                    'PROPOSED SOLUTION:\n',
-                    solution_text, '\n\n',
-
-                    'ANALYSIS INSTRUCTIONS:\n',
-                    '• Determine if the solution could directly or indirectly address the problem\n',
-                    '• Consider whether they are in the same domain (technology, process, etc.)\n',
-                    '• Rate relevance from 0.0 (not related) to 1.0 (highly relevant)\n',
-                    '• Provide brief reasoning for the score\n',
-                    '• Only consider scores 0.6 and above as meaningful matches\n\n',
-
-                    'OUTPUT FORMAT:\n',
-                    'Return ONLY valid JSON:\n',
-                    '{"relevance_score": 0.0-1.0, "explanation": "brief reasoning for the score"}'
-                ),
-                model_parameters => object_construct(
-                    'temperature', 0.1,
-                    'max_tokens', 300,
-                    'top_p', 0.1
-                )
-            )
-        ) as semantic_analysis_json
-    from semantic_candidates
-),
-
-semantic_links as (
-    select
-        problem_comment_id,
-        problem_participant_id,
-        problem_posted_on,
-        problem_sequence,
-        problem_text,
-        solution_comment_id,
-        solution_participant_id,
-        solution_posted_on,
-        solution_sequence,
-        solution_text,
-        link_type,
-        coalesce(semantic_analysis_json:relevance_score::float, 0.0) as confidence_score,
-        coalesce(semantic_analysis_json:explanation::string, 'Semantic analysis failed') as link_explanation
-    from semantic_matches
-    where coalesce(semantic_analysis_json:relevance_score::float, 0.0) >= 0.6
-),
-
 -- Combine all linking approaches
 all_links as (
     select * from direct_reply_links
@@ -229,8 +118,6 @@ all_links as (
     select * from same_comment_links
     union all
     select * from thread_links
-    union all
-    select * from semantic_links
 )
 
 select
@@ -253,7 +140,6 @@ select
         when link_type = 'DIRECT_REPLY' then confidence_score * 1.0
         when link_type = 'SAME_COMMENT' then confidence_score * 0.9
         when link_type = 'THREAD_REPLY' then confidence_score * 0.7
-        when link_type = 'SEMANTIC_MATCH' then confidence_score * 0.6
         else confidence_score * 0.5
     end as final_link_score,
 
