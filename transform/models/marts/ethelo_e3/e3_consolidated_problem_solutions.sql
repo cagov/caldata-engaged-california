@@ -3,7 +3,7 @@
     materialized='incremental',
     incremental_strategy='delete+insert',
     unique_key=['problem_comment_id', 'problem_sequence'],
-    on_schema_change='fail'
+    on_schema_change='sync_all_columns'
 ) }}
 
 -- Consolidated problem-solution pairs using AI to merge solutions for each problem
