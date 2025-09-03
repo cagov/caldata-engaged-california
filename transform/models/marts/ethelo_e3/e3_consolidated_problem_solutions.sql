@@ -1,5 +1,9 @@
+-- noqa: disable=LT05
 {{ config(
-    materialized='table'
+    materialized='incremental',
+    incremental_strategy='delete+insert',
+    unique_key=['problem_comment_id', 'problem_sequence'],
+    on_schema_change='fail'
 ) }}
 
 -- Consolidated problem-solution pairs using AI to merge solutions for each problem
@@ -35,6 +39,11 @@ with problem_solution_links as (
         and psl.problem_posted_on = p.posted_on
         and psl.problem_sequence = p.problem_sequence
     )
+
+    {% if is_incremental() %}
+        -- Only process problems that are new since last run
+        where psl.problem_posted_on > (select max(t.problem_posted_on) from {{ this }} as t)
+    {% endif %}
 ),
 
 -- Aggregate solutions for each problem
