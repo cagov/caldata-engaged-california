@@ -1,7 +1,8 @@
 -- noqa: disable=LT05
 {{ config(
     materialized='incremental',
-    unique_key=['comment_id', 'participant_id', 'posted_on', 'solution_sequence'],
+    incremental_strategy='delete+insert',
+    unique_key=['comment_id'],
     on_schema_change='fail'
 ) }}
 
@@ -25,8 +26,7 @@ with source_comments as (
     {% if is_incremental() %}
         -- Only process new records since last run
         and (
-            sc._file_upload_date > (select max(t._file_upload_date) from {{ this }} as t)
-            or sc.posted_on > (select max(t.posted_on) from {{ this }} as t)
+            sc.posted_on > (select max(t.posted_on) from {{ this }} as t)
         )
     {% endif %}
     order by sc.posted_on desc
@@ -67,9 +67,9 @@ solution_extraction as (
             ai_complete(
                 model => '{{ var("llm_model") }}',
                 prompt => concat(
-                    'You are analyzing comments from California state employees about government efficiency. ',  -- noqa: LT05
-                    'Extract the PRIMARY solutions described in this comment as concise summaries that preserve key details.\n\n',  -- noqa: LT05
-                    'Extract ONLY the solutions, recommendations, and proposed improvements. Ignore problem descriptions\n\n',  -- noqa: LT05
+                    'You are analyzing comments from California state employees about government efficiency. ',
+                    'Extract the PRIMARY solutions described in this comment as concise summaries that preserve key details.\n\n',
+                    'Extract ONLY the solutions, recommendations, and proposed improvements. Ignore problem descriptions\n\n',
 
                     'COMMENT CONTEXT:\n',
                     'Question/Prompt: ', coalesce(ct.question, '[No context]'), '\n',
@@ -92,27 +92,33 @@ solution_extraction as (
                     '• if a comment does not contain a solution, return an empty JSON object\n\n',
 
                     'EXAMPLES OF COMPREHENSIVE EXTRACTION:\n',
-                    'Input: "There needs to be a better process for getting duplicate pay warrants issued. I often have employees waiting a month or more just to receive a replacement warrant. This delay is really frustrating for employees who need their pay and creates extra work for managers who have to field complaints. I like Cal Employee Connect but I think they could add functionality to it, giving the employee the ability to request their own duplicate warrant directly with the SCO."\n',  -- noqa: LT05
-                    'Output: "Add functionality to Cal Employee Connect allowing employees to request duplicate pay warrants directly with State Controller\'s Office (SCO) to reduce processing time"\n\n',  -- noqa: LT05
+                    'Input: "There needs to be a better process for getting duplicate pay warrants issued. I often have employees waiting a month or more just to receive a replacement warrant. This delay is really frustrating for employees who need their pay and creates extra work for managers who have to field complaints. I like Cal Employee Connect but I think they could add functionality to it, giving the employee the ability to request their own duplicate warrant directly with the SCO."\n',
+                    'Output: "Add functionality to Cal Employee Connect allowing employees to request duplicate pay warrants directly with State Controllers Office (SCO) to reduce processing time"\n\n',
 
-                    'Input: "CDCR Fire needs a complete reorganization. Currently, multiple fire stations operate independently, answering to Plant Operations or Wardens. Each station procures its own PPE, hoses, tools, and follows local policies—resulting in a fragmented system with no standardization or unified effectiveness. A centralized command starting in Sacramento is essential. Appointing a Fire Chief and Deputy Chief, supported by three Division Chiefs (North, Central, South), would create statewide oversight. Each fire station would have a Battalion Chief supervising Fire Captains, ensuring consistency and accountability."\n',  -- noqa: LT05
-                    'Output: "Establish centralized California Department of Corrections and Rehabilitation (CDCR) Fire command in Sacramento with Fire Chief, Deputy Chief, and three Division Chiefs (North, Central, South) overseeing Battalion Chiefs at each station to create standardized operations and unified effectiveness"\n\n',  -- noqa: LT05
+                    'Input: "CDCR Fire needs a complete reorganization. Currently, multiple fire stations operate independently, answering to Plant Operations or Wardens. Each station procures its own PPE, hoses, tools, and follows local policies—resulting in a fragmented system with no standardization or unified effectiveness. A centralized command starting in Sacramento is essential. Appointing a Fire Chief and Deputy Chief, supported by three Division Chiefs (North, Central, South), would create statewide oversight. Each fire station would have a Battalion Chief supervising Fire Captains, ensuring consistency and accountability."\n',
+                    'Output: "Establish centralized California Department of Corrections and Rehabilitation (CDCR) Fire command in Sacramento with Fire Chief, Deputy Chief, and three Division Chiefs (North, Central, South) overseeing Battalion Chiefs at each station to create standardized operations and unified effectiveness"\n\n',
 
-                    'OUTPUT FORMAT:\n',
-                    'Return ONLY valid JSON without markdown formatting or code blocks:\n',  -- noqa: LT05
-                    '{\n',
-                    '  "solutions": [\n',
-                    '    "concise solution summary preserving key details"\n',
-                    '  ]\n',
-                    '}\n',
-                    'Do not wrap in ```json or ``` - return raw JSON only.\n',
-                    'Return exactly 1 consolidated solution per comment unless the source comment contains multiple, truly unique solutions. Remember: one solution = one actionable recommendation for leadership'
+                    'Remember: one solution = one actionable recommendation for leadership. Return exactly 1 consolidated solution per comment unless the source comment contains multiple, truly unique solutions.'
                 ),
+                -- use lower temp and top_p to reduce the stochastic nature of LLM output.
                 model_parameters => object_construct(
                     'temperature', 0.1,
                     'max_tokens', 1500,
                     'top_p', 0.1
-                )
+                ),
+                response_format => {
+                    'type': 'json',
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'solutions': {
+                                'type': 'array',
+                                'items': { 'type': 'string' }
+                            }
+                        },
+                        'required': ['solutions']
+                    }
+                }
             )
         ) as solutions_json
     from comment_threads as ct
@@ -140,7 +146,7 @@ flattened_solutions as (
 
         -- Generate solution sequence numbers
         row_number() over (
-            partition by se.comment_id, se.participant_id, se.posted_on
+            partition by se.comment_id
             order by f.value
         ) as solution_sequence,
 

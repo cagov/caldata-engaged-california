@@ -118,7 +118,7 @@ ai_consolidated as (
                 model => '{{ var("llm_model") }}',
                 prompt => concat(
                     'You are analyzing solutions proposed for a specific government efficiency problem. ',
-                    'Your task is to consolidate multiple related solutions into a coherent, comprehensive solution set.\n\n',  -- noqa: LT05
+                    'Your task is to consolidate multiple related solutions into a coherent, comprehensive, and orthogonal solution set.\n\n',  -- noqa: LT05
 
                     'PROBLEM TO SOLVE:\n',
                     problem_text, '\n\n',
@@ -127,33 +127,41 @@ ai_consolidated as (
                     all_solutions_text, '\n\n',
 
                     'CONSOLIDATION INSTRUCTIONS:\n',
-                    '• Analyze all proposed solutions and identify common themes\n',
-                    '• Merge similar or overlapping solutions into unified recommendations\n',
-                    '• Preserve unique value from each distinct solution approach\n',
-                    '• Organize solutions by implementation difficulty or logical sequence\n',
-                    '• Ensure each consolidated solution is specific and actionable\n',
-                    '• Maintain the practical focus on government efficiency improvements\n\n',
+                    '- Analyze all proposed solutions and identify common themes\n',
+                    '- You must merge similar or overlapping solutions into unified recommendations\n',
+                    '- Preserve unique value from each distinct solution approach\n',
+                    '- Preserve specific program names, systems, and technologies mentioned\n',
+                    '- Ensure each consolidated solution is specific and actionable\n',
+                    '- Maintain the practical focus on government efficiency improvements\n',
+                    '- Remember: one solution = one actionable recommendation for leadership.\n',
+                    '- Return exactly 1 consolidated solution per problem unless the source contains multiple, truly unique solutions\n',
 
                     'OUTPUT REQUIREMENTS:\n',
-                    '• consolidated_solutions: Array of 1-5 consolidated solution descriptions\n',
-                    '• solution_themes: Array of key themes identified across all solutions\n\n',
-
-                    'EXAMPLE OUTPUT:\n',
-                    '{\n',
-                    '  "consolidated_solutions": [\n',
-                    '    "Implement automated workflow system to reduce manual processing delays",\n',
-                    '    "Establish cross-department communication protocols to eliminate duplication"\n',
-                    '  ],\n',
-                    '  "solution_themes": ["automation", "process improvement", "communication"]\n',
-                    '}\n\n',
-
-                    'Return ONLY valid JSON in the format above.'
+                    '- consolidated_solutions: Array of 1-3 consolidated solution descriptions\n',
+                    '- solution_themes: Array of key themes identified across all solutions\n\n'
                 ),
                 model_parameters => object_construct(
-                    'temperature', 0.2,
+                    'temperature', 0.1,
                     'max_tokens', 1000,
                     'top_p', 0.1
-                )
+                ),
+                response_format => {
+                    'type': 'json',
+                    'schema': {
+                        'type': 'object',
+                        'properties': {
+                            'consolidated_solutions': {
+                                'type': 'array',
+                                'items': { 'type': 'string' }
+                            },
+                            'solution_themes': {
+                                'type': 'array',
+                                'items': { 'type': 'string' }
+                            }
+                        },
+                        'required': ['consolidated_solutions', 'solution_themes']
+                    }
+                }
             )
         ) as consolidation_analysis
     from problems_with_solutions
