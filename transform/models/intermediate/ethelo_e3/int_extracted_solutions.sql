@@ -23,12 +23,12 @@ with source_comments as (
         and trim(sc.content) != ''
         and sc.posted_on >= '2025-08-15'  -- Filter to relevant date range
 
-        {% if is_incremental() %}
-        -- Only process new records since last run
-            and (
-                sc.posted_on > (select max(t.posted_on) from {{ this }} as t)
-            )
-        {% endif %}
+    {% if is_incremental() %}
+    -- Only process new records since last run
+        and (
+            sc.posted_on > (select max(t.posted_on) from {{ this }} as t)
+        )
+    {% endif %}
     order by sc.posted_on desc
 ),
 
