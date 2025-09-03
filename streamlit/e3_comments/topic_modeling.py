@@ -342,8 +342,9 @@ def run_topic_modeling_analysis(session):
                             else:
                                 st.success(f"✅ Found {actual_num_topics} topics within your desired range of {topic_range[0]}-{topic_range[1]}")
 
-                            # Generate topic labels using LLM
+                            # Generate topic labels and descriptions using LLM
                             topic_labels = {}
+                            topic_descriptions = {}
                             for _, row in topic_info.iterrows():
                                 if row['Topic'] != -1:
                                     topic_docs = [docs[i] for i, t in enumerate(topics) if t == row['Topic']]
@@ -355,15 +356,65 @@ def run_topic_modeling_analysis(session):
                                         label_query = f'''
                                         SELECT SNOWFLAKE.CORTEX.COMPLETE(
                                             'llama4-maverick',
-                                            'The following are ideas from California state employees for improving government efficiency, engagement, and effectiveness. Please provide a single, brief 2-6 word topic title that captures the main theme across all of the ideas. The title should avoid generic words like government, efficiency, streamline, engage, improve, etc. Instead the title should focus on the specifc throughline problem and/or solution across the ideas. Only return the title, no quotes or extra text: ' || '{docs_text.replace("'", "''")}'
-                                        ) as topic_label
+                                            'The following are ideas from California state employees for improving government efficiency, engagement, and effectiveness. Please analyze these ideas and provide:
+
+1. TOPIC TITLE: A brief 2-6 word topic title that captures the main theme. Avoid generic words like government, efficiency, streamline, engage, improve, etc. Focus on the specific throughline problem and/or solution across the ideas.
+
+2. TOPIC DESCRIPTION: A topic description of maximum 3 sentences that summarizes the common theme across these ideas. Be specific about the problems identified and solutions proposed.
+
+3. REPRESENTATIVE QUOTES: Include 2-3 representative quotes (about one sentence each) that best capture people's sentiment and ideas on the topic. Extract exactly from the source comments but you can make minimal edits for clarity and brevity while maintaining the original voice. You may:
+   - Remove irrelevant details using ellipses (...)
+   - Add clarifying words in brackets [like this]
+   - Condense longer passages to focus on the key point
+   - Preserve the authentic tone and perspective of the original commenter
+
+Ideas: ' || '{docs_text.replace("'", "''")}',
+                                            response_format => {{
+                                                'type': 'json',
+                                                'schema': {{
+                                                    'type': 'object',
+                                                    'properties': {{
+                                                        'title': {{
+                                                            'type': 'string'
+                                                        }},
+                                                        'description': {{
+                                                            'type': 'string'
+                                                        }},
+                                                        'quotes': {{
+                                                            'type': 'array',
+                                                            'items': {{
+                                                                'type': 'string'
+                                                            }}
+                                                        }}
+                                                    }},
+                                                    'required': ['title', 'description', 'quotes']
+                                                }}
+                                            }}
+                                        ) as topic_analysis
                                         '''
 
                                         try:
                                             label_result = session.sql(label_query).to_pandas()
-                                            topic_labels[row['Topic']] = label_result.iloc[0]['TOPIC_LABEL']
-                                        except:
+                                            analysis_text = label_result.iloc[0]['TOPIC_ANALYSIS']
+
+                                            # Parse JSON response directly
+                                            import json
+                                            analysis_json = json.loads(analysis_text)
+
+                                            topic_labels[row['Topic']] = analysis_json.get('title', f"Topic {row['Topic']}")
+
+                                            description = analysis_json.get('description', 'No description available')
+                                            quotes = analysis_json.get('quotes', [])
+
+                                            if quotes:
+                                                quotes_text = '\n'.join([f'- "{quote}"' for quote in quotes])
+                                                topic_descriptions[row['Topic']] = f"{description}\n\nRepresentative examples:\n{quotes_text}"
+                                            else:
+                                                topic_descriptions[row['Topic']] = description
+
+                                        except Exception as e:
                                             topic_labels[row['Topic']] = f"Topic {row['Topic']}"
+                                            topic_descriptions[row['Topic']] = "No description available"
 
                             # Create visualization
                             umap_2d = UMAP(
@@ -383,12 +434,12 @@ def run_topic_modeling_analysis(session):
                             # Create visualization dataframe with wrapped text
                             wrapped_ideas = [wrap_text(idea, 50) for idea in topic_data['MAIN_IDEA']]
 
-                            # Create combined hover text with topic, department, and idea
+                            # Create combined hover text with topic, description, and idea
                             hover_text = []
                             for i, row in enumerate(topic_data.itertuples()):
                                 topic_label = topic_labels.get(topics[i], 'Outlier') if topics[i] != -1 else 'Outlier'
-                                dept = row.IDEA_DEPT if pd.notna(row.IDEA_DEPT) else 'Unspecified'
-                                hover_text.append(f"<b>{topic_label}</b><br>{dept}<br><br>{wrapped_ideas[i]}")
+                                topic_desc = topic_descriptions.get(topics[i], 'No description available') if topics[i] != -1 else 'Outliers - ideas that don\'t fit clearly into any topic'
+                                hover_text.append(f"<b>{topic_label}</b><br><br>{topic_desc}<br><br><b>This idea:</b><br>{wrapped_ideas[i]}")
 
                             viz_df = pd.DataFrame({
                                 'PARTICIPANT_ID': topic_data['PARTICIPANT_ID'],
@@ -398,6 +449,7 @@ def run_topic_modeling_analysis(session):
                                 'IDEA_DEPT': topic_data['IDEA_DEPT'].fillna('Unspecified'),
                                 'TOPIC': topics,
                                 'TOPIC_LABEL': [topic_labels.get(t, 'Outlier') if t != -1 else 'Outlier' for t in topics],
+                                'TOPIC_DESCRIPTION': [topic_descriptions.get(t, 'Outliers - ideas that don\'t fit clearly into any topic') if t != -1 else 'Outliers - ideas that don\'t fit clearly into any topic' for t in topics],
                                 'UMAP_1': umap_2d_embeddings[:, 0],
                                 'UMAP_2': umap_2d_embeddings[:, 1]
                             })
@@ -453,17 +505,56 @@ def run_topic_modeling_analysis(session):
 
                             # Display topic summary
                             st.subheader("Topic Summary")
-                            summary_df = viz_df.groupby('TOPIC_LABEL').agg({
-                                'PARTICIPANT_ID': 'count',
-                                'IDEA_DEPT': lambda x: ', '.join(x.value_counts().head(3).index.tolist())
-                            }).rename(columns={'PARTICIPANT_ID': 'Count', 'IDEA_DEPT': 'Top Departments'})
-                            st.dataframe(summary_df, use_container_width=True)
 
-                            # Display detailed results table
+                            # Create a more comprehensive topic summary
+                            topic_summary_data = []
+                            for topic_label in viz_df['TOPIC_LABEL'].unique():
+                                if topic_label != 'Outlier':
+                                    topic_id = viz_df[viz_df['TOPIC_LABEL'] == topic_label]['TOPIC'].iloc[0]
+                                    count = len(viz_df[viz_df['TOPIC_LABEL'] == topic_label])
+                                    description = topic_descriptions.get(topic_id, 'No description available')
+
+                                    # Extract just the description part (before "Representative examples:")
+                                    desc_parts = description.split('\n\nRepresentative examples:')
+                                    topic_desc = desc_parts[0]
+                                    quotes = desc_parts[1] if len(desc_parts) > 1 else 'No quotes available'
+
+                                    topic_summary_data.append({
+                                        'Topic Label': topic_label,
+                                        'Count': count,
+                                        'Topic Description': topic_desc,
+                                        'Representative Quotes': quotes
+                                    })
+
+                            # Add outliers row if they exist
+                            outlier_count = len(viz_df[viz_df['TOPIC_LABEL'] == 'Outlier'])
+                            if outlier_count > 0:
+                                topic_summary_data.append({
+                                    'Topic Label': 'Outlier',
+                                    'Count': outlier_count,
+                                    'Topic Description': 'Ideas that don\'t fit clearly into any specific topic',
+                                    'Representative Quotes': 'N/A'
+                                })
+
+                            topic_summary_df = pd.DataFrame(topic_summary_data)
+                            st.dataframe(topic_summary_df, use_container_width=True, hide_index=True)
+
+                            # Display detailed results table with topic filter
                             st.subheader("Detailed Results")
-                            display_df = viz_df[['PARTICIPANT_ID', 'TOPIC_LABEL', 'IDEA_DEPT', 'MAIN_IDEA']].copy()
-                            display_df.columns = ['Participant ID', 'Topic', 'Department', 'Main Idea']
-                            st.dataframe(display_df, use_container_width=True, hide_index=True)
+
+                            # Create topic selection dropdown
+                            topic_options = ['All Topics'] + sorted([t for t in viz_df['TOPIC_LABEL'].unique() if t != 'Outlier']) + (['Outlier'] if 'Outlier' in viz_df['TOPIC_LABEL'].unique() else [])
+                            selected_topic = st.selectbox('Select a topic to filter:', topic_options)
+
+                            # Filter dataframe based on selection
+                            if selected_topic == 'All Topics':
+                                filtered_df = viz_df[['MAIN_IDEA']].copy()
+                                filtered_df.columns = ['Main Idea']
+                            else:
+                                filtered_df = viz_df[viz_df['TOPIC_LABEL'] == selected_topic][['MAIN_IDEA']].copy()
+                                filtered_df.columns = ['Main Idea']
+
+                            st.dataframe(filtered_df, use_container_width=True, hide_index=True)
 
                             # Download option
                             csv_data = viz_df.to_csv(index=False)
