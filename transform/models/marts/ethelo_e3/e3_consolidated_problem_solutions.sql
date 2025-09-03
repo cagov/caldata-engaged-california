@@ -195,7 +195,7 @@ select
 
     -- Solution aggregation metadata
     solution_count,
-    round(avg_confidence_score, 3) as avg_confidence_score,
+    round(avg_confidence_score, 3)::float as avg_confidence_score,
     link_types_used,
     earliest_solution_date,
     latest_solution_date,
