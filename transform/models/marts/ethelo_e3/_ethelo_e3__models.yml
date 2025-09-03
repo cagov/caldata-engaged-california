@@ -59,6 +59,9 @@ models:
       "Consolidated problem-solution pairs from the E3 engagement platform.
       Each row represents one unique problem with AI-consolidated solutions and full traceability.
       Solutions are aggregated and synthesized using AI to provide coherent, actionable recommendations."
+    config:
+      materialized: incremental
+      unique_key: ["problem_comment_id", "problem_sequence"]
     columns:
       - name: PROBLEM_COMMENT_ID
         description: "Unique identifier of the comment where the problem was identified"
