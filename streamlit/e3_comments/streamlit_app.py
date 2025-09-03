@@ -7,13 +7,6 @@ import plotly.graph_objects as go
 from datetime import datetime
 import numpy as np
 import json
-import os
-
-#change environment variables to get bertopic to work in this environment
-os.environ["NUMBA_CACHE_DIR"] = "/tmp"
-os.environ["TRANSFORMERS_CACHE"] = "/tmp"
-os.environ["TRANSFORMERS_CACHE"] = "/tmp"
-
 
 # Configuration settings
 ENABLE_CUSTOM_PROMPT = True  # Set to True to enable custom prompt option
@@ -274,10 +267,9 @@ st.divider()
 filtered_df = participant_responses_df.copy()
 
 # Create tabs
-tab1, tab2, tab3 = st.tabs([
+tab1, tab2 = st.tabs([
     "LLM Comment Analysis",
-    "Data Export",
-    "Topic Modeling"
+    "Data Export"
 ])
 
 # Tab 1: LLM Comment Analysis
@@ -491,24 +483,6 @@ with tab2:
 
     else:
         st.warning("No data available for export with current filters.")
-
-# Tab 3: Topic Modeling
-with tab3:
-    st.subheader("Topic Modeling Analysis")
-
-    st.markdown("""
-    Discover common themes across all participants' main ideas using automated text analysis.
-    This helps identify the most frequent concerns and suggestions from state employees.
-    """)
-
-    # Import and run topic modeling
-    try:
-        from topic_modeling import run_topic_modeling_analysis
-        run_topic_modeling_analysis(session)
-    except ImportError as e:
-        st.error(f"Error importing topic modeling module: {e}")
-    except Exception as e:
-        st.error(f"Error running topic modeling: {e}")
 
 # Footer
 st.markdown("---")
