@@ -48,12 +48,12 @@ source_comments as (
             'Anything else? - Would you add any other ideas, including from your perspective as a California resident?'
         )
 
-    {% if is_incremental() %}
+        {% if is_incremental() %}
         -- Only process new records since last run
-        and (
-            c.posted_on > (select max(t.posted_on) from {{ this }} as t)
-        )
-    {% endif %}
+            and (
+                c.posted_on > (select max(t.posted_on) from {{ this }} as t)
+            )
+        {% endif %}
     order by c.posted_on desc
 ),
 
