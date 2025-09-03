@@ -51,8 +51,7 @@ models:
       can be extracted from a single comment, resulting in multiple rows per comment."
     config:
       materialized: incremental
-      unique_key:
-        ["comment_id", "participant_id", "posted_on", "problem_sequence"]
+      unique_key: ["comment_id"]
     columns:
       - name: COMMENT_ID
         description: "unique identifier of the source comment (null for survey responses)"
@@ -103,8 +102,7 @@ models:
       Solutions can be linked back to problems via comment threading."
     config:
       materialized: incremental
-      unique_key:
-        ["comment_id", "participant_id", "posted_on", "solution_sequence"]
+      unique_key: ["comment_id"]
     columns:
       - name: COMMENT_ID
         description: "unique identifier of the source comment (null for survey responses)"
