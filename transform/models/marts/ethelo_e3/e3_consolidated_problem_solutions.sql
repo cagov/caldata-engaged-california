@@ -33,12 +33,13 @@ with problem_solution_links as (
         p.inferred_departments,
         p.all_departments
     from {{ ref('int_problem_solution_links') }} as psl
-    left join {{ ref('int_extracted_problems') }} as p on (
-        psl.problem_comment_id = p.comment_id
-        and psl.problem_participant_id = p.participant_id
-        and psl.problem_posted_on = p.posted_on
-        and psl.problem_sequence = p.problem_sequence
-    )
+    left join {{ ref('int_extracted_problems') }} as p
+        on (
+            psl.problem_comment_id = p.comment_id
+            and psl.problem_participant_id = p.participant_id
+            and psl.problem_posted_on = p.posted_on
+            and psl.problem_sequence = p.problem_sequence
+        )
 
     {% if is_incremental() %}
         -- Only process problems that are new since last run
