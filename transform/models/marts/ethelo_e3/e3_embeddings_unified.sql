@@ -42,7 +42,7 @@ problem_solutions as (
             'PROBLEM: ', problem_text,
             case
                 when array_size(consolidated_solutions) > 0
-                then concat(' SOLUTIONS: ', array_to_string(consolidated_solutions, ' | '))
+                    then concat(' SOLUTIONS: ', array_to_string(consolidated_solutions, ' | '))
                 else ''
             end
         ) as original_text,
@@ -84,8 +84,8 @@ unified_content as (
         avg_confidence_score,
         departments,
         _file_upload_date,
-        row_number() over (order by _file_upload_date, participant_id) +
-            (select count(*) from main_ideas) as content_id
+        row_number() over (order by _file_upload_date, participant_id)
+        + (select count(*) from main_ideas) as content_id
     from problem_solutions
 ),
 

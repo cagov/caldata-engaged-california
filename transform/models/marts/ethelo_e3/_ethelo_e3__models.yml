@@ -124,7 +124,7 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['Raw Main Idea', 'Processed Problem & Solution']
+              values: ["Raw Main Idea", "Processed Problem & Solution"]
       - name: CONTEXTUALIZED_TEXT
         description: "Text with added context for consistent embedding generation"
       - name: ORIGINAL_TEXT
