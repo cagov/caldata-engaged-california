@@ -62,14 +62,15 @@ solution_extraction as (
         ct._file_upload_date,
         ct.parent_comment_id,
 
-        -- Extract solutions using Snowflake Cortex AI
-        try_parse_json(
-            ai_complete(
-                model => '{{ var("llm_model") }}',
+        -- Extract solutions using Snowflake Cortex AI with fallback handling
+        coalesce(
+            try_parse_json(
+                ai_complete(
+                    model => '{{ var("llm_model") }}',
                 prompt => concat(
                     'You are analyzing comments from California state employees about government efficiency. ',
                     'Extract the PRIMARY solutions described in this comment as concise summaries that preserve key details.\n\n',
-                    'Extract ONLY the solutions, recommendations, and proposed improvements. Ignore problem descriptions\n\n',
+                    'Extract ONLY the solutions, recommendations, and proposed improvements. Ignore problem descriptions.\n\n',
 
                     'COMMENT CONTEXT:\n',
                     'Question/Prompt: ', coalesce(ct.question, '[No context]'), '\n',
@@ -86,10 +87,16 @@ solution_extraction as (
                     '• Identify main solutions and recommendations, not minor suggestions\n',
                     '• Preserve specific program names, systems, and technologies mentioned\n',
                     '• CONSOLIDATE complementary steps in one implementation; SEPARATE independent recommendations requiring different decision-makers\n',
-                    '• One solution = one actionable recommendation for leadership\n\n',
+                    '• One solution = one actionable recommendation for leadership\n',
                     '• Summarize comprehensively but as concisely as possible\n',
-                    '• Focus on substantial, actionable solutions\n\n',
-                    '• if a comment does not contain a solution, return an empty JSON object\n\n',
+                    '• Focus on substantial, actionable solutions\n',
+                    '• If a comment does not contain a solution, return {"solutions": []}\n\n',
+
+                    'JSON OUTPUT REQUIREMENTS:\n',
+                    '• Use only standard alphanumeric characters, spaces, and basic punctuation\n',
+                    '• Avoid special characters like backticks, curly quotes, or extended Unicode\n',
+                    '• Escape quotes properly with backslashes\n',
+                    'LENGTH LIMIT: Ensure the entire JSON response fits within 1000 tokens; be concise and omit explanations.\n\n',
 
                     'EXAMPLES OF COMPREHENSIVE EXTRACTION:\n',
                     'Input: "There needs to be a better process for getting duplicate pay warrants issued. I often have employees waiting a month or more just to receive a replacement warrant. This delay is really frustrating for employees who need their pay and creates extra work for managers who have to field complaints. I like Cal Employee Connect but I think they could add functionality to it, giving the employee the ability to request their own duplicate warrant directly with the SCO."\n',
@@ -102,7 +109,7 @@ solution_extraction as (
                 ),
                 -- use lower temp and top_p to reduce the stochastic nature of LLM output.
                 model_parameters => object_construct(
-                    'temperature', 0.1,
+                    'temperature', 0.05,
                     'max_tokens', 1500,
                     'top_p', 0.1
                 ),
@@ -120,7 +127,10 @@ solution_extraction as (
                     }
                 }
             )
-        ) as solutions_json
+        ),
+        -- Fallback: return empty solutions array if JSON parsing fails
+        parse_json('{"solutions": []}')
+    ) as solutions_json
     from comment_threads as ct
 ),
 
