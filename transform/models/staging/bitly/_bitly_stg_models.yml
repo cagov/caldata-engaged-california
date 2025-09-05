@@ -24,6 +24,8 @@ models:
         description: Title of the link
       - name: custom_bitlinks
         description: Array of custom shortlinks linked to this bitlink
+      - name: _fivetran_synced
+        description: Timestamp of the last update of this record by Fivetran
       - name: organization_name
         description: Name of the bitly organization associated with the link
       - name: group_name

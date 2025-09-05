@@ -31,6 +31,7 @@ select
     links.long_url,
     links.title,
     links.custom_bitlinks,
+    links._fivetran_synced,
     orgs.organization_name,
     grps.group_name,
     to_date(links.created_at, 'YYYY-MM-DD"T"HH24:MI:SSTZHTZM') as created_date,
