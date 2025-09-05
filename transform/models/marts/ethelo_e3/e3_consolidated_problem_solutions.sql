@@ -122,10 +122,11 @@ ai_consolidated as (
         earliest_solution_date,
         latest_solution_date,
 
-        -- Use AI to consolidate and synthesize solutions
-        try_parse_json(
-            ai_complete(
-                model => '{{ var("llm_model") }}',
+        -- Use AI to consolidate and synthesize solutions with fallback handling
+        coalesce(
+            try_parse_json(
+                ai_complete(
+                    model => '{{ var("llm_model") }}',
                 prompt => concat(
                     'You are analyzing solutions proposed for a specific government efficiency problem. ',
                     'Your task is to consolidate multiple related solutions into a coherent, comprehensive, and orthogonal solution set.\n\n',  -- noqa: LT05
@@ -143,16 +144,22 @@ ai_consolidated as (
                     '- Preserve specific program names, systems, and technologies mentioned\n',
                     '- Ensure each consolidated solution is specific and actionable\n',
                     '- Maintain the practical focus on government efficiency improvements\n',
-                    '- Remember: one solution = one actionable recommendation for leadership.\n',
-                    '- Return exactly 1 consolidated solution per problem unless the source contains multiple, truly unique solutions\n',
+                    '- Remember: one solution = one actionable recommendation for leadership\n',
+                    '- Return exactly 1 consolidated solution per problem unless the source contains multiple, truly unique solutions\n\n',
+
+                    'JSON OUTPUT REQUIREMENTS:\n',
+                    '- Use only standard alphanumeric characters, spaces, and basic punctuation\n',
+                    '- Avoid special characters like backticks, curly quotes, or extended Unicode\n',
+                    '- Escape quotes properly with backslashes\n',
+                    'LENGTH LIMIT: Ensure the entire JSON response fits within 1000 tokens; be concise and omit explanations.\n\n',
 
                     'OUTPUT REQUIREMENTS:\n',
                     '- consolidated_solutions: Array of 1-3 consolidated solution descriptions\n',
                     '- solution_themes: Array of key themes identified across all solutions\n\n'
                 ),
                 model_parameters => object_construct(
-                    'temperature', 0.1,
-                    'max_tokens', 1000,
+                    'temperature', 0.05,
+                    'max_tokens', 1500,
                     'top_p', 0.1
                 ),
                 response_format => {
@@ -173,7 +180,10 @@ ai_consolidated as (
                     }
                 }
             )
-        ) as consolidation_analysis
+        ),
+        -- Fallback: return empty arrays if JSON parsing fails
+        parse_json('{"consolidated_solutions": [], "solution_themes": []}')
+    ) as consolidation_analysis
     from problems_with_solutions
 )
 

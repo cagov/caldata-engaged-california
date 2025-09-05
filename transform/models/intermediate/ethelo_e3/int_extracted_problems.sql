@@ -69,16 +69,16 @@ problem_extraction as (
         sc._file_upload_date,
         sc.explicit_department,
 
-        -- Extract problems using Snowflake Cortex AI
+        -- Extract problems using Snowflake Cortex AI with fallback handling
         -- model is determined by which environment you are in (i.e. dev or prd). See LLM_COST_CONTOL.md
-        try_parse_json(
-            ai_complete(
-
-                model => '{{ var("llm_model") }}',
+        coalesce(
+            try_parse_json(
+                ai_complete(
+                    model => '{{ var("llm_model") }}',
                 prompt => concat(
                     'You are analyzing comments from California state employees about government efficiency. ',
                     'Extract the PRIMARY problems described in this comment as concise summaries that preserve key details.\n\n',
-                    'Extract ONLY the problems, issues, and inefficiencies. Ignore proposed solutions.\n',
+                    'Extract ONLY the problems, issues, and inefficiencies. Ignore proposed solutions.\n\n',
 
                     'COMMENT CONTEXT:\n',
                     'Question/Prompt: ', coalesce(sc.question, '[No context]'), '\n',
@@ -98,8 +98,14 @@ problem_extraction as (
                     '• DO NOT fragment single issues, processes or systems into multiple problems\n',
                     '• If multiple issues stem from the same root cause or system, combine them\n',
                     '• Summarize comprehensively but as concisely as possible\n',
-                    '• Focus on substantial, actionable problems\n\n',
-                    '• if a comment does not contain a problem or one that cannot be reasonably inferred from the solution, return an empty JSON object\n\n',
+                    '• Focus on substantial, actionable problems\n',
+                    '• If a comment does not contain a problem, return {"problems": []}\n\n',
+
+                    'JSON OUTPUT REQUIREMENTS:\n',
+                    '• Use only standard alphanumeric characters, spaces, and basic punctuation\n',
+                    '• Avoid special characters like backticks, curly quotes, or extended Unicode\n',
+                    '• Escape quotes properly with backslashes\n',
+                    'LENGTH LIMIT: Ensure the entire JSON response fits within 1000 tokens; be concise and omit explanations.\n\n',
 
                     case
                         when sc.explicit_department is null
@@ -121,7 +127,7 @@ problem_extraction as (
                 ),
                 -- use lower temp and top_p to reduce the stochastic nature of LLM output.
                 model_parameters => object_construct(
-                    'temperature', 0.1,
+                    'temperature', 0.05,
                     'max_tokens', 1500,
                     'top_p', 0.1
                 ),
@@ -146,7 +152,10 @@ problem_extraction as (
                     }
                 }
             )
-        ) as problems_json
+        ),
+        -- Fallback: return empty problems array if JSON parsing fails
+        parse_json('{"problems": []}')
+    ) as problems_json
     from source_comments as sc
 ),
 
