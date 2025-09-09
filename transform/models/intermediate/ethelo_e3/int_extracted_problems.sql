@@ -127,8 +127,8 @@ problem_extraction as (
                 ),
                 -- use lower temp and top_p to reduce the stochastic nature of LLM output.
                 model_parameters => object_construct(
-                    'temperature', 0.05,
-                    'max_tokens', 1500,
+                    'temperature', 0.00,
+                    'max_tokens', 5000,
                     'top_p', 0.1
                 ),
                 response_format => {
