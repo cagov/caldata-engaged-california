@@ -104,8 +104,8 @@ solution_extraction as (
                     'Input: "CDCR Fire needs a complete reorganization. Currently, multiple fire stations operate independently, answering to Plant Operations or Wardens. Each station procures its own PPE, hoses, tools, and follows local policies—resulting in a fragmented system with no standardization or unified effectiveness. A centralized command starting in Sacramento is essential. Appointing a Fire Chief and Deputy Chief, supported by three Division Chiefs (North, Central, South), would create statewide oversight. Each fire station would have a Battalion Chief supervising Fire Captains, ensuring consistency and accountability."\n',
                     'Output: "Establish centralized California Department of Corrections and Rehabilitation (CDCR) Fire command in Sacramento with Fire Chief, Deputy Chief, and three Division Chiefs (North, Central, South) overseeing Battalion Chiefs at each station to create standardized operations and unified effectiveness"\n\n',
 
-                    'Remember: one solution = one actionable recommendation for leadership. Return exactly 1 consolidated solution per comment unless the source comment contains multiple, truly unique solutions.'
-                    'IMPORTANT LENGTH LIMIT: Ensure the entire JSON response (including the JSON structure itself) is less than 800 tokens; be concise and omit explanations.\n\n',
+                    'Remember: one solution = one actionable recommendation for leadership. Return exactly 1 consolidated solution per comment unless the source comment contains multiple, truly unique solutions.',
+                    'IMPORTANT LENGTH LIMIT: Ensure the entire JSON response (including the JSON structure itself) is less than 800 tokens'
                 ),
                 -- use lower temp and top_p to reduce the stochastic nature of LLM output.
                 model_parameters => object_construct(

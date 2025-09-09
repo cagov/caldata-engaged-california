@@ -122,8 +122,8 @@ problem_extraction as (
                     'Input: "The procurement process is overly complicated, time consuming, and often not the most cost efficient. For example, we are required to purchase chairs from CalPIA. CalPIA charges $500+ for one desk chair and then another $30 per chair to deliver. The same chair could be purchased from another retailer for a fraction of the price. In addition, the ordering time is outrageous. Purchases go through many levels of approval before getting to the vendor and many times the required vendor turn around time is 60+ business days. Small businesses and disabled veteran-owned businesses get preference, and many times, these small businesses order from retailers like Amazon and then upcharge the State. There is nothing cost efficient about the procurement process. We should be able to buy small things ourselves without going through CalPIA."\n',
                     'Expected: "Mandatory procurement through CalPIA and preferred small/disabled veteran-owned businesses results in significantly higher costs with additional delivery fees and vendor markups that waste taxpayer funds"\n\n',
 
-                    'Return exactly 1 consolidated problem per comment unless the source comment contains multiple, truly unrelated problems.\n\n'
-                    'IMPORTANT LENGTH LIMIT: Ensure the entire JSON response (including the JSON structure itself) is less than 800 tokens; be concise and omit explanations.'
+                    'Return exactly 1 consolidated problem per comment unless the source comment contains multiple, truly unrelated problems.\n\n'.
+                    'IMPORTANT LENGTH LIMIT: Ensure the entire JSON response (including the JSON structure itself) is less than 800 tokens'
                 ),
                 -- use lower temp and top_p to reduce the stochastic nature of LLM output.
                 model_parameters => object_construct(
