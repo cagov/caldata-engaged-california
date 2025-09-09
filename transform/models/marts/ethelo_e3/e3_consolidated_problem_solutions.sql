@@ -158,8 +158,8 @@ ai_consolidated as (
                     '- solution_themes: Array of key themes identified across all solutions\n\n'
                 ),
                 model_parameters => object_construct(
-                    'temperature', 0.05,
-                    'max_tokens', 1500,
+                    'temperature', 0.00,
+                    'max_tokens', 5000,
                     'top_p', 0.1
                 ),
                 response_format => {
