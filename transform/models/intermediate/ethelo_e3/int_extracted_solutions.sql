@@ -96,7 +96,6 @@ solution_extraction as (
                     '• Use only standard alphanumeric characters, spaces, and basic punctuation\n',
                     '• Avoid special characters like backticks, curly quotes, or extended Unicode\n',
                     '• Escape quotes properly with backslashes\n',
-                    'LENGTH LIMIT: Ensure the entire JSON response fits within 1000 tokens; be concise and omit explanations.\n\n',
 
                     'EXAMPLES OF COMPREHENSIVE EXTRACTION:\n',
                     'Input: "There needs to be a better process for getting duplicate pay warrants issued. I often have employees waiting a month or more just to receive a replacement warrant. This delay is really frustrating for employees who need their pay and creates extra work for managers who have to field complaints. I like Cal Employee Connect but I think they could add functionality to it, giving the employee the ability to request their own duplicate warrant directly with the SCO."\n',
@@ -106,11 +105,12 @@ solution_extraction as (
                     'Output: "Establish centralized California Department of Corrections and Rehabilitation (CDCR) Fire command in Sacramento with Fire Chief, Deputy Chief, and three Division Chiefs (North, Central, South) overseeing Battalion Chiefs at each station to create standardized operations and unified effectiveness"\n\n',
 
                     'Remember: one solution = one actionable recommendation for leadership. Return exactly 1 consolidated solution per comment unless the source comment contains multiple, truly unique solutions.'
+                    'IMPORTANT LENGTH LIMIT: Ensure the entire JSON response (including the JSON structure itself) is less than 800 tokens; be concise and omit explanations.\n\n',
                 ),
                 -- use lower temp and top_p to reduce the stochastic nature of LLM output.
                 model_parameters => object_construct(
                     'temperature', 0.00,
-                    'max_tokens', 5000,
+                    'max_tokens', 8000,
                     'top_p', 0.1
                 ),
                 response_format => {
