@@ -151,7 +151,7 @@ ai_consolidated as (
                     '- Use only standard alphanumeric characters, spaces, and basic punctuation\n',
                     '- Avoid special characters like backticks, curly quotes, or extended Unicode\n',
                     '- Escape quotes properly with backslashes\n',
-                    'LENGTH LIMIT: Ensure the entire JSON response fits within 1000 tokens; be concise and omit explanations.\n\n',
+                    'IMPORTANT LENGTH LIMIT: Ensure the entire JSON response (including the JSON structure itself) is less than 800 tokens.\n\n',
 
                     'OUTPUT REQUIREMENTS:\n',
                     '- consolidated_solutions: Array of 1-3 consolidated solution descriptions\n',
@@ -159,7 +159,7 @@ ai_consolidated as (
                 ),
                 model_parameters => object_construct(
                     'temperature', 0.00,
-                    'max_tokens', 5000,
+                    'max_tokens', 8000,
                     'top_p', 0.1
                 ),
                 response_format => {
