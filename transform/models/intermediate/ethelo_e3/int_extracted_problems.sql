@@ -71,6 +71,9 @@ problem_extraction as (
 
         -- Extract problems using Snowflake Cortex AI with fallback handling
         -- model is determined by which environment you are in (i.e. dev or prd). See LLM_COST_CONTOL.md
+        -- TRY_COMPLETE returns response metadata; actual JSON is nested at structured_output[0].raw_message
+        -- Using TRY_COMPLETE instead of AI_COMPLETE for NULL-on-failure vs hard error on malformed JSON
+        -- We use TRY_COMPLETE because with the structured output, the smaller models we use in dev are more likely to have issues. See snowflake documentation for details.
         coalesce(
             SNOWFLAKE.CORTEX.TRY_COMPLETE(
                 '{{ var("llm_model") }}',
@@ -111,7 +114,7 @@ problem_extraction as (
                                 when sc.explicit_department is null
                                     then 'DEPARTMENT INFERENCE:\n'
                                         || '• Extract relevant California state departments based on the comment content\n'
-                                        || '• Consider DGS, CalHR, SCO, Controller, CalFire, CDCR, GovOps etc.\n\n'
+                                        || '• Consider the following departments (including when their full name is mentioned): DGS, CalHR, SCO, Controller, CalFire, CDCR, GovOps, CNRA, CDPH, DSH, CDT, CDA, CDTFA, ODI, SPB, HCAI, DMHC, CDSS, DHCS, DDS, CCC, CEC, DWR, SCC, DOC, FTB, OAL, DMV, EDD, DOF, CALTRANS, ARB, CDPR, CAL FIRE, CDFW, HCD, CDE, DIR, DCA, CalPERS, BOE, CPUC, Cal OES, EMSA, DTSC, CalVet, CHHS, CalHHS, BCSH, LWDA, FI$Cal, CDFA, etc.\n\n'
                                 else ''
                             end,
 
@@ -133,7 +136,7 @@ problem_extraction as (
                     'top_p', 0.0,
                     'response_format', parse_json('{"type":"json","schema":{"type":"object","properties":{"problems":{"type":"array","items":{"type":"object","properties":{"problem_text":{"type":"string"},"inferred_departments":{"type":"array","items":{"type":"string"}}},"required":["problem_text"]}}},"required":["problems"]}}')
                 )
-            ),
+            ):structured_output[0]:raw_message,
         -- Fallback: return empty problems array if JSON parsing fails
         parse_json('{"problems": []}')
     ) as problems_json
