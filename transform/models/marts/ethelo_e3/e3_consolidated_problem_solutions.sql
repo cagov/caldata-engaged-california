@@ -123,6 +123,9 @@ ai_consolidated as (
         latest_solution_date,
 
         -- Use AI to consolidate and synthesize solutions with fallback handling
+        -- TRY_COMPLETE returns response metadata; actual JSON is nested at structured_output[0].raw_message
+        -- Using TRY_COMPLETE instead of AI_COMPLETE for NULL-on-failure vs hard error on malformed JSON
+        -- We use TRY_COMPLETE because with the structured output, the smaller models we use in dev are more likely to have issues. See snowflake documentation for details.
         coalesce(
             SNOWFLAKE.CORTEX.TRY_COMPLETE(
                 '{{ var("llm_model") }}',
@@ -167,7 +170,7 @@ ai_consolidated as (
                     'top_p', 0.0,
                     'response_format', parse_json('{"type":"json","schema":{"type":"object","properties":{"consolidated_solutions":{"type":"array","items":{"type":"string"}},"solution_themes":{"type":"array","items":{"type":"string"}}},"required":["consolidated_solutions","solution_themes"]}}')
                 )
-            ),
+            ):structured_output[0]:raw_message,
         -- Fallback: return empty arrays if JSON parsing fails
         parse_json('{"consolidated_solutions": [], "solution_themes": []}')
     ) as consolidation_analysis

@@ -63,7 +63,9 @@ solution_extraction as (
         ct.parent_comment_id,
 
         -- Extract solutions using Snowflake Cortex AI with fallback handling.
-        -- TRY_COMPLETE already returns a VARIANT (OBJECT) when response_format is provided, so we do not need TRY_PARSE_JSON.
+        -- TRY_COMPLETE returns response metadata; actual JSON is nested at structured_output[0].raw_message
+        -- Using TRY_COMPLETE instead of AI_COMPLETE for NULL-on-failure vs hard error on malformed JSON
+        -- We use TRY_COMPLETE because with the structured output, the smaller models we use in dev are more likely to have issues. See snowflake documentation for details.
         coalesce(
             SNOWFLAKE.CORTEX.TRY_COMPLETE(
                 '{{ var("llm_model") }}',
@@ -117,7 +119,7 @@ solution_extraction as (
                     'top_p', 0.0,
                     'response_format', parse_json('{"type":"json","schema":{"type":"object","properties":{"solutions":{"type":"array","items":{"type":"string"}}},"required":["solutions"]}}')
                 )
-            ),
+            ):structured_output[0]:raw_message,
             -- Fallback: empty array object
             parse_json('{"solutions": []}')
         ) as solutions_json
