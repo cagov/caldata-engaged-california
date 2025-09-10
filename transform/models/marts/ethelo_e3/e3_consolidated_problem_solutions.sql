@@ -6,9 +6,12 @@
     on_schema_change='sync_all_columns'
 ) }}
 
+
+-- noqa: disable=LT02
+-- the `is_incremental()` block is causing issues with the linter. Disabling indentation QA for this CTE only.
+
 -- Consolidated problem-solution pairs using AI to merge solutions for each problem
 -- One row per problem with AI-consolidated solutions and full traceability
-
 with problem_solution_links as (
     select
         psl.problem_comment_id,
@@ -41,14 +44,13 @@ with problem_solution_links as (
             and psl.problem_sequence = p.problem_sequence
         )
 
-    -- noqa: disable=LT02
-    -- this code block is causing issues with the linter. Disabling indentation QA for this block only.
     {% if is_incremental() %}
         -- Only process problems that are new since last run
         where psl.problem_posted_on > (select max(t.problem_posted_on) from {{ this }} as t)
     {% endif %}
-    -- noqa: enable=LT02
+
 ),
+-- noqa: enable=LT02
 
 -- Aggregate solutions for each problem
 problems_with_solutions as (

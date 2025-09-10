@@ -19,6 +19,8 @@ with participant_departments as (
         and trim(idea_dept) != ''
 ),
 
+-- noqa: disable=LT02
+-- the `is_incremental()` block is causing issues with the linter. Disabling indentation QA for this CTE only.
 source_comments as (
     select
         c.comment_id,
@@ -48,17 +50,16 @@ source_comments as (
             'Anything else? - Would you add any other ideas, including from your perspective as a California resident?'
         )
 
-        -- noqa: disable=LT02
-        -- this code block is causing issues with the linter. Disabling indentation QA for this block only.
         {% if is_incremental() %}
             -- Only process new records since last run
             and (
                 c.posted_on > (select max(t.posted_on) from {{ this }} as t)
             )
         {% endif %}
-        -- noqa: enable=LT02
+
     order by c.posted_on desc
 ),
+-- noqa: enable=LT02
 
 -- Use AI to extract problems from each comment
 problem_extraction as (
