@@ -135,49 +135,49 @@ ai_consolidated as (
                             {
                                 'role': 'user',
                                 'content': concat(
-                            'You are analyzing solutions proposed for a specific government efficiency problem. ',
-                            'Your task is to consolidate multiple related solutions into a coherent, comprehensive, and orthogonal solution set.\n\n',  -- noqa: LT05
+                                    'You are analyzing solutions proposed for a specific government efficiency problem. ',
+                                    'Your task is to consolidate multiple related solutions into a coherent, comprehensive, and orthogonal solution set.\n\n',  -- noqa: LT05
 
-                            'PROBLEM TO SOLVE:\n',
-                            problem_text, '\n\n',
+                                    'PROBLEM TO SOLVE:\n',
+                                    problem_text, '\n\n',
 
-                            'PROPOSED SOLUTIONS:\n',
-                            all_solutions_text, '\n\n',
+                                    'PROPOSED SOLUTIONS:\n',
+                                    all_solutions_text, '\n\n',
 
-                            'CONSOLIDATION INSTRUCTIONS:\n',
-                            '- Analyze all proposed solutions and identify common themes\n',
-                            '- You must merge similar or overlapping solutions into unified recommendations\n',
-                            '- Preserve unique value from each distinct solution approach\n',
-                            '- Preserve specific program names, systems, and technologies mentioned\n',
-                            '- Ensure each consolidated solution is specific and actionable\n',
-                            '- Maintain the practical focus on government efficiency improvements\n',
-                            '- Remember: one solution = one actionable recommendation for leadership\n',
-                            '- Return exactly 1 consolidated solution per problem unless the source contains multiple, truly unique solutions\n\n',
+                                    'CONSOLIDATION INSTRUCTIONS:\n',
+                                    '- Analyze all proposed solutions and identify common themes\n',
+                                    '- You must merge similar or overlapping solutions into unified recommendations\n',
+                                    '- Preserve unique value from each distinct solution approach\n',
+                                    '- Preserve specific program names, systems, and technologies mentioned\n',
+                                    '- Ensure each consolidated solution is specific and actionable\n',
+                                    '- Maintain the practical focus on government efficiency improvements\n',
+                                    '- Remember: one solution = one actionable recommendation for leadership\n',
+                                    '- Return exactly 1 consolidated solution per problem unless the source contains multiple, truly unique solutions\n\n',
 
-                            'JSON OUTPUT REQUIREMENTS:\n',
-                            '- Use only standard alphanumeric characters, spaces, and basic punctuation\n',
-                            '- Avoid special characters like backticks, curly quotes, or extended Unicode\n',
-                            '- Escape quotes properly with backslashes\n',
-                            'IMPORTANT LENGTH LIMIT: Ensure the **entire** JSON response (including the JSON structure itself) is less than 500 tokens.\n\n',
+                                    'JSON OUTPUT REQUIREMENTS:\n',
+                                    '- Use only standard alphanumeric characters, spaces, and basic punctuation\n',
+                                    '- Avoid special characters like backticks, curly quotes, or extended Unicode\n',
+                                    '- Escape quotes properly with backslashes\n',
+                                    'IMPORTANT LENGTH LIMIT: Ensure the **entire** JSON response (including the JSON structure itself) is less than 500 tokens.\n\n',
 
-                            'OUTPUT REQUIREMENTS:\n',
-                            '- consolidated_solutions: Array of 1-3 consolidated solution descriptions\n',
-                            '- solution_themes: Array of key themes identified across all solutions\n\n'
+                                    'OUTPUT REQUIREMENTS:\n',
+                                    '- consolidated_solutions: Array of 1-3 consolidated solution descriptions\n',
+                                    '- solution_themes: Array of key themes identified across all solutions\n\n'
+                                )
+                            }
+                        ],
+                        object_construct(
+                            'temperature', 0.00,
+                            'max_tokens', 8000,
+                            'top_p', 0.0,
+                            'response_format', parse_json('{"type":"json","schema":{"type":"object","properties":{"consolidated_solutions":{"type":"array","items":{"type":"string"}},"solution_themes":{"type":"array","items":{"type":"string"}}},"required":["consolidated_solutions","solution_themes"]}}')
                         )
-                    }
-                ],
-                object_construct(
-                    'temperature', 0.00,
-                    'max_tokens', 8000,
-                    'top_p', 0.0,
-                    'response_format', parse_json('{"type":"json","schema":{"type":"object","properties":{"consolidated_solutions":{"type":"array","items":{"type":"string"}},"solution_themes":{"type":"array","items":{"type":"string"}}},"required":["consolidated_solutions","solution_themes"]}}')
-                )
-            ):structured_output[0]:raw_message
+                    ):structured_output[0]:raw_message
                 )
             ),
-        -- Fallback: return empty arrays if JSON parsing fails
-        parse_json('{"consolidated_solutions": [], "solution_themes": []}')
-    ) as consolidation_analysis
+            -- Fallback: return empty arrays if JSON parsing fails
+            parse_json('{"consolidated_solutions": [], "solution_themes": []}')
+        ) as consolidation_analysis
     from problems_with_solutions
 )
 
