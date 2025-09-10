@@ -48,12 +48,15 @@ source_comments as (
             'Anything else? - Would you add any other ideas, including from your perspective as a California resident?'
         )
 
+        -- noqa: disable=LT02
+        -- this code block is causing issues with the linter. Disabling indentation QA for this block only.
         {% if is_incremental() %}
             -- Only process new records since last run
             and (
                 c.posted_on > (select max(t.posted_on) from {{ this }} as t)
             )
         {% endif %}
+        -- noqa: enable=LT02
     order by c.posted_on desc
 ),
 
@@ -115,9 +118,9 @@ problem_extraction as (
                                     case
                                         when sc.explicit_department is null
                                             then
-                                                'DEPARTMENT INFERENCE:\n'
-                                                || '• Extract relevant California state departments based on the comment content\n'
-                                                || '• Consider the following departments (including when their full name is mentioned): DGS, CalHR, SCO, Controller, CalFire, CDCR, GovOps, CNRA, CDPH, DSH, CDT, CDA, CDTFA, ODI, SPB, HCAI, DMHC, CDSS, DHCS, DDS, CCC, CEC, DWR, SCC, DOC, FTB, OAL, DMV, EDD, DOF, CALTRANS, ARB, CDPR, CAL FIRE, CDFW, HCD, CDE, DIR, DCA, CalPERS, BOE, CPUC, Cal OES, EMSA, DTSC, CalVet, CHHS, CalHHS, BCSH, LWDA, FI$Cal, CDFA, etc.\n\n'
+                                                'DEPARTMENT INFERENCE:\n'  -- noqa: LT02
+                                                || '• Extract relevant California state departments based on the comment content\n'  -- noqa: LT02
+                                                || '• Consider the following departments (including when their full name is mentioned): DGS, CalHR, SCO, Controller, CalFire, CDCR, GovOps, CNRA, CDPH, DSH, CDT, CDA, CDTFA, ODI, SPB, HCAI, DMHC, CDSS, DHCS, DDS, CCC, CEC, DWR, SCC, DOC, FTB, OAL, DMV, EDD, DOF, CALTRANS, ARB, CDPR, CAL FIRE, CDFW, HCD, CDE, DIR, DCA, CalPERS, BOE, CPUC, Cal OES, EMSA, DTSC, CalVet, CHHS, CalHHS, BCSH, LWDA, FI$Cal, CDFA, etc.\n\n'  -- noqa: LT02
                                         else ''
                                     end,
 

@@ -23,12 +23,15 @@ with source_comments as (
         and trim(sc.content) != ''
         and sc.posted_on >= '2025-08-15'  -- Filter to relevant date range
 
+        -- noqa: disable=LT02
+        -- this code block is causing issues with the linter. Disabling indentation QA for this block only.
         {% if is_incremental() %}
             -- Only process new records since last run
             and (
                 sc.posted_on > (select max(t.posted_on) from {{ this }} as t)
             )
         {% endif %}
+        -- noqa: enable=LT02
     order by sc.posted_on desc
 ),
 
