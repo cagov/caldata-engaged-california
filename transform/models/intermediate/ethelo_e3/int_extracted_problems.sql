@@ -75,12 +75,14 @@ problem_extraction as (
         -- Using TRY_COMPLETE instead of AI_COMPLETE for NULL-on-failure vs hard error on malformed JSON
         -- We use TRY_COMPLETE because with the structured output, the smaller models we use in dev are more likely to have issues. See snowflake documentation for details.
         coalesce(
-            SNOWFLAKE.CORTEX.TRY_COMPLETE(
-                '{{ var("llm_model") }}',
-                [
-                    {
-                        'role': 'user',
-                        'content': concat(
+            try_parse_json(
+                to_json(
+                    SNOWFLAKE.CORTEX.TRY_COMPLETE(
+                        '{{ var("llm_model") }}',
+                        [
+                            {
+                                'role': 'user',
+                                'content': concat(
                             'You are analyzing comments from California state employees about government efficiency. ',
                             'Extract the PRIMARY problems described in this comment as concise summaries that preserve key details.\n\n',
                             'Extract ONLY the problems, issues, and inefficiencies. Ignore proposed solutions.\n\n',
@@ -136,7 +138,9 @@ problem_extraction as (
                     'top_p', 0.0,
                     'response_format', parse_json('{"type":"json","schema":{"type":"object","properties":{"problems":{"type":"array","items":{"type":"object","properties":{"problem_text":{"type":"string"},"inferred_departments":{"type":"array","items":{"type":"string"}}},"required":["problem_text"]}}},"required":["problems"]}}')
                 )
-            ):structured_output[0]:raw_message,
+            ):structured_output[0]:raw_message
+                )
+            ),
         -- Fallback: return empty problems array if JSON parsing fails
         parse_json('{"problems": []}')
     ) as problems_json
