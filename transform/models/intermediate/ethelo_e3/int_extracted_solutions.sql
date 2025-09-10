@@ -75,53 +75,53 @@ solution_extraction as (
                             {
                                 'role': 'user',
                                 'content': concat(
-                            'You are analyzing comments from California state employees about government efficiency. ',
-                            'Extract the PRIMARY solutions described in this comment as concise summaries that preserve key details.\n\n',
-                            'Extract ONLY the solutions, recommendations, and proposed improvements. Ignore problem descriptions.\n\n',
+                                    'You are analyzing comments from California state employees about government efficiency. ',
+                                    'Extract the PRIMARY solutions described in this comment as concise summaries that preserve key details.\n\n',
+                                    'Extract ONLY the solutions, recommendations, and proposed improvements. Ignore problem descriptions.\n\n',
 
-                            'COMMENT CONTEXT:\n',
-                            'Question/Prompt: ', coalesce(ct.question, '[No context]'), '\n',
-                            'Comment Content: ', ct.content, '\n',
-                            case
-                                when ct.parent_comment_content is not null
-                                    then concat('Parent Comment (this is a reply): ', ct.parent_comment_content, '\n')
-                                else ''
-                            end,
-                            '\n',
+                                    'COMMENT CONTEXT:\n',
+                                    'Question/Prompt: ', coalesce(ct.question, '[No context]'), '\n',
+                                    'Comment Content: ', ct.content, '\n',
+                                    case
+                                        when ct.parent_comment_content is not null
+                                            then concat('Parent Comment (this is a reply): ', ct.parent_comment_content, '\n')
+                                        else ''
+                                    end,
+                                    '\n',
 
-                            'GUIDELINES:\n',
-                            '• Identify main solutions and recommendations, not minor suggestions\n',
-                            '• Preserve specific program names, systems, and technologies mentioned\n',
-                            '• CONSOLIDATE complementary steps in one implementation; SEPARATE independent recommendations requiring different decision-makers\n',
-                            '• One solution = one actionable recommendation for leadership\n',
-                            '• Summarize comprehensively but as concisely as possible\n',
-                            '• Focus on substantial, actionable solutions\n',
-                            '• If a comment does not contain a solution, return {"solutions": []}\n\n',
+                                    'GUIDELINES:\n',
+                                    '• Identify main solutions and recommendations, not minor suggestions\n',
+                                    '• Preserve specific program names, systems, and technologies mentioned\n',
+                                    '• CONSOLIDATE complementary steps in one implementation; SEPARATE independent recommendations requiring different decision-makers\n',
+                                    '• One solution = one actionable recommendation for leadership\n',
+                                    '• Summarize comprehensively but as concisely as possible\n',
+                                    '• Focus on substantial, actionable solutions\n',
+                                    '• If a comment does not contain a solution, return {"solutions": []}\n\n',
 
-                            'JSON OUTPUT REQUIREMENTS:\n',
-                            '• Use only standard alphanumeric characters, spaces, and basic punctuation\n',
-                            '• Avoid special characters like backticks, curly quotes, or extended Unicode\n',
-                            '• Escape quotes properly with backslashes\n',
+                                    'JSON OUTPUT REQUIREMENTS:\n',
+                                    '• Use only standard alphanumeric characters, spaces, and basic punctuation\n',
+                                    '• Avoid special characters like backticks, curly quotes, or extended Unicode\n',
+                                    '• Escape quotes properly with backslashes\n',
 
-                            'EXAMPLES OF COMPREHENSIVE EXTRACTION:\n',
-                            'Input: "There needs to be a better process for getting duplicate pay warrants issued. I often have employees waiting a month or more just to receive a replacement warrant. This delay is really frustrating for employees who need their pay and creates extra work for managers who have to field complaints. I like Cal Employee Connect but I think they could add functionality to it, giving the employee the ability to request their own duplicate warrant directly with the SCO."\n',
-                            'Output: "Add functionality to Cal Employee Connect allowing employees to request duplicate pay warrants directly with State Controllers Office (SCO) to reduce processing time"\n\n',
+                                    'EXAMPLES OF COMPREHENSIVE EXTRACTION:\n',
+                                    'Input: "There needs to be a better process for getting duplicate pay warrants issued. I often have employees waiting a month or more just to receive a replacement warrant. This delay is really frustrating for employees who need their pay and creates extra work for managers who have to field complaints. I like Cal Employee Connect but I think they could add functionality to it, giving the employee the ability to request their own duplicate warrant directly with the SCO."\n',
+                                    'Output: "Add functionality to Cal Employee Connect allowing employees to request duplicate pay warrants directly with State Controllers Office (SCO) to reduce processing time"\n\n',
 
-                            'Input: "CDCR Fire needs a complete reorganization. Currently, multiple fire stations operate independently, answering to Plant Operations or Wardens. Each station procures its own PPE, hoses, tools, and follows local policies—resulting in a fragmented system with no standardization or unified effectiveness. A centralized command starting in Sacramento is essential. Appointing a Fire Chief and Deputy Chief, supported by three Division Chiefs (North, Central, South), would create statewide oversight. Each fire station would have a Battalion Chief supervising Fire Captains, ensuring consistency and accountability."\n',
-                            'Output: "Establish centralized California Department of Corrections and Rehabilitation (CDCR) Fire command in Sacramento with Fire Chief, Deputy Chief, and three Division Chiefs (North, Central, South) overseeing Battalion Chiefs at each station to create standardized operations and unified effectiveness"\n\n',
+                                    'Input: "CDCR Fire needs a complete reorganization. Currently, multiple fire stations operate independently, answering to Plant Operations or Wardens. Each station procures its own PPE, hoses, tools, and follows local policies—resulting in a fragmented system with no standardization or unified effectiveness. A centralized command starting in Sacramento is essential. Appointing a Fire Chief and Deputy Chief, supported by three Division Chiefs (North, Central, South), would create statewide oversight. Each fire station would have a Battalion Chief supervising Fire Captains, ensuring consistency and accountability."\n',
+                                    'Output: "Establish centralized California Department of Corrections and Rehabilitation (CDCR) Fire command in Sacramento with Fire Chief, Deputy Chief, and three Division Chiefs (North, Central, South) overseeing Battalion Chiefs at each station to create standardized operations and unified effectiveness"\n\n',
 
-                            'Remember: one solution = one actionable recommendation for leadership. Return exactly 1 consolidated solution per comment unless the source comment contains multiple, truly unique solutions.',
-                            'IMPORTANT LENGTH LIMIT: Ensure the **entire** JSON response (including the JSON structure itself) is less than 500 tokens'
+                                    'Remember: one solution = one actionable recommendation for leadership. Return exactly 1 consolidated solution per comment unless the source comment contains multiple, truly unique solutions.',
+                                    'IMPORTANT LENGTH LIMIT: Ensure the **entire** JSON response (including the JSON structure itself) is less than 500 tokens'
+                                )
+                            }
+                        ],
+                        object_construct(
+                            'temperature', 0.00,
+                            'max_tokens', 8000,
+                            'top_p', 0.0,
+                            'response_format', parse_json('{"type":"json","schema":{"type":"object","properties":{"solutions":{"type":"array","items":{"type":"string"}}},"required":["solutions"]}}')
                         )
-                    }
-                ],
-                object_construct(
-                    'temperature', 0.00,
-                    'max_tokens', 8000,
-                    'top_p', 0.0,
-                    'response_format', parse_json('{"type":"json","schema":{"type":"object","properties":{"solutions":{"type":"array","items":{"type":"string"}}},"required":["solutions"]}}')
-                )
-            ):structured_output[0]:raw_message
+                    ):structured_output[0]:raw_message
                 )
             )::OBJECT,
             -- Fallback: empty array object
@@ -157,11 +157,11 @@ flattened_solutions as (
         ) as solution_sequence,
 
         -- Extract individual solution text
-        f.value::string as solution_text
+        f.value::STRING as solution_text
 
     from solution_extraction as se,
         lateral flatten(input => solutions_array, outer => true) as f
-    where f.value is not null and trim(f.value::string) != ''
+    where f.value is not null and trim(f.value::STRING) != ''
 )
 
 select
