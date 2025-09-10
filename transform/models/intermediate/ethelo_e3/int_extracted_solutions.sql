@@ -123,9 +123,9 @@ solution_extraction as (
                 )
             ):structured_output[0]:raw_message
                 )
-            ),
+            )::OBJECT,
             -- Fallback: empty array object
-            parse_json('{"solutions": []}')
+            parse_json('{"solutions": []}')::OBJECT
         ) as solutions_json
     from comment_threads as ct
 ),
