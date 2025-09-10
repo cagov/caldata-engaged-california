@@ -41,10 +41,13 @@ with problem_solution_links as (
             and psl.problem_sequence = p.problem_sequence
         )
 
+    -- noqa: disable=LT02
+    -- this code block is causing issues with the linter. Disabling indentation QA for this block only.
     {% if is_incremental() %}
         -- Only process problems that are new since last run
         where psl.problem_posted_on > (select max(t.problem_posted_on) from {{ this }} as t)
     {% endif %}
+    -- noqa: enable=LT02
 ),
 
 -- Aggregate solutions for each problem
