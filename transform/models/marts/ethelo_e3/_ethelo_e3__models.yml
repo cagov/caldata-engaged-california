@@ -105,3 +105,45 @@ models:
         description: "Unique identifier combining comment ID and problem sequence"
       - name: CONSOLIDATED_AT
         description: "Timestamp when the AI consolidation was performed"
+
+  - name: e3_embeddings_unified
+    description: |
+      "Unified embedding table containing both raw main ideas and processed problem/solution pairs.
+      Each row represents one text item with consistent embeddings for similarity analysis.
+      All text is contextualized to ensure embeddings are grounded in the same semantic space."
+    columns:
+      - name: CONTENT_ID
+        description: "Unique identifier for each content item"
+        tests:
+          - not_null
+          - unique
+      - name: PARTICIPANT_ID
+        description: "Participant who submitted the original content"
+      - name: CONTENT_TYPE
+        description: "Type of content: 'Raw Main Idea' or 'Processed Problem & Solution'"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["Raw Main Idea", "Processed Problem & Solution"]
+      - name: CONTEXTUALIZED_TEXT
+        description: "Text with added context for consistent embedding generation"
+      - name: ORIGINAL_TEXT
+        description: "Original text without additional context"
+      - name: PROBLEM_ID
+        description: "Unique problem identifier (only for processed problem/solution pairs)"
+      - name: SOLUTION_COUNT
+        description: "Number of solutions consolidated (only for processed pairs)"
+      - name: DEPARTMENTS
+        description: "Array of departments associated with the content"
+      - name: EMBEDDING_VECTOR
+        description: "768-dimensional embedding vector generated using snowflake-arctic-embed-l-v2.0"
+        tests:
+          - not_null
+      - name: CONTEXTUALIZED_TEXT_LENGTH
+        description: "Character length of the contextualized text"
+      - name: ORIGINAL_TEXT_LENGTH
+        description: "Character length of the original text"
+      - name: _FILE_UPLOAD_DATE
+        description: "Date when the source data was uploaded/processed"
+      - name: PROCESSED_AT
+        description: "Timestamp when the embeddings were generated"
