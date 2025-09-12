@@ -3,7 +3,7 @@
     materialized='incremental',
     incremental_strategy='delete+insert',
     unique_key=['comment_id'],
-    on_schema_change='fail'
+    on_schema_change='sync_all_columns'
 ) }}
 
 -- Extract problems from E3 comments using Snowflake LLM functionality
@@ -19,6 +19,8 @@ with participant_departments as (
         and trim(idea_dept) != ''
 ),
 
+-- noqa: disable=LT02
+-- the `is_incremental()` block is causing issues with the linter. Disabling indentation QA for this CTE only.
 source_comments as (
     select
         c.comment_id,
@@ -48,14 +50,16 @@ source_comments as (
             'Anything else? - Would you add any other ideas, including from your perspective as a California resident?'
         )
 
-    {% if is_incremental() %}
-    -- Only process new records since last run
-        and (
-            c.posted_on > (select max(t.posted_on) from {{ this }} as t)
-        )
-    {% endif %}
+        {% if is_incremental() %}
+            -- Only process new records since last run
+            and (
+                c.posted_on > (select max(t.posted_on) from {{ this }} as t)
+            )
+        {% endif %}
+
     order by c.posted_on desc
 ),
+-- noqa: enable=LT02
 
 -- Use AI to extract problems from each comment
 problem_extraction as (
@@ -69,83 +73,81 @@ problem_extraction as (
         sc._file_upload_date,
         sc.explicit_department,
 
-        -- Extract problems using Snowflake Cortex AI
+        -- Extract problems using Snowflake Cortex AI with fallback handling
         -- model is determined by which environment you are in (i.e. dev or prd). See LLM_COST_CONTOL.md
-        try_parse_json(
-            ai_complete(
+        -- TRY_COMPLETE returns response metadata; actual JSON is nested at structured_output[0].raw_message
+        -- Using TRY_COMPLETE instead of AI_COMPLETE for NULL-on-failure vs hard error on malformed JSON
+        -- We use TRY_COMPLETE because with the structured output, the smaller models we use in dev are more likely to have issues. See snowflake documentation for details.
+        coalesce(
+            try_parse_json(
+                to_json(
+                    SNOWFLAKE.CORTEX.TRY_COMPLETE(
+                        '{{ var("llm_model") }}',
+                        [
+                            {
+                                'role': 'user',
+                                'content': concat(
+                                    'You are analyzing comments from California state employees about government efficiency. ',
+                                    'Extract the PRIMARY problems described in this comment as concise summaries that preserve key details.\n\n',
+                                    'Extract ONLY the problems, issues, and inefficiencies. Ignore proposed solutions.\n\n',
 
-                model => '{{ var("llm_model") }}',
-                prompt => concat(
-                    'You are analyzing comments from California state employees about government efficiency. ',
-                    'Extract the PRIMARY problems described in this comment as concise summaries that preserve key details.\n\n',
-                    'Extract ONLY the problems, issues, and inefficiencies. Ignore proposed solutions.\n',
+                                    'COMMENT CONTEXT:\n',
+                                    'Question/Prompt: ', coalesce(sc.question, '[No context]'), '\n',
+                                    'Comment Content: ', sc.content, '\n',
+                                    case
+                                        when sc.explicit_department is not null
+                                            then concat('Department/Agency: ', sc.explicit_department, '\n')
+                                        else ''
+                                    end,
+                                    '\n',
 
-                    'COMMENT CONTEXT:\n',
-                    'Question/Prompt: ', coalesce(sc.question, '[No context]'), '\n',
-                    'Comment Content: ', sc.content, '\n',
-                    case
-                        when sc.explicit_department is not null
-                            then
-                                concat('Department/Agency: ', sc.explicit_department, '\n')
-                        else ''
-                    end,
-                    '\n',
+                                    'GUIDELINES:\n',
+                                    '• Identify main problems, not minor details\n',
+                                    '• Preserve specific program names, policies, and systems mentioned\n',
+                                    '• CONSOLIDATE related issues into comprehensive, higher-level problems\n',
+                                    '• DO NOT fragment single issues, processes or systems into multiple problems\n',
+                                    '• If multiple issues stem from the same root cause or system, combine them\n',
+                                    '• Summarize comprehensively but as concisely as possible\n',
+                                    '• Focus on substantial, actionable problems\n',
+                                    '• If a comment does not contain a problem, return {"problems": []}\n\n',
 
-                    'GUIDELINES:\n',
-                    '• Identify main problems, not minor details\n',
-                    '• Preserve specific program names, policies, and systems mentioned\n',
-                    '• CONSOLIDATE related issues into comprehensive, higher-level problems\n',
-                    '• DO NOT fragment single issues, processes or systems into multiple problems\n',
-                    '• If multiple issues stem from the same root cause or system, combine them\n',
-                    '• Summarize comprehensively but as concisely as possible\n',
-                    '• Focus on substantial, actionable problems\n\n',
-                    '• if a comment does not contain a problem or one that cannot be reasonably inferred from the solution, return an empty JSON object\n\n',
+                                    'JSON OUTPUT REQUIREMENTS:\n',
+                                    '• Use only standard alphanumeric characters, spaces, and basic punctuation\n',
+                                    '• Avoid special characters like backticks, curly quotes, or extended Unicode\n',
+                                    '• Escape quotes properly with backslashes\n',
 
-                    case
-                        when sc.explicit_department is null
-                            then
-                                'DEPARTMENT INFERENCE:\n'
-                                || '• Extract relevant California state departments based on the comment content\n'
-                                || '• Consider DGS, CalHR, SCO, Controller, CalFire, CDCR, GovOps etc.\n\n'
-                        else ''
-                    end,
+                                    case
+                                        when sc.explicit_department is null
+                                            then
+                                                'DEPARTMENT INFERENCE:\n'  -- noqa: LT02
+                                                || '• Extract relevant California state departments based on the comment content\n'  -- noqa: LT02
+                                                || '• Consider the following departments (including when their full name is mentioned): DGS, CalHR, SCO, Controller, CalFire, CDCR, GovOps, CNRA, CDPH, DSH, CDT, CDA, CDTFA, ODI, SPB, HCAI, DMHC, CDSS, DHCS, DDS, CCC, CEC, DWR, SCC, DOC, FTB, OAL, DMV, EDD, DOF, CALTRANS, ARB, CDPR, CAL FIRE, CDFW, HCD, CDE, DIR, DCA, CalPERS, BOE, CPUC, Cal OES, EMSA, DTSC, CalVet, CHHS, CalHHS, BCSH, LWDA, FI$Cal, CDFA, etc.\n\n'  -- noqa: LT02
+                                        else ''
+                                    end,
 
-                    'EXAMPLES OF COMPREHENSIVE EXTRACTION:\n',
-                    'Input: "We are very poorly trained and lack operational consistency. Every office is doing something different, every agency does the same process different ways, there needs to be a smoother process on how we do things in each agency. There are too many hands in the pot, just to get something approved as simple as office supplies, it has a minimum of 5 people processing an order, we are spending more money in labor then what the supply request cost. There should be statewide system for things like procurement, timesheets, basically any common function that is takes to run an agency."\n',
+                                    'EXAMPLES OF COMPREHENSIVE EXTRACTION:\n',
+                                    'Input: "We are very poorly trained and lack operational consistency. Every office is doing something different, every agency does the same process different ways, there needs to be a smoother process on how we do things in each agency. There are too many hands in the pot, just to get something approved as simple as office supplies, it has a minimum of 5 people processing an order, we are spending more money in labor then what the supply request cost. There should be statewide system for things like procurement, timesheets, basically any common function that is takes to run an agency."\n',
 
-                    'Expected: "Lack of statewide standardized systems for common functions like procurement and timesheets results in every office and agency operating differently, with excessive approval workflows for simple administrative tasks"\n\n',
-                    'Input: "The procurement process is overly complicated, time consuming, and often not the most cost efficient. For example, we are required to purchase chairs from CalPIA. CalPIA charges $500+ for one desk chair and then another $30 per chair to deliver. The same chair could be purchased from another retailer for a fraction of the price. In addition, the ordering time is outrageous. Purchases go through many levels of approval before getting to the vendor and many times the required vendor turn around time is 60+ business days. Small businesses and disabled veteran-owned businesses get preference, and many times, these small businesses order from retailers like Amazon and then upcharge the State. There is nothing cost efficient about the procurement process. We should be able to buy small things ourselves without going through CalPIA."\n',
-                    'Expected: "Mandatory procurement through CalPIA and preferred small/disabled veteran-owned businesses results in significantly higher costs with additional delivery fees and vendor markups that waste taxpayer funds"\n\n',
+                                    'Expected: "Lack of statewide standardized systems for common functions like procurement and timesheets results in every office and agency operating differently, with excessive approval workflows for simple administrative tasks"\n\n',
+                                    'Input: "The procurement process is overly complicated, time consuming, and often not the most cost efficient. For example, we are required to purchase chairs from CalPIA. CalPIA charges $500+ for one desk chair and then another $30 per chair to deliver. The same chair could be purchased from another retailer for a fraction of the price. In addition, the ordering time is outrageous. Purchases go through many levels of approval before getting to the vendor and many times the required vendor turn around time is 60+ business days. Small businesses and disabled veteran-owned businesses get preference, and many times, these small businesses order from retailers like Amazon and then upcharge the State. There is nothing cost efficient about the procurement process. We should be able to buy small things ourselves without going through CalPIA."\n',
+                                    'Expected: "Mandatory procurement through CalPIA and preferred small/disabled veteran-owned businesses results in significantly higher costs with additional delivery fees and vendor markups that waste taxpayer funds"\n\n',
 
-                    'Return exactly 1 consolidated problem per comment unless the source comment contains multiple, truly unrelated problems.'
-                ),
-                -- use lower temp and top_p to reduce the stochastic nature of LLM output.
-                model_parameters => object_construct(
-                    'temperature', 0.1,
-                    'max_tokens', 1500,
-                    'top_p', 0.1
-                ),
-                response_format => {
-                    'type': 'json',
-                    'schema': {
-                        'type': 'object',
-                        'properties': {
-                            'problems': {
-                                'type': 'array',
-                                'items': {
-                                    'type': 'object',
-                                    'properties': {
-                                        'problem_text': { 'type': 'string' },
-                                        'inferred_departments': { 'type': 'array', 'items': { 'type': 'string' } }
-                                    },
-                                    'required': ['problem_text']
-                                }
+                                    'Return exactly 1 consolidated problem per comment unless the source comment contains multiple, truly unrelated problems.\n\n',
+                                    'IMPORTANT LENGTH LIMIT: Ensure the **entire** JSON response (including the JSON structure itself) is less than 500 tokens'
+                                )
                             }
-                        },
-                        'required': ['problems']
-                    }
-                }
-            )
+                        ],
+                        object_construct(
+                            'temperature', 0.00,
+                            'max_tokens', 8000,
+                            'top_p', 0.0,
+                            'response_format', parse_json('{"type":"json","schema":{"type":"object","properties":{"problems":{"type":"array","items":{"type":"object","properties":{"problem_text":{"type":"string"},"inferred_departments":{"type":"array","items":{"type":"string"}}},"required":["problem_text"]}}},"required":["problems"]}}')
+                        )
+                    ):structured_output[0]:raw_message
+                )
+            ),
+            -- Fallback: return empty problems array if JSON parsing fails
+            parse_json('{"problems": []}')
         ) as problems_json
     from source_comments as sc
 ),
