@@ -4,7 +4,7 @@ with dept_count as (
         count(distinct participant_id) as num_participants,
         'department' as response_type,
         idea_dept as response_value
-    from {{ref('e3_participant_responses')}}
+    from {{ ref('e3_participant_responses') }}
     group by all
 ),
 
@@ -14,7 +14,7 @@ pos_count as (
         count(distinct participant_id) as num_participants,
         'position' as response_type,
         pos_type as response_value
-    from a{{ref('e3_participant_responses')}}
+    from {{ ref('e3_participant_responses') }}
     group by all
 ),
 
@@ -25,7 +25,7 @@ tenure as (
         count(distinct participant_id) as num_participants,
         'tenure' as response_type,
         ca_tenure as response_value
-    from {{ref('e3_participant_responses')}}
+    from {{ ref('e3_participant_responses') }}
     group by all
 )
 
