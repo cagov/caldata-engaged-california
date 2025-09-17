@@ -1,5 +1,5 @@
 with responses as (
-    select * from {{ref ('e3_particpant_responses')}}
+    select * from {{ref ('e3_participant_responses')}}
 ),
 
 --count of participants per department -- this will need refinement as we clean and fill in dept gaps
