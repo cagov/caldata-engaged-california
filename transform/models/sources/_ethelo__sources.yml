@@ -419,3 +419,18 @@ sources:
           - name: INFLUENCE
           - name: JOINED_DATE
           - name: PARTICIPANT
+  - name: GOV_EFFICIENCIES_DEV
+    database: RAW_ENGCA_DEV
+    schema: GOV_EFFICIENCIES
+    description: |
+      Government Efficiencies data from various sources including airtable.
+    tables:
+      - name: E3_ENGAGEDCA_DEPARTMENT_DROPDOWN
+        description: |
+          Dropdown choices for the department question in the E3 Government Efficiencies engagement survey
+          Snapshot from Airtable
+        columns:
+          - name: ID
+            description: Dropdown list item
+          - name: STATEDEPARTMENTS
+            description: Corresponding California state department name
