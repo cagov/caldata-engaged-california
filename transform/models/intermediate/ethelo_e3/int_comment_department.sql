@@ -1,4 +1,4 @@
--- This model populates the department field for each participant based on their survey response and comment contents
+-- This model populates the department field for each comment based on department survey response and comment contents
 -- It uses an LLM to fill in gaps where the survey response is missing or does not match a known department
 
 {{ config(
