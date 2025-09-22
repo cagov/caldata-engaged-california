@@ -353,13 +353,8 @@ sources:
           daily to an ODI-owned Google Drive folder by ODI teammembers.
         loaded_at_field: _MODIFIED
         tests:
-          - freshness:
-              warn_after:
-                count: 1
-                period: day
-              error_after:
-                count: 2
-                period: day
+          - e3_freshness_weekend_aware:
+              error_after_days: 1
         columns:
           - name: _FILE
             description: Name of file in the Google Drive folder
@@ -387,13 +382,8 @@ sources:
           daily to an ODI-owned Google Drive folder by ODI teammembers.
         loaded_at_field: _MODIFIED
         tests:
-          - freshness:
-              warn_after:
-                count: 1
-                period: day
-              error_after:
-                count: 2
-                period: day
+          - e3_freshness_weekend_aware:
+              error_after_days: 1
         columns:
           - name: _FILE
             description: Name of file in the Google Drive folder
@@ -421,13 +411,8 @@ sources:
           daily to an ODI-owned Google Drive folder by ODI teammembers.
         loaded_at_field: _MODIFIED
         tests:
-          - freshness:
-              warn_after:
-                count: 1
-                period: day
-              error_after:
-                count: 2
-                period: day
+          - e3_freshness_weekend_aware:
+              error_after_days: 1
         columns:
           - name: _FILE
             description: Name of file in the Google Drive folder
@@ -453,13 +438,8 @@ sources:
           daily to an ODI-owned Google Drive folder by ODI teammembers.
         loaded_at_field: _MODIFIED
         tests:
-          - freshness:
-              warn_after:
-                count: 1
-                period: day
-              error_after:
-                count: 2
-                period: day
+          - e3_freshness_weekend_aware:
+              error_after_days: 1
         columns:
           - name: _FILE
             description: Name of file in the Google Drive folder
