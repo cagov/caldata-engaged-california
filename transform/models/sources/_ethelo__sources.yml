@@ -420,7 +420,7 @@ sources:
           - name: JOINED_DATE
           - name: PARTICIPANT
   - name: GOV_EFFICIENCIES_DEV
-    database: RAW_ENGCA_DEV
+    database: RAW_ENGCA_PRD
     schema: GOV_EFFICIENCIES
     description: |
       Government Efficiencies data from various sources including airtable.
