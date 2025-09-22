@@ -36,4 +36,4 @@ final AS (
     )
 )
 
-SELECT * FROM final
+SELECT DISTINCT * FROM final
