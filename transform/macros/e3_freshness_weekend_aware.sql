@@ -7,7 +7,8 @@
 
 with latest as (
   -- parse the source column to a timestamp (assume it's already UTC) using TRY_TO_TIMESTAMP_NTZ
-  select max(TRY_TO_TIMESTAMP_NTZ({{ adapter.quote(col) }})) as last_modified_utc
+  -- cast the source value to string first to avoid TRY_CAST errors between TIMESTAMP_TZ and TIMESTAMP_NTZ
+  select max(TRY_TO_TIMESTAMP_NTZ(TO_VARCHAR({{ adapter.quote(col) }}))) as last_modified_utc
   from {{ model }}
 ), age as (
   select
