@@ -463,3 +463,6 @@ sources:
           - name: SUPPORT
           - name: TOPIC
           - name: TOTAL_VOTES
+          - name: SLIGHTLY_SUPPORT
+          - name: SOMEWHAT
+          - name: SLIGHTLY_OPPOSE
