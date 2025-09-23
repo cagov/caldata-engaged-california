@@ -9,6 +9,19 @@ import numpy as np
 import json
 import os
 
+from topic_modeling import (
+    get_available_content_types,
+    load_embeddings_data,
+    extract_embeddings_array,
+    reduce_embeddings,
+    optimize_topic_model,
+    build_final_topic_model,
+    generate_topic_labels,
+    compute_2d_embeddings,
+    create_visualization_dataframe,
+    build_topic_summary,
+)
+
 #change environment variables to get bertopic to work in this environment
 os.environ["NUMBA_CACHE_DIR"] = "/tmp"
 os.environ["TRANSFORMERS_CACHE"] = "/tmp"
@@ -501,14 +514,304 @@ with tab3:
     This helps identify the most frequent concerns and suggestions from state employees.
     """)
 
-    # Import and run topic modeling
+    st.markdown(
+        """
+        **How it works:** Choose your desired number of topic groups and how many ideas should be categorized.
+        The system searches for the best grouping while trying to satisfy your preferences.
+        """
+    )
+
+    if 'topic_modeling_results' not in st.session_state:
+        st.session_state.topic_modeling_results = None
+
+    # Content type selection
     try:
-        from topic_modeling import run_topic_modeling_analysis
-        run_topic_modeling_analysis(session)
-    except ImportError as e:
-        st.error(f"Error importing topic modeling module: {e}")
+        content_type_options = get_available_content_types(session)
     except Exception as e:
-        st.error(f"Error running topic modeling: {e}")
+        st.warning(f"Unable to load content types: {e}")
+        content_type_options = []
+
+    if not content_type_options:
+        content_type_options = ['MAIN_IDEA']
+
+    default_index = content_type_options.index('MAIN_IDEA') if 'MAIN_IDEA' in content_type_options else 0
+    selected_content_type = st.selectbox(
+        "Select content type",
+        content_type_options,
+        index=default_index,
+        key="topic_modeling_content_type"
+    )
+
+    control_col1, control_col2 = st.columns(2)
+    topic_range = control_col1.slider(
+        "Desired number of topics (range)",
+        min_value=2,
+        max_value=40,
+        value=(5, 15),
+        help="Range of topics the optimization should target"
+    )
+    if topic_range[1] - topic_range[0] < 3:
+        control_col1.warning("Please ensure at least a 3-topic range between min and max values.")
+
+    classification_range = control_col2.slider(
+        "Classification percentage (range)",
+        min_value=0.3,
+        max_value=0.95,
+        value=(0.45, 0.85),
+        step=0.05,
+        help="Range of documents that should be classified (not outliers)"
+    )
+    if classification_range[1] - classification_range[0] < 0.3:
+        control_col2.warning("Please ensure at least a 0.3 range between min and max classification percentages.")
+
+    n_trials = 10
+
+    if st.button("Run Topic Modeling Analysis", use_container_width=True):
+        results = {
+            'status': None,
+            'message': None,
+            'warnings': [],
+            'content_type': selected_content_type,
+        }
+
+        try:
+            with st.spinner("Loading embeddings data..."):
+                embeddings_df = load_embeddings_data(session, selected_content_type)
+
+            if embeddings_df.empty:
+                results.update({
+                    'status': 'warning',
+                    'message': "No participant ideas found for topic modeling.",
+                })
+            else:
+                docs = embeddings_df['ORIGINAL_TEXT'].tolist()
+                embeddings = extract_embeddings_array(embeddings_df)
+
+                if embeddings.size == 0:
+                    results.update({
+                        'status': 'error',
+                        'message': "Failed to extract embeddings for the selected content type.",
+                    })
+                else:
+                    with st.spinner("Reducing embedding dimensionality..."):
+                        embeddings_pca = reduce_embeddings(embeddings)
+
+                    with st.spinner(f"Finding optimal topic groupings ({n_trials} trials)..."):
+                        study = optimize_topic_model(
+                            docs,
+                            embeddings_pca,
+                            topic_range,
+                            classification_range,
+                            n_trials=n_trials,
+                        )
+
+                    if study.best_value == -2:
+                        results.update({
+                            'status': 'error',
+                            'message': (
+                                "**Topic Discovery Failed**: Unable to find suitable groupings for your desired "
+                                "topic count and classification rate."
+                            ),
+                        })
+                        results['warnings'].append(
+                            "Try increasing the topic range or adjusting the classification percentage range."
+                        )
+                    else:
+                        best_params = study.best_params
+
+                        with st.spinner("Training final topic model..."):
+                            _, topics, _, topic_info = build_final_topic_model(
+                                docs,
+                                embeddings_pca,
+                                best_params,
+                            )
+
+                        actual_num_topics = len(topic_info[topic_info.Topic != -1])
+                        classified_mask = [topic != -1 for topic in topics]
+                        classified_ratio = (
+                            sum(classified_mask) / len(topics) if topics else 0.0
+                        )
+
+                        with st.spinner("Generating topic labels..."):
+                            topic_labels, topic_descriptions, label_errors = generate_topic_labels(
+                                session,
+                                docs,
+                                topics,
+                                topic_info,
+                                selected_content_type
+                            )
+
+                        embeddings_2d = compute_2d_embeddings(embeddings_pca, topics)
+                        viz_df = create_visualization_dataframe(
+                            embeddings_df,
+                            list(topics),
+                            embeddings_2d,
+                            topic_labels,
+                            topic_descriptions,
+                        )
+                        topic_summary_df = build_topic_summary(viz_df)
+
+                        results.update({
+                            'status': 'success',
+                            'message': "Topic analysis complete!",
+                            'viz_df': viz_df,
+                            'topic_summary_df': topic_summary_df,
+                            'topic_labels': topic_labels,
+                            'topic_descriptions': topic_descriptions,
+                            'label_errors': label_errors,
+                            'actual_num_topics': actual_num_topics,
+                            'topic_range': topic_range,
+                            'classified_ratio': classified_ratio,
+                            'best_params': best_params,
+                            'study_best_value': study.best_value,
+                        })
+
+                        if actual_num_topics < topic_range[0] or actual_num_topics > topic_range[1]:
+                            results['warnings'].append(
+                                (
+                                    f"Optimization produced {actual_num_topics} topics, which is outside the requested "
+                                    f"range of {topic_range[0]}–{topic_range[1]}."
+                                )
+                            )
+
+        except ImportError as e:
+            results.update({
+                'status': 'error',
+                'message': f"Required packages not available for topic modeling: {e}",
+            })
+            results['warnings'].extend([
+                'The following packages are needed: bertopic, umap-learn, hdbscan, optuna, scikit-learn.',
+                'Please install these packages in your Snowflake environment.',
+            ])
+        except Exception as e:
+            results.update({
+                'status': 'error',
+                'message': f"Error running topic modeling: {e}",
+            })
+
+        st.session_state.topic_modeling_results = results
+
+    results = st.session_state.get('topic_modeling_results')
+
+    if results:
+        status = results.get('status')
+        message = results.get('message')
+        warnings_list = results.get('warnings', [])
+
+        if status == 'success' and message:
+            st.success(message)
+        elif status == 'warning' and message:
+            st.warning(message)
+        elif status == 'error' and message:
+            st.error(message)
+
+        for warning_text in warnings_list:
+            st.warning(warning_text)
+
+        label_errors = results.get('label_errors', [])
+        if label_errors:
+            for err in label_errors:
+                st.warning(f"Topic labeling fallback used: {err}")
+
+        viz_df = results.get('viz_df')
+
+        if isinstance(viz_df, pd.DataFrame) and not viz_df.empty:
+            st.caption(f"Content type analyzed: {results.get('content_type', selected_content_type)}")
+
+            actual_num_topics = results.get('actual_num_topics', 0)
+            classified_ratio = results.get('classified_ratio', 0.0)
+            st.info(
+                f"Identified {actual_num_topics} topics. "
+                f"{classified_ratio * 100:.1f}% of ideas were classified into a topic."
+            )
+
+            required_columns = {'UMAP_1_centered', 'UMAP_2_centered', 'TOPIC_LABEL', 'HOVER_TEXT'}
+            if required_columns.issubset(viz_df.columns):
+                custom_colors = [
+                    '#1abc9c', '#3498db', '#9b59b6', '#e74c3c', '#f39c12',
+                    '#f1c40f', '#2ecc71', '#34495e', '#e67e22', '#d35400'
+                ]
+
+                topic_counts = viz_df['TOPIC_LABEL'].value_counts()
+                ordered_topics = topic_counts.index.tolist()
+                if 'Outlier' in ordered_topics:
+                    ordered_topics.remove('Outlier')
+                    ordered_topics.append('Outlier')
+
+                from itertools import cycle
+
+                color_cycle = cycle(custom_colors)
+                color_map = {topic: next(color_cycle) for topic in ordered_topics if topic != 'Outlier'}
+                color_map['Outlier'] = '#D3D3D3'
+
+                fig = px.scatter(
+                    viz_df,
+                    x='UMAP_1_centered',
+                    y='UMAP_2_centered',
+                    color='TOPIC_LABEL',
+                    custom_data=['HOVER_TEXT'],
+                    title='E3 Participant Ideas - Topic Landscape',
+                    opacity=0.7,
+                    category_orders={'TOPIC_LABEL': ordered_topics},
+                    color_discrete_map=color_map,
+                )
+
+                fig.update_traces(
+                    hovertemplate='%{customdata[0]}<extra></extra>',
+                    marker=dict(size=8)
+                )
+
+                fig.update_xaxes(showticklabels=False, title='', showgrid=False, zeroline=False)
+                fig.update_yaxes(showticklabels=False, title='', showgrid=False, zeroline=False)
+                fig.update_layout(
+                    hoverlabel=dict(font_size=14),
+                    dragmode='zoom',
+                    hovermode='closest',
+                    margin=dict(l=20, r=20, t=40, b=20),
+                    legend_title="Topics",
+                )
+
+                st.plotly_chart(fig, use_container_width=True)
+
+            topic_summary_df = results.get('topic_summary_df', pd.DataFrame())
+            if not topic_summary_df.empty:
+                st.subheader("Topic Summary")
+                st.dataframe(topic_summary_df, use_container_width=True, hide_index=True)
+
+            st.subheader("Detailed Results")
+
+            topic_labels_sorted = [
+                label for label in sorted(viz_df['TOPIC_LABEL'].unique()) if label != 'Outlier'
+            ]
+            if 'Outlier' in viz_df['TOPIC_LABEL'].unique():
+                topic_labels_sorted.append('Outlier')
+
+            topic_options = ['All Topics'] + topic_labels_sorted
+            selected_topic_label = st.selectbox(
+                'Select a topic to filter:',
+                topic_options,
+                key=f"topic_filter_{results.get('content_type', 'default')}"
+            )
+
+            if selected_topic_label == 'All Topics':
+                detail_df = viz_df[['ORIGINAL_TEXT']].copy()
+            else:
+                detail_df = viz_df[viz_df['TOPIC_LABEL'] == selected_topic_label][['ORIGINAL_TEXT']].copy()
+
+            detail_df.rename(columns={'ORIGINAL_TEXT': 'Idea Text'}, inplace=True)
+            st.dataframe(detail_df, use_container_width=True, hide_index=True)
+
+            csv_data = viz_df.to_csv(index=False)
+            st.download_button(
+                label="Download Topic Modeling Results",
+                data=csv_data,
+                file_name=f"e3_topic_modeling_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+                use_container_width=True,
+            )
+
+        elif status == 'success':
+            st.info("No topic modeling results to display.")
 
 # Footer
 st.markdown("---")
