@@ -12,8 +12,8 @@ with latest as (
 ), age as (
   select
     last_modified_utc as last_modified,
-    datediff('second', last_modified_utc, CONVERT_TIMEZONE('UTC','UTC', current_timestamp()))/86400.0 as age_days,
-    date_part('dow', CONVERT_TIMEZONE('UTC','UTC', current_timestamp())) as dow
+    datediff('second', last_modified_utc, CAST(current_timestamp() AS TIMESTAMP_NTZ))/86400.0 as age_days,
+    date_part('dow', CAST(current_timestamp() AS TIMESTAMP_NTZ)) as dow
   from latest
 ), params as (
   select {{ error }} as error_after
