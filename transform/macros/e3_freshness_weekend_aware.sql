@@ -6,13 +6,14 @@
 {% set error = error_after_days | int %}
 
 with latest as (
-  select max({{ adapter.quote(col) }}) as last_modified
+  -- parse the source column to a timestamp (assume it's already UTC) using TRY_TO_TIMESTAMP_NTZ
+  select max(TRY_TO_TIMESTAMP_NTZ({{ adapter.quote(col) }})) as last_modified_utc
   from {{ model }}
 ), age as (
   select
-    last_modified,
-    datediff('second', last_modified, current_timestamp())/86400.0 as age_days,
-    date_part('dow', current_timestamp()) as dow
+    last_modified_utc as last_modified,
+    datediff('second', last_modified_utc, CONVERT_TIMEZONE('UTC','UTC', current_timestamp()))/86400.0 as age_days,
+    date_part('dow', CONVERT_TIMEZONE('UTC','UTC', current_timestamp())) as dow
   from latest
 ), params as (
   select {{ error }} as error_after
