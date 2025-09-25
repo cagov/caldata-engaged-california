@@ -124,3 +124,13 @@ models:
         description: "Number of participants invited before today who joined."
       - name: latest_data_download
         description: "Latest  data download date from Ethelo."
+
+  - name: ethelo_e3_response_counts
+    description: "Number of uniques participants per response for E3 engagement"
+    columns:
+      - name: num_participants
+        description: "Number of participants (with all relevant filters)"
+      - name: response_type
+        description: "Indicates which question the response was an answer to"
+      - name: response_value
+        description: "Each unique value selected or given by participants"

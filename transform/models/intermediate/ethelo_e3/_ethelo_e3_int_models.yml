@@ -179,7 +179,7 @@ models:
         description: "unique identifier for this problem-solution link"
       - name: LINKED_AT
         description: "timestamp when the link was created"
-
+        
   - name: int_e3_topic_modeling
     description: |
       "Topic modeling output produced by the UMAP + HDBSCAN pipeline for E3 content.
@@ -224,3 +224,15 @@ models:
         description: "JSON array (stored as text) of representative quotes"
       - name: COMMENTS_FOR_LABELING
         description: "Concatenated snippets supplied to the LLM for labeling"
+
+  - name: int_comment_department
+    description: |
+      This model populates the department field for each comment based on department survey response
+      and comment contents. It uses an LLM to fill in gaps where the survey response is missing
+      or does not match a known department
+    columns:
+      - name: comment_id
+        description: E3 comment identifier
+      - name: department_list
+        description: list of departments relevant to the comment or directly provided in survey responses
+
