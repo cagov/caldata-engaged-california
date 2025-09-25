@@ -58,7 +58,7 @@ DEFAULT_CLUSTER_PARAMS = {
     "umap_n_components": 5,
     "umap_min_dist": 0.0,
     "hdbscan_min_cluster_size": 5,
-    "hdbscan_min_samples": 3,
+    "hdbscan_min_samples": 5,
 }
 
 # Topic modeling currently runs for two different content sources.
