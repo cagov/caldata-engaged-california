@@ -82,3 +82,11 @@ models:
         description: Last fivetran sync timestamp.
       - name: _file_upload_date
         description: Date on which this data was downloaded from Ethelo and uploaded to Drive
+
+  - name: stg_ethelo_e3_department_dropdown
+    description: Dropdown choices for the department question in the E3 Government Efficiencies engagement survey
+    columns:
+      - name: id
+        description: Dropdown list item
+      - name: statedepartments
+        description: Corresponding California state department name
