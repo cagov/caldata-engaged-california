@@ -351,6 +351,10 @@ sources:
           Ethelo survey response data for the E3 Government
           Efficiencies engagement (August 2025) uploaded twice
           daily to an ODI-owned Google Drive folder by ODI teammembers.
+        loaded_at_field: _MODIFIED
+        tests:
+          - e3_freshness_weekend_aware:
+              error_after_days: 1
         columns:
           - name: _FILE
             description: Name of file in the Google Drive folder
@@ -376,6 +380,10 @@ sources:
           Ethelo survey response data for the E3 Government
           Efficiencies engagement (August 2025) uploaded twice
           daily to an ODI-owned Google Drive folder by ODI teammembers.
+        loaded_at_field: _MODIFIED
+        tests:
+          - e3_freshness_weekend_aware:
+              error_after_days: 1
         columns:
           - name: _FILE
             description: Name of file in the Google Drive folder
@@ -401,6 +409,10 @@ sources:
           Ethelo survey response data for the E3 Government
           Efficiencies engagement (August 2025) uploaded twice
           daily to an ODI-owned Google Drive folder by ODI teammembers.
+        loaded_at_field: _MODIFIED
+        tests:
+          - e3_freshness_weekend_aware:
+              error_after_days: 1
         columns:
           - name: _FILE
             description: Name of file in the Google Drive folder
@@ -419,3 +431,38 @@ sources:
           - name: INFLUENCE
           - name: JOINED_DATE
           - name: PARTICIPANT
+      - name: E_3_VOTING_SUMMARY
+        description: |
+          Ethelo voting summary data for the E3 Government
+          Efficiencies engagement (August 2025) uploaded twice
+          daily to an ODI-owned Google Drive folder by ODI teammembers.
+        loaded_at_field: _MODIFIED
+        tests:
+          - e3_freshness_weekend_aware:
+              error_after_days: 1
+        columns:
+          - name: _FILE
+            description: Name of file in the Google Drive folder
+          - name: _LINE
+            description: "Line number in the source data file."
+          - name: _MODIFIED
+            description: Timestamp of when the file was last modified in Google Drive
+          - name: _FIVETRAN_SYNCED
+            description: "Timestamp indicating when the data was last synced with Fivetran."
+          - name: ABSTAIN_VOTES
+          - name: APPROVAL
+          - name: AVERAGE_WEIGHTING
+          - name: CONFLICT
+          - name: CONSENSUS
+          - name: EXTREMELY
+          - name: IN_BEST_SCENARIO
+          - name: NEGATIVE_VOTES
+          - name: NOT_AT_ALL
+          - name: OPTION
+          - name: POSITIVE_VOTES
+          - name: SUPPORT
+          - name: TOPIC
+          - name: TOTAL_VOTES
+          - name: SLIGHTLY_SUPPORT
+          - name: SOMEWHAT
+          - name: SLIGHTLY_OPPOSE
