@@ -13,6 +13,7 @@ with base as (
         umap_y
     from {{ ref('int_e3_topic_modeling') }}
 ),
+
 labels as (
     select
         content_type,
@@ -32,8 +33,9 @@ select
     b.is_outlier,
     b.umap_x,
     b.umap_y
-from base b
-left join labels l
-    on b.content_type = l.content_type
-   and b.topic_id = l.topic_id
+from base as b
+left join labels as l
+    on
+        b.content_type = l.content_type
+        and b.topic_id = l.topic_id
 order by b.content_type, b.content_id
