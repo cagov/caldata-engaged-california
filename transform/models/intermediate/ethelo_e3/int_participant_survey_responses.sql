@@ -12,8 +12,10 @@ select
             when question = 'Opening question - What makes you proud about your role in public service?' then answer
         end
     ) as point_of_pride,
-    max(
-        case when question = 'Share your idea - Which department or agency does your idea apply to?' then answer end
+    listagg(
+        distinct
+        case when question = 'Share your idea - Which department or agency does your idea apply to?' then answer end,
+        ', '
     ) as idea_dept,
     max(case when question = 'About you - Position type' then answer end) as pos_type,
     max(case when question = 'About you - How long have you worked for the State of California?' then answer end)
