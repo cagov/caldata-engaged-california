@@ -179,3 +179,48 @@ models:
         description: "unique identifier for this problem-solution link"
       - name: LINKED_AT
         description: "timestamp when the link was created"
+
+  - name: int_e3_topic_modeling
+    description: |
+      "Topic modeling output produced by the UMAP + HDBSCAN pipeline for E3 content.
+      Contains one record per content item with cluster assignments, probabilities,
+      and 2D projections for visualization."
+    columns:
+      - name: CONTENT_TYPE
+        description: "Source content type processed for topic modeling"
+      - name: TOPIC_ID
+        description: "Stable topic identifier per content type; NULL for outliers"
+      - name: CONTENT_ID
+        description: "Identifier of the source record from e3_embeddings_unified"
+      - name: PARTICIPANT_ID
+        description: "Participant identifier associated with the content"
+      - name: ORIGINAL_TEXT
+        description: "Original content text used for clustering and labeling"
+      - name: TOPIC_PROBABILITY
+        description: "Cluster membership probability when available"
+      - name: IS_OUTLIER
+        description: "Whether the record was treated as noise by HDBSCAN"
+      - name: UMAP_X
+        description: "First coordinate from the standardized 2D UMAP projection"
+      - name: UMAP_Y
+        description: "Second coordinate from the standardized 2D UMAP projection"
+
+  - name: int_e3_topic_labeling
+    description: |
+      "LLM-generated topic labels, descriptions, and representative quotes for each
+      cluster emitted by int_e3_topic_modeling."
+    columns:
+      - name: CONTENT_TYPE
+        description: "Source content type of the topic"
+      - name: TOPIC_ID
+        description: "Topic identifier aligned with int_e3_topic_modeling"
+      - name: TOPIC_MEMBER_COUNT
+        description: "Number of content records assigned to the topic"
+      - name: TOPIC_NAME
+        description: "Short LLM-generated title summarizing the topic"
+      - name: TOPIC_DESCRIPTION
+        description: "Narrative description produced by the LLM"
+      - name: REPRESENTATIVE_QUOTES
+        description: "JSON array (stored as text) of representative quotes"
+      - name: COMMENTS_FOR_LABELING
+        description: "Concatenated snippets supplied to the LLM for labeling"

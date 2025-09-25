@@ -136,7 +136,7 @@ models:
       - name: DEPARTMENTS
         description: "Array of departments associated with the content"
       - name: EMBEDDING_VECTOR
-        description: "768-dimensional embedding vector generated using snowflake-arctic-embed-l-v2.0"
+        description: "1024-dimensional embedding vector generated using snowflake-arctic-embed-l-v2.0"
         tests:
           - not_null
       - name: CONTEXTUALIZED_TEXT_LENGTH
