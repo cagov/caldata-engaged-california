@@ -179,7 +179,7 @@ models:
         description: "unique identifier for this problem-solution link"
       - name: LINKED_AT
         description: "timestamp when the link was created"
-        
+
   - name: int_e3_topic_modeling
     description: |
       "Topic modeling output produced by the UMAP + HDBSCAN pipeline for E3 content.
@@ -235,4 +235,3 @@ models:
         description: E3 comment identifier
       - name: department_list
         description: list of departments relevant to the comment or directly provided in survey responses
-
