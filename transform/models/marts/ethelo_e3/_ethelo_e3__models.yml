@@ -147,3 +147,49 @@ models:
         description: "Date when the source data was uploaded/processed"
       - name: PROCESSED_AT
         description: "Timestamp when the embeddings were generated"
+
+  - name: e3_topic_themes
+    description: |
+      "Topic-level summaries generated from the dbt topic labeling pipeline. Each row represents a
+      discovered topic with LLM-authored metadata that can be surfaced directly to end users."
+    columns:
+      - name: TOPIC_ID
+        description: "Stable topic identifier per content type (e.g., '1-1')"
+      - name: CONTENT_TYPE
+        description: "Source content grouping for the topic ('Raw Main Idea' or 'Processed Problem & Solution')"
+      - name: TOPIC_MEMBER_COUNT
+        description: "Number of content records assigned to this topic"
+      - name: TOPIC_NAME
+        description: "Concise LLM-generated title summarizing the topic"
+      - name: TOPIC_DESCRIPTION
+        description: "Short narrative description returned by the LLM"
+      - name: REPRESENTATIVE_QUOTES
+        description: "JSON array (as text) of 2-3 representative snippets used to label the topic"
+      - name: COMMENTS_FOR_LABELING
+        description: "Concatenated snippets that were supplied to the LLM when generating the label"
+
+  - name: e3_topic_contents
+    description: |
+      "Per-idea topic assignments from the dbt topic modeling pipeline. Contains probabilities,
+      outlier flags, and 2D projections for downstream visualization and analysis."
+    columns:
+      - name: CONTENT_TYPE
+        description: "Source content grouping for the idea ('Raw Main Idea' or 'Processed Problem & Solution')"
+      - name: TOPIC_ID
+        description: "Topic identifier assigned to the idea; NULL when HDBSCAN marked it as an outlier"
+      - name: TOPIC_NAME
+        description: "Topic title joined from the labeling table (NULL for outliers)"
+      - name: CONTENT_ID
+        description: "Primary key of the idea from `e3_embeddings_unified`"
+      - name: PARTICIPANT_ID
+        description: "Participant associated with the idea"
+      - name: ORIGINAL_TEXT
+        description: "Original idea text used during modeling"
+      - name: TOPIC_PROBABILITY
+        description: "Cluster membership probability when provided by HDBSCAN"
+      - name: IS_OUTLIER
+        description: "Boolean flag indicating that the idea was treated as noise"
+      - name: UMAP_X
+        description: "First coordinate from the standardized 2D UMAP projection"
+      - name: UMAP_Y
+        description: "Second coordinate from the standardized 2D UMAP projection"
