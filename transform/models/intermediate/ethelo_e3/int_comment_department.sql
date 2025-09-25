@@ -16,7 +16,7 @@ comments as (
 ),
 
 dept_responses as (
-    select
+    select distinct
         participant_id,
         answer as department
     from {{ ref('stg_ethelo_e3_survey') }}
