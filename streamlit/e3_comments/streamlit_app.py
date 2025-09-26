@@ -7,6 +7,14 @@ import plotly.graph_objects as go
 from datetime import datetime
 import numpy as np
 import json
+import os
+
+
+#change environment variables to get bertopic to work in this environment
+os.environ["NUMBA_CACHE_DIR"] = "/tmp"
+os.environ["TRANSFORMERS_CACHE"] = "/tmp"
+os.environ["TRANSFORMERS_CACHE"] = "/tmp"
+
 
 # Configuration settings
 ENABLE_CUSTOM_PROMPT = True  # Set to True to enable custom prompt option
@@ -267,9 +275,10 @@ st.divider()
 filtered_df = participant_responses_df.copy()
 
 # Create tabs
-tab1, tab2 = st.tabs([
+tab1, tab2, tab3 = st.tabs([
     "LLM Comment Analysis",
-    "Data Export"
+    "Data Export",
+    "Topic Modeling"
 ])
 
 # Tab 1: LLM Comment Analysis
@@ -483,6 +492,109 @@ with tab2:
 
     else:
         st.warning("No data available for export with current filters.")
+
+# Tab 3: Topic Modeling
+with tab3:
+    st.subheader("Topic Modeling Tables")
+
+    st.markdown(
+        """
+        The topic modeling pipeline now runs in dbt. Use the tables below to explore results and download them for further analysis:
+        - **`E3_TOPIC_THEMES`**: One row per topic with LLM-generated titles, descriptions, and representative quotes.
+        - **`E3_TOPIC_CONTENTS`**: One row per idea, including the assigned topic, probability, and UMAP coordinates.
+
+        **Content types:**
+        - **Raw Main Idea** – individual main ideas submitted by employees.
+        - **Processed Problem & Solution** – consolidated problem/solution pairs curated from the raw ideas with AI.
+        """
+    )
+
+    content_type_options = [
+        "All Content Types",
+        "Raw Main Idea",
+        "Processed Problem & Solution",
+    ]
+    selected_topic_content_type = st.selectbox(
+        "Filter by content type",
+        content_type_options,
+        key="topic_tables_content_type",
+    )
+
+    content_type_clause = ""
+    if selected_topic_content_type != "All Content Types":
+        content_type_clause = f"WHERE CONTENT_TYPE = '{selected_topic_content_type.replace("'", "''")}'"
+
+    # Load topic themes
+    themes_query = f"""
+        SELECT
+            TOPIC_ID,
+            CONTENT_TYPE,
+            TOPIC_MEMBER_COUNT,
+            TOPIC_NAME,
+            TOPIC_DESCRIPTION,
+            REPRESENTATIVE_QUOTES,
+        FROM ANALYTICS_ENGCA_PRD.ETHELO_E3.E3_TOPIC_THEMES
+        {content_type_clause}
+        ORDER BY CONTENT_TYPE, TOPIC_ID
+    """
+
+    try:
+        themes_df = session.sql(themes_query).to_pandas()
+    except Exception as exc:
+        st.error(f"Unable to load topic themes: {exc}")
+        themes_df = pd.DataFrame()
+
+    if not themes_df.empty:
+        st.markdown("#### Topic Themes (`E3_TOPIC_THEMES`)")
+        st.dataframe(themes_df, use_container_width=True, hide_index=True)
+
+        themes_csv = themes_df.to_csv(index=False)
+        st.download_button(
+            label="Download Topic Themes",
+            data=themes_csv,
+            file_name=f"e3_topic_themes_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+    else:
+        st.info("No topic themes available to display for the selected content type.")
+
+    # Load topic contents
+    contents_query = f"""
+        SELECT
+            CONTENT_TYPE,
+            TOPIC_ID,
+            TOPIC_NAME,
+            CONTENT_ID,
+            PARTICIPANT_ID,
+            ORIGINAL_TEXT,
+            TOPIC_PROBABILITY,
+            IS_OUTLIER,
+        FROM ANALYTICS_ENGCA_PRD.ETHELO_E3.E3_TOPIC_CONTENTS
+        {content_type_clause}
+        ORDER BY CONTENT_TYPE, CONTENT_ID
+    """
+
+    try:
+        contents_df = session.sql(contents_query).to_pandas()
+    except Exception as exc:
+        st.error(f"Unable to load topic contents: {exc}")
+        contents_df = pd.DataFrame()
+
+    if not contents_df.empty:
+        st.markdown("#### Topic Contents (`E3_TOPIC_CONTENTS`)")
+        st.dataframe(contents_df, use_container_width=True, hide_index=True)
+
+        contents_csv = contents_df.to_csv(index=False)
+        st.download_button(
+            label="Download Topic Contents",
+            data=contents_csv,
+            file_name=f"e3_topic_contents_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+    else:
+        st.info("No topic content assignments available to display for the selected content type.")
 
 # Footer
 st.markdown("---")
