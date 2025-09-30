@@ -93,6 +93,8 @@ models:
   - name: stg_ethelo_e3_departments_reconciled
     description: Reconciled list of departments from Ethelo survey dropdown
     columns:
+      - name: reconciliation_status
+        description: Reconciliation status, whether the department appears in and matches Ethelo
       - name: what_the_department_name_should_be
         description: The standardized name for the department
       - name: label_in_ethelo_survey_question

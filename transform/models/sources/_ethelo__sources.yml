@@ -486,11 +486,11 @@ sources:
           Reconciled list of Ethelo California state departments
         columns:
           - name: STATUS
-            description: "Reconciliation status."
+            description: "Reconciliation status, whether the department appears in and matches Ethelo"
           - name: WHAT_THE_DEPARTMENT_NAME_SHOULD_BE
             description: "Standardized department name."
           - name: LABEL_IN_ETHELO_SURVEY_QUESTION
-            description: "Department label from Ethelo survey."
+            description: "The department name as it appears in the Ethelo survey question."
           - name: LAST_MODIFIED
             description: "Airtable last modified timestamp."
           - name: STATE_DEPARTMENT
@@ -498,8 +498,8 @@ sources:
           - name: AGENCY
             description: "Associated agency."
           - name: GOVERNMENT_BRANCH_FROM_AGENCY
-            description: "Government branch from agency."
+            description: "The government branch (executive, legislative, judicial) of the agency"
           - name: NOTES
-            description: "Reconciliation notes."
+            description: "Any reconciliation notes."
           - name: CREATED
             description: "Airtable record creation timestamp."
