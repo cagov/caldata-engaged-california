@@ -31,10 +31,12 @@ models:
     columns:
       - name: PARTICIPANT_ID
         description: "Unique identifier for each participant in the E3 engagement"
+      - name: COMMENT_ID
+        description: "Unique identifier for the top-level comment associated with the participant"
       - name: POINT_OF_PRIDE
         description: "Response to 'Opening question - What makes you proud about your role in public service?'"
-      - name: IDEA_DEPT
-        description: "Response to 'Share your idea - Which department or agency does your idea apply to?'"
+      - name: DEPARTMENT_LIST
+        description: "Department(s) associated with the participant's main idea comment"
       - name: POS_TYPE
         description: "Response to 'About you - Position type'"
       - name: CA_TENURE
@@ -75,10 +77,6 @@ models:
         description: "Original text of the identified problem"
       - name: PROBLEM_LENGTH
         description: "Character length of the problem text"
-      - name: EXPLICIT_DEPARTMENT
-        description: "Department/agency specified by participant for main idea comments"
-      - name: INFERRED_DEPARTMENTS
-        description: "Array of departments inferred by AI from problem context"
       - name: ALL_DEPARTMENTS
         description: "Combined array of explicit and inferred departments with duplicates removed"
       - name: SOLUTION_COUNT
