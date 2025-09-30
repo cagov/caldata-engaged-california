@@ -4,7 +4,7 @@ WITH department_reconciled AS (
 )
 
 SELECT
-    status as reconciliation_status,
+    status AS reconciliation_status,
     what_the_department_name_should_be,
     label_in_ethelo_survey_question,
     state_department,
@@ -12,5 +12,6 @@ SELECT
     government_branch_from_agency,
     notes
 FROM department_reconciled
-WHERE what_the_department_name_should_be IS NOT NULL
+WHERE
+    what_the_department_name_should_be IS NOT NULL
     AND status != 'Recommend removing'
