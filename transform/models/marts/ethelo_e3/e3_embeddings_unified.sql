@@ -5,19 +5,19 @@
 with main_ideas as (
     select
         participant_id,
+        comment_id,
         main_idea,
-        idea_dept,
         'Raw Main Idea' as content_type,
         concat(
             'This is a main idea submitted by a California state employee for improving government efficiency. ',
-            'Department context: ', coalesce(idea_dept, 'Not specified'), '. ',
+            'Department context: ', coalesce(department_list, 'Not specified'), '. ',
             'Main idea: ', main_idea
         ) as contextualized_text,
         main_idea as original_text,
         null as problem_id,
         null as solution_count,
         null as avg_confidence_score,
-        null as departments,
+        department_list as departments,
         _file_upload_date
     from {{ ref('e3_participant_responses') }}
     where
@@ -30,11 +30,10 @@ problem_solutions as (
     select
         problem_participant_id as participant_id,
         concat(problem_text, ' ', array_to_string(consolidated_solutions, ' ')) as combined_content,
-        null as idea_dept,
         'Processed Problem & Solution' as content_type,
         concat(
             'This is a processed problem and solution pair from California state employee feedback on government efficiency. ',
-            'Departments involved: ', coalesce(array_to_string(all_departments, ', '), 'Not specified'), '. ',
+            'Departments involved: ', coalesce(all_departments, 'Not specified'), '. ',
             'Problem: ', problem_text, ' ',
             'Solutions: ', array_to_string(consolidated_solutions, ' ')
         ) as contextualized_text,

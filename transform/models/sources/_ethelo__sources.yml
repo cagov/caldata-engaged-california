@@ -466,8 +466,7 @@ sources:
           - name: SLIGHTLY_SUPPORT
           - name: SOMEWHAT
           - name: SLIGHTLY_OPPOSE
-
-  - name: GOV_EFFICIENCIES_DEV
+  - name: GOV_EFFICIENCIES
     database: RAW_ENGCA_PRD
     schema: GOV_EFFICIENCIES
     description: |
@@ -482,3 +481,25 @@ sources:
             description: Dropdown list item
           - name: STATEDEPARTMENTS
             description: Corresponding California state department name
+      - name: E3_RESEARCH_DEPARTMENT_ETHELO_RECONCILED
+        description: |
+          Reconciled list of Ethelo California state departments
+        columns:
+          - name: STATUS
+            description: "Reconciliation status."
+          - name: WHAT_THE_DEPARTMENT_NAME_SHOULD_BE
+            description: "Standardized department name."
+          - name: LABEL_IN_ETHELO_SURVEY_QUESTION
+            description: "Department label from Ethelo survey."
+          - name: LAST_MODIFIED
+            description: "Airtable last modified timestamp."
+          - name: STATE_DEPARTMENT
+            description: "Official state department name."
+          - name: AGENCY
+            description: "Associated agency."
+          - name: GOVERNMENT_BRANCH_FROM_AGENCY
+            description: "Government branch from agency."
+          - name: NOTES
+            description: "Reconciliation notes."
+          - name: CREATED
+            description: "Airtable record creation timestamp."

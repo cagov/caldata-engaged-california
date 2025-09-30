@@ -90,3 +90,18 @@ models:
         description: Dropdown list item
       - name: statedepartments
         description: Corresponding California state department name
+  - name: stg_ethelo_e3_departments_reconciled
+    description: Reconciled list of departments from Ethelo survey dropdown
+    columns:
+      - name: what_the_department_name_should_be
+        description: The standardized name for the department
+      - name: label_in_ethelo_survey_question
+        description: The department name as it appears in the Ethelo survey question
+      - name: state_department
+        description: The corresponding California state department name
+      - name: agency
+        description: The corresponding California state agency name
+      - name: government_branch_from_agency
+        description: The government branch (executive, legislative, judicial) associated with the agency
+      - name: notes
+        description: Any notes about the reconciliation decision

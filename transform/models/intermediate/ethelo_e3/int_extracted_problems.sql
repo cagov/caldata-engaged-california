@@ -11,12 +11,9 @@
 -- Get department responses for each participant
 with participant_departments as (
     select
-        participant_id,
-        idea_dept as department_response
-    from {{ ref('int_participant_survey_responses') }}
-    where
-        idea_dept is not null
-        and trim(idea_dept) != ''
+        comment_id,
+        department_list
+    from {{ ref('int_comment_department') }}
 ),
 
 -- noqa: disable=LT02
@@ -30,15 +27,9 @@ source_comments as (
         c.question,
         c.posted_on,
         c._file_upload_date,
-        -- Add department context for main ideas, null for replies (to be inferred later)
-        case
-            when
-                c.reply_to_id is null
-                and c.question = 'Share your idea - Primary problem and ideas to solve the problem'
-                then d.department_response
-        end as explicit_department
+        d.department_list --explicit_department
     from {{ ref('int_ethelo_e3_comments_and_responses') }} as c
-    left join participant_departments as d on c.participant_id = d.participant_id
+    left join participant_departments as d on c.comment_id = d.comment_id
     where
         c.content is not null
         and trim(c.content) != ''
@@ -71,7 +62,7 @@ problem_extraction as (
         sc.question,
         sc.posted_on,
         sc._file_upload_date,
-        sc.explicit_department,
+        sc.department_list,
 
         -- Extract problems using Snowflake Cortex AI with fallback handling
         -- model is determined by which environment you are in (i.e. dev or prd). See LLM_COST_CONTOL.md
@@ -95,8 +86,8 @@ problem_extraction as (
                                     'Question/Prompt: ', coalesce(sc.question, '[No context]'), '\n',
                                     'Comment Content: ', sc.content, '\n',
                                     case
-                                        when sc.explicit_department is not null
-                                            then concat('Department/Agency: ', sc.explicit_department, '\n')
+                                        when sc.department_list is not null
+                                            then concat('Department/Agency: ', sc.department_list, '\n')
                                         else ''
                                     end,
                                     '\n',
@@ -114,16 +105,7 @@ problem_extraction as (
                                     'JSON OUTPUT REQUIREMENTS:\n',
                                     '• Use only standard alphanumeric characters, spaces, and basic punctuation\n',
                                     '• Avoid special characters like backticks, curly quotes, or extended Unicode\n',
-                                    '• Escape quotes properly with backslashes\n',
-
-                                    case
-                                        when sc.explicit_department is null
-                                            then
-                                                'DEPARTMENT INFERENCE:\n'  -- noqa: LT02
-                                                || '• Extract relevant California state departments based on the comment content\n'  -- noqa: LT02
-                                                || '• Consider the following departments (including when their full name is mentioned): DGS, CalHR, SCO, Controller, CalFire, CDCR, GovOps, CNRA, CDPH, DSH, CDT, CDA, CDTFA, ODI, SPB, HCAI, DMHC, CDSS, DHCS, DDS, CCC, CEC, DWR, SCC, DOC, FTB, OAL, DMV, EDD, DOF, CALTRANS, ARB, CDPR, CAL FIRE, CDFW, HCD, CDE, DIR, DCA, CalPERS, BOE, CPUC, Cal OES, EMSA, DTSC, CalVet, CHHS, CalHHS, BCSH, LWDA, FI$Cal, CDFA, etc.\n\n'  -- noqa: LT02
-                                        else ''
-                                    end,
+                                    '• Escape quotes properly with backslashes\n\n',
 
                                     'EXAMPLES OF COMPREHENSIVE EXTRACTION:\n',
                                     'Input: "We are very poorly trained and lack operational consistency. Every office is doing something different, every agency does the same process different ways, there needs to be a smoother process on how we do things in each agency. There are too many hands in the pot, just to get something approved as simple as office supplies, it has a minimum of 5 people processing an order, we are spending more money in labor then what the supply request cost. There should be statewide system for things like procurement, timesheets, basically any common function that is takes to run an agency."\n',
@@ -141,7 +123,7 @@ problem_extraction as (
                             'temperature', 0.00,
                             'max_tokens', 8000,
                             'top_p', 0.0,
-                            'response_format', parse_json('{"type":"json","schema":{"type":"object","properties":{"problems":{"type":"array","items":{"type":"object","properties":{"problem_text":{"type":"string"},"inferred_departments":{"type":"array","items":{"type":"string"}}},"required":["problem_text"]}}},"required":["problems"]}}')
+                            'response_format', parse_json('{"type":"json","schema":{"type":"object","properties":{"problems":{"type":"array","items":{"type":"object","properties":{"problem_text":{"type":"string"}},"required":["problem_text"]}}},"required":["problems"]}}')
                         )
                     ):structured_output[0]:raw_message
                 )
@@ -161,7 +143,7 @@ flattened_problems as (
         pe.question,
         pe.posted_on,
         pe._file_upload_date,
-        pe.explicit_department,
+        pe.department_list,
         pe.problems_json,
 
         -- Extract problems array
@@ -177,9 +159,8 @@ flattened_problems as (
             order by f.value:problem_text
         ) as problem_sequence,
 
-        -- Extract individual problem text and inferred departments
-        f.value:problem_text::string as problem_text,
-        f.value:inferred_departments as inferred_departments_array
+        -- Extract individual problem text
+        f.value:problem_text::string as problem_text
 
     from problem_extraction as pe,
         lateral flatten(input => problems_array, outer => true) as f
@@ -204,21 +185,7 @@ select
     length(problem_text) as problem_length,
 
     -- Department information
-    explicit_department,
-    inferred_departments_array as inferred_departments,
-
-    -- Combined department list (explicit + inferred, removing duplicates)
-    case
-        when explicit_department is not null and inferred_departments_array is not null
-            then
-                array_distinct(array_cat([explicit_department], inferred_departments_array::array))
-        when explicit_department is not null
-            then
-                [explicit_department]
-        when inferred_departments_array is not null
-            then
-                inferred_departments_array::array
-    end as all_departments,
+    department_list as all_departments,
 
     -- AI processing metadata
     problems_json,

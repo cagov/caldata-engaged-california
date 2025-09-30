@@ -30,10 +30,6 @@ with problem_solution_links as (
         psl.final_link_score,
         psl.link_id,
         psl.linked_at,
-
-        -- Add department information from extracted problems
-        p.explicit_department,
-        p.inferred_departments,
         p.all_departments
     from {{ ref('int_problem_solution_links') }} as psl
     left join {{ ref('int_extracted_problems') }} as p
@@ -62,8 +58,6 @@ problems_with_solutions as (
         problem_text,
 
         -- Department information (should be the same for all rows in group)
-        any_value(explicit_department) as explicit_department,
-        any_value(inferred_departments) as inferred_departments,
         any_value(all_departments) as all_departments,
 
         -- Count of linked solutions
@@ -113,12 +107,7 @@ ai_consolidated as (
         problem_posted_on,
         problem_sequence,
         problem_text,
-
-        -- Department information
-        explicit_department,
-        inferred_departments,
         all_departments,
-
         solution_count,
         avg_confidence_score,
         all_solutions_text,
@@ -198,8 +187,6 @@ select
     length(problem_text) as problem_length,
 
     -- Department information
-    explicit_department,
-    inferred_departments,
     all_departments,
 
     -- Solution aggregation metadata
