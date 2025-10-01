@@ -25,9 +25,7 @@ models:
 
   - name: e3_participant_responses
     description: |
-      "One row per participant with pivoted survey responses and top-level comments
-      from the Ethelo E3 engagement platform. This model aggregates all participant
-      responses into a single row for analysis and demographic profiling."
+      "One row per top-level comment with pivoted survey responses from the Ethelo E3 engagement platform."
     columns:
       - name: PARTICIPANT_ID
         description: "Unique identifier for each participant in the E3 engagement"
@@ -35,8 +33,10 @@ models:
         description: "Unique identifier for the top-level comment associated with the participant"
       - name: POINT_OF_PRIDE
         description: "Response to 'Opening question - What makes you proud about your role in public service?'"
-      - name: DEPARTMENT_LIST
-        description: "Department(s) associated with the participant's main idea comment"
+      - name: DEPARTMENT_LIST_INFERRED
+        description:
+          Comma-separated list of department(s) containing explicit user
+          entries with gaps filled in by LLM completion
       - name: POS_TYPE
         description: "Response to 'About you - Position type'"
       - name: CA_TENURE
@@ -78,7 +78,9 @@ models:
       - name: PROBLEM_LENGTH
         description: "Character length of the problem text"
       - name: ALL_DEPARTMENTS
-        description: "Combined array of explicit and inferred departments with duplicates removed"
+        description:
+          "Comma-separated list of department(s) containing explicit user
+          entries with gaps filled in by LLM completion"
       - name: SOLUTION_COUNT
         description: "Number of solutions linked to this problem"
       - name: AVG_CONFIDENCE_SCORE
@@ -132,7 +134,9 @@ models:
       - name: SOLUTION_COUNT
         description: "Number of solutions consolidated (only for processed pairs)"
       - name: DEPARTMENTS
-        description: "Array of departments associated with the content"
+        description:
+          "Comma-separated list of department(s) containing explicit user
+          entries with gaps filled in by LLM completion"
       - name: EMBEDDING_VECTOR
         description: "1024-dimensional embedding vector generated using snowflake-arctic-embed-l-v2.0"
         tests:

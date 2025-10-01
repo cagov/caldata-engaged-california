@@ -91,7 +91,11 @@ models:
       - name: statedepartments
         description: Corresponding California state department name
   - name: stg_ethelo_e3_departments_reconciled
-    description: Reconciled list of departments from Ethelo survey dropdown
+    description: |
+      State departments list from Airtable, compiled by ODI. This table includes the department list from
+      the dropdown in the E3 EngagedCA platform, and a list of corrected department names compiled after
+      further research post-launch. This table should be used to reconcile the department names in Ethelo
+      from the E3 engagement with the corrected list.
     columns:
       - name: reconciliation_status
         description: Reconciliation status, whether the department appears in and matches Ethelo

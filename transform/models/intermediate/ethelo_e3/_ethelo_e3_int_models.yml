@@ -229,5 +229,7 @@ models:
     columns:
       - name: comment_id
         description: E3 comment identifier
-      - name: department_list
-        description: list of departments relevant to the comment or directly provided in survey responses
+      - name: department_list_inferred
+        description:
+          Comma-separated list of department(s) containing explicit user
+          entries with gaps filled in by LLM completion

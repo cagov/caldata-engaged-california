@@ -37,7 +37,7 @@ dept_reconciled as (
 ),
 
 department_list_for_prompt as (
-    select listagg(distinct known_department, ', ') within group (order by known_department) as department_list
+    select listagg(distinct known_department, ';') within group (order by known_department) as department_list
     from dept_reconciled
 ),
 
@@ -75,14 +75,13 @@ fill_in_dept as (
                 prompt => concat(
                     'Use the comment and user specified department below to return the relevant
                     California agency (or agencies). \n\n',
-                    'IMPORTANT: Your output should be ONLY a single california agency or a comma separated string,
-                    ex:California Agency (CA),Another Cal Department (ACD),...\n\n',
+                    'IMPORTANT: Your output should be ONLY a single california agency or a semicolon-separated string,
+                    ex:California Agency (CA);Another Cal Department (ACD);...\n\n',
 
                     'Comment: ', coalesce(comment_content, '[No Content]'), '\n\n',
                     'User Specified Department: ', coalesce(department, '[No Content]'), '\n\n',
-                    -->>>>>TO DO: just pass the relevant list of comments, no need to send rows with no content
 
-                    'Here is a comma-separated list of valid departments to choose from,
+                    'Here is a semicolon-separated list of valid departments to choose from,
                     with their acronyms in parentheses: ',
                     (select d.department_list from department_list_for_prompt as d), '\n\n',
 
@@ -100,15 +99,15 @@ fill_in_dept as (
 
                     'EXAMPLES:\n',
                     'CDT authentication → California Department of Technology (CDT)\n',
-                    'CalHR and Spb processes → Department of Human Resources (CalHR),State Personnel Board (SPB)\n',
+                    'CalHR and Spb processes → Department of Human Resources (CalHR);State Personnel Board (SPB)\n',
                     'dept of food and agriculture → Department of Food and Agriculture (CDFA)\n',
                     'Cannabis program  → Department of Cannabis Control (DCC)\n',
                     'Need more help from leadership → UNSPECIFIED\n',
                     'Probably all of them → Affects multiple departments\n\n',
 
                     --'Return ONLY JSON: {"agencies": ["AGENCY1", "AGENCY2"]}'
-                    'IMPORTANT: Your output must be ONLY a single california agency or a comma separated string,
-                    ex:California Agency (CA),Another Cal Department (ACD),...'
+                    'IMPORTANT: Your output must be ONLY a single california agency or a semicolon-separated string,
+                    ex:California Agency (CA);Another Cal Department (ACD);...'
                 ),
                 model_parameters => object_construct(
                     'temperature', 0.05,
@@ -128,13 +127,13 @@ agg_to_single_dept_list_per_comment as (
                 array_flatten(
                     array_agg(
                         transform(
-                            split(departments, ','),
+                            split(departments, ';'),
                             x -> trim(x::string)
                         )
                     )
                 )
             ), ', '
-        ) as department_list
+        ) as department_list_inferred
     from fill_in_dept
     group by comment_id
 )
