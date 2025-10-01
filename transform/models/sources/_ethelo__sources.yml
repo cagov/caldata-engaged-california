@@ -483,7 +483,7 @@ sources:
             description: Corresponding California state department name
       - name: E3_RESEARCH_DEPARTMENT_ETHELO_RECONCILED
         description: |
-          Reconciled list of Ethelo California state departments
+          State departments list from Airtable, compiled by ODI. This table includes the department list from the dropdown in the E3 EngagedCA platform, and a list of corrected department names compiled after further research post-launch. This table should be used to reconcile the department names in Ethelo from the E3 engagement with the corrected list.
         columns:
           - name: STATUS
             description: "Reconciliation status, whether the department appears in and matches Ethelo"
