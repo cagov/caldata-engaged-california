@@ -506,3 +506,29 @@ sources:
             description: "Any reconciliation notes."
           - name: CREATED
             description: "Airtable record creation timestamp."
+      - name: E3_RESEARCH_AGENCY_LIST
+        description: |
+          List of California state agencies
+        columns:
+          - name: AGENCY_NAME_AND_ACRONYM
+            description: California state agency name, with acronym
+          - name: AGENCY_NAME
+            description: The full name of the agency
+          - name: ACRONYM
+            description: The acronym for the agency
+          - name: GOVERNMENT_BRANCH
+            description: The branch of government the agency belongs to (Executive, Legislative, Judicial)
+          - name: AGENCY_TYPE
+            description: The type of agency. (e.g., Commission, Board, Conservancy, etc.)
+          - name: NOTES
+            description: Any relevant notes about the agency
+          - name: NUMBER_OF_STATE_DEPARTMENTS_IN_THIS_AGENCY
+            description: The count of state departments associated with this agency
+          - name: WEBSITE_LINK
+            description: A URL to the agency's official website.
+          - name: STATE_DEPARTMENTS
+            description: A list or reference to the state departments within this agency
+          - name: ENGAGED_CA_DEPARTMENT_DROPDOWN_LIST
+            description: Name as it appears in the department dropdown list in the Engaged CA survey
+          - name: EFFICIENCIES_REPORTS_AGENCY
+            description: Whether an agency should be included in Efficiencies Reports (TRUE/FALSE)
