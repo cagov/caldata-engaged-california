@@ -29,11 +29,8 @@ models:
     columns:
       - name: PARTICIPANT_ID
         description: "Unique identifier for each participant in the E3 engagement"
-      - name: COMMENT_ID
-        description: "Unique identifier for the top-level comment associated with the participant"
       - name: POINT_OF_PRIDE
         description: "Response to 'Opening question - What makes you proud about your role in public service?'"
-      - name: DEPARTMENT_LIST_INFERRED
       - name: IDEA_DEPT
         description: "Response to 'Share your idea - Which department or agency does your idea apply to?'"
       - name: POS_TYPE
