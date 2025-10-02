@@ -81,12 +81,12 @@ models:
           - not_null
       - name: PROBLEM_LENGTH
         description: "character length of the extracted problem text"
-      - name: EXPLICIT_DEPARTMENT
-        description: "department/agency specified by participant for main idea comments, null for replies"
-      - name: INFERRED_DEPARTMENTS
-        description: "array of departments inferred by AI from problem context"
-      - name: ALL_DEPARTMENTS
-        description: "combined array of explicit and inferred departments with duplicates removed"
+      - name: department_user_defined
+        description: "Semicolon-separated list of explicit user entries (dropdown and write-in) for department(s)"
+      - name: department_user_ai_combined
+        description:
+          "Semicolon-separated list of department(s) containing explicit user entries with gaps filled
+          in by LLM completion"
       - name: PROBLEMS_JSON
         description: "raw JSON response from the LLM containing all extracted problems"
       - name: EXTRACTION_STATUS
@@ -233,5 +233,9 @@ models:
     columns:
       - name: comment_id
         description: E3 comment identifier
-      - name: department_list
-        description: list of departments relevant to the comment or directly provided in survey responses
+      - name: department_user_defined
+        description: Semicolon-separated list of explicit user entries (dropdown and write-in) for department(s)
+      - name: department_user_ai_combined
+        description: |
+          Semicolon-separated list of department(s) containing explicit user
+          entries with gaps filled in by LLM completion
