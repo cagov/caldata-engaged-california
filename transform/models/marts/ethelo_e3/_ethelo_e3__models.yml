@@ -25,9 +25,7 @@ models:
 
   - name: e3_participant_responses
     description: |
-      "One row per participant with pivoted survey responses and top-level comments
-      from the Ethelo E3 engagement platform. This model aggregates all participant
-      responses into a single row for analysis and demographic profiling."
+      "One row per top-level comment with pivoted survey responses from the Ethelo E3 engagement platform."
     columns:
       - name: PARTICIPANT_ID
         description: "Unique identifier for each participant in the E3 engagement"
@@ -75,12 +73,12 @@ models:
         description: "Original text of the identified problem"
       - name: PROBLEM_LENGTH
         description: "Character length of the problem text"
-      - name: EXPLICIT_DEPARTMENT
-        description: "Department/agency specified by participant for main idea comments"
-      - name: INFERRED_DEPARTMENTS
-        description: "Array of departments inferred by AI from problem context"
-      - name: ALL_DEPARTMENTS
-        description: "Combined array of explicit and inferred departments with duplicates removed"
+      - name: DEPARTMENT_USER_DEFINED
+        description: "Semicolon-separated list of explicit user entries (dropdown and write-in) for department(s)"
+      - name: DEPARTMENT_USER_AI_COMBINED
+        description: |
+          "Semicolon-separated list of department(s) containing explicit user
+          entries with gaps filled in by LLM completion"
       - name: SOLUTION_COUNT
         description: "Number of solutions linked to this problem"
       - name: AVG_CONFIDENCE_SCORE

@@ -1,13 +1,17 @@
 with responses as (
-    select * from {{ ref ('e3_participant_responses') }}
+    select * from {{ ref('int_participant_survey_responses') }}
 ),
 
---count of participants per department -- this will need refinement as we clean and fill in dept gaps
+--NOTE: count of participants per department is being deprioritized for now because the metric
+--is not well defined and may not provide any value.
+--if this is revisited, we need to define how to count the multiple methods of department selection
 dept_count as (
     select
-        count(distinct participant_id) as num_participants,
+        0 as num_participants,  -- placeholder until we define how to handle departments
+        --count(distinct participant_id) as num_participants,
         'department' as response_type,
-        idea_dept as response_value
+        'N/A' as response_value
+        --department_list as response_value
     from responses
     group by all
 ),
