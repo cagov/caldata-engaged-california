@@ -81,8 +81,12 @@ models:
           - not_null
       - name: PROBLEM_LENGTH
         description: "character length of the extracted problem text"
-      - name: ALL_DEPARTMENTS
-        description: "filled in department(s) associated with the comment"
+      - name: department_user_defined
+        description: "Semicolon-separated list of explicit user entries (dropdown and write-in) for department(s)"
+      - name: department_user_ai_combined
+        description:
+          "Semicolon-separated list of department(s) containing explicit user entries with gaps filled
+          in by LLM completion"
       - name: PROBLEMS_JSON
         description: "raw JSON response from the LLM containing all extracted problems"
       - name: EXTRACTION_STATUS
@@ -229,7 +233,9 @@ models:
     columns:
       - name: comment_id
         description: E3 comment identifier
-      - name: department_list_inferred
-        description:
-          Comma-separated list of department(s) containing explicit user
+      - name: department_user_defined
+        description: Semicolon-separated list of explicit user entries (dropdown and write-in) for department(s)
+      - name: department_user_ai_combined
+        description: |
+          Semicolon-separated list of department(s) containing explicit user
           entries with gaps filled in by LLM completion

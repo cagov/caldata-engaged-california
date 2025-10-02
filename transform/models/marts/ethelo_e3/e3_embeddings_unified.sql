@@ -1,3 +1,4 @@
+-- depends_on: {{ ref('e3_participant_responses') }}
 -- noqa: disable=LT05
 -- Unified embedding table containing both raw main ideas and processed problem/solution pairs
 -- Each row represents one text item with consistent embeddings for similarity analysis
@@ -34,7 +35,7 @@ problem_solutions as (
         'Processed Problem & Solution' as content_type,
         concat(
             'This is a processed problem and solution pair from California state employee feedback on government efficiency. ',
-            'Departments involved: ', coalesce(array_to_string(all_departments, ', '), 'Not specified'), '. ',
+            'Departments involved: ', coalesce(department_user_ai_combined, 'Not specified'), '. ',
             'Problem: ', problem_text, ' ',
             'Solutions: ', array_to_string(consolidated_solutions, ' ')
         ) as contextualized_text,
@@ -49,7 +50,7 @@ problem_solutions as (
         problem_id,
         solution_count,
         avg_confidence_score,
-        all_departments as departments,
+        strtok_to_array(department_user_ai_combined, ';') as departments,
         consolidated_at as _file_upload_date
     from {{ ref('e3_consolidated_problem_solutions') }}
     where

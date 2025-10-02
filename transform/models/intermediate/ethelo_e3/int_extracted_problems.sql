@@ -12,7 +12,8 @@
 with participant_departments as (
     select
         comment_id,
-        department_list
+        department_user_defined,
+        department_user_ai_combined
     from {{ ref('int_comment_department') }}
 ),
 
@@ -27,7 +28,8 @@ source_comments as (
         c.question,
         c.posted_on,
         c._file_upload_date,
-        d.department_list --explicit_department
+        d.department_user_defined,
+        d.department_user_ai_combined
     from {{ ref('int_ethelo_e3_comments_and_responses') }} as c
     left join participant_departments as d on c.comment_id = d.comment_id
     where
@@ -62,7 +64,8 @@ problem_extraction as (
         sc.question,
         sc.posted_on,
         sc._file_upload_date,
-        sc.department_list,
+        sc.department_user_defined,
+        sc.department_user_ai_combined,
 
         -- Extract problems using Snowflake Cortex AI with fallback handling
         -- model is determined by which environment you are in (i.e. dev or prd). See LLM_COST_CONTOL.md
@@ -86,8 +89,8 @@ problem_extraction as (
                                     'Question/Prompt: ', coalesce(sc.question, '[No context]'), '\n',
                                     'Comment Content: ', sc.content, '\n',
                                     case
-                                        when sc.department_list is not null
-                                            then concat('Department/Agency: ', sc.department_list, '\n')
+                                        when sc.department_user_ai_combined is not null
+                                            then concat('Department/Agency: ', sc.department_user_ai_combined, '\n')
                                         else ''
                                     end,
                                     '\n',
@@ -143,7 +146,8 @@ flattened_problems as (
         pe.question,
         pe.posted_on,
         pe._file_upload_date,
-        pe.department_list,
+        pe.department_user_defined,
+        pe.department_user_ai_combined,
         pe.problems_json,
 
         -- Extract problems array
@@ -185,7 +189,8 @@ select
     length(problem_text) as problem_length,
 
     -- Department information
-    department_list as all_departments,
+    department_user_defined,
+    department_user_ai_combined,
 
     -- AI processing metadata
     problems_json,

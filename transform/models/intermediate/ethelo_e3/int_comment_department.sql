@@ -32,7 +32,8 @@ dept_reconciled as (
     --filter out non-specific entries so that llm will still attempt to fill in those cases
     where what_the_department_name_should_be not in (
         'All departments',
-        'Affects multiple departments'
+        'Affects multiple departments',
+        'I''d rather not say'
     )
 ),
 
@@ -122,6 +123,7 @@ fill_in_dept as (
 agg_to_single_dept_list_per_comment as (
     select
         comment_id,
+        listagg(department, ';') within group (order by department) as department_user_defined,
         array_to_string(
             array_distinct(
                 array_flatten(
@@ -132,8 +134,8 @@ agg_to_single_dept_list_per_comment as (
                         )
                     )
                 )
-            ), ', '
-        ) as department_list_inferred
+            ), '; '
+        ) as department_user_ai_combined
     from fill_in_dept
     group by comment_id
 )
