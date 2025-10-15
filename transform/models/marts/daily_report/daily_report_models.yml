@@ -128,9 +128,14 @@ models:
   - name: ethelo_e3_response_counts
     description: "Number of uniques participants per response for E3 engagement"
     columns:
-      - name: num_participants
-        description: "Number of participants (with all relevant filters)"
-      - name: response_type
-        description: "Indicates which question the response was an answer to"
+      - name: metric_value
+        description: "Count (of participants or responses) for the given metric_type and response_value"
+      - name: metric_type
+        description:
+          "Indicates which metric is being reported: response count by department,
+          participant count by position, or participant count by tenure"
       - name: response_value
-        description: "Each unique value selected or given by participants"
+        description:
+          "Each unique value given by participants. For department responses, these
+          are the different departments selected by participants or inferred from the comment and
+          write-in responses using LLM."

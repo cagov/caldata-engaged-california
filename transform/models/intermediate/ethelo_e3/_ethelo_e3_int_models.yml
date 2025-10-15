@@ -229,13 +229,14 @@ models:
     description: |
       This model populates the department field for each comment based on department survey response
       and comment contents. It uses an LLM to fill in gaps where the survey response is missing
-      or does not match a known department
+      or does not match a known department.
     columns:
+      - name: posted_by_id
+        description: Identifier for the participant who posted the comment
       - name: comment_id
-        description: E3 comment identifier
+        description: Unique comment identifier
       - name: department_user_defined
-        description: Semicolon-separated list of explicit user entries (dropdown and write-in) for department(s)
+        description: Array of department(s) from explicit user entries (dropdown and write-in) for the comment
       - name: department_user_ai_combined
         description: |
-          Semicolon-separated list of department(s) containing explicit user
-          entries with gaps filled in by LLM completion
+          Array of department(s) containing explicit user entries with gaps filled in by LLM completion
