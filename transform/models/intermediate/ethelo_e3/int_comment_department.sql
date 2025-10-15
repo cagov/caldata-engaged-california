@@ -1,6 +1,29 @@
 -- This model populates the department field for each comment based on department survey response and comment contents
 -- It uses an LLM to fill in gaps where the survey response is missing or does not match a known department
 
+{# models/int_comment_department.sql #}
+{% set existing_columns = adapter.get_columns_in_relation(this) if execute else [] %}
+{% set current_schema = {} %}
+{% for col in existing_columns %}
+    {% do current_schema.update({col.name: col.data_type}) %}
+{% endfor %}
+
+{% set model_columns = adapter.get_columns_in_relation(this) if execute else [] %}
+{% set needs_refresh = false %}
+
+{% for col in model_columns %}
+    {% if col.name in current_schema %}
+        {% if current_schema[col.name] != col.data_type %}
+            {% set needs_refresh = true %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
+{% if needs_refresh %}
+    {{ log("Detected column type change — dropping table to force full refresh: " ~ this.identifier, info=True) }}
+    {{ run_query("DROP TABLE IF EXISTS " ~ this) }}
+{% endif %}
+
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',
