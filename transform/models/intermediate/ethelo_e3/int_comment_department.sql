@@ -122,22 +122,23 @@ fill_in_dept as (
 
 agg_to_single_dept_list_per_comment as (
     select
+        posted_by_id,
         comment_id,
-        listagg(department, ';') within group (order by department) as department_user_defined,
-        array_to_string(
-            array_distinct(
-                array_flatten(
-                    array_agg(
-                        transform(
-                            split(departments, ';'),
-                            x -> trim(x::string)
-                        )
+        array_agg(department) within group (order by department) as department_user_defined,
+        array_distinct(
+            array_flatten(
+                array_agg(
+                    transform(
+                        split(departments, ';'),
+                        x -> trim(x::string)
                     )
                 )
-            ), '; '
+            )
         ) as department_user_ai_combined
     from fill_in_dept
-    group by comment_id
+    group by
+        posted_by_id,
+        comment_id
 )
 
 select * from agg_to_single_dept_list_per_comment

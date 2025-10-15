@@ -12,8 +12,8 @@
 with participant_departments as (
     select
         comment_id,
-        department_user_defined,
-        department_user_ai_combined
+        array_to_string(department_user_defined, '; ') as department_user_defined,
+        array_to_string(department_user_ai_combined, '; ') as department_user_ai_combined
     from {{ ref('int_comment_department') }}
 ),
 
