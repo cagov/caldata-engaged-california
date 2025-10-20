@@ -212,8 +212,6 @@ models:
         description: "The question or prompt that this comment is responding to"
       - name: POSTED_ON
         description: "Timestamp when the comment was originally posted by the participant"
-      - name: _FILE_UPLOAD_DATE
-        description: "Technical field indicating when this data was uploaded/ingested into the system"
       - name: SOLUTION_TEXT
         description: the text of the solution.
       - name: PROBLEM_TEXT
