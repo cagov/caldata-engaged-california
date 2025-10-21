@@ -526,11 +526,13 @@ with tab3:
         "Raw Main Idea",
         "Processed Problem & Solution",
     ]
-    selected_topic_content_type = st.selectbox(
-        "Filter by content type",
-        content_type_options,
-        key="topic_tables_content_type",
-    )
+    col_dropdown, col_len, col_empty2 = st.columns([1, 1, 1])
+    with col_dropdown:
+        selected_topic_content_type = st.selectbox(
+            "Filter by content type",
+            content_type_options,
+            key="topic_tables_content_type",
+        )
 
     content_type_clause = ""
     escaped_value = selected_topic_content_type.replace("'", "''")
