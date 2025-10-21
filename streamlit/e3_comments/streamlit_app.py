@@ -161,7 +161,7 @@ Your output should follow this general format for each theme:
             PARTICIPANT_ID,
             {field_name} as COMMENT_TEXT,
             IDEA_DEPT
-        from sourcedb.ETHELO_E3.e3pr1
+        from ANALYTICS_ENGCA_PRD.ETHELO_E3.E3_PARTICIPANT_RESPONSES
         where PARTICIPANT_ID in ({participant_ids_str})
         and {field_name} IS NOT NULL
         and TRIM({field_name}) != ''
