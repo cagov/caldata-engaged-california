@@ -302,13 +302,19 @@ with tab1:
             "What's Working": "WHATS_WORKING",
             "Other Ideas": "OTHER_IDEAS"
         }
-        selected_comment_label = st.selectbox("Select comment type to analyze", list(comment_type_options.keys()))
+        col_dropdown, col_len, col_empty2 = st.columns([1, 1, 1])
+        with col_dropdown:
+            selected_comment_label = st.selectbox("Select comment type to analyze", list(comment_type_options.keys()))
         selected_comment_field = comment_type_options[selected_comment_label]
 
         # Filter participants with the selected field
         participants_with_comments = filtered_df[
             filtered_df[selected_comment_field].notna() & (filtered_df[selected_comment_field].str.strip() != '')
         ]
+        with col_len:
+            st.text("")  # for alignment
+            st.info(f"Analyzing {len(participants_with_comments)} {selected_comment_label.lower()}")
+
 
         if participants_with_comments.empty:
             st.warning(f"No participants with {selected_comment_label.lower()} found.")
@@ -327,6 +333,7 @@ with tab1:
                 return option  # Fallback for any other options
 
             # Create columns for dropdowns and tips
+            st.write("&nbsp;")  # Add space
             col1, col2, col3 = st.columns([1, 1, 1])  # Adjusted proportions
 
             with col1:
@@ -336,7 +343,7 @@ with tab1:
                         help="Enable this to write your own analysis instructions instead of using the default thematic analysis")
                 else:
                     use_custom_prompt = False
-                st.info(f"Analyzing {len(participants_with_comments)} {selected_comment_label.lower()}")
+
                 # Cost display area
                 st.write("")  # space for alignment
                 if 'last_query_tokens' not in st.session_state:
