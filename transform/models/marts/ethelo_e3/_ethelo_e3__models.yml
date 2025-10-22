@@ -205,7 +205,7 @@ models:
       - name: PROBLEM_POSTED_ON
         description: "Timestamp when the problem text was originally posted"
       - name: PROBLEM_TEXT
-        description: the text of the problem.
+        description: "The text of the problem"
       - name: COMMENT_LINKED_TO_PROBLEM
         description: "The text content of the comment provided by the participant linked to a problem"
       - name: COMMENT_ID_LINKED_TO_SOLUTION
@@ -215,7 +215,7 @@ models:
       - name: SOLUTION_POSTED_ON
         description: "Timestamp when the solution text was originally posted"
       - name: SOLUTION_TEXT
-        description: the text of the solution.
+        description: "The text of the solution"
       - name: COMMENT_LINKED_TO_SOLUTION
         description: "The text content of the comment provided by the participant linked to a solution"
       
