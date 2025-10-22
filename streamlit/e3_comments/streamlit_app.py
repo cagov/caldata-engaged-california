@@ -51,7 +51,7 @@ st.markdown("""
 This dashboard analyzes responses from California state employees participating in the **E3 (Efficiency, Engagement, and Effectiveness)** platform.
 Use this tool to:
 
-- 🤖 **Generate AI-powered thematic analysis** of main ideas using advanced language models
+- 🤖 **Generate AI-powered thematic analysis** of participant comments using advanced language models
 - 📋 **Browse and export participant data** for further analysis
 - 💡 **Identify emerging themes** and patterns in employee feedback
 
@@ -125,17 +125,16 @@ def load_participant_summary():
 
     return df
 
-# Load LLM analysis for main ideas
+# Load LLM analysis dynamically for any comment field
 @st.cache_data
-def load_main_ideas_analysis(participant_ids, selected_llm, custom_prompt=None):
-    """Load analysis of main ideas using LLM"""
-    # Convert the list of participant IDs to a SQL-friendly string format
+def load_comment_analysis(participant_ids, selected_llm, field_name, custom_prompt=None):
+    """Load LLM analysis for any comment type (MAIN_IDEA, POINT_OF_PRIDE, WHATS_WORKING, OTHER_IDEAS)"""
+
     if not participant_ids:
-        participant_ids_str = "''"  # Empty string for SQL query if no participants
+        participant_ids_str = "''"
     else:
         participant_ids_str = "'" + "','".join(map(str, participant_ids)) + "'"
 
-    # System prompt that provides background context and output format
     system_prompt = '''You are analyzing ideas from participants in an E3 (Efficiency, Engagement, and Effectiveness) civic engagement platform. These are ideas for improving government services and operations from California state employees.
 
 Each idea includes the department/agency it applies to. The ideas are semi-colon separated.
@@ -143,8 +142,7 @@ Each idea includes the department/agency it applies to. The ideas are semi-colon
 Always format your response in Markdown. Use headers, bullet points, and other markdown formatting to make your analysis clear and readable.
 IMPORTANT: your response should be no more than 3000 words.'''
 
-    # Default user prompt template
-    default_user_prompt = '''Perform an open-coding analysis on these main ideas and identify 3–6 emerging themes.
+    default_user_prompt = '''Perform an open-coding analysis on these comments and identify 3–6 emerging themes.
 
 Your output should follow this general format for each theme:
 
@@ -155,27 +153,25 @@ Your output should follow this general format for each theme:
 *Representative quotes:*
     - [At least three representative, strictly verbatim quotes from the ideas (use ellipses [...] to trim irrelevant parts). Choose quotes that are highly representative, clear, and distinctive.]'''
 
-    # Use custom prompt if provided, otherwise use default
     user_prompt_template = custom_prompt.strip() if custom_prompt and custom_prompt.strip() else default_user_prompt
 
-    # Create the SQL query for main ideas
     query = f'''
-    with main_ideas as (
+    with comments as (
         select
             PARTICIPANT_ID,
-            MAIN_IDEA,
+            {field_name} as COMMENT_TEXT,
             IDEA_DEPT
         from ANALYTICS_ENGCA_PRD.ETHELO_E3.E3_PARTICIPANT_RESPONSES
         where PARTICIPANT_ID in ({participant_ids_str})
-        and MAIN_IDEA IS NOT NULL
-        and TRIM(MAIN_IDEA) != ''
+        and {field_name} IS NOT NULL
+        and TRIM({field_name}) != ''
     ),
-    ideas_agg as (
+    comments_agg as (
         select
-            'Main Ideas Analysis' as topics,
+            '{field_name} Analysis' as topics,
             count(*) as n,
-            LISTAGG(COALESCE(IDEA_DEPT, 'Unspecified') || ': ' || MAIN_IDEA, '; ') as target_ideas
-        from main_ideas
+            LISTAGG(COALESCE(IDEA_DEPT, 'Unspecified') || ': ' || COMMENT_TEXT, '; ') as target_ideas
+        from comments
     )
     select
         a.topics,
@@ -189,15 +185,14 @@ Your output should follow this general format for each theme:
             ),
             OBJECT_CONSTRUCT('temperature', 0)
         ) as desc_raw
-    from ideas_agg a
+    from comments_agg a
     '''
 
-    # Execute the query
     try:
         analysis_df = session.sql(query).to_pandas()
         return analysis_df
     except Exception as e:
-        st.error(f"Error executing main ideas analysis query: {e}")
+        st.error(f"Error executing analysis query: {e}")
         return pd.DataFrame(columns=['TOPICS', 'N', 'N_CHAR', 'DESC_RAW'])
 
 
@@ -283,10 +278,11 @@ tab1, tab2, tab3 = st.tabs([
 
 # Tab 1: LLM Comment Analysis
 with tab1:
-    st.subheader("LLM Analysis of Main Ideas")
+    st.subheader("LLM Analysis of Comments")
 
     st.markdown("""
-    Select a model and click "Generate Analysis" to identify themes in the top-level "Share Your Idea" responses (with department). Other text fields and threaded replies aren't included yet.
+    Select a model and click "Generate Analysis" to identify themes in participant responses.
+    You can analyze different types of comments such as main ideas, points of pride, what's working, or other ideas.
     """)
 
     # Create sub-tabs for analysis and source data
@@ -299,11 +295,29 @@ with tab1:
         **Custom Analysis:** Enable "Use custom prompt" below to create your own analysis approach (e.g., focus on specific topics, different analytical frameworks, sentiment analysis, etc.).
         """)
 
-        # Filter to only participants with main ideas
-        participants_with_main_ideas = filtered_df[filtered_df['MAIN_IDEA'].notna() & (filtered_df['MAIN_IDEA'].str.strip() != '')]
+        # Dropdown to select comment type
+        comment_type_options = {
+            "Main Ideas": "MAIN_IDEA",
+            "Points of Pride": "POINT_OF_PRIDE",
+            "What's Working": "WHATS_WORKING",
+            "Other Ideas": "OTHER_IDEAS"
+        }
+        col_dropdown, col_len, col_empty2 = st.columns([1, 1, 1])
+        with col_dropdown:
+            selected_comment_label = st.selectbox("Select comment type to analyze", list(comment_type_options.keys()))
+        selected_comment_field = comment_type_options[selected_comment_label]
 
-        if participants_with_main_ideas.empty:
-            st.warning("No participants with main ideas found.")
+        # Filter participants with the selected field
+        participants_with_comments = filtered_df[
+            filtered_df[selected_comment_field].notna() & (filtered_df[selected_comment_field].str.strip() != '')
+        ]
+        with col_len:
+            st.text("")  # for alignment
+            st.info(f"Analyzing {len(participants_with_comments)} {selected_comment_label.lower()}")
+
+
+        if participants_with_comments.empty:
+            st.warning(f"No participants with {selected_comment_label.lower()} found.")
         else:
             # Define LLM options
             llm_options = ['llama4-maverick', 'snowflake-llama-3.1-405b', 'claude-4-sonnet']
@@ -319,6 +333,7 @@ with tab1:
                 return option  # Fallback for any other options
 
             # Create columns for dropdowns and tips
+            st.write("&nbsp;")  # Add space
             col1, col2, col3 = st.columns([1, 1, 1])  # Adjusted proportions
 
             with col1:
@@ -328,9 +343,9 @@ with tab1:
                         help="Enable this to write your own analysis instructions instead of using the default thematic analysis")
                 else:
                     use_custom_prompt = False
-                st.info(f"Analyzing {len(participants_with_main_ideas)} main ideas")
+
                 # Cost display area
-                st.write("")  # Add some space for alignment with other elements
+                st.write("")  # space for alignment
                 if 'last_query_tokens' not in st.session_state:
                     st.session_state.last_query_tokens = 0
                     st.session_state.last_query_cost = 0.0
@@ -345,8 +360,6 @@ with tab1:
                 - **Snowflake Llama 3**: Balanced option
                 - **Claude 4 Sonnet**: Most sophisticated
                 """)
-
-
 
             # Default user prompt template
             default_user_prompt = '''Perform an open-coding analysis on these comments and identify 3–6 emerging themes.
@@ -379,31 +392,30 @@ Your output should follow this general format for each theme:
                 )
 
             # Get the list of participant IDs from the filtered dataframe
-            participant_ids_with_ideas = participants_with_main_ideas['PARTICIPANT_ID'].unique().tolist()
-
+            participant_ids_with_comments = participants_with_comments['PARTICIPANT_ID'].unique().tolist()
 
             # Add button to generate analysis
-            generate_button = st.button("Generate Main Ideas Analysis")
-
+            generate_button = st.button("Generate Analysis")
 
             if generate_button:
                 # Check if we have a valid custom prompt when the toggle is on
                 if use_custom_prompt and not custom_prompt.strip():
                     st.error("Please enter a custom prompt or uncheck 'Use custom prompt'.")
                 else:
-                    # Fetch main ideas analysis
-                    with st.spinner(f"Generating analysis of {len(participant_ids_with_ideas)} main ideas... This may take a moment."):
+                    with st.spinner(f"Generating analysis of {len(participant_ids_with_comments)} {selected_comment_label.lower()}... This may take a moment."):
                         # Use custom prompt if toggled on, otherwise use default
                         prompt_to_use = custom_prompt if use_custom_prompt else None
-                        ideas_analysis = load_main_ideas_analysis(participant_ids_with_ideas, selected_llm, prompt_to_use)
+
+                        # Call the existing function, but dynamically pass the selected field
+                        ideas_analysis = load_comment_analysis(participant_ids_with_comments, selected_llm, selected_comment_field, prompt_to_use)
 
                     if ideas_analysis.empty:
-                        st.warning("No analysis data available for the main ideas.")
+                        st.warning(f"No analysis data available for the {selected_comment_label.lower()}.")
                     else:
                         # Get the first (and only) row
                         row = ideas_analysis.iloc[0]
                         # Display analysis header
-                        st.subheader(f"Analysis of {row['N']} Main Ideas")
+                        st.subheader(f"Analysis of {row['N']} {selected_comment_label}")
 
                         # Parse the JSON response
                         response_data = json.loads(row['DESC_RAW'])
@@ -428,24 +440,24 @@ Your output should follow this general format for each theme:
     # Source Data Tab
     with llm_tab2:
         st.subheader("Source Data")
-        st.markdown("""
-        Browse the participant responses that will be analyzed. This table shows all participants who provided main ideas,
+        st.markdown(f"""
+        Browse the participant responses that will be analyzed. This table shows all participants who provided {selected_comment_label.lower()} comments,
         along with their department affiliation and other relevant details.
         """)
 
-        # Display the participant responses with main ideas
-        if participants_with_main_ideas.empty:
-            st.warning("No participants with main ideas found.")
+        # Display the participant responses with comments
+        if participants_with_comments.empty:
+            st.warning(f"No participants with {selected_comment_label.lower()} comments found.")
         else:
             # Display the data without requiring a button click
-            st.info(f"Found {len(participants_with_main_ideas)} participants with main ideas")
+            st.info(f"Found {len(participants_with_comments)} participants with {selected_comment_label.lower()} comments.")
 
             # Display the participants table
-            display_columns = ['PARTICIPANT_ID', 'IDEA_DEPT', 'MAIN_IDEA', 'POS_TYPE', 'CA_TENURE', 'LAST_COMMENT_DATE']
-            available_columns = [col for col in display_columns if col in participants_with_main_ideas.columns]
+            display_columns = ['PARTICIPANT_ID','IDEA_DEPT',selected_comment_field,'POS_TYPE','CA_TENURE','LAST_COMMENT_DATE']
+            available_columns = [col for col in display_columns if col in participants_with_comments.columns]
 
             st.dataframe(
-                participants_with_main_ideas[available_columns],
+                participants_with_comments[available_columns],
                 use_container_width=True,
                 hide_index=True
             )
@@ -458,8 +470,8 @@ with tab2:
     Download the complete participant dataset for external analysis. The export includes all survey responses,
     comment text, demographic information, and participation timestamps.
 
-    **What's included:** Participant IDs, survey responses (Point of Pride, Position Type, CA Tenure),
-    comment text (Main Ideas, What's Working, Other Ideas), and activity dates.
+    **What's included:** Participant IDs, survey responses (Position Type, CA Tenure),
+    comment text (Main Ideas, Point of Pride, What's Working, Other Ideas), and activity dates.
     """)
 
     st.write(f"**Total records to export:** {len(filtered_df)}")
@@ -481,7 +493,7 @@ with tab2:
         st.download_button(
             label="Download Participant Responses as CSV",
             data=csv_data,
-            file_name=f"e3_participant_responses_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            file_name=f"E3_PARTICIPANT_RESPONSES_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
             mime="text/csv",
             use_container_width=True
         )
@@ -514,15 +526,18 @@ with tab3:
         "Raw Main Idea",
         "Processed Problem & Solution",
     ]
-    selected_topic_content_type = st.selectbox(
-        "Filter by content type",
-        content_type_options,
-        key="topic_tables_content_type",
-    )
+    col_dropdown, col_len, col_empty2 = st.columns([1, 1, 1])
+    with col_dropdown:
+        selected_topic_content_type = st.selectbox(
+            "Filter by content type",
+            content_type_options,
+            key="topic_tables_content_type",
+        )
 
     content_type_clause = ""
+    escaped_value = selected_topic_content_type.replace("'", "''")
     if selected_topic_content_type != "All Content Types":
-        content_type_clause = f"WHERE CONTENT_TYPE = '{selected_topic_content_type.replace("'", "''")}'"
+        content_type_clause = f"WHERE CONTENT_TYPE = '{escaped_value}'"
 
     # Load topic themes
     themes_query = f"""
@@ -552,7 +567,7 @@ with tab3:
         st.download_button(
             label="Download Topic Themes",
             data=themes_csv,
-            file_name=f"e3_topic_themes_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            file_name=f"E3_TOPIC_THEMES_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
             mime="text/csv",
             use_container_width=True,
         )
@@ -589,7 +604,7 @@ with tab3:
         st.download_button(
             label="Download Topic Contents",
             data=contents_csv,
-            file_name=f"e3_topic_contents_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            file_name=f"E3_TOPIC_CONTENTS_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
             mime="text/csv",
             use_container_width=True,
         )
