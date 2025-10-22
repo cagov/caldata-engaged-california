@@ -218,4 +218,3 @@ models:
         description: "The text of the solution"
       - name: COMMENT_LINKED_TO_SOLUTION
         description: "The text content of the comment provided by the participant linked to a solution"
-      
