@@ -191,3 +191,30 @@ models:
         description: "First coordinate from the standardized 2D UMAP projection"
       - name: UMAP_Y
         description: "Second coordinate from the standardized 2D UMAP projection"
+
+  - name: e3_problems_solutions_comments
+    description: |
+      "Comments linked to Problems and Solutions from the Ethelo E3 engagement platform.
+      This model provides a simplified view of participant comments linked to problems
+      and solutions used for analysis and reporting purposes."
+    columns:
+      - name: COMMENT_ID_LINKED_TO_PROBLEM
+        description: "Unique identifier for each comment linked to a problem"
+      - name: PROBLEM_TEXT_ID
+        description: "Identifier of the problem text"
+      - name: PROBLEM_POSTED_ON
+        description: "Timestamp when the problem text was originally posted"
+      - name: PROBLEM_TEXT
+        description: "The text of the problem"
+      - name: COMMENT_LINKED_TO_PROBLEM
+        description: "The text content of the comment provided by the participant linked to a problem"
+      - name: COMMENT_ID_LINKED_TO_SOLUTION
+        description: "Unique identifier for each comment linked to a solution"
+      - name: SOLUTION_TEXT_ID
+        description: "Identifier of the solution text"
+      - name: SOLUTION_POSTED_ON
+        description: "Timestamp when the solution text was originally posted"
+      - name: SOLUTION_TEXT
+        description: "The text of the solution"
+      - name: COMMENT_LINKED_TO_SOLUTION
+        description: "The text content of the comment provided by the participant linked to a solution"
