@@ -384,8 +384,8 @@ sources:
         loaded_at_field: _MODIFIED
         #removed this freshness test once the engagement was finished:
         #tests:
-         # - e3_freshness_weekend_aware:
-         #     error_after_days: 1
+        # - e3_freshness_weekend_aware:
+        #     error_after_days: 1
         columns:
           - name: _FILE
             description: Name of file in the Google Drive folder
@@ -414,8 +414,8 @@ sources:
         loaded_at_field: _MODIFIED
         #removed this freshness test once the engagement was finished:
         #tests:
-         # - e3_freshness_weekend_aware:
-         #     error_after_days: 1
+        # - e3_freshness_weekend_aware:
+        #     error_after_days: 1
         columns:
           - name: _FILE
             description: Name of file in the Google Drive folder
@@ -442,8 +442,8 @@ sources:
         loaded_at_field: _MODIFIED
         #removed this freshness test once the engagement was finished:
         #tests:
-         # - e3_freshness_weekend_aware:
-         #     error_after_days: 1
+        # - e3_freshness_weekend_aware:
+        #     error_after_days: 1
         columns:
           - name: _FILE
             description: Name of file in the Google Drive folder
