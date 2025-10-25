@@ -55,7 +55,6 @@ models:
         +schema: facebook_ads
       ethelo_e3:
         +schema: ethelo_e3
-        +enabled: false
 
     intermediate:
       +materialized: view
@@ -69,7 +68,6 @@ models:
         +enabled: false
       ethelo_e3:
         +schema: ethelo_e3
-        +enabled: false
       bitly:
         +schema: bitly
       facebook_ads:
@@ -88,7 +86,6 @@ models:
         +enabled: false
       ethelo_e3:
         +schema: ethelo_e3
-        +enabled: false
       bitly:
         +schema: bitly
       facebook_ads:
