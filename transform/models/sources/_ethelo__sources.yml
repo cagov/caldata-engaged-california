@@ -352,6 +352,9 @@ sources:
           Efficiencies engagement (August 2025) uploaded twice
           daily to an ODI-owned Google Drive folder by ODI teammembers.
         loaded_at_field: _MODIFIED
+        tests:
+          - e3_freshness_weekend_aware:
+              error_after_days: 1
         columns:
           - name: _FILE
             description: Name of file in the Google Drive folder
@@ -378,6 +381,9 @@ sources:
           Efficiencies engagement (August 2025) uploaded twice
           daily to an ODI-owned Google Drive folder by ODI teammembers.
         loaded_at_field: _MODIFIED
+        tests:
+          - e3_freshness_weekend_aware:
+              error_after_days: 1
         columns:
           - name: _FILE
             description: Name of file in the Google Drive folder
@@ -404,6 +410,9 @@ sources:
           Efficiencies engagement (August 2025) uploaded twice
           daily to an ODI-owned Google Drive folder by ODI teammembers.
         loaded_at_field: _MODIFIED
+        tests:
+          - e3_freshness_weekend_aware:
+              error_after_days: 1
         columns:
           - name: _FILE
             description: Name of file in the Google Drive folder
@@ -428,6 +437,9 @@ sources:
           Efficiencies engagement (August 2025) uploaded twice
           daily to an ODI-owned Google Drive folder by ODI teammembers.
         loaded_at_field: _MODIFIED
+        tests:
+          - e3_freshness_weekend_aware:
+              error_after_days: 1
         columns:
           - name: _FILE
             description: Name of file in the Google Drive folder
