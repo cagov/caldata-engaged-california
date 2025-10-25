@@ -51,8 +51,6 @@ models:
         +enabled: false
       bitly:
         +schema: bitly
-      facebook_ads:
-        +schema: facebook_ads
       ethelo_e3:
         +schema: ethelo_e3
 
@@ -70,8 +68,6 @@ models:
         +schema: ethelo_e3
       bitly:
         +schema: bitly
-      facebook_ads:
-        +schema: facebook_ads
 
     marts:
       +materialized: table
@@ -88,8 +84,6 @@ models:
         +schema: ethelo_e3
       bitly:
         +schema: bitly
-      facebook_ads:
-        +schema: facebook_ads
       daily_report:
         +schema: daily_report
         ethelo_la_agenda_setting:
