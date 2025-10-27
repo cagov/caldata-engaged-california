@@ -8,4 +8,4 @@ WITH hand_labels AS (
     FROM {{ source('UX_AND_RESEARCH', 'E3_HAND_LABELLED_MAIN_IDEAS') }}
 )
 
-select * from hand_labels
+SELECT * FROM hand_labels
