@@ -258,7 +258,7 @@ models:
         description: Which Ethelo question the comment was in response to
       - name: posted_on
         description: Date posted
-      - name: file_upload_date
+      - name: _file_upload_date
         description: Last upload date
       - name: main_idea_type
         description: UX-team label for TYPE of comment
