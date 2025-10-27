@@ -240,3 +240,29 @@ models:
       - name: department_user_ai_combined
         description: |
           Array of department(s) containing explicit user entries with gaps filled in by LLM completion
+
+  - name: int_ux_hand_labelled_themes
+    description: |
+      The purpose of this model is to map the hand labelled themes and types that the UX team provided per comment
+      back to their comment ID, for further processing.
+    columns:
+      - name: participant_id
+        description: Identifier for the participant who posted the comment
+      - name: comment_id
+        description: Unique comment identifier
+      - name: reply_to_id
+        description: Unique participant identifier if the comment was a response to another
+      - name: content
+        description: Full content of the comment
+      - name: question
+        description: Which Ethelo question the comment was in response to
+      - name: posted_on
+        description: Date posted
+      - name: _file_upload_date
+        description: Last upload date
+      - name: main_idea_type
+        description: UX-team label for TYPE of comment
+      - name: main_idea_primary_theme
+        description: UX-team label for THEME of comment
+      - name: main_idea_subthemes
+        description: UX-team label for SUBTHEMES of comment

@@ -111,3 +111,23 @@ models:
         description: The government branch (executive, legislative, judicial) associated with the agency
       - name: notes
         description: Any notes about the reconciliation decision
+
+  - name: stg_e3_hand_labelled_main_ideas
+    description: |
+      Downloaded from Coda -- this is a list of 400+ 'main ideas' that were hand-labelled for themes
+      and types by the UX and Research teams.
+    columns:
+      - name: participant_id
+        description: participant unique identifier from ethelo
+      - name: main_idea
+        description: full content of comment under the Main Idea question
+      - name: main_idea_type
+        description: UX-team label for comment TYPE
+      - name: main_idea_primary_theme
+        description: UX-team label for comment THEME
+      - name: main_idea_primary_subthemes
+        description: UX-team label for comment SUBTHEME. For informational purposes only
+      - name: main_idea_secondary_themes
+        description: UX-team label for comment SECONDARY THEME. For informational purposes only
+      - name: reviewer
+        description: ODI staff member who created the labels
