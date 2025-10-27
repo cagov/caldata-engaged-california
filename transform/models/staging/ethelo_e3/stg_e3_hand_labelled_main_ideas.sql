@@ -1,5 +1,5 @@
 --downloaded from Coda -- this is a list of 400+ 'main ideas' that were hand-labelled
---for themes and types by the UX and Research teams. The comments they worked off of 
+--for themes and types by the UX and Research teams. The comments they worked off of
 --were already filtered by participant and date, so no need for the usual staging filters on this table.
 
 
