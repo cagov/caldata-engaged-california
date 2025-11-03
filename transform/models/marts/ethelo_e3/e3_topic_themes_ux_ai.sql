@@ -85,7 +85,7 @@ llm_subthemes as (
             as llm_main_idea_subthemes_array
     from main_ideas as m
     left join hand_labelled as h on m.comment_id = h.comment_id
-    inner join themes as themes on 1 = 1
+    inner join subthemes as subthemes on 1 = 1
 ),
 
 -- expand array of subthemes into multiple rows and replace empty arrays with 'Unclassified'
