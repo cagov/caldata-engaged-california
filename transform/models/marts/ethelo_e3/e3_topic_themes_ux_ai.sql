@@ -25,7 +25,7 @@ hand_labelled as (
     from {{ ref('int_ux_hand_labelled_themes') }}
 ),
 
--- Mapping of primary themes to tags (subthemes)
+-- Mapping of primary themes to subthemes
 theme_map as (
     select * from {{ source('UX_AND_RESEARCH', 'E3_MAIN_IDEA_THEME_TO_TAG_MAPPING') }}
     union distinct
