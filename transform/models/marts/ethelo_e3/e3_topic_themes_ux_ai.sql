@@ -31,7 +31,7 @@ theme_map as (
     union distinct
     select
         'Unclassified' as main_idea_primary_theme,
-        'Unclassified' as main_idea_tag
+        'Unclassified' as main_idea_subtheme
     from dual
 ),
 
