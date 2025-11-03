@@ -54,7 +54,7 @@ llm_subthemes as (
         h.main_idea_subthemes,
         ai_classify(
             m.comment_content,
-            themes.all_themes,
+            themes.all_subthemes,
             {
                 'task_description': 'Determine the category(-ies) that are related to the given survey comment.',
                 'output_mode': 'multi',
