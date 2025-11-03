@@ -37,7 +37,7 @@ theme_map as (
 
 -- Construct an array of all possible themes for LLM input
 subthemes as (
-    select array_agg(distinct trim(main_idea_tag)) as all_themes
+    select array_agg(distinct trim(main_idea_subtheme)) as all_subthemes
     from theme_map
 ),
 
