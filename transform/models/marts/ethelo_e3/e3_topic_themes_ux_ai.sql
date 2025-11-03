@@ -27,7 +27,8 @@ hand_labelled as (
 
 -- Mapping of primary themes to subthemes
 theme_map as (
-    select * from {{ source('UX_AND_RESEARCH', 'E3_MAIN_IDEA_THEME_TO_TAG_MAPPING') }}
+    select * exclude main_idea_tag,
+    main_idea_tag as main_idea_subtheme from {{ source('UX_AND_RESEARCH', 'E3_MAIN_IDEA_THEME_TO_TAG_MAPPING') }}
     union distinct
     select
         'Unclassified' as main_idea_primary_theme,
