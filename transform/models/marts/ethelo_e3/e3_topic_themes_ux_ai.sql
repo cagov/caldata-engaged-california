@@ -117,7 +117,7 @@ primary_themes as (
         array_agg(distinct tm.main_idea_primary_theme) as llm_main_idea_primary_theme_array
     from flattened as f
     left join theme_map as tm
-        on f.subtheme = tm.main_idea_tag
+        on f.subtheme = tm.main_idea_subtheme
     group by all
 )
 
