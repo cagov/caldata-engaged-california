@@ -36,7 +36,7 @@ theme_map as (
 ),
 
 -- Construct an array of all possible themes for LLM input
-themes as (
+subthemes as (
     select array_agg(distinct trim(main_idea_tag)) as all_themes
     from theme_map
 ),
