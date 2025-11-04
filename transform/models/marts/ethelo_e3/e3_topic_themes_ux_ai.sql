@@ -8,6 +8,8 @@
     on_schema_change='sync_all_columns'
 ) }}
 
+-- noqa: disable=LT02
+-- the `is_incremental()` causes issues with the linter. Disabling indentation QA for this CTE only.
 with
 main_ideas as (
     select c.*
@@ -23,6 +25,7 @@ main_ideas as (
             )
         {% endif %}
 ),
+-- noqa: enable=LT02
 
 -- Load hand-labelled main ideas and adjust theme names as needed
 hand_labelled as (
