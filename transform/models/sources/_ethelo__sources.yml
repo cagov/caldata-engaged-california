@@ -542,3 +542,12 @@ sources:
             description: Optional list of secondary themes
           - name: REVIEWER
             description: ODI staff member who created the labelling
+      - name: E3_MAIN_IDEA_THEME_TO_TAG_MAPPING
+        description: |
+          Mapping table of main idea themes to secondary themes or tags. One row per tag.
+          Originally defined by UX and Research team.
+        columns:
+          - name: MAIN_IDEA_PRIMARY_THEME
+            description: Main idea primary themes identified by UX and Research team.
+          - name: MAIN_IDEA_TAG
+            description: Tags. Also referred to as secondary themes.
