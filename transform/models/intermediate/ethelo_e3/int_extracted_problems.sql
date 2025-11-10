@@ -35,7 +35,6 @@ source_comments as (
     where
         c.content is not null
         and trim(c.content) != ''
-        and c.posted_on >= '2025-08-15'  -- Filter to relevant date range
         -- Exclude survey-only questions from problem extraction
         and c.question not in (
             'Share your idea - Which department or agency does your idea apply to?',
