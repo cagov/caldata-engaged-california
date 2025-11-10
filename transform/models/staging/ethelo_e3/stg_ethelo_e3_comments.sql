@@ -59,4 +59,4 @@ FROM raw_comments AS a
 INNER JOIN participants_filtered AS b
     ON a.posted_by_id = b.participant_id
 --  filter out comments posted before engagement began
-Where a.POSTED_ON >= '2025-08-15'
+WHERE a.posted_on >= '2025-08-15'
