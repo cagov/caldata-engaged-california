@@ -17,6 +17,8 @@ models:
         description: "prompt in Ethelo"
       - name: POSTED_ON
         description: "date of comment or response"
+      - name: LIKE_COUNT
+        description: "Number of likes the comment received from other users in the platform."
       - name: _FILE_UPLOAD_DATE
         description: "date of last ethelo data upload"
 
@@ -258,6 +260,8 @@ models:
         description: Which Ethelo question the comment was in response to
       - name: posted_on
         description: Date posted
+      - name: like_count
+        description: Number of likes the comment received from other users in the platform.
       - name: _file_upload_date
         description: Last upload date
       - name: main_idea_type

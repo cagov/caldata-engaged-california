@@ -38,7 +38,6 @@ comments_pivoted as (
             'Share what has been working - Examples',
             'Anything else? - Would you add any other ideas, including from your perspective as a California resident?'
         )
-        and posted_on >= '2025-08-15'
     group by posted_by_id
 ),
 

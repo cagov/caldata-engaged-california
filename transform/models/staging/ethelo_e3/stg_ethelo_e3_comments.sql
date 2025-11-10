@@ -58,3 +58,5 @@ FROM raw_comments AS a
 --  filter out comments from testers
 INNER JOIN participants_filtered AS b
     ON a.posted_by_id = b.participant_id
+--  filter out comments posted before engagement began
+WHERE a.posted_on >= '2025-08-15'
