@@ -24,7 +24,6 @@ with source_comments as (
     where
         sc.content is not null
         and trim(sc.content) != ''
-        and sc.posted_on >= '2025-08-15'  -- Filter to relevant date range
 
         {% if is_incremental() %}
             -- Only process new records since last run
