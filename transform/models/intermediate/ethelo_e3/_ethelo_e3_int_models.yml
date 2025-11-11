@@ -270,3 +270,18 @@ models:
         description: UX-team label for THEME of comment
       - name: main_idea_subthemes
         description: UX-team label for SUBTHEMES of comment
+
+  - name: int_linked_solutions_themes
+    description: |
+      The purpose of this model is to link all solutions to their themes (by comment id).
+    columns:
+      - name: SOLUTION_TEXT_ID
+        description: Unique identifier for the solution text.
+      - name: SOLUTION_TEXT
+        description: The text of the solution.
+      - name: PROBLEM_TEXT
+        description: The text of the problem.
+      - name: THEME
+        description: The theme assigned to the solution via the linked comment id (labeled by the UX team).
+      - name: TOTAL_LIKES
+        description: Sum of likes across all comments linked to the solution.
