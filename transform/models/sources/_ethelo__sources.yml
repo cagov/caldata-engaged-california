@@ -544,8 +544,8 @@ sources:
             description: ODI staff member who created the labelling
       - name: E3_ALL_COMMENTS_THEME_MAPPING
         description: |
-          Mapping table of e3 themes to subthemes. One row per subtheme.
-          Defined by data engineering team, building off work done by UX and Research team.
+          Mapping table of e3 themes to subthemes. One row per subtheme. Defined by data engineering team.
+          Developed by iterative pruning and refining of the subthemes provided by the UX and Research team.
         columns:
           - name: MAIN_THEME
             description: Comment main themes identified by UX and Research team.
@@ -553,3 +553,7 @@ sources:
             description: Comment subthemes identified by data engineering team through iterative review of categories.
           - name: SUBTHEME_DESCRIPTION
             description: Subtheme descriptions used to guide llm labelling of comments.
+          - name: MAIN_THEME_ID
+            description: Unique identifier for each main theme.
+          - name: SUBTHEME_ID
+            description: Unique identifier for each subtheme.
