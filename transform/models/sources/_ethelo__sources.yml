@@ -529,25 +529,27 @@ sources:
           mart model.
         columns:
           - name: PARTICIPANT_ID
-            description: participant unique identifier from Ethelo
+            description: Participant unique identifier from Ethelo.
           - name: MAIN_IDEA
-            description: Content of the response to the Main Idea question
+            description: Content of the response to the Main Idea question.
           - name: MAIN_IDEA_TYPE
             description: Label for what 'type' of response this is.
           - name: MAIN_IDEA_PRIMARY_THEME
-            description: Theme(s) that apply to each response
+            description: Theme(s) that apply to each response.
           - name: MAIN_IDEA_PRIMARY_SUBTHEMES
-            description: Optional list of subthemes
+            description: Optional list of subthemes.
           - name: MAIN_IDEA_SECONDARY_THEMES
-            description: Optional list of secondary themes
+            description: Optional list of secondary themes.
           - name: REVIEWER
             description: ODI staff member who created the labelling
-      - name: E3_MAIN_IDEA_THEME_TO_TAG_MAPPING
+      - name: E3_ALL_COMMENTS_THEME_MAPPING
         description: |
-          Mapping table of main idea themes to secondary themes or tags. One row per tag.
-          Originally defined by UX and Research team.
+          Mapping table of e3 themes to subthemes. One row per subtheme.
+          Defined by data engineering team, building off work done by UX and Research team.
         columns:
-          - name: MAIN_IDEA_PRIMARY_THEME
-            description: Main idea primary themes identified by UX and Research team.
-          - name: MAIN_IDEA_TAG
-            description: Tags. Also referred to as secondary themes.
+          - name: MAIN_THEME
+            description: Comment main themes identified by UX and Research team.
+          - name: SUBTHEME
+            description: Comment subthemes identified by data engineering team through iterative review of categories.
+          - name: SUBTHEME_DESCRIPTION
+            description: Subtheme descriptions used to guide llm labelling of comments.
