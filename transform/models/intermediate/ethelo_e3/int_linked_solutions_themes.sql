@@ -8,7 +8,6 @@ topic_themes as (
     -- avoid duplicate theme rows per comment
     select distinct
         comment_id,
-        ux_main_idea_primary_theme,
         polished_main_theme_array,
         polished_subthemes_array
     from {{ ref('e3_topic_themes_ux_ai') }}
