@@ -29,7 +29,6 @@ combined as (
         psc.solution_text_id,
         psc.solution_text,
         psc.problem_text,
-        tt.ux_main_idea_primary_theme as ux_manual_theme,
         tt.polished_main_theme_array as llm_ai_themes,
         tt.polished_subthemes_array as llm_ai_subthemes,
         -- sum likes across joined comment_likes rows; group by original solution/problem/text/theme
