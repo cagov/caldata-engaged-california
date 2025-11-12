@@ -281,7 +281,9 @@ models:
         description: The text of the solution.
       - name: PROBLEM_TEXT
         description: The text of the problem.
-      - name: THEME
+      - name: UX_MANUAL_THEME
         description: The theme assigned to the solution via the linked comment id (labeled by the UX team).
+      - name: LLM_AI_THEMES
+        description: The array of themes assigned to the solution via the linked comment id (labeled by LLM).
       - name: TOTAL_LIKES
         description: Sum of likes across all comments linked to the solution.
