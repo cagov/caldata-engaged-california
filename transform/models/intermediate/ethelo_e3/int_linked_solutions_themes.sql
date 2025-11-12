@@ -40,7 +40,12 @@ combined as (
         on psc.comment_id_linked_to_solution = cls.comment_id
     left join comment_likes as clp
         on psc.comment_id_linked_to_problem = clp.comment_id
-    group by psc.solution_text_id, psc.solution_text, psc.problem_text, tt.ux_main_idea_primary_theme, tt.llm_main_idea_primary_theme_array
+    group by
+        psc.solution_text_id,
+        psc.solution_text,
+        psc.problem_text,
+        tt.ux_main_idea_primary_theme,
+        tt.llm_main_idea_primary_theme_array
 )
 
 select * from combined
