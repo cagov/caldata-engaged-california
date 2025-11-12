@@ -28,5 +28,6 @@ jobs:
       - name: Build dbt project
         run: |
           uv run dbt deps --project-dir transform
+          uv run dbt build --full-refresh --select e3_topic_themes_ux_ai
           uv run dbt build --project-dir transform
           uv run dbt run-operation validate_all_schemas --project-dir transform
