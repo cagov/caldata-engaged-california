@@ -104,7 +104,7 @@ llm_subthemes as (
                         'input': 'Claimants inability to get in touch with Unemployment or Disability representatives over the phone. We are modernizing systems which allows us to better utilize technology which is great. I think continuing those efforts along with hiring more call center staff is essential for delivering timely service',
                         'labels': [
                             'Public service delivery and responsiveness',
-                            'Technology modernization and standardization',
+                            'Technology and data modernization',
                             'Understaffing'
                         ],
                         'explanation': 'the text centers around issues with public facing customer support so it fits public service delivery and responsiveness, technology modernization is also mentioned, and the text also provides a recommendation to hire more staff - implying that they are currently understaffed'
