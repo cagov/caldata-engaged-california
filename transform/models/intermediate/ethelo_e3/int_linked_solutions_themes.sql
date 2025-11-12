@@ -31,7 +31,7 @@ combined as (
         psc.problem_text,
         tt.ux_main_idea_primary_theme as ux_manual_theme,
         tt.llm_main_idea_primary_theme_array as llm_ai_themes,
-        -- sum likes across joined comment_like rows; group by original solution/problem/text/theme
+        -- sum likes across joined comment_likes rows; group by original solution/problem/text/theme
         sum(coalesce(cls.like_count, 0) + coalesce(clp.like_count, 0)) as total_likes
     from problem_solution_comments as psc
     left join topic_themes as tt
