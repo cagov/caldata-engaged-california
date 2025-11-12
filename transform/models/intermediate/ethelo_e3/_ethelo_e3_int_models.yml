@@ -285,5 +285,7 @@ models:
         description: The theme assigned to the solution via its linked comment id (labeled by the UX team).
       - name: LLM_AI_THEMES
         description: Array of themes assigned to the solution via its linked comment id (labeled by AI).
+      - name: LLM_AI_SUBTHEMES
+        description: Array of subthemes assigned to the solution via its linked comment id (labeled by AI).
       - name: TOTAL_LIKES
         description: Sum of likes across all comments linked to the solution.

@@ -9,7 +9,8 @@ topic_themes as (
     select distinct
         comment_id,
         ux_main_idea_primary_theme,
-        llm_main_idea_primary_theme_array
+        polished_main_theme_array,
+        polished_subthemes_array
     from {{ ref('e3_topic_themes_ux_ai') }}
 ),
 
@@ -30,7 +31,8 @@ combined as (
         psc.solution_text,
         psc.problem_text,
         tt.ux_main_idea_primary_theme as ux_manual_theme,
-        tt.llm_main_idea_primary_theme_array as llm_ai_themes,
+        tt.polished_main_theme_array as llm_ai_themes,
+        tt.polished_subthemes_array as llm_ai_subthemes,
         -- sum likes across joined comment_likes rows; group by original solution/problem/text/theme
         sum(coalesce(cls.like_count, 0) + coalesce(clp.like_count, 0)) as total_likes
     from problem_solution_comments as psc
@@ -45,7 +47,8 @@ combined as (
         psc.solution_text,
         psc.problem_text,
         tt.ux_main_idea_primary_theme,
-        tt.llm_main_idea_primary_theme_array
+        tt.polished_main_theme_array,
+        tt.polished_subthemes_array
 )
 
 select * from combined
