@@ -51,4 +51,3 @@ combined as (
 )
 
 select * from combined
-where ux_manual_theme is not null
