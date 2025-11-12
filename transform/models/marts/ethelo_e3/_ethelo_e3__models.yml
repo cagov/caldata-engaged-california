@@ -231,15 +231,21 @@ models:
         description: Unique identifier for each comment.
       - name: POSTED_ON
         description: The date and time when the comment was posted.
+      - name: QUESTION
+        description: The question or prompt that the comment is responding to.
       - name: COMMENT_CONTENT
         description: The content of the comment.
+      - name: POLISHED_MAIN_THEME_ARRAY
+        description: Array of main themes after applying manual override classifications.
+      - name: POLISHED_SUBTHEMES_ARRAY
+        description: Array of subthemes after applying manual override classifications.
+      - name: NUM_POLISHED_SUBTHEMES
+        description: Number of polished subthemes assigned to the comment.
+      - name: LLM_SUBTHEMES_ARRAY
+        description: Array of subthemes assigned by the LLM.
       - name: UX_MAIN_IDEA_TYPE
         description: The type of main idea as labeled by the UX team.
       - name: UX_MAIN_IDEA_PRIMARY_THEME
         description: The primary theme of the main idea as labeled by the UX team.
       - name: UX_MAIN_IDEA_SUBTHEMES
         description: The subthemes of the main idea as labeled by the UX team.
-      - name: LLM_MAIN_IDEA_SUBTHEMES_ARRAY
-        description: Array of subthemes assigned by the LLM.
-      - name: LLM_MAIN_IDEA_PRIMARY_THEME_ARRAY
-        description: Array of primary themes assigned by the LLM.
