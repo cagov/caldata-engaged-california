@@ -29,13 +29,17 @@ combined as (
         psc.solution_text_id,
         psc.solution_text,
         psc.problem_text,
-        tt.polished_main_theme_array as llm_ai_themes,
-        tt.polished_subthemes_array as llm_ai_subthemes,
+        st.polished_main_theme_array as llm_ai_themes_problem,
+        st.polished_subthemes_array as llm_ai_subthemes_problem,
+        pt.polished_main_theme_array as llm_ai_themes_solution,
+        pt.polished_subthemes_array as llm_ai_subthemes_solution,
         -- sum likes across joined comment_likes rows; group by original solution/problem/text/theme
         sum(coalesce(cls.like_count, 0) + coalesce(clp.like_count, 0)) as total_likes
     from problem_solution_comments as psc
-    left join topic_themes as tt
-        on psc.comment_id_linked_to_solution = tt.comment_id
+    left join topic_themes as st
+        on psc.comment_id_linked_to_solution = st.comment_id
+    left join topic_themes as pt
+        on psc.comment_id_linked_to_problem = pt.comment_id
     left join comment_likes as cls
         on psc.comment_id_linked_to_solution = cls.comment_id
     left join comment_likes as clp
@@ -44,9 +48,10 @@ combined as (
         psc.solution_text_id,
         psc.solution_text,
         psc.problem_text,
-        tt.ux_main_idea_primary_theme,
-        tt.polished_main_theme_array,
-        tt.polished_subthemes_array
+        st.polished_main_theme_array,
+        st.polished_subthemes_array,
+        pt.polished_main_theme_array,
+        pt.polished_subthemes_array
 )
 
 select * from combined
