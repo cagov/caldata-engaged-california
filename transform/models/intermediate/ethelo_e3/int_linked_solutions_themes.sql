@@ -1,57 +1,27 @@
--- this model links all solutions to their themes (by comment id)
+-- this is the very simple approach Summer and I took 
+-- that yielded the same results
 
-with problem_solution_comments as (
-    select * from {{ ref('e3_problems_solutions_comments') }}
+with problem_solution_links as (
+    select * from {{ ref('int_problem_solution_links') }}
 ),
 
 topic_themes as (
-    -- avoid duplicate theme rows per comment
-    select distinct
+    select
         comment_id,
         polished_main_theme_array,
         polished_subthemes_array
     from {{ ref('e3_topic_themes_ux_ai') }}
 ),
 
--- pre-aggregate likes at the comment level to avoid duplication
-comment_likes as (
-    select
-        comment_id,
-        sum(coalesce(like_count, 0)) as like_count
-    from {{ ref('e3_comments') }}
-    where comment_id is not null
-    group by comment_id
-
-),
-
 combined as (
     select
-        psc.solution_text_id,
-        psc.solution_text,
-        psc.problem_text,
-        st.polished_main_theme_array as llm_ai_themes_problem,
-        st.polished_subthemes_array as llm_ai_subthemes_problem,
-        pt.polished_main_theme_array as llm_ai_themes_solution,
-        pt.polished_subthemes_array as llm_ai_subthemes_solution,
-        -- sum likes across joined comment_likes rows; group by original solution/problem/text/theme
-        sum(coalesce(cls.like_count, 0) + coalesce(clp.like_count, 0)) as total_likes
-    from problem_solution_comments as psc
-    left join topic_themes as st
-        on psc.comment_id_linked_to_solution = st.comment_id
-    left join topic_themes as pt
-        on psc.comment_id_linked_to_problem = pt.comment_id
-    left join comment_likes as cls
-        on psc.comment_id_linked_to_solution = cls.comment_id
-    left join comment_likes as clp
-        on psc.comment_id_linked_to_problem = clp.comment_id
-    group by
-        psc.solution_text_id,
-        psc.solution_text,
-        psc.problem_text,
-        st.polished_main_theme_array,
-        st.polished_subthemes_array,
-        pt.polished_main_theme_array,
-        pt.polished_subthemes_array
-)
+        ps.solution_comment_id,
+        ps.solution_text,
+        themes.polished_main_theme_array,
+        themes.polished_subthemes_array
+    from topic_themes as themes
+    left join problem_solution_links as ps
+        on themes.comment_id = ps.solution_comment_id
+) 
 
 select * from combined
