@@ -41,33 +41,14 @@ hand_labelled as (
     from {{ ref('int_ux_hand_labelled_themes') }}
 ),
 
--- Mapping of primary themes to subthemes
-theme_map as (
-    select
-        main_theme,
-        subtheme,
-        subtheme_description
-    from {{ source('UX_AND_RESEARCH', 'E3_ALL_COMMENTS_THEME_MAPPING') }}
-    --the following section should be removed after adding to mapping table
-    --also consider consolidating limited-term positions which had only 3 comments tagged in the most dev recent run
-    union distinct
-    select
-        'Workplace operations' as main_theme,
-        'Environmental sustainability' as subtheme,
-        -- noqa: disable=L016
-        'Comments about workplace practices relating to environmental stewardship, carbon emissions, and uses of natural resources'
-            as subtheme_description
--- noqa: enable=L016
-),
-
 -- Construct a single array of all subthemes for LLM input
 subthemes as (
     select array_agg(object_construct('label', subtheme, 'description', subtheme_description)) as list_of_subthemes
-    from theme_map
+    from {{ source('UX_AND_RESEARCH', 'E3_ALL_COMMENTS_THEME_MAPPING') }}
 ),
 
--- llm_subthemes and polished CTEs use long lines of text that exceed line length limits.
--- Disabling line length QA for these CTEs only.
+-- llm_subthemes CTE uses long lines of text that exceed line length limits.
+-- Disabling line length QA for this CTE only.
 -- noqa: disable=L016
 
 -- Use LLM to classify main ideas into subthemes
@@ -130,119 +111,8 @@ llm_subthemes as (
     from main_ideas as m
     left join hand_labelled as h on m.comment_id = h.comment_id
     inner join subthemes as subthemes on 1 = 1
-),
-
-polished as (
-    select
-        *,
-        case
-            when comment_id = '5127'
-                then
-                    parse_json(
-                        '[ "Remote work and return to office", "Office management", "Physical infrastructure", "Employee pay and benefits", "Employee retention", "Hiring and recruitment", "Accessibility", "Inclusion and diversity", "Public service delivery and responsiveness" ]'
-                    )
-            when comment_id = '3800'
-                then
-                    parse_json(
-                        '[ "Remote work and return to office", "Physical infrastructure", "Work culture", "Employee pay and benefits", "Employee retention", "Hiring and recruitment", "Trust and openness" ]'
-                    )
-            when comment_id = '4919'
-                then
-                    parse_json(
-                        '[ "Management culture and leadership approach", "Work culture", "Hiring and recruitment", "Qualified staff", "Employee performance reviews" ]'
-                    )
-            when comment_id = '3931'
-                then parse_json('[ "Physical infrastructure", "Public policy initiatives", "Public participation" ]')
-            when comment_id = '5164'
-                then
-                    parse_json(
-                        '[ "Physical infrastructure", "Remote work and return to office", "Office management", "Employee retention", "Hiring and recruitment", "Budgeting and funding", "Inclusion and diversity" ]'
-                    )
-            when comment_id = '4083'
-                then
-                    parse_json('[ "Remote work and return to office", "Office management", "Physical infrastructure" ]')
-            when comment_id = '4037'
-                then
-                    parse_json(
-                        '[ "Digitize processes", "Internal communication", "Knowledge management", "Leadership review and oversight", "Management culture and leadership approach", "Process design and methodologies", "Process documentation", "Shared resources", "Software and tools", "Technology and data modernization" ]'
-                    )
-            when comment_id = '5653'
-                then parse_json('[ "Digitize processes", "Technology and data modernization" ]')
-            when comment_id = '4798'
-                then
-                    parse_json(
-                        '["Inclusion and diversity", "Remote work and return to office", "Public service delivery and responsiveness", "Physical infrastructure", "Office management", "Budgeting and funding" ]'
-                    )
-            when comment_id = '5805'
-                then parse_json('["Work culture"]')
-            when comment_id = '3930'
-                then parse_json('["Public policy initiatives"]')
-            when comment_id = '6000'
-                then
-                    parse_json(
-                        '["Org structure and hierarchy", "Management culture and leadership approach", "Onboarding new employees", "Career growth", "Employee training", "Remote work and return to office"]'
-                    )
-            when comment_id = '4203'
-                then
-                    parse_json(
-                        '["Remote work and return to office", "Physical infrastructure", "Office management", "Employee pay and benefits", "Inclusion and diversity", "Budgeting and funding", "Public transportation"]'
-                    )
-            when comment_id = '4277'
-                then parse_json('["Hiring and recruitment", "Qualified staff", "Work culture"]')
-            when comment_id = '4650'
-                then
-                    parse_json(
-                        '["Internal communication", "Cross-agency collaboration", "Org structure and hierarchy", "Policymaking", "Align policy and implementation", "Policy development process"]'
-                    )
-            when comment_id = '4467'
-                then
-                    parse_json(
-                        '["Knowledge management", "Internal feedback", "Inclusion and diversity", "Networking", "Career growth", "Mentorship programs", "Employee retention", "Employee training"]'
-                    )
-            when comment_id = '5666'
-                then
-                    parse_json(
-                        '["Budgeting and funding", "Permits, licensing, and fees", "Cross-agency collaboration", "Process delays"]'
-                    )
-            when comment_id = '5917'
-                then parse_json('["Public policy initiatives"]')
-            when llm_subthemes_array = array_construct()
-                then to_array('Other ideas')
-            else llm_subthemes_array
-        end as polished_subthemes_array,
-        array_size(polished_subthemes_array) as num_polished_subthemes
-    from llm_subthemes
-),
--- noqa: enable=L016
-
--- expand array of subthemes into multiple rows
-flattened as (
-    select
-        t.*,
-        f.value::varchar as subtheme
-    from polished as t,
-        lateral flatten(input => t.polished_subthemes_array) as f
-),
-
--- Aggregate primary themes from mapped subthemes. Back to one row per comment.
-primary_themes as (
-    select
-        f.participant_id,
-        f.comment_id,
-        f.posted_on,
-        f.question,
-        f.comment_content,
-        array_agg(distinct coalesce(tm.main_theme, 'Other')) as polished_main_theme_array,
-        f.polished_subthemes_array,
-        f.num_polished_subthemes,
-        f.llm_subthemes_array,
-        f.ux_main_idea_type,
-        f.ux_main_idea_primary_theme,
-        f.ux_main_idea_subthemes
-    from flattened as f
-    left join theme_map as tm
-        on f.subtheme = tm.subtheme
-    group by all
 )
 
-select * from primary_themes
+-- noqa: enable=L016
+
+select * from llm_subthemes
