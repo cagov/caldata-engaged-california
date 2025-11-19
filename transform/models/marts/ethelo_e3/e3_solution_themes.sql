@@ -3,7 +3,7 @@ This model attempts to shape the solutions data to make it easier to select "top
 First, it takes the extracted solution statements that have previously been output, and uses AI to expand the list
 with shorter, more specific solution statements. Next, it takes the subtheme/main theme map and labels
 each shortened solution statement with one or more subthemes (and their accompanying main themes).
-The final output is a list of solution statements, with one row per solution.
+The final output is a list of solution statement theme/subtheme assignments.
 */
 
 {{ config(
@@ -141,6 +141,7 @@ subthemes as (
 
 classified_solutions as (
     select
+        uuid_string() as solution_id,
         f.*,
         ai_classify(
             f.solution_shortened,
@@ -174,6 +175,7 @@ flattened_subthemes as (
 -- aggregate back to one row per shortened solution
 main_themes as (
     select
+        f.solution_id,
         f.solution_comment_id,
         f.reply_to_id,
         f.source_comment,
@@ -182,11 +184,11 @@ main_themes as (
         f.solutions_array,
         f.solution_shortened,
         f.solution_subthemes_array,
-        array_agg(distinct tm.main_theme) as solution_main_themes_array
+        f.solution_subtheme,
+        tm.main_theme as solution_main_theme
     from flattened_subthemes as f
     left join theme_map as tm
         on f.solution_subtheme = tm.subtheme
-    group by all
 )
 
 select * from main_themes
