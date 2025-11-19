@@ -141,6 +141,7 @@ subthemes as (
 
 classified_solutions as (
     select
+        uuid_string() as solution_id,
         f.*,
         ai_classify(
             f.solution_shortened,
@@ -174,6 +175,7 @@ flattened_subthemes as (
 -- aggregate back to one row per shortened solution
 main_themes as (
     select
+        f.solution_id,
         f.solution_comment_id,
         f.reply_to_id,
         f.source_comment,

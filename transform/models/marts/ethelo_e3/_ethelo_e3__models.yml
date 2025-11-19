@@ -281,6 +281,8 @@ models:
       each shortened solution statement with one or more subthemes (and their accompanying main themes).
       The final output is a list of solution statement theme/subtheme assignments.
     columns:
+      - name: SOLUTION_ID
+        description: Unique id for each solution statement, comment_ID, and solution sequence combined, not enforced
       - name: SOLUTION_COMMENT_ID
         description: comment_id where the solution was identified
       - name: REPLY_TO_ID
