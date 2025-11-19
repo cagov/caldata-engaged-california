@@ -279,8 +279,10 @@ models:
       First, it takes the extracted solution statements that have previously been output, and uses AI to expand the list
       with shorter, more specific solution statements. Next, it takes the subtheme/main theme map and labels
       each shortened solution statement with one or more subthemes (and their accompanying main themes).
-      The final output is a list of solution statements, with one row per solution.
+      The final output is a list of solution statement theme/subtheme assignments.
     columns:
+      - name: SOLUTION_ID
+        description: Unique id for each solution statement, comment_ID, and solution sequence combined, not enforced
       - name: SOLUTION_COMMENT_ID
         description: comment_id where the solution was identified
       - name: REPLY_TO_ID
@@ -297,5 +299,7 @@ models:
         description: LLM-generated shortened solution statement
       - name: SOLUTION_SUBTHEMES_ARRAY
         description: Array of subthemes assigned to the shortened solution statement by the LLM
-      - name: SOLUTION_MAIN_THEMES_ARRAY
+      - name: SOLUTION_SUBTHEME
+        description: Subtheme assigned to the shortened solution statement by the LLM
+      - name: SOLUTION_MAIN_THEME
         description: Array of main themes corresponding to the assigned subthemes
