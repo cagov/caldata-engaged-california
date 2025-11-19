@@ -182,7 +182,7 @@ main_themes as (
         f.solutions_array,
         f.solution_shortened,
         f.solution_subthemes_array,
-        array_agg(distinct tm.main_theme) as solution_main_theme_array
+        array_agg(distinct tm.main_theme) as solution_main_themes_array
     from flattened_subthemes as f
     left join theme_map as tm
         on f.solution_subtheme = tm.subtheme
