@@ -273,3 +273,29 @@ models:
         description: The primary theme of the main idea as labeled by the UX team.
       - name: UX_MAIN_IDEA_SUBTHEMES
         description: The subthemes of the main idea as labeled by the UX team.
+  - name: e3_solution_themes
+    description: |
+      This model attempts to shape the solutions data to make it easier to select "top solutions" from the E3 dataset.
+      First, it takes the extracted solution statements that have previously been output, and uses AI to expand the list
+      with shorter, more specific solution statements. Next, it takes the subtheme/main theme map and labels
+      each shortened solution statement with one or more subthemes (and their accompanying main themes).
+      The final output is a list of solution statements, with one row per solution.
+    columns:
+      - name: SOLUTION_COMMENT_ID
+        description: comment_id where the solution was identified
+      - name: REPLY_TO_ID
+        description: Identifier of the comment this is a reply to. NULL for top-level comments
+      - name: SOURCE_COMMENT
+        description: The original comment text from which the solution was extracted
+      - name: SOLUTION_SEQUENCE
+        description: Sequence number of the solution within its source comment
+      - name: SOLUTION_TEXT
+        description: The text of the solution statement
+      - name: SOLUTIONS_ARRAY
+        description: LLM-generated array of shortened solution statements
+      - name: SOLUTION_SHORTENED
+        description: LLM-generated shortened solution statement
+      - name: SOLUTION_SUBTHEMES_ARRAY
+        description: Array of subthemes assigned to the shortened solution statement by the LLM
+      - name: SOLUTION_MAIN_THEMES_ARRAY
+        description: Array of main themes corresponding to the assigned subthemes
