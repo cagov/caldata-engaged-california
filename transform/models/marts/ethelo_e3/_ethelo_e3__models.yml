@@ -222,7 +222,31 @@ models:
         description: "The text content of the comment provided by the participant linked to a solution"
   - name: e3_topic_themes_ux_ai
     description: |
-      This model classifies main ideas from Ethelo E3 comments into primary themes and subthemes
+      This model classifies Ethelo E3 comments into subthemes
+      using a combination of hand-labelled data and LLM classification.
+    columns:
+      - name: PARTICIPANT_ID
+        description: Unique identifier for the participant who posted the comment.
+      - name: COMMENT_ID
+        description: Unique identifier for each comment.
+      - name: POSTED_ON
+        description: The date and time when the comment was posted.
+      - name: QUESTION
+        description: The question or prompt that the comment is responding to.
+      - name: COMMENT_CONTENT
+        description: The content of the comment.
+      - name: LLM_SUBTHEMES_ARRAY
+        description: Array of subthemes assigned by the LLM.
+      - name: UX_MAIN_IDEA_TYPE
+        description: The type of main idea as labeled by the UX team.
+      - name: UX_MAIN_IDEA_PRIMARY_THEME
+        description: The primary theme of the main idea as labeled by the UX team.
+      - name: UX_MAIN_IDEA_SUBTHEMES
+        description: The subthemes of the main idea as labeled by the UX team.
+  - name: e3_topic_themes_polished
+    description: |
+      This model provides manually refined subthemes for some difficult to classify comments. It also
+      deterministically assigns main themes based on the subtheme assignments.
       using a combination of hand-labelled data and LLM classification.
     columns:
       - name: PARTICIPANT_ID
