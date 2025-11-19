@@ -65,7 +65,7 @@ solution_extraction as (
             try_parse_json(
                 to_json(
                     SNOWFLAKE.CORTEX.TRY_COMPLETE(
-                        'llama4-maverick',--'{{ var("llm_model") }}',
+                        '{{ var("llm_model") }}',
                         [
                             {
                                 'role': 'user',
