@@ -127,7 +127,7 @@ flattened_solutions as (
     select
         solution_extraction.*,
         solution_extraction.solutions_json:solutions as solutions_array,
-        -- Extract individual solution text
+        -- Extract individual solution texts
         f.value::STRING as solution_shortened
     from solution_extraction,
         lateral flatten(input => solution_extraction.solutions_json:solutions, outer => true) as f

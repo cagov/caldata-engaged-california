@@ -275,7 +275,7 @@ models:
         description: The subthemes of the main idea as labeled by the UX team.
   - name: e3_solution_themes
     description: |
-      This model attempts to shape the solutions data to make it easier to select "top solutions" from the E3 dataset.
+      This model shapes the solutions data to make it easier to select "top solutions" from the E3 dataset.
       First, it takes the extracted solution statements that have previously been output, and uses AI to expand the list
       with shorter, more specific solution statements. Next, it takes the subtheme/main theme map and labels
       each shortened solution statement with one or more subthemes (and their accompanying main themes).
