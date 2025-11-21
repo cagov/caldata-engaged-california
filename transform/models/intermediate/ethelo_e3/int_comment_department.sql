@@ -10,9 +10,19 @@
 
 with
 comments as (
-    select *
-    from {{ ref('stg_ethelo_e3_comments') }}
-    where reply_to_id is null  --only top level comments (ideas)
+-- noqa: disable=LT02
+-- the `is_incremental()` causes issues with the linter. Disabling indentation QA for this CTE only.
+    select c.*
+    from {{ ref('stg_ethelo_e3_comments') }} as c
+    where c.reply_to_id is null  --only top level comments (ideas)
+
+        {% if is_incremental() %}
+            -- Only process new records since last run
+            and (
+                c.posted_on > (select max(t.posted_on) from {{ this }} as t)
+            )
+        {% endif %}
+-- noqa: enable=LT02
 ),
 
 departments as (
