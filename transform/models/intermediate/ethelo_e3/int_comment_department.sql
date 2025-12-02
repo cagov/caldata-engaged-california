@@ -17,9 +17,9 @@ comments as (
     where c.reply_to_id is null  --only top level comments (ideas)
 
         {% if is_incremental() %}
-            -- Only process new records since last run
-            and (
-                c.posted_on > (select max(t.posted_on) from {{ this }} as t)
+            -- Only process records that have not yet been processed
+            and c.comment_id not in (
+                select t.comment_id from {{ this }} as t
             )
         {% endif %}
 -- noqa: enable=LT02
