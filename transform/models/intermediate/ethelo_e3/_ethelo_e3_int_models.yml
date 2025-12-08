@@ -98,10 +98,10 @@ models:
 
   - name: int_extracted_solutions
     description: |
-      "solutions extracted from E3 comments and survey responses using Snowflake LLM.
+      Solutions extracted from E3 comments and survey responses using Snowflake LLM.
       Each row represents one specific solution identified in a comment. Multiple solutions
       can be extracted from a single comment, resulting in multiple rows per comment.
-      Solutions can be linked back to problems via comment threading."
+      Solutions can be linked back to problems via comment threading.
     config:
       materialized: incremental
       unique_key: ["comment_id"]

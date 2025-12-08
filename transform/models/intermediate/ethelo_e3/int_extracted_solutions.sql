@@ -24,6 +24,7 @@ with source_comments as (
     where
         sc.content is not null
         and trim(sc.content) != ''
+        and sc.comment_id is not null -- removes any rows with null comment_ids including any "What makes you proud...?" rows
 
         {% if is_incremental() %}
             -- Only process new records since last run
@@ -37,8 +38,11 @@ with source_comments as (
 
 -- noqa: enable=LT02
 
--- Get comment threads to analyze solutions in context of original comments and replies
+-- In order to provide better context for replies, this CTE builds out the full parent comment thread for each reply.
+-- This is done even though the replies are currently removed in later processing, to allow for future flexibility.
+-- This CTE is RECURSIVE
 comment_threads as (
+
     select
         c.comment_id,
         c.reply_to_id,
@@ -47,12 +51,34 @@ comment_threads as (
         c.question,
         c.posted_on,
         c._file_upload_date,
-        -- Include the parent comment content for context
-        p.content as parent_comment_content,
-        p.question as parent_question,
-        p.comment_id as parent_comment_id
+        '' as conversation_context,
+        null as parent_comment_id,
+        0 as depth,
+        c.comment_id as sort_path
     from source_comments as c
-    left join source_comments as p on c.reply_to_id = p.comment_id
+    where c.reply_to_id is null
+
+    -- UNION ALL
+
+    -- select
+    --     c.comment_id,
+    --     c.reply_to_id,
+    --     c.participant_id,
+    --     c.content,
+    --     c.question,
+    --     c.posted_on,
+    --     c._file_upload_date,
+    --     case
+    --         when p.conversation_context = ''
+    --             then 'original: ' || p.content
+    --         else p.conversation_context || '\n' || repeat('    ',p.depth) || 'reply: ' || p.content
+    --     end as conversation_context,
+    --     p.comment_id as parent_comment_id,
+    --     p.depth + 1 as depth,
+    --     p.sort_path || '.' || c.comment_id as sort_path
+    -- from source_comments c
+    -- join comment_threads p
+    --     on c.reply_to_id = p.comment_id
 ),
 
 -- Use AI to extract solutions from each comment
@@ -86,22 +112,28 @@ solution_extraction as (
 
                                     'COMMENT CONTEXT:\n',
                                     'Question/Prompt: ', coalesce(ct.question, '[No context]'), '\n',
-                                    'Comment Content: ', ct.content, '\n',
                                     case
-                                        when ct.parent_comment_content is not null
-                                            then concat('Parent Comment (this is a reply): ', ct.parent_comment_content, '\n')
+                                        when ct.conversation_context != ''
+                                            then concat('Conversation context (the comment is a reply): ', ct.conversation_context, '\n')
                                         else ''
                                     end,
+                                    'Comment Content: ', ct.content, '\n',
                                     '\n',
 
-                                    'GUIDELINES:\n',
+                                    'GUIDELINES PART 1:\n',
                                     '• Identify main solutions and recommendations, not minor suggestions\n',
                                     '• Preserve specific program names, systems, and technologies mentioned\n',
                                     '• CONSOLIDATE complementary steps in one implementation; SEPARATE independent recommendations requiring different decision-makers\n',
                                     '• One solution = one actionable recommendation for leadership\n',
-                                    '• Summarize comprehensively but as concisely as possible\n',
                                     '• Focus on substantial, actionable solutions\n',
                                     '• If a comment does not contain a solution, return {"solutions": []}\n\n',
+
+                                    'GUIDELINES PART 2:\n',
+                                    '• Summarize comprehensively but as concisely as possible\n',
+                                    '• Write at an 8th grade reading level or lower\n',
+                                    '• Use smaller, more common words\n',
+                                    '• Avoid jargon and technical terms as much as possible\n',
+                                    '• Keep sentences short and simple\n',
 
                                     'JSON OUTPUT REQUIREMENTS:\n',
                                     '• Use only standard alphanumeric characters, spaces, and basic punctuation\n',
@@ -110,10 +142,19 @@ solution_extraction as (
 
                                     'EXAMPLES OF COMPREHENSIVE EXTRACTION:\n',
                                     'Input: "There needs to be a better process for getting duplicate pay warrants issued. I often have employees waiting a month or more just to receive a replacement warrant. This delay is really frustrating for employees who need their pay and creates extra work for managers who have to field complaints. I like Cal Employee Connect but I think they could add functionality to it, giving the employee the ability to request their own duplicate warrant directly with the SCO."\n',
-                                    'Output: "Add functionality to Cal Employee Connect allowing employees to request duplicate pay warrants directly with State Controllers Office (SCO) to reduce processing time"\n\n',
+                                    'Output: "Reduce processing time for replacement paychecks. Allow staff to ask for a replacement pay warrant through Cal Employee Connect."\n\n',
 
                                     'Input: "CDCR Fire needs a complete reorganization. Currently, multiple fire stations operate independently, answering to Plant Operations or Wardens. Each station procures its own PPE, hoses, tools, and follows local policies—resulting in a fragmented system with no standardization or unified effectiveness. A centralized command starting in Sacramento is essential. Appointing a Fire Chief and Deputy Chief, supported by three Division Chiefs (North, Central, South), would create statewide oversight. Each fire station would have a Battalion Chief supervising Fire Captains, ensuring consistency and accountability."\n',
-                                    'Output: "Establish centralized California Department of Corrections and Rehabilitation (CDCR) Fire command in Sacramento with Fire Chief, Deputy Chief, and three Division Chiefs (North, Central, South) overseeing Battalion Chiefs at each station to create standardized operations and unified effectiveness"\n\n',
+                                    'Output: "Make the California Department of Corrections and Rehabilitation (CDCR) fire command more consistent and accountable. Create a centralized command station with regional division chiefs."\n\n',
+
+                                    'Input: "I think it is important that we see the human through the process and not get locked into legalities. If the human is seen and their needs are met the ability to serve their customer is shifted."\n',
+                                    'Output: Improve customer service. Encourage staff to see residents’ humanity instead of the red tape."\n\n',
+
+                                    'Input: "I have developed checklists and job aids on my own to assist in successful operations because our centralized services units refuse to go on the record with current instructions or procedures. My team is continually refining our products and documentation to remain relevant and effective. I try to be proactive in my client interactions, holding empathy for those unfamiliar with our services. Under-performing staff are not effectively coached nor held accountable for under-performance. Managers and executives say they hold lofty values but in practice regularly exclude input from below and/or get defensive about calls for change. [For example,] Survey results and reports are delivered to the executive level and then fall into a black hole, never to be heard from again."\n',
+                                    'Output (multiple):"\n',
+                                    'Update instructions and procedures. Create job aids and share with all staff.\n',
+                                    'Improve staff performance. Coach under-performing staff and hold them accountable.\n',
+                                    'Include staff voices. Use staff input for change, not only to inform leadership."\n\n',
 
                                     'Remember: one solution = one actionable recommendation for leadership. Return exactly 1 consolidated solution per comment unless the source comment contains multiple, truly unique solutions.',
                                     'IMPORTANT LENGTH LIMIT: Ensure the **entire** JSON response (including the JSON structure itself) is less than 500 tokens'
@@ -133,6 +174,9 @@ solution_extraction as (
             parse_json('{"solutions": []}')::OBJECT
         ) as solutions_json
     from comment_threads as ct
+    where
+        -- Only process comments that are not replies (original comments only)
+        ct.reply_to_id is null
 ),
 
 -- Flatten the solutions array to create one row per solution
