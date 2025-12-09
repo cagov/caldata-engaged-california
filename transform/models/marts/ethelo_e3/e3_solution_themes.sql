@@ -1,8 +1,8 @@
 /*
 This model attempts to shape the solutions data to make it easier to select "top solutions" from the E3 dataset.
-First, it takes the extracted solution statements that have previously been output, and uses AI to expand the list
-with shorter, more specific solution statements. Next, it takes the subtheme/main theme map and labels
-each shortened solution statement with one or more subthemes (and their accompanying main themes).
+First, it takes the extracted solution statements that have previously been output, and uses AI to extract
+shorter, more generic solution statements. Next, it takes the subtheme/main theme map and labels
+each solution statement with one or more subthemes (and their accompanying main themes).
 The final output is a list of solution statement theme/subtheme assignments.
 */
 
@@ -144,7 +144,7 @@ classified_solutions as (
         uuid_string() as solution_id,
         f.*,
         ai_classify(
-            f.solution_shortened,
+            f.solution_text,
             subthemes.list_of_subthemes,
             {
                 'task_description': 'Determine the category that is most related to the'
