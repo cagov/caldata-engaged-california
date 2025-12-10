@@ -312,6 +312,8 @@ models:
         description: The text of the solution statement
       - name: POLISHED_SOLUTION_SUBTHEMES_ARRAY
         description: Array of subthemes assigned to the solution statement including manual refinement.
+      - name: NUM_SOLUTION_SUBTHEMES
+        description: Number of polished subthemes assigned to the solution statement.
       - name: SOLUTION_SUBTHEME
         description: Subtheme assigned to the solution statement by the LLM or manual refinement
       - name: SOLUTION_MAIN_THEME
