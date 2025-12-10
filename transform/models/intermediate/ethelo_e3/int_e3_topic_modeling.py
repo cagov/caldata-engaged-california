@@ -224,7 +224,7 @@ def model(dbt, session: Session):
 
     dbt.config(
         materialized="table",
-        packages=["hdbscan", "numpy", "pandas", "scikit-learn", "umap-learn"],
+        packages=["hdbscan", "numpy", "pandas", "scikit-learn", "umap-learn", "requests"],
     )
 
     if dbt.this.database:
