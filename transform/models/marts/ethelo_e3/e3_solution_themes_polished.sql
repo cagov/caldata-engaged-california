@@ -24,7 +24,7 @@ polished as (
                 )
             else solution_subthemes_array
         end as polished_solution_subthemes_array,
-        array_size(polished_solution_subthemes_array) as num_subthemes
+        array_size(polished_solution_subthemes_array) as num_solution_subthemes
     from solution_themes
 ),
 -- noqa: enable=L016
@@ -48,6 +48,7 @@ main_themes as (
         f.solution_sequence,
         f.solution_text,
         f.polished_solution_subthemes_array,
+        f.num_solution_subthemes,
         f.solution_subtheme,
         tm.main_theme as solution_main_theme
     from flattened_subthemes as f
