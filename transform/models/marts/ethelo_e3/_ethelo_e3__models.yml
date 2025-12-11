@@ -220,6 +220,7 @@ models:
         description: "The text of the solution"
       - name: COMMENT_LINKED_TO_SOLUTION
         description: "The text content of the comment provided by the participant linked to a solution"
+
   - name: e3_topic_themes_ux_ai
     description: |
       This model classifies Ethelo E3 comments into subthemes
@@ -243,6 +244,7 @@ models:
         description: The primary theme of the main idea as labeled by the UX team.
       - name: UX_MAIN_IDEA_SUBTHEMES
         description: The subthemes of the main idea as labeled by the UX team.
+
   - name: e3_topic_themes_polished
     description: |
       This model provides manually refined subthemes for some difficult to classify comments. It also
@@ -273,7 +275,11 @@ models:
         description: The primary theme of the main idea as labeled by the UX team.
       - name: UX_MAIN_IDEA_SUBTHEMES
         description: The subthemes of the main idea as labeled by the UX team.
+
   - name: e3_solution_themes
+    config:
+      materialized: incremental
+      unique_key: ["solution_id"]
     description: |
       This model attempts to shape the solutions data to make it easier to select "top solutions" from the E3 dataset.
       It takes the subtheme/main theme map and labels each solution statement with one or more subthemes
@@ -293,6 +299,7 @@ models:
         description: The text of the solution statement
       - name: SOLUTION_SUBTHEMES_ARRAY
         description: Array of subthemes assigned to the solution statement by the LLM
+
   - name: e3_solution_themes_polished
     description: |
       This model provides manually refined subthemes for some difficult to classify solutions. It also
