@@ -101,47 +101,57 @@ models:
       Solutions extracted from E3 comments and survey responses using Snowflake LLM.
       Each row represents one specific solution identified in a comment. Multiple solutions
       can be extracted from a single comment, resulting in multiple rows per comment.
-      Solutions can be linked back to problems via comment threading.
+      Shortened solutions are also generated through a second LLM call in order to create
+      shorter, more generic labels for easier categorization and analysis.
     config:
       materialized: incremental
       unique_key: ["comment_id"]
     columns:
       - name: COMMENT_ID
-        description: "unique identifier of the source comment (null for survey responses)"
+        description: unique identifier of the source comment (null for survey responses)
       - name: PARTICIPANT_ID
-        description: "ethelo participant id who made the comment"
+        description: ethelo participant id who made the comment
         tests:
           - not_null
       - name: POSTED_ON
-        description: "date when the comment was posted"
+        description: date when the comment was posted
         tests:
           - not_null
       - name: SOLUTION_SEQUENCE
-        description: "sequence number for solutions extracted from the same comment (1, 2, 3, etc.)"
+        description: sequence number for solutions extracted from the same comment (1, 2, 3, etc.)
         tests:
           - not_null
+      - name: SOLUTION_ID
+        description: unique identifier for the extracted solution
+        tests:
+          - not_null
+          - unique
       - name: REPLY_TO_ID
-        description: "if comment is a reply, this is the comment_id of the parent"
+        description: if comment is a reply, this is the comment_id of the parent
       - name: PARENT_COMMENT_ID
-        description: "comment_id of the parent comment for linking solutions to problem discussions"
+        description: comment_id of the parent comment for linking solutions to problem discussions
       - name: SOURCE_COMMENT
-        description: "original comment or survey response content"
+        description: original comment or survey response content
       - name: SOURCE_QUESTION
-        description: "original prompt or question in Ethelo"
-      - name: _FILE_UPLOAD_DATE
-        description: "date of last ethelo data upload"
+        description: original prompt or question in Ethelo
       - name: SOLUTION_TEXT
-        description: "specific solution identified by the LLM"
+        description: specific solution identified by the LLM
         tests:
           - not_null
       - name: SOLUTION_LENGTH
-        description: "character length of the extracted solution text"
+        description: character length of the extracted solution text
       - name: SOLUTIONS_JSON
-        description: "raw JSON response from the LLM containing all extracted solutions"
-      - name: EXTRACTION_STATUS
-        description: "status of the LLM extraction (SUCCESS or FAILED)"
+        description: raw JSON response from the LLM containing all extracted solutions
+      - name: SOLUTION_SHORTENED_ALL
+        description: concatenated string of all shortened solutions separated by " | "
+      - name: SOLUTION_SHORTENED_ARRAY
+        description: array of shortened solutions
+      - name: SOLUTION_SHORTENED_JSON
+        description: raw JSON response from the LLM containing shortened solutions
+      - name: _FILE_UPLOAD_DATE
+        description: date of last ethelo data upload
       - name: PROCESSED_AT
-        description: "timestamp when the LLM processing occurred"
+        description: timestamp when the LLM processing occurred
 
   - name: int_problem_solution_links
     description: |

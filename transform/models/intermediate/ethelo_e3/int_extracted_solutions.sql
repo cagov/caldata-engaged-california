@@ -39,8 +39,9 @@ with source_comments as (
 -- noqa: enable=LT02
 
 -- In order to provide better context for replies, this CTE builds out the full parent comment thread for each reply.
--- This is done even though the replies are currently removed in later processing, to allow for future flexibility.
--- This CTE is RECURSIVE
+-- The second half of the CTE is removed because the replies are currently removed in later processing.
+-- This was kept to allow for future flexibility.
+-- This CTE is RECURSIVE.
 comment_threads as (
 
     select
@@ -211,7 +212,89 @@ flattened_solutions as (
     from solution_extraction as se,
         lateral flatten(input => solutions_array, outer => true) as f
     where f.value is not null and trim(f.value::STRING) != ''
+),
+
+
+-- Use AI to extract shorter solutions from each solution statement
+-- solution_exctraction CTE uses long lines of text that exceed line length limits.
+-- Disabling line length QA for these CTEs only.
+-- noqa: disable=L016
+solution_shortened as (
+    select
+        fs.*,
+        -- Extract solutions using Snowflake Cortex AI with fallback handling.
+        -- TRY_COMPLETE returns response metadata; actual JSON is nested at structured_output[0].raw_message
+        -- Using TRY_COMPLETE instead of AI_COMPLETE for NULL-on-failure vs hard error on malformed JSON
+        -- We use TRY_COMPLETE because with the structured output, the smaller models we use in dev are more likely to have issues. See snowflake documentation for details.
+        coalesce(
+            try_parse_json(
+                to_json(
+                    SNOWFLAKE.CORTEX.TRY_COMPLETE(
+                        '{{ var("llm_model") }}',
+                        [
+                            {
+                                'role': 'user',
+                                'content': concat(
+                                    'You are analyzing proposed solutions from California state employees about making the government more efficient. ',
+                                    'Shorten each statement to 5-8 words by removing any details about the problem it solves, and summarizing the gist of the solution.\n\n',
+                                    'Extract ONLY the general action items, proposed solutions, or recommendations. Ignore problem descriptions, for statements that explain what the solution solves, and department names or acronyms.\n\n',
+
+                                    'COMMENT CONTEXT:\n',
+                                    'Comment Content: ', fs.solution_text, '\n',
+
+                                    'GUIDELINES:\n',
+                                    '• Identify main solutions and recommendations, not minor suggestions\n',
+                                    '• One solution = one actionable recommendation for leadership\n',
+                                    '• Summarize as concisely as possible\n',
+                                    '• Focus on substantial, actionable solutions\n',
+
+                                    'JSON OUTPUT REQUIREMENTS:\n',
+                                    '• Use only standard alphanumeric characters, spaces, and basic punctuation\n',
+                                    '• Avoid special characters like backticks, curly quotes, or extended Unicode\n',
+                                    '• Escape quotes properly with backslashes\n',
+
+                                    'EXAMPLES OF COMPREHENSIVE EXTRACTION:\n',
+                                    'Input: "Implement contract penalty provisions charging contractors for delays and cost overruns while requiring contractors to absorb additional costs beyond original bid amounts rather than passing them to the state"\n',
+                                    'Output: "Implement contract penalties for delays and cost overruns."\n\n',
+
+                                    'Input: "Continue and expand telework programs for state employees to increase efficiency through reduced commuting time, lower overhead costs for office space and utilities, and improved public service responsiveness using secure cloud systems, videoconferencing, and shared databases."\n',
+                                    'Output: "Continue and expand telework for state employees"\n\n',
+
+                                    'Input: "Standardize software and tools across all state departments for personnel and HR information, web site content, and project management (SharePoint) similar to the FisCAL effort"\n',
+                                    'Output: "Standardize HR software and tools across all departments"\n\n',
+
+                                    'Remember: one solution = one short, actionable recommendation for leadership. Return exactly 1 consolidated solution per comment unless the source comment contains multiple, truly unique solutions.',
+                                    'IMPORTANT LENGTH LIMIT: Ensure the **entire** JSON response (including the JSON structure itself) is less than 500 tokens'
+                                )
+                            }
+                        ],
+                        object_construct(
+                            'temperature', 0.00,
+                            'max_tokens', 8000,
+                            'top_p', 0.0,
+                            'response_format',
+                            parse_json(
+                                '{"type":"json","schema":{"type":"object","properties":{"solutions":{"type":"array","items":{"type":"string"}}},"required":["solutions"]}}'
+                            )
+                        )
+                    ):structured_output[0]:raw_message
+                )
+            )::OBJECT,
+            -- Fallback: empty array object
+            parse_json('{"solutions": []}')::OBJECT
+        ) as solution_shortened_json,
+
+        case
+            when solution_shortened_json:solutions is not null then solution_shortened_json:solutions
+            else []
+        end as solution_shortened_array,
+
+        -- Concatenate shortened_solutions into a single string to ensure one row per solution:
+        array_to_string(transform(solution_shortened_json:solutions, x -> x::STRING), ' | ') as solution_shortened_all
+
+    from flattened_solutions as fs
 )
+-- noqa: enable=L016
 
 select
     -- Primary key components for incremental updates
@@ -220,26 +303,28 @@ select
     posted_on,
     solution_sequence,
 
+    --solution_id
+    row_number() over (
+        order by comment_id, solution_sequence
+    ) as solution_id,
+
     -- Source comment details
     reply_to_id,
-    parent_comment_id,  -- For linking solutions to original problem discussions
+    parent_comment_id,
     content as source_comment,
     question as source_question,
-    _file_upload_date,
 
     -- Extracted solution information
     solution_text,
     length(solution_text) as solution_length,
-
-    -- AI processing metadata
     solutions_json,
-    case
-        when solutions_json is not null then 'SUCCESS'
-        else 'FAILED'
-    end as extraction_status,
+    solution_shortened_all,
+    solution_shortened_array,
+    solution_shortened_json,
 
-    -- Processing timestamp
+    -- Timestamps
+    _file_upload_date,
     current_timestamp() as processed_at
 
-from flattened_solutions
+from solution_shortened
 where solution_text is not null
