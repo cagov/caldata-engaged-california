@@ -101,9 +101,8 @@ models:
       Solutions extracted from E3 comments and survey responses using Snowflake LLM.
       Each row represents one specific solution identified in a comment. Multiple solutions
       can be extracted from a single comment, resulting in multiple rows per comment.
-      Shortened solutions are also generated through a secondary LLM call in order to create
-      concise labels for easier categorization and analysis. Shorter, more generic solution statements
-      are extracted from the first pass solution statements.
+      Shortened solutions are also generated through a second LLM call in order to create
+      shorter, more generic labels for easier categorization and analysis.
     config:
       materialized: incremental
       unique_key: ["comment_id"]
@@ -124,6 +123,9 @@ models:
           - not_null
       - name: SOLUTION_ID
         description: unique identifier for the extracted solution
+        tests:
+          - not_null
+          - unique
       - name: REPLY_TO_ID
         description: if comment is a reply, this is the comment_id of the parent
       - name: PARENT_COMMENT_ID
