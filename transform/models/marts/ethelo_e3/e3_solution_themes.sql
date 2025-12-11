@@ -1,3 +1,5 @@
+-- depends_on: {{ ref('int_extracted_solutions') }}
+
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',

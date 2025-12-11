@@ -18,9 +18,9 @@ polished as (
     select
         *,
         case
-            when solution_id = '0' -- placeholder
+            when solution_id = '2148'
                 then parse_json(
-                    '[]'
+                    '[ "Contracts and vendors", "Qualified staff" ]'
                 )
             else solution_subthemes_array
         end as polished_solution_subthemes_array,
