@@ -14,13 +14,14 @@ theme_map as (
 -- polished CTE uses long lines of text that exceed line length limits.
 -- Disabling line length QA for this CTE only.
 -- noqa: disable=L016
+-- refine solution subthemes manually
 polished as (
     select
         *,
         case
-            when solution_id = '2148'
+            when solution_id = 0  -- placeholder
                 then parse_json(
-                    '[ "Contracts and vendors", "Qualified staff" ]'
+                    '[]'
                 )
             else solution_subthemes_array
         end as polished_solution_subthemes_array,
@@ -46,7 +47,12 @@ main_themes as (
         f.reply_to_id,
         f.source_comment,
         f.solution_sequence,
-        f.solution_text,
+        -- add missing periods at end of solution_text when they are not present
+        case
+            when right(trim(f.solution_text), 1) != '.'
+                then concat(trim(f.solution_text), '.')
+            else f.solution_text
+        end as solution_text,
         f.polished_solution_subthemes_array,
         f.num_solution_subthemes,
         f.solution_subtheme,
