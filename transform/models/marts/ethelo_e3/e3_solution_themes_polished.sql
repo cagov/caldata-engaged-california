@@ -19,10 +19,20 @@ polished as (
     select
         *,
         case
-            when solution_id = 0  -- placeholder
-                then parse_json(
-                    '[]'
-                )
+            when solution_id = 2240 then parse_json('["Work Culture"]')
+            when solution_id = 2255 then parse_json('["Software and tools"]')
+            when solution_id = 1833 then parse_json('["Public policy initiatives"]')
+            when solution_id = 27 then parse_json('["Process design and methodologies", "Work culture"]')
+            when solution_id = 101 then parse_json('["Software and tools", "Office management", "Compliance"]')
+            when solution_id = 140 then parse_json('["Employee training", "Work culture", "Trust and openness"]')
+            when solution_id = 300 then parse_json('["Compliance"]')
+            when solution_id = 302 then parse_json('["Compliance"]')
+            when solution_id = 328 then parse_json('["Process design and methodologies"]')
+            when solution_id = 493 then parse_json('["Public service delivery and responsiveness"]')
+            when solution_id = 559 then parse_json('["Office management"]')
+            when solution_id = 808 then parse_json('["Work Culture"]')
+            when solution_id = 1044 then parse_json('["Hiring and recruitment"]')
+            when solution_id = 661 then parse_json('["Public policy initiatives"]')
             else solution_subthemes_array
         end as polished_solution_subthemes_array,
         array_size(polished_solution_subthemes_array) as num_solution_subthemes
