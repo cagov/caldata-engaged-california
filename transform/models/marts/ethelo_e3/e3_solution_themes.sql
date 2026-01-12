@@ -1,5 +1,12 @@
 -- depends_on: {{ ref('int_extracted_solutions') }}
 
+-- This model classifies solution ideas into subthemes using AI classification.
+-- The subthemes are defined in the E3_ALL_COMMENTS_THEME_MAPPING source table.
+-- The AI classification in the classified_solutions CTE uses few-shot learning with multiple examples
+-- to improve accuracy. The examples chosen cover a range of subthemes and demonstrate how to handle
+-- cases where multiple subthemes apply. The output is a multi-label classification, meaning each solution idea
+-- can be assigned to multiple subthemes.
+
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',
@@ -54,8 +61,10 @@ classified_solutions as (
             s.solution_text,
             subthemes.list_of_subthemes,
             {
-                'task_description': 'Determine the category that is most related to the'
-                || ' given solution idea from a California state employee.',
+                'task_description': 'Determine the label or labels that are most closely related to the'
+                || ' given solution idea from a California state employee. Each solution idea may relate to'
+                || ' one or more labels. Each solution must relate to at least 1 label! Only return the most'
+                || ' relevant labels.',
                 'output_mode': 'multi',
                 'examples': [
                     {
@@ -191,7 +200,8 @@ classified_solutions as (
                     },
                     {
                         'input': 'Include all stakeholders when making program changes. Ask staff for their ideas and opinions since they have valuable expertise.',
-                        'labels': ['Internal feedback']
+                        'labels': ['Internal feedback'],
+                        'explanation': 'The idea focuses on getting input from internal staff. Although it could be thought of as indirectly relating to "Management culture and leadership", that label is not applied because the connection is weak and the text is more directly related to internal feedback.'
                     },
                     {
                         'input': 'Create a single online platform for all California state employees to submit timesheets across all departments.',
@@ -200,6 +210,16 @@ classified_solutions as (
                     {
                         'input': 'Write clear process guides for all team tasks.',
                         'labels': ['Process documentation']
+                    },
+                    {
+                        'input': 'Create a mentoring program. Pair new employees with experienced state workers to help them navigate government processes and reduce barriers to using their expertise.',
+                        'labels': ['Mentorship programs'],
+                        'explanation': 'The idea is specifically about creating a mentoring program. Labels such as "Employee retention", "Internal communication", and "Internal feedback" are not applied because these concepts are neither directly nor indirectly mentioned in the idea.'
+                    },
+                    {
+                        'input': 'Implement a flat tax system for all people',
+                        'labels': ['Public policy initiatives'],
+                        'explanation': 'The idea is about a public policy (tax system)'
                     }
                 ]
             }):labels
