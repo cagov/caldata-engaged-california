@@ -14,14 +14,25 @@ theme_map as (
 -- polished CTE uses long lines of text that exceed line length limits.
 -- Disabling line length QA for this CTE only.
 -- noqa: disable=L016
+-- refine solution subthemes manually
 polished as (
     select
         *,
         case
-            when solution_id = '2148'
-                then parse_json(
-                    '[ "Contracts and vendors", "Qualified staff" ]'
-                )
+            when solution_id = 2240 then parse_json('["Work Culture"]')
+            when solution_id = 2255 then parse_json('["Software and tools"]')
+            when solution_id = 1833 then parse_json('["Public policy initiatives"]')
+            when solution_id = 27 then parse_json('["Process design and methodologies", "Work culture"]')
+            when solution_id = 101 then parse_json('["Software and tools", "Office management", "Compliance"]')
+            when solution_id = 140 then parse_json('["Employee training", "Work culture", "Trust and openness"]')
+            when solution_id = 300 then parse_json('["Compliance"]')
+            when solution_id = 302 then parse_json('["Compliance"]')
+            when solution_id = 328 then parse_json('["Process design and methodologies"]')
+            when solution_id = 493 then parse_json('["Public service delivery and responsiveness"]')
+            when solution_id = 559 then parse_json('["Office management"]')
+            when solution_id = 808 then parse_json('["Work Culture"]')
+            when solution_id = 1044 then parse_json('["Hiring and recruitment"]')
+            when solution_id = 661 then parse_json('["Public policy initiatives"]')
             else solution_subthemes_array
         end as polished_solution_subthemes_array,
         array_size(polished_solution_subthemes_array) as num_solution_subthemes
@@ -46,7 +57,12 @@ main_themes as (
         f.reply_to_id,
         f.source_comment,
         f.solution_sequence,
-        f.solution_text,
+        -- add missing periods at end of solution_text when they are not present
+        case
+            when right(trim(f.solution_text), 1) != '.'
+                then concat(trim(f.solution_text), '.')
+            else f.solution_text
+        end as solution_text,
         f.polished_solution_subthemes_array,
         f.num_solution_subthemes,
         f.solution_subtheme,
