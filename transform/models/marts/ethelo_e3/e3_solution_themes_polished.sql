@@ -33,6 +33,7 @@ polished as (
             when solution_id = 808 then parse_json('["Work Culture"]')
             when solution_id = 1044 then parse_json('["Hiring and recruitment"]')
             when solution_id = 661 then parse_json('["Public policy initiatives"]')
+            when solution_id = 2245 then parse_json('["Software and tools", "Digitize processes"]')
             else solution_subthemes_array
         end as polished_solution_subthemes_array,
         array_size(polished_solution_subthemes_array) as num_solution_subthemes
