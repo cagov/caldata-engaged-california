@@ -64,8 +64,8 @@ main_themes as (
                 then concat(trim(f.solution_text), '.')
             else f.solution_text
         end as idea_text,
-        f.polished_idea_subthemes_array,
-        f.num_idea_subthemes,
+        f.polished_solution_subthemes_array as polished_idea_subthemes_array,
+        f.num_solution_subthemes as num_idea_subthemes,
         f.solution_subtheme as idea_subtheme,
         tm.main_theme as idea_main_theme
     from flattened_subthemes as f
