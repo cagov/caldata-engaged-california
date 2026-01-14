@@ -19,7 +19,7 @@ polished as (
     select
         *,
         case
-            when solution_id = 2240 then parse_json('["Work Culture"]')
+            when solution_id = 2240 then parse_json('["Work culture"]')
             when solution_id = 2255 then parse_json('["Software and tools"]')
             when solution_id = 1833 then parse_json('["Public policy initiatives"]')
             when solution_id = 27 then parse_json('["Process design and methodologies", "Work culture"]')
@@ -30,7 +30,7 @@ polished as (
             when solution_id = 328 then parse_json('["Process design and methodologies"]')
             when solution_id = 493 then parse_json('["Public service delivery and responsiveness"]')
             when solution_id = 559 then parse_json('["Office management"]')
-            when solution_id = 808 then parse_json('["Work Culture"]')
+            when solution_id = 808 then parse_json('["Work culture"]')
             when solution_id = 1044 then parse_json('["Hiring and recruitment"]')
             when solution_id = 661 then parse_json('["Public policy initiatives"]')
             when solution_id = 2245 then parse_json('["Software and tools", "Digitize processes"]')
@@ -53,21 +53,21 @@ flattened_subthemes as (
 -- attach main themes to subthemes
 main_themes as (
     select
-        f.solution_id,
-        f.solution_comment_id,
+        f.solution_id as idea_id,
+        f.solution_comment_id as idea_comment_id,
         f.reply_to_id,
         f.source_comment,
-        f.solution_sequence,
+        f.solution_sequence as idea_sequence,
         -- add missing periods at end of solution_text when they are not present
         case
             when right(trim(f.solution_text), 1) != '.'
                 then concat(trim(f.solution_text), '.')
             else f.solution_text
-        end as solution_text,
-        f.polished_solution_subthemes_array,
-        f.num_solution_subthemes,
-        f.solution_subtheme,
-        tm.main_theme as solution_main_theme
+        end as idea_text,
+        f.polished_idea_subthemes_array,
+        f.num_idea_subthemes,
+        f.solution_subtheme as idea_subtheme,
+        tm.main_theme as idea_main_theme
     from flattened_subthemes as f
     left join theme_map as tm
         on f.solution_subtheme = tm.subtheme
