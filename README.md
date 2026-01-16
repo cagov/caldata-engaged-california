@@ -3,7 +3,7 @@
 ## Repository Overview
 This repository contains data engineering and analytics workflows used for preparing, modeling, and presenting data assets used in the [Engaged California](https://engaged.ca.gov/) program.
 The primary goal for making this repo public is to provide transparency into the analytics methods used to surface the insights in the published Engaged California reports.
-The repository contains [DBT](https://docs.getdbt.com/docs/introduction) SQL models that transform source data into data sets ready for analytics and reporting. In addition to using [DBT](https://cagov.github.io/data-infrastructure/dbt/dbt/) for SQL modeling, we use Snowflake as our data warehouse and Streamlit for generating interactive visualizations.
+The repository contains [dbt](https://docs.getdbt.com/docs/introduction) SQL models that transform source data into data sets ready for analytics and reporting. In addition to using dbt for SQL modeling, we use Snowflake as our data warehouse and Streamlit for generating interactive visualizations.
 
 ## Multiple Engagements
 The Engaged California program has published reports from multiple engagements. These include:
