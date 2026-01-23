@@ -303,25 +303,26 @@ models:
   - name: e3_solution_themes_polished
     description: |
       This model provides manually refined subthemes for some difficult to classify solutions. It also
-      deterministically assigns main themes based on the subtheme assignments.
+      deterministically assigns main themes based on the subtheme assignments. The final output renames
+      columns to use "idea" instead of "solution" for consistency with report terminology.
     columns:
-      - name: SOLUTION_ID
+      - name: IDEA_ID
         description: Unique id for each solution statement.
-      - name: SOLUTION_COMMENT_ID
+      - name: IDEA_COMMENT_ID
         description: comment_id where the solution was identified
       - name: REPLY_TO_ID
         description: Identifier of the comment this is a reply to. NULL for top-level comments
       - name: SOURCE_COMMENT
         description: The original comment text from which the solution was extracted
-      - name: SOLUTION_SEQUENCE
+      - name: IDEA_SEQUENCE
         description: Sequence number of the solution within its source comment
-      - name: SOLUTION_TEXT
+      - name: IDEA_TEXT
         description: The text of the solution statement
-      - name: POLISHED_SOLUTION_SUBTHEMES_ARRAY
+      - name: POLISHED_IDEA_SUBTHEMES_ARRAY
         description: Array of subthemes assigned to the solution statement including manual refinement.
-      - name: NUM_SOLUTION_SUBTHEMES
+      - name: NUM_IDEA_SUBTHEMES
         description: Number of polished subthemes assigned to the solution statement.
-      - name: SOLUTION_SUBTHEME
+      - name: IDEA_SUBTHEME
         description: Subtheme assigned to the solution statement by the LLM or manual refinement
-      - name: SOLUTION_MAIN_THEME
+      - name: IDEA_MAIN_THEME
         description: Main theme corresponding to the assigned subtheme

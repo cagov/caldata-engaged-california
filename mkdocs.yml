@@ -24,4 +24,5 @@ nav:
   - Introduction: index.md
   - Setup: setup.md
   - Writing Documentation: writing-documentation.md
+  - LLM Cost Control: llm-cost-control.md
   - dbt Project: dbt/index.html
