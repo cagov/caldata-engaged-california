@@ -25,3 +25,5 @@ nav:
   - Setup: setup.md
   - Writing Documentation: writing-documentation.md
   - dbt Project: dbt-dag.md
+  - LLM Cost Control: llm-cost-control.md
+  
