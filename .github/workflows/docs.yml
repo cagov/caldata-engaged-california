@@ -34,7 +34,7 @@ jobs:
         with:
           python-version-file: ".python-version"
 
-      - name: Build dbt docs and copu into MKdocs site
+      - name: Build dbt docs and copy into MKdocs site
         run: |
           uv run dbt deps --project-dir=transform
           uv run dbt docs generate --project-dir=transform --target=prd
