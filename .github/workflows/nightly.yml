@@ -34,10 +34,11 @@ jobs:
           SNOWFLAKE_WAREHOUSE: TRANSFORMING_XS_ENGCA_PRD
         run: |
           uv run dbt deps --project-dir transform --target prd
-          uv run dbt build --project-dir transform --target prd
+          #this nightly job only runs models tagged as "marketing", now that all deliberations are completed:
+          uv run dbt build --project-dir transform --target prd -- select tag:marketing
           uv run dbt run-operation validate_all_schemas --project-dir transform --target prd
-          # enable following line for active engagements only. run only the GOOGLE_DRIVE_CONNECTOR
-            # source tests to ensure source freshness tests are executed
+          # enable following line for active engagements only.
+            # run only the GOOGLE_DRIVE_CONNECTOR source tests to ensure source freshness tests are executed
           # uv run dbt test --project-dir transform --target prd --select source:GOOGLE_DRIVE_CONNECTOR
 
   slack-notification:
