@@ -9,7 +9,6 @@ permissions:
 
 env:
   DBT_PROFILES_DIR: transform/ci
-
   DBT_RAW_DB: RAW_ENGCA_PRD
   DBT_ANALYTICS_DB: ANALYTICS_ENGCA_PRD
   SNOWFLAKE_PRIVATE_KEY: ${{ SECRETS.SNOWFLAKE_PRIVATE_KEY_PRD }}
@@ -24,19 +23,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version-file: ".python-version"
-      - name: Build dbt docs
+
+      - name: Build dbt docs and copu into MKdocs site
         run: |
           uv run dbt deps --project-dir=transform
           uv run dbt docs generate --project-dir=transform --target=prd
-          cp -r transform/target docs/dbt_docs
+          # Copy dbt docs into the folder that MkDocs publishes
+          rm -rf docs/dbt
+          mkdir -p docs/dbt
+          cp -R transform/target/* docs/dbt/
+
+          # Prevent GitHub Pages/Jekyll from stripping "_" asset paths
+          touch docs/.nojekyll
+
+          # Fail fast if key files are missing
+          test -f docs/dbt/index.html
+          test -f docs/dbt/manifest.json
+          test -f docs/dbt/catalog.json
+
       - name: Deploy docs to GitHub Pages
         if: github.ref == 'refs/heads/main'
         run: uv run mkdocs gh-deploy --force
