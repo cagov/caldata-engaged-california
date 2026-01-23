@@ -2,7 +2,7 @@
 
 Open the interactive dbt docs site here:
 
-[Launch dbt docs →](dbt_docs/index.html){ .md-button .md-button--primary }
+[Launch dbt docs →](dbt/index.html){ .md-button .md-button--primary }
 
 ---
 
