@@ -278,6 +278,9 @@ sources:
     schema: ENGAGEDCA_GOOGLE_DRIVE
     description: |
       Ethelo data from various ODI-owned Google Drive folders.
+      You may see references to E3 in this directory. This is the internal naming convention our team used
+      to refer to the State Employees engagement. It refers to the "efficient, effective, and engaged" language
+      in the Executive Order N-30-25.
     tables:
       - name: DISAGGREGATED_VOTES_DATA
         description: |
@@ -475,6 +478,9 @@ sources:
     schema: GOV_EFFICIENCIES
     description: |
       Government Efficiencies data from various sources including airtable.
+      You may see references to E3 in this directory. This is the internal naming convention our team used
+      to refer to the State Employees engagement. It refers to the "efficient, effective, and engaged" language
+      in the Executive Order N-30-25.
     tables:
       - name: E3_ENGAGEDCA_DEPARTMENT_DROPDOWN
         description: |
@@ -515,6 +521,9 @@ sources:
     schema: ENGAGEDCA_UX_AND_RESEARCH
     description: |
       Data received from the UX and Research team. Includes hand-labels and QA data.
+      You may see references to E3 in this directory. This is the internal naming convention our team used
+      to refer to the State Employees engagement. It refers to the "efficient, effective, and engaged" language
+      in the Executive Order N-30-25.
     tables:
       - name: E3_HAND_LABELLED_MAIN_IDEAS
         description: |

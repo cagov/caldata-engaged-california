@@ -44,6 +44,7 @@ The following models automatically use the appropriate model based on target:
 2. `int_extracted_solutions.sql` - Solution extraction from comments
 3. `int_problem_solution_links.sql` - Semantic matching of problems to solutions
 4. `e3_consolidated_problem_solutions.sql` - AI consolidation of solutions
+5. `int_comment_department.sql` - Department extraction from comments and surveys
 
 ## Cost Monitoring
 - Monitor your Snowflake Cortex AI credits usage
