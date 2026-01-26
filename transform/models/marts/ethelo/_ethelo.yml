@@ -129,15 +129,15 @@ models:
   - name: voting_summary
     description: ""
     columns:
-      - name: NOT_IMPORTANT, 
+      - name: NOT_IMPORTANT,
         description: ""
-      - name: SOMEWHAT_IMPORTANT, 
+      - name: SOMEWHAT_IMPORTANT,
         description: ""
-      - name: SLIGHTLY_SUPPORT, 
+      - name: SLIGHTLY_SUPPORT,
         description: ""
-      - name: SLIGHTLY_OPPOSE, 
+      - name: SLIGHTLY_OPPOSE,
         description: ""
-      - name: ESSENTIAL, 
+      - name: ESSENTIAL,
         description: ""
       - name: ID
         description: ""
