@@ -60,7 +60,7 @@ SELECT
     attr_gacc,
     attr_ics209reportdatetime AS ics209_report_datetime,
     attr_ics209rptfortimeperiodfrom AS ics209_report_period_from,
-attr_ics209rptfortimeperiodto AS ics209_report_period_to,
+    attr_ics209rptfortimeperiodto AS ics209_report_period_to,
     attr_ics209reportstatus,
     attr_incidentmanagementorg,
     attr_incidentname,
