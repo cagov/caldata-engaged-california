@@ -116,15 +116,12 @@ models:
     columns:
       - name: race_ethnicity
         description: ""
-      - name: num_participants
+      - name: num_participantsz
         description: ""
       - name: percent_of_all_participants
         description: ""
       - name: percent_of_re_respondents
         description: ""
-
-
-        description: "Geography object of the fire perimeter."
 
   - name: voting_summary
     description: ""
