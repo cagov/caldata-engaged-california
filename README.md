@@ -9,10 +9,12 @@ The repository contains [dbt](https://docs.getdbt.com/docs/introduction) SQL mod
 The Engaged California program has published reports from multiple engagements. These include:
 - [Los Angeles Fire Recovery](https://engaged.ca.gov/lafires-recovery/)
   - [Agenda Setting Findings](https://engaged.ca.gov/lafires-recovery/agenda-setting-findings/)
+  - To view dbt code used to shape and analyze this data, look for any models tagged "la_fires_phase_1". You can find these tags in dbt_project.yml or in the DAG here: https://cagov.github.io/caldata-engaged-california/dbt/#!/overview?g_v=1 by selecting the "la_fires_phase_1" in the tagging filter at the bottom of the page.
   - [Agenda Setting Data Deep Dive](https://engaged.ca.gov/lafires-recovery/agenda-setting-data-insights/)
   - [Action Plan](https://engaged.ca.gov/lafires-recovery/action-plan/)
+    - To view dbt code used to shape and analyze this data, look for any models tagged "la_fires_phase_2". You can find these tags in dbt_project.yml or in the DAG here: https://cagov.github.io/caldata-engaged-california/dbt/#!/overview?g_v=1 by selecting the "la_fires_phase_2" in the tagging filter at the bottom of the page.
 - [State Employee Efficiency Ideas](https://engaged.ca.gov/stateemployees/)
-  - [Findings](https://e3-staging.pr.engaged.ca.gov/stateemployees/efficiency/)
+  - [Findings](https://e3-staging.pr.engaged.ca.gov/stateemployees/efficiency/)  - To view dbt code used to shape and analyze this data, look for any models tagged "state_employees". You can find these tags in dbt_project.yml or in the DAG here: https://cagov.github.io/caldata-engaged-california/dbt/#!/overview?g_v=1 by selecting the "state_employees" in the tagging filter at the bottom of the page.
 
 ## DBT Project structure (high level)
 - **transform/**: dbt models and SQL transformations.
@@ -25,6 +27,11 @@ The Engaged California program has published reports from multiple engagements. 
 - **streamlit/**: Interactive dashboards are primarily built using Streamlit. These visualizations are generally intended for exploratory analysis and transparency rather than production reporting.
 - **notebooks/**: analytics notebooks
 - **docs/**: documentation
+
+## DBT Project structure (per engagement)
+This repo includes
+- **transform/**: dbt models and SQL transformations.
+  - **dbt_project.yml**: dbt project configuration
 
 ## Data Sources
 The data used in this repository come primarily from delibrative democracy engagements conducted using *Ethelo*. Other data come from sources that such as *Bitly* and *Mailchimp* that were used for observing participation in the engagements and the effectiveness of marketing initiatives.
