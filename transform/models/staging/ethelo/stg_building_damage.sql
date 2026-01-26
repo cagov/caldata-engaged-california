@@ -1,9 +1,8 @@
 {{ config(materialized='table') }}
 
 WITH source_seed AS (
-    -- Source table created by dbt seed from buildings_with_dins_2023.csv
     SELECT *
-    FROM {{ ref('buildings_with_dins_2023') }}
+    FROM {{ source('LA_FIRES_GEO', 'BUILDINGS_WITH_DINS_2023') }}
 )
 
 SELECT
