@@ -35,7 +35,6 @@ seeds:
   caldata_engaged_california:
     # resource-paths
     ethelo_la_agenda_setting:
-      +enabled: false # disable this seed as transformations are no longer needed on this data
 
 models:
   caldata_engaged_california:
