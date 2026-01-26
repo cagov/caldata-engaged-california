@@ -2,7 +2,7 @@
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',
-    unique_key=['comment_id'],
+    unique_key=['solution_id'],
     on_schema_change='sync_all_columns'
 ) }}
 
