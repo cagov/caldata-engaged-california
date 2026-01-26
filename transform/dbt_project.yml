@@ -35,7 +35,7 @@ seeds:
   caldata_engaged_california:
     # resource-paths
     ethelo_la_agenda_setting:
-      +enabled: false
+      +enabled: false # disable this seed as transformations are no longer needed on this data
 
 models:
   caldata_engaged_california:
@@ -43,14 +43,16 @@ models:
       +materialized: view
       mailchimp:
         +schema: mailchimp
+        +tags: ["marketing"]
+      bitly:
+        +schema: bitly
+        +tags: ["marketing"]
       ethelo:
         +schema: ethelo
         +enabled: false
       ethelo_la_deliberation:
         +schema: ethelo_la_deliberation
         +enabled: false
-      bitly:
-        +schema: bitly
       ethelo_e3:
         +schema: ethelo_e3
 
@@ -58,6 +60,10 @@ models:
       +materialized: view
       mailchimp:
         +schema: mailchimp
+        +tags: ["marketing"]
+      bitly:
+        +schema: bitly
+        +tags: ["marketing"]
       ethelo:
         +schema: ethelo
         +enabled: false
@@ -66,14 +72,16 @@ models:
         +enabled: false
       ethelo_e3:
         +schema: ethelo_e3
-      bitly:
-        +schema: bitly
 
     marts:
       +materialized: table
       +database: "{{ env_var('DBT_ANALYTICS_DB', 'ANALYTICS_ENGCA_DEV') }}"
       mailchimp:
         +schema: mailchimp
+        +tags: ["marketing"]
+      bitly:
+        +schema: bitly
+        +tags: ["marketing"]
       ethelo:
         +schema: ethelo
         +enabled: false
@@ -82,11 +90,11 @@ models:
         +enabled: false
       ethelo_e3:
         +schema: ethelo_e3
-      bitly:
-        +schema: bitly
       daily_report:
         +schema: daily_report
         ethelo_la_agenda_setting:
           +enabled: false
         ethelo_la_deliberation:
           +enabled: false
+        marketing:
+          +tags: ["marketing"]
