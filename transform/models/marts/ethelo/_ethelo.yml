@@ -50,57 +50,47 @@ models:
   - name: participants
     description: ""
     columns:
-      - name: participant_id
+      - name: zip
         description: ""
-      - name: status
+      - name: fire_zone
         description: ""
-      - name: last_invite_sent
+      - name: city
         description: ""
-      - name: voting_complete
+      - name: housing_status
         description: ""
-      - name: survey_completed
+      - name: household_income_pretax
         description: ""
-      - name: completion
+      - name: fire_impact_employment
         description: ""
-      - name: comment_count
+      - name: race_ethnicity
         description: ""
-      - name: joined_on
+      - name: orig_ethelo_zip
         description: ""
-      - name: race_ethnicity_array
+      - name: ai_an_writein
         description: ""
-      - name: income
+      - name: asian_detailed
         description: ""
-      - name: age
+      - name: asian_writein
         description: ""
-      - name: gender_identity
+      - name: black_detailed
         description: ""
-      - name: confidence_increase
+      - name: black_writein
         description: ""
-      - name: evacuation_zone
+      - name: hisp_latino_detailed
         description: ""
-      - name: recovery_options_feeling
+      - name: hisp_latino_writein
         description: ""
-      - name: opening_outlook
+      - name: mena_detailed
         description: ""
-      - name: final_outlook
+      - name: mena_writein
         description: ""
-      - name: last_sign_in
+      - name: nhpi_detailed
         description: ""
-      - name: airtable_id
+      - name: nhpi_writein
         description: ""
-      - name: _fivetran_synced
+      - name: white_detailed
         description: ""
-      - name: id
-        description: ""
-      - name: roles
-        description: ""
-      - name: id_number
-        description: ""
-      - name: resent_invite
-        description: ""
-      - name: successful_reinvite
-        description: ""
-      - name: influence
+      - name: white_writein
         description: ""
 
   - name: recent_fire_perimeters
@@ -131,4 +121,75 @@ models:
       - name: percent_of_all_participants
         description: ""
       - name: percent_of_re_respondents
+        description: ""
+
+
+        description: "Geography object of the fire perimeter."
+
+  - name: voting_summary
+    description: ""
+    columns:
+      - name: NOT_IMPORTANT, 
+        description: ""
+      - name: SOMEWHAT_IMPORTANT, 
+        description: ""
+      - name: SLIGHTLY_SUPPORT, 
+        description: ""
+      - name: SLIGHTLY_OPPOSE, 
+        description: ""
+      - name: ESSENTIAL, 
+        description: ""
+      - name: ID
+        description: ""
+
+  - name: comments
+    description: ""
+    columns:
+      - name: TYPE
+        description: ""
+      - name: PRIVACY
+        description: ""
+      - name: CONTENT
+        description: ""
+
+  - name: nudge_participants
+    description: ""
+    columns:
+      - name: PARTICIPANT_ID
+        description: ""
+      - name: STATUS
+        description: ""
+      - name: ROLES
+        description: ""
+      - name: INFLUENCE
+        description: ""
+      - name: LAST_INVITE_SENT
+        description: ""
+      - name: VOTING_COMPLETE
+        description: ""
+      - name: SURVEY_COMPLETED
+        description: ""
+      - name: COMPLETION
+        description: ""
+      - name: COMMENT_COUNT
+        description: ""
+      - name: JOINED_ON
+        description: ""
+      - name: LAST_SIGN_IN
+        description: ""
+      - name: RESENT_INVITE
+        description: ""
+      - name: SUCCESSFUL_REINVITE
+        description: ""
+      - name: _FIVETRAN_SYNCED
+        description: ""
+
+  - name: PARTICIPANT_PERSPECTIVE_AND_PRIORITY
+    description: ""
+    columns:
+      - name: PARTICIPANT
+        description: ""
+      - name: TARGET
+        description: ""
+      - name: CONTENT
         description: ""

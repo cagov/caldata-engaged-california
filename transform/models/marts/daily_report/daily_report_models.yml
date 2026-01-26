@@ -28,6 +28,30 @@ models:
         description: "Type of campaign."
       - name: max_fivetran_sync_date
         description: "Latest Fivetran sync date."
+  - name: ethelo_partipants
+    description: "Participant counts and join status for LA agenda setting."
+    columns:
+      - name: num_invited
+        description: "Number of invited participants."
+      - name: num_joined
+        description: "Number of participants who joined."
+      - name: num_invited_before_today
+        description: "Number of participants invited before today."
+      - name: num_invited_before_today_and_joined
+        description: "Number of participants invited before today and joined."
+      - name: max_fivetran_sync
+        description: "Latest Fivetran sync date."
+  - name: ethelo_comments
+    description: "Comment counts and participant engagement."
+    columns:
+      - name: num_comments
+        description: "Number of comments posted."
+      - name: num_participants_w_commments
+        description: "Number of participants who posted comments."
+      - name: evacuation_zone
+        description: "Evacuation zone of participants."
+      - name: max_fivetran_sync
+        description: "Latest Fivetran sync date."
   - name: ethelo_la_deliberation_participants
     description: "Participant counts and join status for LA deliberation."
     columns:

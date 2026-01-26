@@ -13,7 +13,7 @@ SELECT
     poly_featureaccess,
     poly_featurestatus,
     poly_isvisible,
-    // Attempt basic parse, relies on Snowflake's default formats
+    -- Attempt basic parse, relies on Snowflake's default formats
     TRY_TO_TIMESTAMP_NTZ(poly_createdate) AS perimeter_createdate,
     TRY_TO_TIMESTAMP_NTZ(poly_datecurrent) AS perimeter_date_current,
     poly_polygondatetime AS perimeter_polygon_datetime_ntz, // Already TIMESTAMP_NTZ, keep as is
