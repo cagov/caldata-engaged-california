@@ -9,11 +9,16 @@ sources:
     tables:
       - name: BUILDINGS_WITH_DINS_2023
         description: |
-          LA geographic data from https://geohub.lacity.org/datasets/lacounty::2023-buildings-with-dins-data-/explore.
-          This GIS dataset contains building footprints depicting building shape and location in select portions of Los
-          Angeles County, with DINS data as of January 27, 2025 from the Palisades and Eaton Fires attached to the building
-          footprint. Building footprints with 1/4 mile of the Eaton and Palisades Fire Perimeters are included, but may not
-          have DAMAGE information. HEIGHT is the height of the building and ELEV is the elevation of the roof (elevation of
+          LA geographic data from
+          https://geohub.lacity.org/datasets/lacounty::2023-buildings-with-dins-data-/explore.
+          This GIS dataset contains building footprints depicting building shape and location
+          in select portions of Los
+          Angeles County, with DINS data as of January 27, 2025 from the Palisades and Eaton
+          Fires attached to the building
+          footprint. Building footprints with 1/4 mile of the Eaton and Palisades Fire Perimeters
+          are included, but may not
+          have DAMAGE information. HEIGHT is the height of the building and ELEV is the elevation
+          of the roof (elevation of
           footprint + height).
 
         columns:
@@ -36,7 +41,7 @@ sources:
       - name: CA_FIRE_PERIMETERS
         description: |
           Sourced from the National Interagency Fire Center's ArcGIS Open Data site, this seed represents the
-          "WFIGS Interagency Fire Perimeters" dataset. 
+          "WFIGS Interagency Fire Perimeters" dataset.
           url: "https://data-nifc.opendata.arcgis.com/datasets/nifc::wfigs-interagency-fire-perimeters/about"
 
         columns:
