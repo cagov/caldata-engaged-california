@@ -50,6 +50,24 @@ models:
   - name: participants
     description: ""
     columns:
+      - name: PARTICIPANT_ID
+        description: ""
+      - name: STATUS
+        description: ""
+      - name: LAST_INVITE_SENT
+        description: ""
+      - name: VOTING_COMPLETE
+        description: ""
+      - name: SURVEY_COMPLETED
+        description: ""
+      - name: COMPLETION
+        description: ""
+      - name: COMMENT_COUNT
+        description: ""
+      - name: JOINED_ON
+        description: ""
+      - name: _FIVETRAN_SYNCED
+        description: ""
       - name: zip
         description: ""
       - name: fire_zone
@@ -116,7 +134,7 @@ models:
     columns:
       - name: race_ethnicity
         description: ""
-      - name: num_participantsz
+      - name: num_participants
         description: ""
       - name: percent_of_all_participants
         description: ""
@@ -126,17 +144,53 @@ models:
   - name: voting_summary
     description: ""
     columns:
-      - name: NOT_IMPORTANT,
+      - name: NOT_IMPORTANT
         description: ""
-      - name: SOMEWHAT_IMPORTANT,
+      - name: SOMEWHAT_IMPORTANT
         description: ""
-      - name: SLIGHTLY_SUPPORT,
+      - name: SLIGHTLY_SUPPORT
         description: ""
-      - name: SLIGHTLY_OPPOSE,
+      - name: SLIGHTLY_OPPOSE
         description: ""
-      - name: ESSENTIAL,
+      - name: ESSENTIAL
         description: ""
       - name: ID
+        description: ""
+      - name: TOPIC
+        description: ""
+      - name: OPTION
+        description: ""
+      - name: SUPPORT
+        description: ""
+      - name: NEGATIVE_VOTES
+        description: ""
+      - name: AVERAGE_WEIGHTING
+        description: ""
+      - name: CONFLICT
+        description: ""
+      - name: ABSTAIN_VOTES
+        description: ""
+      - name: IN_BEST_SCENARIO
+        description: ""
+      - name: APPROVAL
+        description: ""
+      - name: CONSENSUS
+        description: ""
+      - name: TOTAL_VOTES
+        description: ""
+      - name: POSITIVE_VOTES
+        description: ""
+      - name: NOT_IMPORTANT
+        description: ""
+      - name: SOMEWHAT_IMPORTANT
+        description: ""
+      - name: SLIGHTLY_SUPPORT
+        description: ""
+      - name: SLIGHTLY_OPPOSE
+        description: ""
+      - name: ESSENTIAL
+        description: ""
+      - name: _FIVETRAN_SYNCED
         description: ""
 
   - name: comments
@@ -147,6 +201,26 @@ models:
       - name: PRIVACY
         description: ""
       - name: CONTENT
+        description: ""
+      - name: COMMENT_ID
+        description: ""
+      - name: TOPIC
+        description: ""
+      - name: TARGET
+        description: ""
+      - name: POSTED_BY_ID
+        description: ""
+      - name: REPLY_TO_ID
+        description: ""
+      - name: POSTED_ON
+        description: ""
+      - name: REPLY_COUNT
+        description: ""
+      - name: FLAG_COUNT
+        description: ""
+      - name: LIKE_COUNT
+        description: ""
+      - name: _FIVETRAN_SYNCED
         description: ""
 
   - name: nudge_participants
@@ -182,11 +256,58 @@ models:
         description: ""
 
   - name: PARTICIPANT_PERSPECTIVE_AND_PRIORITY
-    description: ""
     columns:
       - name: PARTICIPANT
-        description: ""
       - name: TARGET
-        description: ""
       - name: CONTENT
+
+  - name: MAXIMUM_EXTENT_EVAC_ZONES
+    columns:
+      - name: OBJECTID
+        description: ""
+      - name: ZONEID
+        description: ""
+      - name: COUNTRY_ABBR
+        description: ""
+      - name: STATE_ABBR
+        description: ""
+      - name: COUNTY_ABB
+        description: ""
+      - name: CITY_ABBR
+        description: ""
+      - name: ZONE_SEQUENCE
+        description: ""
+      - name: CITY_ZONE_SEQUENCE
+        description: ""
+      - name: INCIDENT_NAME
+        description: ""
+      - name: MOST_EXTREME_STATUS
+        description: ""
+      - name: WKT_GEOMETRY
+        description: ""
+      - name: ZONE_GEOGRAPHY
+        description: ""
+      - name: OBJECTID
+        description: ""
+      - name: ZONEID
+        description: ""
+      - name: COUNTRY_ABBR
+        description: ""
+      - name: STATE_ABBR
+        description: ""
+      - name: COUNTY_ABB
+        description: ""
+      - name: CITY_ABBR
+        description: ""
+      - name: ZONE_SEQUENCE
+        description: ""
+      - name: CITY_ZONE_SEQUENCE
+        description: ""
+      - name: INCIDENT_NAME
+        description: ""
+      - name: MOST_EXTREME_STATUS
+        description: ""
+      - name: WKT_GEOMETRY
+        description: ""
+      - name: ZONE_GEOGRAPHY
         description: ""

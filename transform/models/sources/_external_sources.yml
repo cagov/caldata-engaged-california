@@ -22,7 +22,7 @@ sources:
           footprint + height).
 
         columns:
-          - name: OBJECT_ID
+          - name: OBJECTID
           - name: CODE
           - name: BLD_ID
           - name: HEIGHT
@@ -162,6 +162,7 @@ sources:
           - name: ATTR_SOURCEGLOBALID
           - name: GLOBALID
           - name: ATTR_INCIDENTCOMPLEXITYLEVEL
+          - name: WKT_GEOMETRY
 
       - name: FIRE_ZONE_DEMOS
         description: |

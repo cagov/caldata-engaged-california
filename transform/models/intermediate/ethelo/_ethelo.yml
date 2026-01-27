@@ -34,7 +34,6 @@ models:
         description: "Area under evacuation warning in this ZIP (sq miles)."
       - name: evac_wrn_pct_zip
         description: "Percent of ZIP under evacuation warning."
-      - name: FIRE_RANK
 
   - name: int_fire_perimeter_overlap_by_zip
     description: "Selects the largest fire perimeter overlap per ZIP, with fire metadata."
@@ -55,6 +54,7 @@ models:
         description: "Overlap area between fire perimeter and ZIP (sq miles)."
       - name: percent_of_zip_affected
         description: "Percent of ZIP area affected by this fire."
+      - name: FIRE_RANK
 
   - name: int_impact_by_zip
     description: "Aggregates fire, evacuation, and building damage metrics per ZIP code."
