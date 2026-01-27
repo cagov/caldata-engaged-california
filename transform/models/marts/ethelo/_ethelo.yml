@@ -112,12 +112,12 @@ models:
         description: ""
 
   - name: recent_fire_perimeters
-    description: "Large fire perimeters (>=2024‑11‑01, >40 acres) around the time of the LA fires."
+    description: "Large fire perimeters (>=2024-11-01, >40 acres) around the time of the LA fires."
     columns:
       - name: Name
         description: "Fire incident name."
       - name: Fire_discovery_datetime
-        description: "Timestamp when fire was discovered"
+        description: "Timestamp when fire was discovered."
       - name: Containment_datetime
         description: "Timestamp when fire was contained."
       - name: Control_datetime
@@ -144,16 +144,6 @@ models:
   - name: voting_summary
     description: ""
     columns:
-      - name: NOT_IMPORTANT
-        description: ""
-      - name: SOMEWHAT_IMPORTANT
-        description: ""
-      - name: SLIGHTLY_SUPPORT
-        description: ""
-      - name: SLIGHTLY_OPPOSE
-        description: ""
-      - name: ESSENTIAL
-        description: ""
       - name: ID
         description: ""
       - name: TOPIC
@@ -164,21 +154,21 @@ models:
         description: ""
       - name: NEGATIVE_VOTES
         description: ""
+      - name: POSITIVE_VOTES
+        description: ""
+      - name: ABSTAIN_VOTES
+        description: ""
+      - name: TOTAL_VOTES
+        description: ""
       - name: AVERAGE_WEIGHTING
         description: ""
       - name: CONFLICT
-        description: ""
-      - name: ABSTAIN_VOTES
         description: ""
       - name: IN_BEST_SCENARIO
         description: ""
       - name: APPROVAL
         description: ""
       - name: CONSENSUS
-        description: ""
-      - name: TOTAL_VOTES
-        description: ""
-      - name: POSITIVE_VOTES
         description: ""
       - name: NOT_IMPORTANT
         description: ""
@@ -255,38 +245,14 @@ models:
       - name: _FIVETRAN_SYNCED
         description: ""
 
-  - name: PARTICIPANT_PERSPECTIVE_AND_PRIORITY
+  - name: participant_perspective_and_priority
     columns:
       - name: PARTICIPANT
       - name: TARGET
       - name: CONTENT
 
-  - name: MAXIMUM_EXTENT_EVAC_ZONES
+  - name: maximum_extent_evac_zones
     columns:
-      - name: OBJECTID
-        description: ""
-      - name: ZONEID
-        description: ""
-      - name: COUNTRY_ABBR
-        description: ""
-      - name: STATE_ABBR
-        description: ""
-      - name: COUNTY_ABB
-        description: ""
-      - name: CITY_ABBR
-        description: ""
-      - name: ZONE_SEQUENCE
-        description: ""
-      - name: CITY_ZONE_SEQUENCE
-        description: ""
-      - name: INCIDENT_NAME
-        description: ""
-      - name: MOST_EXTREME_STATUS
-        description: ""
-      - name: WKT_GEOMETRY
-        description: ""
-      - name: ZONE_GEOGRAPHY
-        description: ""
       - name: OBJECTID
         description: ""
       - name: ZONEID
