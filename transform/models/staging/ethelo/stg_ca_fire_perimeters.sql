@@ -1,6 +1,6 @@
 WITH source_seed AS (
     SELECT *
-    FROM {{ ref('ca_fire_perimeters') }}
+    FROM {{ source('LA_FIRES_GEO', 'CA_FIRE_PERIMETERS') }}
 )
 
 SELECT
@@ -13,9 +13,9 @@ SELECT
     poly_featureaccess,
     poly_featurestatus,
     poly_isvisible,
-    // Attempt basic parse, relies on Snowflake's default formats
-    TRY_TO_TIMESTAMP_NTZ(poly_createdate) AS perimeter_createdate,
-    TRY_TO_TIMESTAMP_NTZ(poly_datecurrent) AS perimeter_date_current,
+    -- Attempt basic parse, relies on Snowflake's default formats
+    poly_createdate AS perimeter_createdate,
+    poly_datecurrent AS perimeter_date_current,
     poly_polygondatetime AS perimeter_polygon_datetime_ntz, // Already TIMESTAMP_NTZ, keep as is
     poly_irwinid AS perimeter_irwinid,
     poly_forid AS perimeter_forid,
@@ -28,8 +28,8 @@ SELECT
     attr_abcdmisc,
     attr_adspermissionstate,
     attr_calculatedacres,
-    TRY_TO_TIMESTAMP_NTZ(attr_containmentdatetime) AS containment_datetime,
-    TRY_TO_TIMESTAMP_NTZ(attr_controldatetime) AS control_datetime,
+    attr_containmentdatetime AS containment_datetime,
+    attr_controldatetime AS control_datetime,
     attr_createdbysystem,
     attr_incidentsize,
     attr_discoveryacres,
@@ -38,7 +38,7 @@ SELECT
     attr_finalacres,
     attr_ffreportapprovedbytitle,
     attr_ffreportapprovedbyunit,
-    TRY_TO_TIMESTAMP_NTZ(attr_ffreportapproveddate) AS ff_report_approved_date,
+    attr_ffreportapproveddate AS ff_report_approved_date,
     attr_firebehaviorgeneral,
     attr_firebehaviorgeneral1,
     attr_firebehaviorgeneral2,
@@ -48,9 +48,9 @@ SELECT
     attr_firecausespecific,
     attr_firecode,
     attr_firedepartmentid,
-    TRY_TO_TIMESTAMP_NTZ(attr_firediscoverydatetime) AS fire_discovery_datetime,
+    attr_firediscoverydatetime AS fire_discovery_datetime,
     attr_firemgmtcomplexity,
-    TRY_TO_TIMESTAMP_NTZ(attr_fireoutdatetime) AS fire_out_datetime,
+    attr_fireoutdatetime AS fire_out_datetime,
     attr_firestrategyconfinepercent,
     attr_firestrategyfullsuppprcnt,
     attr_firestrategymonitorpercent,
@@ -58,9 +58,9 @@ SELECT
     attr_fsjobcode,
     attr_fsoverridecode,
     attr_gacc,
-    TRY_TO_TIMESTAMP_NTZ(attr_ics209reportdatetime) AS ics209_report_datetime,
-    TRY_TO_TIMESTAMP_NTZ(attr_ics209rptfortimeperiodfrom) AS ics209_report_period_from,
-    TRY_TO_TIMESTAMP_NTZ(attr_ics209rptfortimeperiodto) AS ics209_report_period_to,
+    attr_ics209reportdatetime AS ics209_report_datetime,
+    attr_ics209rptfortimeperiodfrom AS ics209_report_period_from,
+    attr_ics209rptfortimeperiodto AS ics209_report_period_to,
     attr_ics209reportstatus,
     attr_incidentmanagementorg,
     attr_incidentname,
@@ -70,7 +70,7 @@ SELECT
     attr_initiallatitude,
     attr_initiallongitude,
     attr_initialresponseacres,
-    TRY_TO_TIMESTAMP_NTZ(attr_initialresponsedatetime) AS initial_response_datetime,
+    attr_initialresponsedatetime AS initial_response_datetime,
     attr_irwinid,
     attr_isfirecauseinvestigated,
     attr_isfirecoderequested,
@@ -114,9 +114,9 @@ SELECT
     attr_wfdssdecisionstatus,
     attr_estimatedfinalcost,
     attr_organizationalassessment,
-    TRY_TO_TIMESTAMP_NTZ(attr_stratdecisionpublishdate) AS strat_decision_publish_date,
-    TRY_TO_TIMESTAMP_NTZ(attr_createdondatetime_dt) AS attr_created_on_datetime,
-    TRY_TO_TIMESTAMP_NTZ(attr_modifiedondatetime_dt) AS attr_modified_on_datetime,
+    attr_stratdecisionpublishdate AS strat_decision_publish_date,
+    attr_createdondatetime_dt AS attr_created_on_datetime,
+    attr_modifiedondatetime_dt AS attr_modified_on_datetime,
     attr_source,
     attr_iscpxchild,
     attr_cpxname,
@@ -126,7 +126,7 @@ SELECT
 
     -- Geometry Handling
     wkt_geometry, -- Keep original WKT for debugging/reference if desired
-    TRY_TO_GEOGRAPHY(wkt_geometry) AS perimeter_geography -- Convert WKT to GEOGRAPHY
+    wkt_geometry AS perimeter_geography -- Convert WKT to GEOGRAPHY
 
 FROM source_seed
 

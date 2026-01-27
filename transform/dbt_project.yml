@@ -35,7 +35,6 @@ seeds:
   caldata_engaged_california:
     # resource-paths
     ethelo_la_agenda_setting:
-      +enabled: false # disable this seed as transformations are no longer needed on this data
 
 models:
   caldata_engaged_california:
@@ -49,12 +48,13 @@ models:
         +tags: ["marketing"]
       ethelo:
         +schema: ethelo
-        +enabled: false
+        +tags: ["la_fires_phase_1"]
       ethelo_la_deliberation:
         +schema: ethelo_la_deliberation
-        +enabled: false
+        +tags: ["la_fires_phase_2"]
       ethelo_e3:
         +schema: ethelo_e3
+        +tags: ["state_employees"]
 
     intermediate:
       +materialized: view
@@ -66,12 +66,13 @@ models:
         +tags: ["marketing"]
       ethelo:
         +schema: ethelo
-        +enabled: false
+        +tags: ["la_fires_phase_1"]
       ethelo_la_deliberation:
         +schema: ethelo_la_deliberation
-        +enabled: false
+        +tags: ["la_fires_phase_2"]
       ethelo_e3:
         +schema: ethelo_e3
+        +tags: ["state_employees"]
 
     marts:
       +materialized: table
@@ -84,17 +85,19 @@ models:
         +tags: ["marketing"]
       ethelo:
         +schema: ethelo
-        +enabled: false
+        +tags: ["la_fires_phase_1"]
       ethelo_la_deliberation:
         +schema: ethelo_la_deliberation
-        +enabled: false
+        +tags: ["la_fires_phase_2"]
       ethelo_e3:
         +schema: ethelo_e3
       daily_report:
         +schema: daily_report
         ethelo_la_agenda_setting:
-          +enabled: false
+          +tags: ["la_fires_phase_1"]
         ethelo_la_deliberation:
-          +enabled: false
+          +tags: ["la_fires_phase_2"]
+        ethelo_e3:
+          +tags: ["state_employees"]
         marketing:
           +tags: ["marketing"]

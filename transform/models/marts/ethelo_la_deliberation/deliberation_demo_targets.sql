@@ -1,1 +1,1 @@
-select * from {{ ref('demographic_targets') }}
+select * from {{ source('LA_FIRES_GEO', 'FIRE_ZONE_DEMOS') }}

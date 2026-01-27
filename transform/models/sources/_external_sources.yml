@@ -1,0 +1,185 @@
+version: 2
+
+sources:
+  - name: LA_FIRES_GEO
+    database: RAW_ENGCA_PRD
+    schema: LA_FIRES_GEO
+    description: |
+      Source datasets for EngagedCA that are too large to be added as a seed file.
+    tables:
+      - name: BUILDINGS_WITH_DINS_2023
+        description: |
+          LA geographic data from
+          https://geohub.lacity.org/datasets/lacounty::2023-buildings-with-dins-data-/explore.
+          This GIS dataset contains building footprints depicting building shape and location
+          in select portions of Los
+          Angeles County, with DINS data as of January 27, 2025 from the Palisades and Eaton
+          Fires attached to the building
+          footprint. Building footprints with 1/4 mile of the Eaton and Palisades Fire Perimeters
+          are included, but may not
+          have DAMAGE information. HEIGHT is the height of the building and ELEV is the elevation
+          of the roof (elevation of
+          footprint + height).
+
+        columns:
+          - name: OBJECTID
+          - name: CODE
+          - name: BLD_ID
+          - name: HEIGHT
+          - name: ELEV
+          - name: SOURCE
+          - name: DATE_
+          - name: STATUS
+          - name: OLD_BLD_ID
+          - name: AREA
+          - name: DAMAGE
+          - name: STRUCTURET
+          - name: SHAPE__AREA
+          - name: SHAPE__LENGTH
+          - name: WKT_GEOMETRY
+
+      - name: CA_FIRE_PERIMETERS
+        description: |
+          Sourced from the National Interagency Fire Center's ArcGIS Open Data site, this seed represents the
+          "WFIGS Interagency Fire Perimeters" dataset.
+          url: "https://data-nifc.opendata.arcgis.com/datasets/nifc::wfigs-interagency-fire-perimeters/about"
+
+        columns:
+          - name: POLY_SOURCEOID
+          - name: POLY_INCIDENTNAME
+          - name: POLY_FEATURECATEGORY
+          - name: POLY_MAPMETHOD
+          - name: POLY_GISACRES
+          - name: POLY_DELETETHIS
+          - name: POLY_FEATUREACCESS
+          - name: POLY_FEATURESTATUS
+          - name: POLY_ISVISIBLE
+          - name: POLY_CREATEDATE
+          - name: POLY_DATECURRENT
+          - name: POLY_POLYGONDATETIME
+          - name: POLY_IRWINID
+          - name: POLY_FORID
+          - name: POLY_ACRES_AUTOCALC
+          - name: POLY_SOURCEGLOBALID
+          - name: POLY_SOURCE
+          - name: ATTR_SOURCEOID
+          - name: ATTR_ABCDMISC
+          - name: ATTR_ADSPERMISSIONSTATE
+          - name: ATTR_CALCULATEDACRES
+          - name: ATTR_CONTAINMENTDATETIME
+          - name: ATTR_CONTROLDATETIME
+          - name: ATTR_CREATEDBYSYSTEM
+          - name: ATTR_INCIDENTSIZE
+          - name: ATTR_DISCOVERYACRES
+          - name: ATTR_DISPATCHCENTERID
+          - name: ATTR_ESTIMATEDCOSTTODATE
+          - name: ATTR_FINALACRES
+          - name: ATTR_FFREPORTAPPROVEDBYTITLE
+          - name: ATTR_FFREPORTAPPROVEDBYUNIT
+          - name: ATTR_FFREPORTAPPROVEDDATE
+          - name: ATTR_FIREBEHAVIORGENERAL
+          - name: ATTR_FIREBEHAVIORGENERAL1
+          - name: ATTR_FIREBEHAVIORGENERAL2
+          - name: ATTR_FIREBEHAVIORGENERAL3
+          - name: ATTR_FIRECAUSE
+          - name: ATTR_FIRECAUSEGENERAL
+          - name: ATTR_FIRECAUSESPECIFIC
+          - name: ATTR_FIRECODE
+          - name: ATTR_FIREDEPARTMENTID
+          - name: ATTR_FIREDISCOVERYDATETIME
+          - name: ATTR_FIREMGMTCOMPLEXITY
+          - name: ATTR_FIREOUTDATETIME
+          - name: ATTR_FIRESTRATEGYCONFINEPERCENT
+          - name: ATTR_FIRESTRATEGYFULLSUPPPRCNT
+          - name: ATTR_FIRESTRATEGYMONITORPERCENT
+          - name: ATTR_FIRESTRATEGYPOINTZONEPRCNT
+          - name: ATTR_FSJOBCODE
+          - name: ATTR_FSOVERRIDECODE
+          - name: ATTR_GACC
+          - name: ATTR_ICS209REPORTDATETIME
+          - name: ATTR_ICS209RPTFORTIMEPERIODFROM
+          - name: ATTR_ICS209RPTFORTIMEPERIODTO
+          - name: ATTR_ICS209REPORTSTATUS
+          - name: ATTR_INCIDENTMANAGEMENTORG
+          - name: ATTR_INCIDENTNAME
+          - name: ATTR_INCIDENTSHORTDESCRIPTION
+          - name: ATTR_INCIDENTTYPECATEGORY
+          - name: ATTR_INCIDENTTYPEKIND
+          - name: ATTR_INITIALLATITUDE
+          - name: ATTR_INITIALLONGITUDE
+          - name: ATTR_INITIALRESPONSEACRES
+          - name: ATTR_INITIALRESPONSEDATETIME
+          - name: ATTR_IRWINID
+          - name: ATTR_ISFIRECAUSEINVESTIGATED
+          - name: ATTR_ISFIRECODEREQUESTED
+          - name: ATTR_ISFSASSISTED
+          - name: ATTR_ISMULTIJURISDICTIONAL
+          - name: ATTR_ISQUARANTINED
+          - name: ATTR_ISREIMBURSABLE
+          - name: ATTR_ISTRESPASS
+          - name: ATTR_ISUNIFIEDCOMMAND
+          - name: ATTR_ISVALID
+          - name: ATTR_LOCALINCIDENTIDENTIFIER
+          - name: ATTR_MODIFIEDBYSYSTEM
+          - name: ATTR_PERCENTCONTAINED
+          - name: ATTR_PERCENTPERIMTOBECONTAINED
+          - name: ATTR_POOCITY
+          - name: ATTR_POOCOUNTY
+          - name: ATTR_POODISPATCHCENTERID
+          - name: ATTR_POOFIPS
+          - name: ATTR_POOJURISDICTIONALAGENCY
+          - name: ATTR_POOJURISDICTIONALUNIT
+          - name: ATTR_POOJURISDICTUNITPARENTUNIT
+          - name: ATTR_POOLANDOWNERCATEGORY
+          - name: ATTR_POOLANDOWNERKIND
+          - name: ATTR_POOLEGALDESCPRINCIPALMERID
+          - name: ATTR_POOLEGALDESCQTR
+          - name: ATTR_POOLEGALDESCQTRQTR
+          - name: ATTR_POOLEGALDESCRANGE
+          - name: ATTR_POOLEGALDESCSECTION
+          - name: ATTR_POOLEGALDESCTOWNSHIP
+          - name: ATTR_POOPREDICTIVESERVICEAREAID
+          - name: ATTR_POOPROTECTINGAGENCY
+          - name: ATTR_POOPROTECTINGUNIT
+          - name: ATTR_POOSTATE
+          - name: ATTR_PREDOMINANTFUELGROUP
+          - name: ATTR_PREDOMINANTFUELMODEL
+          - name: ATTR_PRIMARYFUELMODEL
+          - name: ATTR_SECONDARYFUELMODEL
+          - name: ATTR_TOTALINCIDENTPERSONNEL
+          - name: ATTR_UNIQUEFIREIDENTIFIER
+          - name: ATTR_FORID
+          - name: ATTR_WFDSSDECISIONSTATUS
+          - name: ATTR_ESTIMATEDFINALCOST
+          - name: ATTR_ORGANIZATIONALASSESSMENT
+          - name: ATTR_STRATDECISIONPUBLISHDATE
+          - name: ATTR_CREATEDONDATETIME_DT
+          - name: ATTR_MODIFIEDONDATETIME_DT
+          - name: ATTR_SOURCE
+          - name: ATTR_ISCPXCHILD
+          - name: ATTR_CPXNAME
+          - name: ATTR_CPXID
+          - name: ATTR_SOURCEGLOBALID
+          - name: GLOBALID
+          - name: ATTR_INCIDENTCOMPLEXITYLEVEL
+          - name: WKT_GEOMETRY
+
+      - name: FIRE_ZONE_DEMOS
+        description: |
+          Demographic targets for fire evacuation zones. Targets based on reaching a representative
+          sample of residents from affected Eaton and Palisades evacuation zones with the LA Fires EngagedCA
+          engagements.
+
+        columns:
+          - name: fire_area
+            description: Fire evacuation area name
+            data_type: varchar
+          - name: demographic_category
+            description: Category of demographic (Age, Race and Ethnicity, Gender, Income Level, Housing Status)
+            data_type: varchar
+          - name: demographic_group
+            description: Specific demographic group within the category
+            data_type: varchar
+          - name: target_count
+            description: Target count for this demographic group in the fire area
+            data_type: integer
