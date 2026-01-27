@@ -30,6 +30,23 @@ sources:
           - name: TOPIC
           - name: TYPE
           - name: _FIVETRAN_SYNCED
+      - name: PARTICIPANTS
+        columns:
+          - name: ID
+          - name: STATUS
+          - name: LAST_SIGN_IN
+          - name: ROLES
+          - name: LAST_INVITE_SENT
+          - name: SURVEY_COMPLETED
+          - name: ID_NUMBER
+          - name: COMPLETION
+          - name: RESENT_INVITE
+          - name: SUCCESSFUL_REINVITE
+          - name: INFLUENCE
+          - name: JOINED_ON
+          - name: COMMENT_COUNT
+          - name: VOTING_COMPLETE
+          - name: _FIVETRAN_SYNCED
       - name: DATA_UPDATED
         columns:
           - name: DATA_UPLOADER

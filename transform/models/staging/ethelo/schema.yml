@@ -36,52 +36,265 @@ models:
         description: ""
       - name: building_geography
         description: ""
+      - name: OBJECTID
+        description: ""
+      - name: CODE
+        description: ""
+      - name: BLD_ID
+        description: ""
+      - name: HEIGHT
+        description: ""
+      - name: ELEV
+        description: ""
+      - name: SOURCE
+        description: ""
+      - name: DATE
+        description: ""
+      - name: STATUS
+        description: ""
+      - name: OLD_BLD_ID
+        description: ""
+      - name: AREA
+        description: ""
+      - name: DAMAGE
+        description: ""
+      - name: STRUCTURE_TYPE
+        description: ""
+      - name: SHAPE_AREA
+        description: ""
+      - name: SHAPE_LENGTH
+        description: ""
+      - name: WKT_GEOMETRY
+        description: ""
+      - name: BUILDING_GEOGRAPHY
+        description: ""
 
   - name: stg_ca_fire_perimeters
     description: "Parsed fire perimeter seed; converts timestamps and WKT to geography."
     columns:
-      - name: poly_sourceoid
+      - name: poly_acres_autocalc
         description: ""
-      - name: poly_incidentname
+      - name: attr_sourceoid
         description: ""
-      - name: poly_featurecategory
+      - name: attr_abcdmisc
         description: ""
-      - name: poly_mapmethod
+      - name: attr_adspermissionstate
         description: ""
-      - name: poly_gisacres
+      - name: attr_calculatedacres
         description: ""
-      - name: poly_featureaccess
+      - name: attr_incidentsize
         description: ""
-      - name: poly_featurestatus
+      - name: attr_discoveryacres
         description: ""
-      - name: poly_isvisible
+      - name: attr_dispatchcenterid
         description: ""
-      - name: perimeter_createdate
+      - name: attr_estimatedcosttodate
         description: ""
-      - name: perimeter_date_current
+      - name: attr_finalacres
         description: ""
-      - name: perimeter_polygon_datetime_ntz
+      - name: ff_report_approved_date
         description: ""
-      - name: perimeter_irwinid
+      - name: attr_firebehaviorgeneral
         description: ""
-      - name: perimeter_forid
+      - name: attr_firebehaviorgeneral1
         description: ""
-      - name: perimeter_acres_autocalc
+      - name: attr_firebehaviorgeneral2
         description: ""
-      - name: perimeter_sourceglobalid
+      - name: attr_firebehaviorgeneral3
         description: ""
-      - name: perimeter_source
+      - name: attr_firecause
         description: ""
-      - name: containment_datetime
+      - name: attr_firecausegeneral
         description: ""
-      - name: control_datetime
+      - name: attr_firecausespecific
         description: ""
-      - name: fire_discovery_datetime
+      - name: attr_firecode
         description: ""
-      - name: fire_out_datetime
+      - name: attr_firedepartmentid
         description: ""
-      - name: perimeter_geography
+      - name: attr_firemgmtcomplexity
         description: ""
+      - name: attr_fsjobcode
+        description: ""
+      - name: attr_fsoverridecode
+        description: ""
+      - name: attr_gacc
+        description: ""
+      - name: ics209_report_datetime
+        description: ""
+      - name: ics209_report_period_from
+        description: ""
+      - name: ics209_report_period_to
+        description: ""
+      - name: attr_ics209reportstatus
+        description: ""
+      - name: attr_incidentmanagementorg
+        description: ""
+      - name: attr_incidentname
+        description: ""
+      - name: attr_incidentshortdescription
+        description: ""
+      - name: attr_incidenttypecategory
+        description: ""
+      - name: attr_incidenttypekind
+        description: ""
+      - name: attr_initiallatitude
+        description: ""
+      - name: attr_initiallongitude
+        description: ""
+      - name: attr_initialresponseacres
+        description: ""
+      - name: initial_response_datetime
+        description: ""
+      - name: attr_irwinid
+        description: ""
+      - name: attr_isfirecauseinvestigated
+        description: ""
+      - name: attr_isfirecoderequested
+        description: ""
+      - name: attr_isfsassisted
+        description: ""
+      - name: attr_ismultijurisdictional
+        description: ""
+      - name: attr_isquarantined
+        description: ""
+      - name: attr_isreimbursable
+        description: ""
+      - name: attr_istrespass
+        description: ""
+      - name: attr_isunifiedcommand
+        description: ""
+      - name: attr_isvalid
+        description: ""
+      - name: attr_localincidentidentifier
+        description: ""
+      - name: attr_percentcontained
+        description: ""
+      - name: attr_percentperimtobecontained
+        description: ""
+      - name: attr_poocity
+        description: ""
+      - name: attr_poocounty
+        description: ""
+      - name: attr_poodispatchcenterid
+        description: ""
+      - name: attr_poofips
+        description: ""
+      - name: attr_poojurisdictionalagency
+        description: ""
+      - name: attr_poojurisdictionalunit
+        description: ""
+      - name: attr_poojurisdictunitparentunit
+        description: ""
+      - name: attr_poolandownercategory
+        description: ""
+      - name: attr_poolandownerkind
+        description: ""
+      - name: attr_poolegaldescprincipalmerid
+        description: ""
+      - name: attr_poolegaldescqtr
+        description: ""
+      - name: attr_poolegaldescqtrqtr
+        description: ""
+      - name: attr_poolegaldescrange
+        description: ""
+      - name: attr_poolegaldescsection
+        description: ""
+      - name: attr_poolegaldesctownship
+        description: ""
+      - name: attr_poopredictiveserviceareaid
+        description: ""
+      - name: attr_pooprotectingagency
+        description: ""
+      - name: attr_pooprotectingunit
+        description: ""
+      - name: attr_poostate
+        description: ""
+      - name: attr_predominantfuelgroup
+        description: ""
+      - name: attr_predominantfuelmodel
+        description: ""
+      - name: attr_primaryfuelmodel
+        description: ""
+      - name: attr_secondaryfuelmodel
+        description: ""
+      - name: attr_totalincidentpersonnel
+        description: ""
+      - name: attr_uniquefireidentifier
+        description: ""
+      - name: attr_forid
+        description: ""
+      - name: attr_wfdssdecisionstatus
+        description: ""
+      - name: attr_estimatedfinalcost
+        description: ""
+      - name: attr_organizationalassessment
+        description: ""
+      - name: strat_decision_publish_date
+        description: ""
+      - name: attr_created_on_datetime
+        description: ""
+      - name: attr_modified_on_datetime
+        description: ""
+      - name: attr_source
+        description: ""
+      - name: attr_iscpxchild
+        description: ""
+      - name: attr_cpxname
+        description: ""
+      - name: attr_cpxid
+        description: ""
+      - name: attr_sourceglobalid
+        description: ""
+      - name: globalid
+        description: ""
+      - name: wkt_geometry
+        description: ""
+      - name: POLY_SOURCEOID
+        description: ""
+      - name: POLY_INCIDENTNAME
+        description: ""
+      - name: POLY_FEATURECATEGORY
+        description: ""
+      - name: POLY_MAPMETHOD
+        description: ""
+      - name: POLY_GISACRES
+        description: ""
+      - name: POLY_FEATUREACCESS
+        description: ""
+      - name: POLY_FEATURESTATUS
+        description: ""
+      - name: POLY_ISVISIBLE
+        description: ""
+      - name: PERIMETER_CREATEDATE
+        description: ""
+      - name: PERIMETER_DATE_CURRENT
+        description: ""
+      - name: PERIMETER_POLYGON_DATETIME_NTZ
+        description: ""
+      - name: PERIMETER_IRWINID
+        description: ""
+      - name: PERIMETER_FORID
+        description: ""
+      - name: PERIMETER_SOURCEGLOBALID
+        description: ""
+      - name: PERIMETER_SOURCE
+        description: ""
+      - name: CONTAINMENT_DATETIME
+        description: ""
+      - name: CONTROL_DATETIME
+        description: ""
+      - name: ATTR_CREATEDBYSYSTEM
+      - name: ATTR_FFREPORTAPPROVEDBYTITLE
+      - name: ATTR_FFREPORTAPPROVEDBYUNIT
+      - name: FIRE_DISCOVERY_DATETIME
+      - name: FIRE_OUT_DATETIME
+      - name: ATTR_FIRESTRATEGYCONFINEPERCENT
+      - name: ATTR_FIRESTRATEGYFULLSUPPPRCNT
+      - name: ATTR_FIRESTRATEGYMONITORPERCENT
+      - name: ATTR_FIRESTRATEGYPOINTZONEPRCNT
+      - name: ATTR_MODIFIEDBYSYSTEM
+      - name: PERIMETER_GEOGRAPHY
 
   - name: stg_ca_zips
     description: "Cleans California ZIP seed; null filters and WKT to geography."
@@ -132,6 +345,7 @@ models:
         description: ""
       - name: like_count
         description: ""
+      - name: _FIVETRAN_SYNCED
 
   - name: stg_maximum_extent_evac_zones
     description: "Processes evacuation zone seed; filters nulls and converts WKT to geography."
@@ -190,6 +404,7 @@ models:
         description: ""
       - name: successful_reinvite
         description: ""
+      - name: _FIVETRAN_SYNCED
 
   - name: stg_survey
     description: "Cleans and enriches survey responses: nullifies empties, extracts zip, derives race."

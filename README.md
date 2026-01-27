@@ -5,14 +5,19 @@ This repository contains data engineering and analytics workflows used for prepa
 The primary goal for making this repo public is to provide transparency into the analytics methods used to surface the insights in the published Engaged California reports.
 The repository contains [dbt](https://docs.getdbt.com/docs/introduction) SQL models that transform source data into data sets ready for analytics and reporting. In addition to using dbt for SQL modeling, we use Snowflake as our data warehouse and Streamlit for generating interactive visualizations.
 
+To view more in-depth project documentation-- including data definitions, data lineage, and other information about the code used to load, transform, and analyze participation data for each of the three EngagedCA engagements run between March - December 2025, please see the dbt documentation here: https://cagov.github.io/caldata-engaged-california/dbt/#!/overview/caldata_engaged_california
+
 ## Multiple Engagements
 The Engaged California program has published reports from multiple engagements. These include:
 - [Los Angeles Fire Recovery](https://engaged.ca.gov/lafires-recovery/)
   - [Agenda Setting Findings](https://engaged.ca.gov/lafires-recovery/agenda-setting-findings/)
+  - To view dbt code used to shape and analyze this data, look for any models tagged "la_fires_phase_1". You can find these tags in dbt_project.yml or in the DAG here: https://cagov.github.io/caldata-engaged-california/dbt/#!/overview?g_v=1 by selecting the "la_fires_phase_1" in the tagging filter at the bottom of the page.
   - [Agenda Setting Data Deep Dive](https://engaged.ca.gov/lafires-recovery/agenda-setting-data-insights/)
   - [Action Plan](https://engaged.ca.gov/lafires-recovery/action-plan/)
+    - To view dbt code used to shape and analyze this data, look for any models tagged "la_fires_phase_2". You can find these tags in dbt_project.yml or in the DAG here: https://cagov.github.io/caldata-engaged-california/dbt/#!/overview?g_v=1 by selecting the "la_fires_phase_2" in the tagging filter at the bottom of the page.
 - [State Employee Efficiency Ideas](https://engaged.ca.gov/stateemployees/)
-  - [Findings](https://e3-staging.pr.engaged.ca.gov/stateemployees/efficiency/)
+  - [Findings](https://engaged.ca.gov/stateemployees/efficiency/)  - To view dbt code used to shape and analyze this data, look for any models tagged "state_employees". You can find these tags in dbt_project.yml or in the DAG here: https://cagov.github.io/caldata-engaged-california/dbt/#!/overview?g_v=1 by selecting the "state_employees" in the tagging filter at the bottom of the page.
+  You may see references to E3 in this directory. This is the internal naming convention our team used to refer to the State Employees engagement. It refers to the "efficient, effective, and engaged" language in the Executive Order N-30-25.
 
 ## DBT Project structure (high level)
 - **transform/**: dbt models and SQL transformations.

@@ -50,66 +50,74 @@ models:
   - name: participants
     description: ""
     columns:
-      - name: participant_id
+      - name: PARTICIPANT_ID
         description: ""
-      - name: status
+      - name: STATUS
         description: ""
-      - name: last_invite_sent
+      - name: LAST_INVITE_SENT
         description: ""
-      - name: voting_complete
+      - name: VOTING_COMPLETE
         description: ""
-      - name: survey_completed
+      - name: SURVEY_COMPLETED
         description: ""
-      - name: completion
+      - name: COMPLETION
         description: ""
-      - name: comment_count
+      - name: COMMENT_COUNT
         description: ""
-      - name: joined_on
+      - name: JOINED_ON
         description: ""
-      - name: race_ethnicity_array
+      - name: _FIVETRAN_SYNCED
         description: ""
-      - name: income
+      - name: zip
         description: ""
-      - name: age
+      - name: fire_zone
         description: ""
-      - name: gender_identity
+      - name: city
         description: ""
-      - name: confidence_increase
+      - name: housing_status
         description: ""
-      - name: evacuation_zone
+      - name: household_income_pretax
         description: ""
-      - name: recovery_options_feeling
+      - name: fire_impact_employment
         description: ""
-      - name: opening_outlook
+      - name: race_ethnicity
         description: ""
-      - name: final_outlook
+      - name: orig_ethelo_zip
         description: ""
-      - name: last_sign_in
+      - name: ai_an_writein
         description: ""
-      - name: airtable_id
+      - name: asian_detailed
         description: ""
-      - name: _fivetran_synced
+      - name: asian_writein
         description: ""
-      - name: id
+      - name: black_detailed
         description: ""
-      - name: roles
+      - name: black_writein
         description: ""
-      - name: id_number
+      - name: hisp_latino_detailed
         description: ""
-      - name: resent_invite
+      - name: hisp_latino_writein
         description: ""
-      - name: successful_reinvite
+      - name: mena_detailed
         description: ""
-      - name: influence
+      - name: mena_writein
+        description: ""
+      - name: nhpi_detailed
+        description: ""
+      - name: nhpi_writein
+        description: ""
+      - name: white_detailed
+        description: ""
+      - name: white_writein
         description: ""
 
   - name: recent_fire_perimeters
-    description: "Large fire perimeters (>=2024‑11‑01, >40 acres) around the time of the LA fires."
+    description: "Large fire perimeters (>=2024-11-01, >40 acres) around the time of the LA fires."
     columns:
       - name: Name
         description: "Fire incident name."
       - name: Fire_discovery_datetime
-        description: "Timestamp when fire was discovered"
+        description: "Timestamp when fire was discovered."
       - name: Containment_datetime
         description: "Timestamp when fire was contained."
       - name: Control_datetime
@@ -131,4 +139,141 @@ models:
       - name: percent_of_all_participants
         description: ""
       - name: percent_of_re_respondents
+        description: ""
+
+  - name: voting_summary
+    description: ""
+    columns:
+      - name: ID
+        description: ""
+      - name: TOPIC
+        description: ""
+      - name: OPTION
+        description: ""
+      - name: SUPPORT
+        description: ""
+      - name: NEGATIVE_VOTES
+        description: ""
+      - name: POSITIVE_VOTES
+        description: ""
+      - name: ABSTAIN_VOTES
+        description: ""
+      - name: TOTAL_VOTES
+        description: ""
+      - name: AVERAGE_WEIGHTING
+        description: ""
+      - name: CONFLICT
+        description: ""
+      - name: IN_BEST_SCENARIO
+        description: ""
+      - name: APPROVAL
+        description: ""
+      - name: CONSENSUS
+        description: ""
+      - name: NOT_IMPORTANT
+        description: ""
+      - name: SOMEWHAT_IMPORTANT
+        description: ""
+      - name: SLIGHTLY_SUPPORT
+        description: ""
+      - name: SLIGHTLY_OPPOSE
+        description: ""
+      - name: ESSENTIAL
+        description: ""
+      - name: _FIVETRAN_SYNCED
+        description: ""
+
+  - name: comments
+    description: ""
+    columns:
+      - name: TYPE
+        description: ""
+      - name: PRIVACY
+        description: ""
+      - name: CONTENT
+        description: ""
+      - name: COMMENT_ID
+        description: ""
+      - name: TOPIC
+        description: ""
+      - name: TARGET
+        description: ""
+      - name: POSTED_BY_ID
+        description: ""
+      - name: REPLY_TO_ID
+        description: ""
+      - name: POSTED_ON
+        description: ""
+      - name: REPLY_COUNT
+        description: ""
+      - name: FLAG_COUNT
+        description: ""
+      - name: LIKE_COUNT
+        description: ""
+      - name: _FIVETRAN_SYNCED
+        description: ""
+
+  - name: nudge_participants
+    description: ""
+    columns:
+      - name: PARTICIPANT_ID
+        description: ""
+      - name: STATUS
+        description: ""
+      - name: ROLES
+        description: ""
+      - name: INFLUENCE
+        description: ""
+      - name: LAST_INVITE_SENT
+        description: ""
+      - name: VOTING_COMPLETE
+        description: ""
+      - name: SURVEY_COMPLETED
+        description: ""
+      - name: COMPLETION
+        description: ""
+      - name: COMMENT_COUNT
+        description: ""
+      - name: JOINED_ON
+        description: ""
+      - name: LAST_SIGN_IN
+        description: ""
+      - name: RESENT_INVITE
+        description: ""
+      - name: SUCCESSFUL_REINVITE
+        description: ""
+      - name: _FIVETRAN_SYNCED
+        description: ""
+
+  - name: participant_perspective_and_priority
+    columns:
+      - name: PARTICIPANT
+      - name: TARGET
+      - name: CONTENT
+
+  - name: maximum_extent_evac_zones
+    columns:
+      - name: OBJECTID
+        description: ""
+      - name: ZONEID
+        description: ""
+      - name: COUNTRY_ABBR
+        description: ""
+      - name: STATE_ABBR
+        description: ""
+      - name: COUNTY_ABB
+        description: ""
+      - name: CITY_ABBR
+        description: ""
+      - name: ZONE_SEQUENCE
+        description: ""
+      - name: CITY_ZONE_SEQUENCE
+        description: ""
+      - name: INCIDENT_NAME
+        description: ""
+      - name: MOST_EXTREME_STATUS
+        description: ""
+      - name: WKT_GEOMETRY
+        description: ""
+      - name: ZONE_GEOGRAPHY
         description: ""

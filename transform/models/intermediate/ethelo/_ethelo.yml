@@ -54,6 +54,7 @@ models:
         description: "Overlap area between fire perimeter and ZIP (sq miles)."
       - name: percent_of_zip_affected
         description: "Percent of ZIP area affected by this fire."
+      - name: FIRE_RANK
 
   - name: int_impact_by_zip
     description: "Aggregates fire, evacuation, and building damage metrics per ZIP code."

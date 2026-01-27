@@ -7,7 +7,7 @@ models:
       - name: DEMOGRAPHIC_CATEGORY
       - name: DEMOGRAPHIC_GROUP
       - name: TARGET_COUNT
-  - name: comments
+  - name: la_deliberation_comments
     description: "Comments posted in LA deliberation."
     columns:
       - name: COMMENT_ID
@@ -35,7 +35,7 @@ models:
       - name: _FIVETRAN_SYNCED
         description: "Latest Fivetran sync date."
 
-  - name: voting_summary
+  - name: la_deliberation_voting_summary
     description: "Voting summary and metrics for LA deliberation topics/options."
     columns:
       - name: TOPIC
