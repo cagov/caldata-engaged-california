@@ -16,7 +16,7 @@ The Engaged California program has published reports from multiple engagements. 
   - [Action Plan](https://engaged.ca.gov/lafires-recovery/action-plan/)
     - To view dbt code used to shape and analyze this data, look for any models tagged "la_fires_phase_2". You can find these tags in dbt_project.yml or in the DAG here: https://cagov.github.io/caldata-engaged-california/dbt/#!/overview?g_v=1 by selecting the "la_fires_phase_2" in the tagging filter at the bottom of the page.
 - [State Employee Efficiency Ideas](https://engaged.ca.gov/stateemployees/)
-  - [Findings](https://e3-staging.pr.engaged.ca.gov/stateemployees/efficiency/)  - To view dbt code used to shape and analyze this data, look for any models tagged "state_employees". You can find these tags in dbt_project.yml or in the DAG here: https://cagov.github.io/caldata-engaged-california/dbt/#!/overview?g_v=1 by selecting the "state_employees" in the tagging filter at the bottom of the page.
+  - [Findings](https://engaged.ca.gov/stateemployees/efficiency/)  - To view dbt code used to shape and analyze this data, look for any models tagged "state_employees". You can find these tags in dbt_project.yml or in the DAG here: https://cagov.github.io/caldata-engaged-california/dbt/#!/overview?g_v=1 by selecting the "state_employees" in the tagging filter at the bottom of the page.
   You may see references to E3 in this directory. This is the internal naming convention our team used to refer to the State Employees engagement. It refers to the "efficient, effective, and engaged" language in the Executive Order N-30-25.
 
 ## DBT Project structure (high level)
