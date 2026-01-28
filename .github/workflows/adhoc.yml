@@ -1,0 +1,61 @@
+name: nightly
+on:
+  # Allow for manual triggers
+  workflow_dispatch:
+
+env:
+  SNOWFLAKE_PRIVATE_KEY: ${{ SECRETS.SNOWFLAKE_PRIVATE_KEY_PRD }}
+  SNOWFLAKE_USER: ${{ SECRETS.SNOWFLAKE_USER_PRD }}
+  SNOWFLAKE_ACCOUNT: ${{ SECRETS.SNOWFLAKE_ACCOUNT }}
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+      - name: Build dbt project
+        env:
+          DBT_PROFILES_DIR: transform/ci
+          DBT_ANALYTICS_DB: ANALYTICS_ENGCA_PRD
+          DBT_RAW_DB: RAW_ENGCA_PRD
+          SNOWFLAKE_ROLE: TRANSFORMER_ENGCA_PRD
+          SNOWFLAKE_DATABASE: TRANSFORM_ENGCA_PRD
+          SNOWFLAKE_WAREHOUSE: TRANSFORMING_XS_ENGCA_PRD
+        run: |
+          uv run dbt deps --project-dir transform --target prd
+
+          #this nightly job only runs models tagged as "marketing", now that all deliberations are completed:
+          uv run dbt build --project-dir transform --target prd
+
+          uv run dbt run-operation validate_all_schemas --project-dir transform --target prd
+
+          # enable following line for active engagements only:
+          # run only the GOOGLE_DRIVE_CONNECTOR source tests to ensure source freshness tests are executed
+          # uv run dbt test --project-dir transform --target prd --select source:GOOGLE_DRIVE_CONNECTOR
+
+  slack-notification:
+    runs-on: ubuntu-latest
+    needs: nightly
+    if: ${{  failure() || cancelled()  }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_USERNAME: cagov Slackbot
+          SLACK_TITLE: ⚠️ Engaged California nightly load error! ⚠️
+          SLACK_MESSAGE: |
+            ${{ vars.EN_CA_SLACK_AT_LIST }}
+            nightly workflow failed or was cancelled. See details at:
+            ${{ github.event.workflow_run.html_url }}
+          MSG_MINIMAL: actions url
+          SLACK_WEBHOOK: >
+            ${{ secrets.CALDATA_DATASERVICES_BOT_NOTIFICATIONS_SLACK_WEBHOOK_URL }}
