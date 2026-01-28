@@ -1,4 +1,4 @@
-name: nightly
+name: adhoc-full-pipeline
 on:
   # Allow for manual triggers
   workflow_dispatch:
