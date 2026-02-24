@@ -18,7 +18,7 @@ with main_ideas as (
         null as problem_id,
         null as solution_count,
         null as avg_confidence_score,
-        null as departments,
+        [] as departments,
         _file_upload_date
     from {{ ref('e3_participant_responses') }}
     where
@@ -34,10 +34,11 @@ problem_solutions as (
         null as idea_dept,
         'Processed Problem & Solution' as content_type,
         concat(
-            'This is a processed problem and solution pair from California state employee feedback on government efficiency. ',
-            'Departments involved: ', coalesce(department_user_ai_combined, 'Not specified'), '. ',
-            'Problem: ', problem_text, ' ',
-            'Solutions: ', array_to_string(consolidated_solutions, ' ')
+            'This is a processed problem and solution pair from California state employee feedback on government efficiency.',
+            ' Department context: ',
+            case when array_size(department_user_ai_combined) > 0 then array_to_string(department_user_ai_combined, ', ') else 'Not specified.' end,
+            ' Problem: ', problem_text, ' ',
+            ' Solutions: ', array_to_string(consolidated_solutions, ' ')
         ) as contextualized_text,
         concat(
             'PROBLEM: ', problem_text,
@@ -50,7 +51,7 @@ problem_solutions as (
         problem_id,
         solution_count,
         avg_confidence_score,
-        strtok_to_array(department_user_ai_combined, ';') as departments,
+        department_user_ai_combined as departments,
         consolidated_at as _file_upload_date
     from {{ ref('e3_consolidated_problem_solutions') }}
     where
