@@ -1,4 +1,9 @@
 -- One row per participant with pivoted survey responses and top-level comments
+-- Participants are able to provide more than one comment for each target type
+-- This model aggregates all comments of the same target type into a single row per participant,
+-- which does remove some comments. However this per-participant model should be preserved because
+-- this is what was used for the UX hand-labelled themes.
+
 with survey_pivoted as (
     select
         participant_id,

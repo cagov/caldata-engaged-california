@@ -5,39 +5,38 @@
 
 with main_ideas as (
     select
-        participant_id,
-        main_idea,
-        idea_dept,
+        c.posted_by_id as participant_id,
+        c.comment_id,
         'Raw Main Idea' as content_type,
         concat(
-            'This is a main idea submitted by a California state employee for improving government efficiency. ',
-            'Department context: ', coalesce(idea_dept, 'Not specified'), '. ',
-            'Main idea: ', main_idea
+            'This is a main idea submitted by a California state employee for improving government efficiency.',
+            ' Department context: ',
+            case when array_size(cd.department_user_ai_combined) > 0 then array_to_string(cd.department_user_ai_combined, ', ') else 'Not specified' end,
+            '. Main idea: ', c.comment_content
         ) as contextualized_text,
-        main_idea as original_text,
+        c.comment_content as original_text,
         null as problem_id,
         null as solution_count,
-        null as avg_confidence_score,
-        [] as departments,
-        _file_upload_date
-    from {{ ref('e3_participant_responses') }}
+        cd.department_user_ai_combined as departments
+    from {{ ref('stg_ethelo_e3_comments') }} as c
+    left join {{ ref('int_comment_department') }} as cd on c.comment_id = cd.comment_id
     where
-        main_idea is not null
-        and trim(main_idea) != ''
-        and length(main_idea) > 10
+        c.comment_content is not null
+        and length(c.comment_content) > 10
+        and c.reply_to_id is null -- Only top-level comments, not replies
+        and c.target = 'Share your idea - Primary problem and ideas to solve the problem' -- Only main ideas
 ),
 
 problem_solutions as (
     select
         problem_participant_id as participant_id,
-        concat(problem_text, ' ', array_to_string(consolidated_solutions, ' ')) as combined_content,
-        null as idea_dept,
+        problem_comment_id as comment_id,
         'Processed Problem & Solution' as content_type,
         concat(
             'This is a processed problem and solution pair from California state employee feedback on government efficiency.',
             ' Department context: ',
-            case when array_size(department_user_ai_combined) > 0 then array_to_string(department_user_ai_combined, ', ') else 'Not specified.' end,
-            ' Problem: ', problem_text, ' ',
+            case when array_size(department_user_ai_combined) > 0 then array_to_string(department_user_ai_combined, ', ') else 'Not specified' end,
+            '. Problem: ', problem_text, ' ',
             ' Solutions: ', array_to_string(consolidated_solutions, ' ')
         ) as contextualized_text,
         concat(
@@ -50,9 +49,7 @@ problem_solutions as (
         ) as original_text,
         problem_id,
         solution_count,
-        avg_confidence_score,
-        department_user_ai_combined as departments,
-        consolidated_at as _file_upload_date
+        department_user_ai_combined as departments
     from {{ ref('e3_consolidated_problem_solutions') }}
     where
         problem_text is not null
@@ -63,46 +60,40 @@ problem_solutions as (
 unified_content as (
     select
         participant_id,
+        comment_id,
         content_type,
         contextualized_text,
         original_text,
         problem_id,
         solution_count,
-        avg_confidence_score,
-        departments,
-        _file_upload_date,
-        row_number() over (order by _file_upload_date, participant_id) as content_id
+        departments
     from main_ideas
 
     union all
 
     select
         participant_id,
+        comment_id,
         content_type,
         contextualized_text,
         original_text,
         problem_id,
         solution_count,
-        avg_confidence_score,
-        departments,
-        _file_upload_date,
-        row_number() over (order by _file_upload_date, participant_id)
-        + (select count(*) from main_ideas) as content_id
+        departments
     from problem_solutions
 ),
 
 embeddings_added as (
     select
-        content_id,
+        row_number() over (order by content_type, participant_id, comment_id) as content_id,
         participant_id,
+        comment_id,
         content_type,
         contextualized_text,
         original_text,
         problem_id,
         solution_count,
-        avg_confidence_score,
         departments,
-        _file_upload_date,
 
         -- Generate embeddings using the specified model
         snowflake.cortex.embed_text_1024(
@@ -123,6 +114,7 @@ embeddings_added as (
 select
     content_id,
     participant_id,
+    comment_id,
     content_type,
     contextualized_text,
     original_text,
@@ -132,7 +124,6 @@ select
     embedding_vector,
     contextualized_text_length,
     original_text_length,
-    _file_upload_date,
     current_timestamp() as processed_at
 
 from embeddings_added
