@@ -83,12 +83,14 @@ models:
           - not_null
       - name: PROBLEM_LENGTH
         description: "character length of the extracted problem text"
-      - name: department_user_defined
-        description: "Semicolon-separated list of explicit user entries (dropdown and write-in) for department(s)"
-      - name: department_user_ai_combined
-        description:
-          "Semicolon-separated list of department(s) containing explicit user entries with gaps filled
-          in by LLM completion"
+      - name: DEPARTMENT_USER_DEFINED
+        description: Array of department(s) from explicit user entries (dropdown and write-in) for the comment
+      - name: DEPARTMENT_AI_GENERATED
+        description: Array of departments inferred by the LLM when user response was unmapped or missing
+      - name: DEPARTMENT_USER_AI_COMBINED
+        description: |
+          Array combining user-defined and AI-generated departmentss with priority logic -
+          user-defined (if present and mapped) takes precedence over AI-generated
       - name: PROBLEMS_JSON
         description: "raw JSON response from the LLM containing all extracted problems"
       - name: EXTRACTION_STATUS
@@ -241,17 +243,21 @@ models:
     description: |
       This model populates the department field for each comment based on department survey response
       and comment contents. It uses an LLM to fill in gaps where the survey response is missing
-      or does not match a known department.
+      or does not match a known department. Department is provided in 3 output fields for traceability:
+      user-defined (from survey), AI-generated (from LLM), and combined (user-defined takes priority, AI fallback).
     columns:
       - name: posted_by_id
         description: Identifier for the participant who posted the comment
       - name: comment_id
-        description: Unique comment identifier
+        description: Unique identifier for the comment
       - name: department_user_defined
         description: Array of department(s) from explicit user entries (dropdown and write-in) for the comment
+      - name: department_ai_generated
+        description: Array of departments inferred by the LLM when user response was unmapped or missing
       - name: department_user_ai_combined
         description: |
-          Array of department(s) containing explicit user entries with gaps filled in by LLM completion
+          Array combining user-defined and AI-generated departmentss with priority logic -
+          user-defined (if present and mapped) takes precedence over AI-generated
 
   - name: int_ux_hand_labelled_themes
     description: |

@@ -76,11 +76,13 @@ models:
       - name: PROBLEM_LENGTH
         description: "Character length of the problem text"
       - name: DEPARTMENT_USER_DEFINED
-        description: "Semicolon-separated list of explicit user entries (dropdown and write-in) for department(s)"
+        description: Array of department(s) from explicit user entries (dropdown and write-in) for the comment
+      - name: DEPARTMENT_AI_GENERATED
+        description: Array of departments inferred by the LLM when user response was unmapped or missing
       - name: DEPARTMENT_USER_AI_COMBINED
         description: |
-          "Semicolon-separated list of department(s) containing explicit user
-          entries with gaps filled in by LLM completion"
+          Array combining user-defined and AI-generated departmentss with priority logic -
+          user-defined (if present and mapped) takes precedence over AI-generated
       - name: SOLUTION_COUNT
         description: "Number of solutions linked to this problem"
       - name: AVG_CONFIDENCE_SCORE
@@ -118,7 +120,9 @@ models:
           - not_null
           - unique
       - name: PARTICIPANT_ID
-        description: "Participant who submitted the original content"
+        description: "Participant who submitted the main idea or problem/solution"
+      - name: COMMENT_ID
+        description: "Identifier of the original comment from which this content was derived"
       - name: CONTENT_TYPE
         description: "Type of content: 'Raw Main Idea' or 'Processed Problem & Solution'"
         tests:
@@ -133,8 +137,10 @@ models:
         description: "Unique problem identifier (only for processed problem/solution pairs)"
       - name: SOLUTION_COUNT
         description: "Number of solutions consolidated (only for processed pairs)"
-      - name: DEPARTMENTS
-        description: "Array of departments associated with the content"
+      - name: DEPARTMENT_USER_AI_COMBINED
+        description: |
+          Array combining user-defined and AI-generated departmentss with priority logic -
+          user-defined (if present and mapped) takes precedence over AI-generated
       - name: EMBEDDING_VECTOR
         description: "1024-dimensional embedding vector generated using snowflake-arctic-embed-l-v2.0"
         tests:
@@ -143,8 +149,6 @@ models:
         description: "Character length of the contextualized text"
       - name: ORIGINAL_TEXT_LENGTH
         description: "Character length of the original text"
-      - name: _FILE_UPLOAD_DATE
-        description: "Date when the source data was uploaded/processed"
       - name: PROCESSED_AT
         description: "Timestamp when the embeddings were generated"
 

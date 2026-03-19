@@ -52,9 +52,11 @@ department_list_for_prompt as (
     from dept_reconciled
 ),
 
---this join will duplicate some comments
---this join ignores some dept responses that do not have an associated comment
---these are cases where the participant id has a dept_response, but there is no associated idea
+--this join will duplicate some comments when there are multiple department responses for a single participant
+--this happens when a participant selects a department in the survey response and also writes in a department
+--response.
+--this join ignores some dept responses that do not have an associated comment. These are cases where the
+--participant id has a dept_response, but there is no associated idea
 --TO DO: investigate why there are dept_responses that have no comment
 
 comments_with_depts as (
@@ -77,6 +79,8 @@ fill_in_dept as (
         comment_id,
         department,
         comment_content,
+        known_department,
+        known_department is null as is_ai_generated,
         coalesce(
             known_department,
             ai_complete(
@@ -135,6 +139,20 @@ agg_to_single_dept_list_per_comment as (
         posted_by_id,
         comment_id,
         array_agg(department) within group (order by department) as department_user_defined,
+        array_distinct(
+            array_flatten(
+                array_agg(
+                    case
+                        when is_ai_generated
+                            then
+                                transform(
+                                    split(departments, ';'),
+                                    x -> trim(x::string)
+                                )
+                    end
+                )
+            )
+        ) as department_ai_generated,
         array_distinct(
             array_flatten(
                 array_agg(
