@@ -1,4 +1,3 @@
--- depends_on: {{ ref('e3_participant_responses') }}
 -- noqa: disable=LT05
 -- Unified embedding table containing both raw main ideas and processed problem/solution pairs
 -- Each row represents one text item with consistent embeddings for similarity analysis
@@ -17,7 +16,7 @@ with main_ideas as (
         c.comment_content as original_text,
         null as problem_id,
         null as solution_count,
-        cd.department_user_ai_combined as departments
+        cd.department_user_ai_combined
     from {{ ref('stg_ethelo_e3_comments') }} as c
     left join {{ ref('int_comment_department') }} as cd on c.comment_id = cd.comment_id
     where
@@ -49,7 +48,7 @@ problem_solutions as (
         ) as original_text,
         problem_id,
         solution_count,
-        department_user_ai_combined as departments
+        department_user_ai_combined
     from {{ ref('e3_consolidated_problem_solutions') }}
     where
         problem_text is not null
@@ -66,7 +65,7 @@ unified_content as (
         original_text,
         problem_id,
         solution_count,
-        departments
+        department_user_ai_combined
     from main_ideas
 
     union all
@@ -79,7 +78,7 @@ unified_content as (
         original_text,
         problem_id,
         solution_count,
-        departments
+        department_user_ai_combined
     from problem_solutions
 ),
 
@@ -93,7 +92,7 @@ embeddings_added as (
         original_text,
         problem_id,
         solution_count,
-        departments,
+        department_user_ai_combined,
 
         -- Generate embeddings using the specified model
         snowflake.cortex.embed_text_1024(
@@ -120,7 +119,7 @@ select
     original_text,
     problem_id,
     solution_count,
-    departments,
+    department_user_ai_combined,
     embedding_vector,
     contextualized_text_length,
     original_text_length,
