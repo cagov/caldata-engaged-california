@@ -137,8 +137,10 @@ models:
         description: "Unique problem identifier (only for processed problem/solution pairs)"
       - name: SOLUTION_COUNT
         description: "Number of solutions consolidated (only for processed pairs)"
-      - name: DEPARTMENTS
-        description: "Array of departments associated with the main idea or problem/solution"
+      - name: DEPARTMENT_USER_AI_COMBINED
+        description: |
+          Array combining user-defined and AI-generated departmentss with priority logic -
+          user-defined (if present and mapped) takes precedence over AI-generated
       - name: EMBEDDING_VECTOR
         description: "1024-dimensional embedding vector generated using snowflake-arctic-embed-l-v2.0"
         tests:
