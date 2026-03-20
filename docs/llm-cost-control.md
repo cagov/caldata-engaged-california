@@ -3,22 +3,23 @@
 ## Overview
 To control AI processing costs, this project automatically uses different LLM models based on your dbt target:
 
-- **Development** (`--target dev`): `llama4-maverick` (cheaper, faster)
-- **Production** (`--target prd`): `claude-4-sonnet` (higher quality, more expensive)
+- **Development** (`--target dev`): "{{ env_var('LLM_MODEL_LOW') }}" (cheaper, faster)
+- **Production** (`--target prd`): "{{ env_var('LLM_MODEL_HIGH') }}" (higher quality, more expensive)
 
 ## Automatic Model Selection
 
 The model is automatically selected based on your dbt target in `dbt_project.yml`:
 ```yaml
 vars:
-  llm_model: "{{ 'claude-4-sonnet' if target.name == 'prd' else 'llama4-maverick' }}"
+  llm_model: "{{ ''{{ env_var('LLM_MODEL_HIGH') }}'' if target.name == 'prd' else ''{{ env_var('LLM_MODEL_LOW') }}' }}"
 ```
+The models used are defined in Github in the Secrets and Environment Variables section.
 
 ## Usage Examples
 
 ### Development (Cheaper Model)
 ```bash
-# Uses llama4-maverick automatically
+# Uses the cheaper llm model as defined in github automatically
 dbt run --target dev --select int_extracted_problems
 
 # Default target is 'dev', so this also uses the cheaper model
@@ -27,7 +28,7 @@ dbt run --select int_extracted_problems
 
 ### Production (Better Model)
 ```bash
-# Uses claude-4-sonnet automatically
+# Uses most expense model automatically
 dbt run --target prd --select int_extracted_problems+
 ```
 
@@ -54,7 +55,7 @@ The following models automatically use the appropriate model based on target:
 
 ## Target Configuration
 Your profiles.yml has these targets configured:
-- `dev` (default) → `llama4-maverick`
-- `prd` → `claude-4-sonnet`
+- `dev` (default) → `l'{{ env_var('LLM_MODEL_LOW') }}'`
+- `prd` → `'{{ env_var('LLM_MODEL_HIGH') }}'`
 
 No manual switching required - just use the appropriate `--target` flag.

@@ -13,8 +13,8 @@ profile: caldata_engaged_california
 
 # Variables for environment-specific configuration
 vars:
-  # LLM model configuration - automatically switch based on target
-  llm_model: "{{ 'claude-4-sonnet' if target.name == 'prd' else 'llama4-maverick' }}"
+  # LLM model configuration - automatically chooses the appropriate model based on target env
+  llm_model: "{{ env_var('LLM_MODEL') }}"
 
 # These configurations specify where dbt should look for different types of files.
 # The `source-paths` config, for example, states that models in this project can be

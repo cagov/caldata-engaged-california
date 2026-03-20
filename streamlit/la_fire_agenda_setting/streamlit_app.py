@@ -11,11 +11,16 @@ from shapely.geometry import mapping
 # Configuration settings
 ENABLE_CUSTOM_PROMPT = True  # Set to True to enable custom prompt option for certain users
 
+#set llm model variables
+llm_model_high = os.environ["LLM_MODEL_HIGH"]
+llm_model_med = os.environ["LLM_MODEL_MED"]
+llm_model_low = os.environ["LLM_MODEL_LOW"]
+
 # Define model costs (dollars per 1 million tokens)
 MODEL_COSTS = {
-    'claude-3-5-sonnet': 10.0725,
-    'snowflake-llama-3.1-405b': 3.792,
-    'snowflake-llama-3.3-70b': 1.1455
+    llm_model_high: 10.0725,
+    llm_model_med: 3.792,
+    llm_model_low: 1.1455
 }
 #test change
 
@@ -476,15 +481,15 @@ with tab2:
             "Main Recovery Priority"
         ]
         # Define LLM options
-        llm_options = ['snowflake-llama-3.3-70b','snowflake-llama-3.1-405b', 'claude-3-5-sonnet']
+        llm_options = ['llm_model_med','llm_model_low', 'llm_model_high']
         # Define a function to map the actual values to display names
         def format_llm_option(option):
-            if option == "snowflake-llama-3.1-405b":
-                return "Llama 3.1 - 405B"
-            elif option == "claude-3-5-sonnet":
-                return "Claude 3.5 Sonnet (Most capable & Costly)"
-            elif option == "snowflake-llama-3.3-70b":
-                return "Llama 3.3 - 70B (Fast & Low-Cost)"
+            if option == "llm_model_med":
+                return "Balanced Option"
+            elif option == "llm_model_high":
+                return "Most capable & Costly"
+            elif option == "llm_model_low":
+                return "Fast & Low-Cost"
             return option  # Fallback for any other options
         # Create columns for your dropdowns
         col1, col2, col3 = st.columns([2, 1, 1])  # Proportional widths

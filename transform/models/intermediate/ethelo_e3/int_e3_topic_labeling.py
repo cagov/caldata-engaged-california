@@ -52,7 +52,7 @@ def resolve_llm_model(dbt) -> str:
     if isinstance(llm_model, str) and llm_model.strip():
         return llm_model.strip()
 
-    return "claude-4-sonnet"
+    return os.environ["LLM_MODEL_HIGH"]
 
 
 def model(dbt, session: Session):
