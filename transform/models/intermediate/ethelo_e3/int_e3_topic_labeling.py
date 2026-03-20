@@ -38,21 +38,15 @@ PROMPT_HEADER = (
 
 
 def resolve_llm_model(dbt) -> str:
-    """Pull the configured LLM model name from dbt vars."""
-
-    try:
-        vars_dict = dbt.config.get("vars", {})  # type: ignore[attr-defined]
-    except AttributeError:
-        vars_dict = getattr(dbt, "config_vars", {})  # type: ignore[attr-defined]
-
-    if not isinstance(vars_dict, dict):
-        vars_dict = {}
-
-    llm_model = vars_dict.get("llm_model")
+    """Pull the configured LLM model name from dbt meta config."""
+    meta = dbt.config.get("meta") or {}
+    llm_model = meta.get("llm_model", "")
     if isinstance(llm_model, str) and llm_model.strip():
         return llm_model.strip()
-
-    return os.environ["LLM_MODEL_HIGH"]
+    raise ValueError(
+        "llm_model not found in model meta config. "
+        "Ensure it is set in schema.yml under config.meta."
+    )
 
 
 def model(dbt, session: Session):
