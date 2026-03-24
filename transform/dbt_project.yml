@@ -91,6 +91,7 @@ models:
         +tags: ["la_fires_phase_2"]
       ethelo_e3:
         +schema: ethelo_e3
+        +tags: ["state_employees"]
       daily_report:
         +schema: daily_report
         ethelo_la_agenda_setting:
