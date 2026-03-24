@@ -22,6 +22,14 @@ models:
         description: "Timestamp when the comment was originally posted by the participant"
       - name: LIKE_COUNT
         description: "Number of likes the comment received from other users in the platform."
+      - name: DEPARTMENT_USER_DEFINED
+        description: Array of department(s) from explicit user entries (dropdown and write-in) for the comment
+      - name: DEPARTMENT_AI_GENERATED
+        description: Array of departments inferred by the LLM when user response was unmapped or missing
+      - name: DEPARTMENT_USER_AI_COMBINED
+        description: |
+          Array combining user-defined and AI-generated departments with priority logic -
+          user-defined (if present and mapped) takes precedence over AI-generated
       - name: _FILE_UPLOAD_DATE
         description: "Technical field indicating when this data was uploaded/ingested into the system"
 
@@ -81,7 +89,7 @@ models:
         description: Array of departments inferred by the LLM when user response was unmapped or missing
       - name: DEPARTMENT_USER_AI_COMBINED
         description: |
-          Array combining user-defined and AI-generated departmentss with priority logic -
+          Array combining user-defined and AI-generated departments with priority logic -
           user-defined (if present and mapped) takes precedence over AI-generated
       - name: SOLUTION_COUNT
         description: "Number of solutions linked to this problem"

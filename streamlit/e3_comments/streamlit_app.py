@@ -78,7 +78,7 @@ def load_participant_responses_data():
         COALESCE(
             COMMENT_ID,
             'PoP-' || LPAD(RANK() OVER (PARTITION BY COMMENT_ID ORDER BY PARTICIPANT_ID ASC)::VARCHAR, 4, '0'
-            ) AS COMMENT_ID,
+            )) AS COMMENT_ID,
         PARTICIPANT_ID,
         CONTENT,
         QUESTION,
@@ -90,7 +90,7 @@ def load_participant_responses_data():
             END AS QUESTION_LABEL,
         POSTED_ON,
         _FILE_UPLOAD_DATE
-    FROM ANALYTICS_ENGCA_PRD.ANALYTICS.E3_COMMENTS
+    FROM ANALYTICS_ENGCA_PRD.ETHELO_E3.E3_COMMENTS
     WHERE REPLY_TO_ID IS NULL
     ORDER BY POSTED_ON DESC
     '''
@@ -113,7 +113,7 @@ def load_department_count():
     SELECT
         COUNT(DISTINCT RESPONSE_VALUE)
     FROM ANALYTICS_ENGCA_PRD.DAILY_REPORT.ETHELO_E3_RESPONSE_COUNTS
-    WHERE METRIC_TYPE = 'RESPONSE COUNT BY DEPARTMENT'
+    WHERE UPPER(METRIC_TYPE) = 'RESPONSE COUNT BY DEPARTMENT'
     '''
 
     value = session.sql(query).collect()[0][0]
@@ -153,12 +153,11 @@ Your output should follow this general format for each theme:
     query = f'''
     with comments as (
         select
-            c.COMMENT_ID,
+            COMMENT_ID,
             CONTENT as COMMENT_TEXT,
             array_to_string(department_user_ai_combined, ', ') as department_string
-        from ANALYTICS_ENGCA_PRD.ANALYTICS.E3_COMMENTS c
-        left join TRANSFORM_ENGCA_PRD.ETHELO_E3.INT_COMMENT_DEPARTMENT d on c.comment_id = d.comment_id
-        where c.COMMENT_ID in ({comment_ids_str})
+        from ANALYTICS_ENGCA_PRD.ETHELO_E3.E3_COMMENTS
+        where COMMENT_ID in ({comment_ids_str})
     ),
     comments_agg as (
         select
@@ -199,16 +198,20 @@ try:
         st.warning("No participant responses data available.")
         st.stop()
 
+    if department_count == 0:
+        st.warning("No department count data available.")
+        st.stop()
+
 except Exception as e:
     st.error(f"Error loading data: {e}")
     st.stop()
 
 # Calculate summary statistics
 total_participants = participant_responses_df['PARTICIPANT_ID'].nunique()
-participant_counts = participant_responses_df.groupby('QUESTION_LABEL')['PARTICIPANT_ID'].nunique()
-participants_with_ideas = participant_counts['MAIN_IDEA']
-participants_with_working_examples = participant_counts['WHATS_WORKING']
-participants_with_other_ideas = participant_counts['OTHER_IDEAS']
+comment_counts = participant_responses_df.groupby('QUESTION_LABEL')['COMMENT_ID'].nunique()
+main_idea_count = comment_counts['MAIN_IDEA']
+whats_working_count = comment_counts['WHATS_WORKING']
+other_ideas_count = comment_counts['OTHER_IDEAS']
 
 # Date range
 if participant_responses_df['POSTED_ON'].notna().any():
@@ -231,13 +234,13 @@ with col1:
     st.metric("Total Participants", total_participants, delta_color="off")
 
 with col2:
-    st.metric('''"Share Your Idea" Responses''', participants_with_ideas, delta_color="off")
+    st.metric('''"Share Your Idea" Responses''', main_idea_count, delta_color="off")
 
 with col3:
-    st.metric('''"What's Working" Responses''', participants_with_working_examples, delta_color="off")
+    st.metric('''"What's Working" Responses''', whats_working_count, delta_color="off")
 
 with col4:
-    st.metric('''"Anything Else?" Responses''', participants_with_other_ideas, delta_color="off")
+    st.metric('''"Anything Else?" Responses''', other_ideas_count, delta_color="off")
 
 with col5:
     st.metric("Unique Departments", department_count, delta_color="off")
@@ -293,7 +296,7 @@ with tab1:
         selected_comment_field = comment_type_options[selected_comment_label]
 
         # Filter participants with the selected field
-        participants_with_comments = filtered_df[filtered_df[QUESTION_LABEL] == selected_comment_field]
+        participants_with_comments = filtered_df[filtered_df['QUESTION_LABEL'] == selected_comment_field]
         with col_len:
             st.text("")  # for alignment
             st.info(f"Analyzing {len(participants_with_comments)} {selected_comment_label.lower()}")
