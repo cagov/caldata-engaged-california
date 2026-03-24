@@ -68,7 +68,7 @@ st.markdown(
     /* st.metric delta arrow */
     [data-testid="stMetricDelta"] svg {display:none !important;}
     </style>
-    """,o
+    """,
     unsafe_allow_html=True
 )
 
