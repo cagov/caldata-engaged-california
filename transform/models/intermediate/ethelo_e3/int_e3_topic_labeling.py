@@ -13,18 +13,16 @@ from snowflake.snowpark import Session
 MAX_COMMENTS_PER_TOPIC = 10
 SNIPPET_CHAR_LIMIT = 500
 
-RESPONSE_FORMAT_LITERAL = """{
-    'type':'json',
-    'schema':{
-        'type':'object',
-        'properties':{
-            'title':{'type':'string'},
-            'description':{'type':'string'},
-            'quotes':{'type':'array','items':{'type':'string'}}
-        },
-        'required':['title','description','quotes']
-    }
-}"""
+RESPONSE_FORMAT_JSON = (
+    '{"type":"json","schema":{"type":"object",'
+    '"properties":{'
+    '"title":{"type":"string"},'
+    '"description":{"type":"string"},'
+    '"quotes":{"type":"array","items":{"type":"string"}}'
+    '},'
+    '"required":["title","description","quotes"]}}'
+)
+RESPONSE_FORMAT_LITERAL = f"PARSE_JSON('{RESPONSE_FORMAT_JSON}')"
 
 PROMPT_HEADER = (
     "The following are ideas from California state employees to improve the efficiency of the california state government. "
