@@ -13,7 +13,10 @@ The model is automatically selected based on your dbt target in `dbt_project.yml
 vars:
   llm_model: "{{ ''{{ env_var('LLM_MODEL_HIGH') }}'' if target.name == 'prd' else ''{{ env_var('LLM_MODEL_LOW') }}' }}"
 ```
-The models used are defined in Github in the Secrets and Environment Variables section.
+The models used are defined in the Github repo in the 'Secrets and Environment Variables' section.
+
+If you are developing locally, access the model names in Github and add these as variables to your environment (either
+by using EXPORT each session, or saving as variables in your bash / zsh profile)
 
 ## Usage Examples
 
