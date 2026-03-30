@@ -1,7 +1,8 @@
 with
 list_members as (
-    select *,
-    to_date(subscribe_timestamp) as subscribe_day
+    select
+        *,
+        to_date(subscribe_timestamp) as subscribe_day
     from {{ ref('stg_mailchimp_list_members') }}
 ),
 
@@ -17,7 +18,3 @@ subscribers_by_day as (
 )
 
 select * from subscribers_by_day
-
-
-
-
