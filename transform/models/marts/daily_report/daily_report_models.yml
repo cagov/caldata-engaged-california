@@ -77,7 +77,7 @@ models:
         description: "Name of the Mailchimp list/audience."
       - name: subscribe_day
         description: "Date of subscription."
-      - name: num_subscribers
+      - name: total_subscribers
         description: "Number of current subscribers who subscribed on the given day."
       - name: max_fivetran_sync_date
         description: "Latest Fivetran sync date."
