@@ -9,7 +9,7 @@ env:
   SNOWFLAKE_ACCOUNT: ${{ SECRETS.SNOWFLAKE_ACCOUNT }}
 
 jobs:
-  nightly:
+  adhoc:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,10 +31,7 @@ jobs:
           SNOWFLAKE_WAREHOUSE: TRANSFORMING_XS_ENGCA_PRD
         run: |
           uv run dbt deps --project-dir transform --target prd
-
-          #this nightly job only runs models tagged as "marketing", now that all deliberations are completed:
           uv run dbt build --project-dir transform --target prd
-
           uv run dbt run-operation validate_all_schemas --project-dir transform --target prd
 
           # enable following line for active engagements only:
@@ -43,7 +40,7 @@ jobs:
 
   slack-notification:
     runs-on: ubuntu-latest
-    needs: nightly
+    needs: adhoc
     if: ${{  failure() || cancelled()  }}
     steps:
       - uses: actions/checkout@v4
@@ -51,10 +48,10 @@ jobs:
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_USERNAME: cagov Slackbot
-          SLACK_TITLE: ⚠️ Engaged California nightly load error! ⚠️
+          SLACK_TITLE: ⚠️ Engaged California adhoc load error! ⚠️
           SLACK_MESSAGE: |
             ${{ vars.EN_CA_SLACK_AT_LIST }}
-            nightly workflow failed or was cancelled. See details at:
+            adhoc workflow failed or was cancelled. See details at:
             ${{ github.event.workflow_run.html_url }}
           MSG_MINIMAL: actions url
           SLACK_WEBHOOK: >
