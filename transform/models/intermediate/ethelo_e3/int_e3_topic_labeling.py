@@ -109,7 +109,7 @@ def model(dbt, session: Session):
             comments_for_labeling,
             AI_COMPLETE(
                 model => '{llm_model}',
-                prompt => '{prompt_header_safe}' || coalesce(comments_for_labeling, ''),
+                prompt => '{prompt_header_safe}' || replace(coalesce(comments_for_labeling, ''), '''', ''''''),
                 model_parameters => OBJECT_CONSTRUCT('temperature', 0.01),
                 response_format => {RESPONSE_FORMAT_LITERAL}
             ) as raw_response
