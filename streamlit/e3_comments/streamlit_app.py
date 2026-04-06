@@ -359,7 +359,9 @@ with tab1:
                 # Model selection tips
                 st.markdown("""
                 **💡 Model Tips:** Choose from different models based on your needs for speed, cost, and analytical depth.
-
+                - **Low**: Fast & low-cost. Best for exploratory analysis, quick insights, or playing with custom prompts.
+                - **Medium**: Balanced option. Best for general use when you want good quality analysis without the higher cost of the most advanced model.
+                - **High**: Most sophisticated, most expensive. Best for deep analysis and final outputs.
                 """)
 
             # Default user prompt template
