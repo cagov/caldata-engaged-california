@@ -10,6 +10,7 @@ members as (
         status as subscribe_status,
         source,
         timestamp_opt as subscribe_timestamp,
+        last_changed,
         email_client,
         list_id,
         unsubscribe_reason,
@@ -37,6 +38,7 @@ select
     subscribe_status,
     source,
     subscribe_timestamp,
+    last_changed,
     email_client,
     unsubscribe_reason,
     _fivetran_synced
