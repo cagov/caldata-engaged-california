@@ -223,6 +223,9 @@ models:
     description: |
       "LLM-generated topic labels, descriptions, and representative quotes for each
       cluster emitted by int_e3_topic_modeling."
+    config:
+      meta:
+        llm_model: "{{ env_var('LLM_MODEL_HIGH') if target.name == 'prd' else env_var('LLM_MODEL_LOW') }}"
     columns:
       - name: CONTENT_TYPE
         description: "Source content type of the topic"

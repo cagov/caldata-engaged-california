@@ -29,6 +29,10 @@ jobs:
           SNOWFLAKE_ROLE: TRANSFORMER_ENGCA_PRD
           SNOWFLAKE_DATABASE: TRANSFORM_ENGCA_PRD
           SNOWFLAKE_WAREHOUSE: TRANSFORMING_XS_ENGCA_PRD
+          LLM_MODEL_LOW: ${{ secrets.LLM_MODEL_LOW}}
+          LLM_MODEL_MED: ${{ secrets.LLM_MODEL_MED}}
+          LLM_MODEL_HIGH: ${{ secrets.LLM_MODEL_HIGH}}
+          LLM_MODEL: ${{ github.ref == 'refs/heads/main' && secrets.LLM_MODEL_HIGH || secrets.LLM_MODEL_LOW }}
         run: |
           uv run dbt deps --project-dir transform --target prd
           uv run dbt build --project-dir transform --target prd

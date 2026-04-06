@@ -15,6 +15,11 @@ os.environ["NUMBA_CACHE_DIR"] = "/tmp"
 os.environ["TRANSFORMERS_CACHE"] = "/tmp"
 os.environ["TRANSFORMERS_CACHE"] = "/tmp"
 
+#set llm model variables
+llm_model_high = os.environ["LLM_MODEL_HIGH"]
+llm_model_med = os.environ["LLM_MODEL_MED"]
+llm_model_low = os.environ["LLM_MODEL_LOW"]
+
 
 # Configuration settings
 ENABLE_CUSTOM_PROMPT = True  # Set to True to enable custom prompt option
@@ -24,11 +29,9 @@ COST_PER_SNOWFLAKE_CREDIT = 3.16
 
 # Define model costs (credits per 1 million tokens)
 MODEL_CREDIT_COSTS = {
-    'claude-4-sonnet': 2.55,
-    # 'openai-gpt-oss-120b': 0.11,
-    # 'openai-gpt-5-chat': 1.60
-    'llama4-maverick': 0.25,
-    'snowflake-llama-3.1-405b': 0.96
+    llm_model_high: 2.55,
+    llm_model_low: 0.25,
+    llm_model_med: 0.96
 }
 
 # Calculate model costs in dollars per 1 million tokens
@@ -306,16 +309,16 @@ with tab1:
             st.warning(f"No participants with {selected_comment_label.lower()} found.")
         else:
             # Define LLM options
-            llm_options = ['llama4-maverick', 'snowflake-llama-3.1-405b', 'claude-4-sonnet']
+            llm_options = [llm_model_low, llm_model_med, llm_model_high]
 
             # Define a function to map the actual values to display names
             def format_llm_option(option):
-                if option == "llama4-maverick":
-                    return "Llama 4 Maverick (Fast & Low-Cost)"
-                elif option == "snowflake-llama-3.1-405b":
-                    return "Snowflake Llama 3.1 - 405B"
-                elif option == "claude-4-sonnet":
-                    return "Claude 4 Sonnet (Most capable & Costly)"
+                if option == "llm_model_low":
+                    return "Fast & Low-Cost Model"
+                elif option == "llm_model_med":
+                    return "Balanced option"
+                elif option == "llm_model_high":
+                    return "Most capable and costly"
                 return option  # Fallback for any other options
 
             # Create columns for dropdowns and tips
@@ -342,9 +345,9 @@ with tab1:
                 # Model selection tips
                 st.markdown("""
                 **💡 Model Tips:** Choose from different models based on your needs for speed, cost, and analytical depth.
-                - **Llama 4 Maverick**: Fast & low-cost
-                - **Snowflake Llama 3**: Balanced option
-                - **Claude 4 Sonnet**: Most sophisticated
+                - **Low**: Fast & low-cost. Best for exploratory analysis, quick insights, or playing with custom prompts.
+                - **Medium**: Balanced option. Best for general use when you want good quality analysis without the higher cost of the most advanced model.
+                - **High**: Most sophisticated, most expensive. Best for deep analysis and final outputs.
                 """)
 
             # Default user prompt template

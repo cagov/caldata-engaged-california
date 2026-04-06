@@ -14,6 +14,10 @@ env:
   SNOWFLAKE_ROLE: TRANSFORMER_ENGCA_DEV
   SNOWFLAKE_WAREHOUSE: TRANSFORMING_XS_ENGCA_DEV
   SNOWFLAKE_DATABASE: TRANSFORM_ENGCA_DEV
+  LLM_MODEL_LOW: ${{ secrets.LLM_MODEL_LOW}}
+  LLM_MODEL_MED: ${{ secrets.LLM_MODEL_MED}}
+  LLM_MODEL_HIGH: ${{ secrets.LLM_MODEL_HIGH}}
+  LLM_MODEL: ${{ github.ref == 'refs/heads/main' && secrets.LLM_MODEL_HIGH || secrets.LLM_MODEL_LOW }}
 
 jobs:
   cleanup-dev-env:

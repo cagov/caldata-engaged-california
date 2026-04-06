@@ -13,18 +13,16 @@ from snowflake.snowpark import Session
 MAX_COMMENTS_PER_TOPIC = 10
 SNIPPET_CHAR_LIMIT = 500
 
-RESPONSE_FORMAT_LITERAL = """{
-    'type':'json',
-    'schema':{
-        'type':'object',
-        'properties':{
-            'title':{'type':'string'},
-            'description':{'type':'string'},
-            'quotes':{'type':'array','items':{'type':'string'}}
-        },
-        'required':['title','description','quotes']
-    }
-}"""
+RESPONSE_FORMAT_JSON = (
+    '{"type":"json","schema":{"type":"object",'
+    '"properties":{'
+    '"title":{"type":"string"},'
+    '"description":{"type":"string"},'
+    '"quotes":{"type":"array","items":{"type":"string"}}'
+    '},'
+    '"required":["title","description","quotes"]}}'
+)
+RESPONSE_FORMAT_LITERAL = f"PARSE_JSON('{RESPONSE_FORMAT_JSON}')"
 
 PROMPT_HEADER = (
     "The following are ideas from California state employees to improve the efficiency of the california state government. "
@@ -38,21 +36,15 @@ PROMPT_HEADER = (
 
 
 def resolve_llm_model(dbt) -> str:
-    """Pull the configured LLM model name from dbt vars."""
-
-    try:
-        vars_dict = dbt.config.get("vars", {})  # type: ignore[attr-defined]
-    except AttributeError:
-        vars_dict = getattr(dbt, "config_vars", {})  # type: ignore[attr-defined]
-
-    if not isinstance(vars_dict, dict):
-        vars_dict = {}
-
-    llm_model = vars_dict.get("llm_model")
+    """Pull the configured LLM model name from dbt meta config."""
+    meta = dbt.config.get("meta") or {}
+    llm_model = meta.get("llm_model", "")
     if isinstance(llm_model, str) and llm_model.strip():
         return llm_model.strip()
-
-    return "claude-4-sonnet"
+    raise ValueError(
+        "llm_model not found in model meta config. "
+        "Ensure it is set in schema.yml under config.meta."
+    )
 
 
 def model(dbt, session: Session):
@@ -117,7 +109,7 @@ def model(dbt, session: Session):
             comments_for_labeling,
             AI_COMPLETE(
                 model => '{llm_model}',
-                prompt => '{prompt_header_safe}' || coalesce(comments_for_labeling, ''),
+                prompt => '{prompt_header_safe}' || replace(coalesce(comments_for_labeling, ''), '''', ''''''),
                 model_parameters => OBJECT_CONSTRUCT('temperature', 0.01),
                 response_format => {RESPONSE_FORMAT_LITERAL}
             ) as raw_response
