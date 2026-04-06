@@ -75,65 +75,60 @@ def load_participant_responses_data():
     """Load E3 participant responses data from the database"""
     query = '''
     SELECT
+        COALESCE(
+            COMMENT_ID,
+            'PoP-' || LPAD(RANK() OVER (PARTITION BY COMMENT_ID ORDER BY PARTICIPANT_ID ASC)::VARCHAR, 4, '0'
+            )) AS COMMENT_ID,
         PARTICIPANT_ID,
-        POINT_OF_PRIDE,
-        IDEA_DEPT,
-        POS_TYPE,
-        CA_TENURE,
-        MAIN_IDEA,
-        WHATS_WORKING,
-        OTHER_IDEAS,
-        LAST_SURVEY_RESPONSE_DATE,
-        LAST_COMMENT_DATE,
+        CONTENT,
+        QUESTION,
+        CASE QUESTION
+            WHEN 'Share your idea - Primary problem and ideas to solve the problem' THEN 'MAIN_IDEA'
+            WHEN 'Share what has been working - Examples' THEN 'WHATS_WORKING'
+            WHEN 'Anything else? - Would you add any other ideas, including from your perspective as a California resident?' THEN 'OTHER_IDEAS'
+            WHEN 'Opening question - What makes you proud about your role in public service?' THEN 'POINT_OF_PRIDE'
+            END AS QUESTION_LABEL,
+        POSTED_ON,
         _FILE_UPLOAD_DATE
-    FROM ANALYTICS_ENGCA_PRD.ETHELO_E3.E3_PARTICIPANT_RESPONSES
-    ORDER BY LAST_COMMENT_DATE DESC
+    FROM ANALYTICS_ENGCA_PRD.ETHELO_E3.E3_COMMENTS
+    WHERE REPLY_TO_ID IS NULL
+    ORDER BY POSTED_ON DESC
     '''
 
     df = session.sql(query).to_pandas()
 
     # Convert date columns to datetime
-    date_columns = ['LAST_SURVEY_RESPONSE_DATE', 'LAST_COMMENT_DATE', '_FILE_UPLOAD_DATE']
+    date_columns = ['POSTED_ON', '_FILE_UPLOAD_DATE']
     for col in date_columns:
         if col in df.columns:
             df[col] = pd.to_datetime(df[col], errors='coerce')
 
     return df
 
-# Load participant summary data
+# Load the department cou nt metric
 @st.cache_data
-def load_participant_summary():
-    """Load participant summary for E3 responses"""
+def load_department_count():
+    """Load E3 department count metric from the database"""
     query = '''
     SELECT
-        PARTICIPANT_ID,
-        CASE WHEN MAIN_IDEA IS NOT NULL THEN 1 ELSE 0 END as has_main_idea,
-        CASE WHEN WHATS_WORKING IS NOT NULL THEN 1 ELSE 0 END as has_whats_working,
-        CASE WHEN OTHER_IDEAS IS NOT NULL THEN 1 ELSE 0 END as has_other_ideas,
-        LAST_SURVEY_RESPONSE_DATE,
-        LAST_COMMENT_DATE
-    FROM ANALYTICS_ENGCA_PRD.ETHELO_E3.E3_PARTICIPANT_RESPONSES
-    ORDER BY LAST_COMMENT_DATE DESC NULLS LAST
+        COUNT(DISTINCT RESPONSE_VALUE)
+    FROM ANALYTICS_ENGCA_PRD.DAILY_REPORT.ETHELO_E3_RESPONSE_COUNTS
+    WHERE UPPER(METRIC_TYPE) = 'RESPONSE COUNT BY DEPARTMENT'
     '''
 
-    df = session.sql(query).to_pandas()
+    value = session.sql(query).collect()[0][0]
 
-    # Convert dates to datetime
-    for date_col in ['LAST_SURVEY_RESPONSE_DATE', 'LAST_COMMENT_DATE']:
-        if date_col in df.columns:
-            df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
-
-    return df
+    return value
 
 # Load LLM analysis dynamically for any comment field
 @st.cache_data
-def load_comment_analysis(participant_ids, selected_llm, field_name, custom_prompt=None):
+def load_comment_analysis(comment_ids, selected_llm, field_name, custom_prompt=None):
     """Load LLM analysis for any comment type (MAIN_IDEA, POINT_OF_PRIDE, WHATS_WORKING, OTHER_IDEAS)"""
 
-    if not participant_ids:
-        participant_ids_str = "''"
+    if not comment_ids:
+        comment_ids_str = "''"
     else:
-        participant_ids_str = "'" + "','".join(map(str, participant_ids)) + "'"
+        comment_ids_str = "'" + "','".join(map(str, comment_ids)) + "'"
 
     system_prompt = '''You are analyzing ideas from participants in an E3 (Efficiency, Engagement, and Effectiveness) civic engagement platform. These are ideas for improving government services and operations from California state employees.
 
@@ -158,19 +153,17 @@ Your output should follow this general format for each theme:
     query = f'''
     with comments as (
         select
-            PARTICIPANT_ID,
-            {field_name} as COMMENT_TEXT,
-            IDEA_DEPT
-        from ANALYTICS_ENGCA_PRD.ETHELO_E3.E3_PARTICIPANT_RESPONSES
-        where PARTICIPANT_ID in ({participant_ids_str})
-        and {field_name} IS NOT NULL
-        and TRIM({field_name}) != ''
+            COMMENT_ID,
+            CONTENT as COMMENT_TEXT,
+            array_to_string(department_user_ai_combined, ', ') as department_string
+        from ANALYTICS_ENGCA_PRD.ETHELO_E3.E3_COMMENTS
+        where COMMENT_ID in ({comment_ids_str})
     ),
     comments_agg as (
         select
             '{field_name} Analysis' as topics,
             count(*) as n,
-            LISTAGG(COALESCE(IDEA_DEPT, 'Unspecified') || ': ' || COMMENT_TEXT, '; ') as target_ideas
+            LISTAGG(COALESCE(department_string, 'Unspecified') || ': ' || COMMENT_TEXT, '; ') as target_ideas
         from comments
     )
     select
@@ -181,7 +174,7 @@ Your output should follow this general format for each theme:
             '{selected_llm}',
             ARRAY_CONSTRUCT(
                 OBJECT_CONSTRUCT('role', 'system', 'content', '{system_prompt}'),
-                OBJECT_CONSTRUCT('role', 'user', 'content', CONCAT('{user_prompt_template}', '\\n\\nIdeas (Department: Idea):\\n', a.target_ideas))
+                OBJECT_CONSTRUCT('role', 'user', 'content', CONCAT('{user_prompt_template}', '\\n\\nIdeas (Department(s): Idea):\\n', a.target_ideas))
             ),
             OBJECT_CONSTRUCT('temperature', 0)
         ) as desc_raw
@@ -199,10 +192,14 @@ Your output should follow this general format for each theme:
 # Load the data
 try:
     participant_responses_df = load_participant_responses_data()
-    participant_summary_df = load_participant_summary()
+    department_count = load_department_count()
 
     if participant_responses_df.empty:
         st.warning("No participant responses data available.")
+        st.stop()
+
+    if department_count == 0:
+        st.warning("No department count data available.")
         st.stop()
 
 except Exception as e:
@@ -210,24 +207,16 @@ except Exception as e:
     st.stop()
 
 # Calculate summary statistics
-total_participants = len(participant_responses_df)
-participants_with_ideas = len(participant_responses_df[
-    participant_responses_df['MAIN_IDEA'].notna() &
-    (participant_responses_df['MAIN_IDEA'].str.strip() != '')
-])
-participants_with_working_examples = len(participant_responses_df[
-    participant_responses_df['WHATS_WORKING'].notna() &
-    (participant_responses_df['WHATS_WORKING'].str.strip() != '')
-])
-participants_with_other_ideas = len(participant_responses_df[
-    participant_responses_df['OTHER_IDEAS'].notna() &
-    (participant_responses_df['OTHER_IDEAS'].str.strip() != '')
-])
+total_participants = participant_responses_df['PARTICIPANT_ID'].nunique()
+comment_counts = participant_responses_df.groupby('QUESTION_LABEL')['COMMENT_ID'].nunique()
+main_idea_count = comment_counts['MAIN_IDEA']
+whats_working_count = comment_counts['WHATS_WORKING']
+other_ideas_count = comment_counts['OTHER_IDEAS']
 
 # Date range
-if participant_responses_df['LAST_COMMENT_DATE'].notna().any():
-    earliest_date = participant_responses_df['LAST_COMMENT_DATE'].min()
-    latest_date = participant_responses_df['LAST_COMMENT_DATE'].max()
+if participant_responses_df['POSTED_ON'].notna().any():
+    earliest_date = participant_responses_df['POSTED_ON'].min()
+    latest_date = participant_responses_df['POSTED_ON'].max()
 else:
     earliest_date = None
     latest_date = None
@@ -245,17 +234,16 @@ with col1:
     st.metric("Total Participants", total_participants, delta_color="off")
 
 with col2:
-    st.metric('''"Share Your Idea" Responses''', participants_with_ideas, delta_color="off")
+    st.metric('''"Share Your Idea" Responses''', main_idea_count, delta_color="off")
 
 with col3:
-    st.metric('''"What's Working" Responses''', participants_with_working_examples, delta_color="off")
+    st.metric('''"What's Working" Responses''', whats_working_count, delta_color="off")
 
 with col4:
-    st.metric('''"Anything Else?" Responses''', participants_with_other_ideas, delta_color="off")
+    st.metric('''"Anything Else?" Responses''', other_ideas_count, delta_color="off")
 
 with col5:
-    departments = participant_responses_df['IDEA_DEPT'].dropna().nunique()
-    st.metric("Unique Departments", departments, delta_color="off")
+    st.metric("Unique Departments", department_count, delta_color="off")
 
 # Display date range if available
 if earliest_date and latest_date:
@@ -308,9 +296,7 @@ with tab1:
         selected_comment_field = comment_type_options[selected_comment_label]
 
         # Filter participants with the selected field
-        participants_with_comments = filtered_df[
-            filtered_df[selected_comment_field].notna() & (filtered_df[selected_comment_field].str.strip() != '')
-        ]
+        participants_with_comments = filtered_df[filtered_df['QUESTION_LABEL'] == selected_comment_field]
         with col_len:
             st.text("")  # for alignment
             st.info(f"Analyzing {len(participants_with_comments)} {selected_comment_label.lower()}")
@@ -392,7 +378,7 @@ Your output should follow this general format for each theme:
                 )
 
             # Get the list of participant IDs from the filtered dataframe
-            participant_ids_with_comments = participants_with_comments['PARTICIPANT_ID'].unique().tolist()
+            comment_ids = participants_with_comments['COMMENT_ID'].unique().tolist()
 
             # Add button to generate analysis
             generate_button = st.button("Generate Analysis")
@@ -402,12 +388,12 @@ Your output should follow this general format for each theme:
                 if use_custom_prompt and not custom_prompt.strip():
                     st.error("Please enter a custom prompt or uncheck 'Use custom prompt'.")
                 else:
-                    with st.spinner(f"Generating analysis of {len(participant_ids_with_comments)} {selected_comment_label.lower()}... This may take a moment."):
+                    with st.spinner(f"Generating analysis of {len(comment_ids)} {selected_comment_label.lower()}... This may take a moment."):
                         # Use custom prompt if toggled on, otherwise use default
                         prompt_to_use = custom_prompt if use_custom_prompt else None
 
                         # Call the existing function, but dynamically pass the selected field
-                        ideas_analysis = load_comment_analysis(participant_ids_with_comments, selected_llm, selected_comment_field, prompt_to_use)
+                        ideas_analysis = load_comment_analysis(comment_ids, selected_llm, selected_comment_field, prompt_to_use)
 
                     if ideas_analysis.empty:
                         st.warning(f"No analysis data available for the {selected_comment_label.lower()}.")
@@ -450,10 +436,10 @@ Your output should follow this general format for each theme:
             st.warning(f"No participants with {selected_comment_label.lower()} comments found.")
         else:
             # Display the data without requiring a button click
-            st.info(f"Found {len(participants_with_comments)} participants with {selected_comment_label.lower()} comments.")
+            st.info(f"Found {len(participants_with_comments)} {selected_comment_label.lower()} comments.")
 
             # Display the participants table
-            display_columns = ['PARTICIPANT_ID','IDEA_DEPT',selected_comment_field,'POS_TYPE','CA_TENURE','LAST_COMMENT_DATE']
+            display_columns = ['COMMENT_ID', 'PARTICIPANT_ID','CONTENT',selected_comment_field,'POSTED_ON']
             available_columns = [col for col in display_columns if col in participants_with_comments.columns]
 
             st.dataframe(
@@ -481,10 +467,8 @@ with tab2:
         export_df = filtered_df.copy()
 
         # Format dates for export
-        if 'LAST_COMMENT_DATE' in export_df.columns:
-            export_df['LAST_COMMENT_DATE'] = export_df['LAST_COMMENT_DATE'].dt.strftime('%Y-%m-%d %H:%M:%S')
-        if 'LAST_SURVEY_RESPONSE_DATE' in export_df.columns:
-            export_df['LAST_SURVEY_RESPONSE_DATE'] = export_df['LAST_SURVEY_RESPONSE_DATE'].dt.strftime('%Y-%m-%d %H:%M:%S')
+        if 'POSTED_ON' in export_df.columns:
+            export_df['POSTED_ON'] = export_df['POSTED_ON'].dt.strftime('%Y-%m-%d %H:%M:%S')
         if '_FILE_UPLOAD_DATE' in export_df.columns:
             export_df['_FILE_UPLOAD_DATE'] = export_df['_FILE_UPLOAD_DATE'].dt.strftime('%Y-%m-%d %H:%M:%S')
 
@@ -493,7 +477,7 @@ with tab2:
         st.download_button(
             label="Download Participant Responses as CSV",
             data=csv_data,
-            file_name=f"E3_PARTICIPANT_RESPONSES_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            file_name=f"E3_COMMENTS_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
             mime="text/csv",
             use_container_width=True
         )
