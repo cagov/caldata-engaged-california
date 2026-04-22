@@ -84,7 +84,7 @@ fill_in_dept as (
         coalesce(
             known_department,
             ai_complete(
-                model => '{{ env_var("LLM_MODEL") }}',
+                model => '{{ env_var("LLM_MODEL_HIGH") }}',
                 prompt => concat(
                     'Use the comment and user specified department below to return the relevant
                     California agency (or agencies). \n\n',
