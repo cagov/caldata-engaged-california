@@ -125,8 +125,7 @@ fill_in_dept as (
                 model_parameters => object_construct(
                     'temperature', 0.05,
                     'max_tokens', 100,
-                    'top_p', 0.05,
-                    'batch_size', 250
+                    'top_p', 0.05
                 )
             )
         ) as departments
