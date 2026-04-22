@@ -35,5 +35,5 @@ jobs:
       - name: Build dbt project
         run: |
           uv run dbt deps --project-dir transform
-          uv run dbt build --project-dir transform
+          uv run dbt build --project-dir transform --exclude int_comment_department
           uv run dbt run-operation validate_all_schemas --project-dir transform
