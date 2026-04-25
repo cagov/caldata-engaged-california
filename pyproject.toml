@@ -10,6 +10,9 @@ dependencies = [
     "dbt-core~=1.10",
     "dbt-snowflake~=1.10",
     "mkdocs-material~=9.6.14",
+    "pandas<3.0",
+    "python-dotenv>=1.2.2",
+    "snowflake-connector-python[pandas]>=3.16.0",
 ]
 
 [dependency-groups]
