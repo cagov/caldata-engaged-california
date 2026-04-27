@@ -120,7 +120,6 @@ if __name__ == "__main__":
     error_message = ""
 
 # Create Snowflake connection
-#
     snowflake_conn = snowflake_connection_from_environment(
         warehouse = "LOADING_XS_ENGCA_PRD",
         role="RAW_ENGCA_PRD_READWRITECONTROL",
@@ -128,9 +127,6 @@ if __name__ == "__main__":
         schema="GOVOCAL"
     )
 
-    # snowflake_conn.cursor().execute(
-    #     f'CREATE SCHEMA IF NOT EXISTS "{snowflake_conn.schema}"'.upper()
-    # )
     snowflake_conn.cursor().execute(f"CREATE SCHEMA IF NOT EXISTS {snowflake_conn.schema.upper()}")
 
     token = get_govocal_token()
