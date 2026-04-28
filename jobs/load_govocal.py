@@ -9,7 +9,7 @@ from jobs.utils.snowflake import snowflake_connection_from_environment, table_ex
 load_dotenv()  # Load environment variables from .env file
 
 # Configuration for Go Vocal API
-BASE_URL = "https://engaged-ca.govocal.com/api/v2"
+BASE_URL = "https://join.engaged.ca.gov/api/v2"
 CLIENT_ID = os.environ.get("GO_VOCAL_CLIENT_ID")
 CLIENT_SECRET = os.environ.get("GO_VOCAL_CLIENT_SECRET")
 
