@@ -15,9 +15,9 @@ from jobs.utils.snowflake import snowflake_connection_from_environment, table_ex
 load_dotenv()  # Load environment variables from .env file
 
 # Configuration for Go Vocal API
-BASE_URL = "https://join.engaged.ca.gov/api/v2"
-CLIENT_ID = os.environ.get("GO_VOCAL_CLIENT_ID")
-CLIENT_SECRET = os.environ.get("GO_VOCAL_CLIENT_SECRET")
+BASE_URL = "https://engagedcalifornia.demo.govocal.com/api/v2/"
+CLIENT_ID = os.environ.get("GO_VOCAL_CLIENT_ID_SAND")
+CLIENT_SECRET = os.environ.get("GO_VOCAL_CLIENT_SECRET_SAND")
 PAGE_SIZE = int(os.environ.get("GO_VOCAL_PAGE_SIZE", 24))  # Go Vocal's max page size is 24.
 REQUEST_TIMEOUT = int(os.environ.get("GO_VOCAL_REQUEST_TIMEOUT", 30))  # Request timeout in seconds
 RETRY_TOTAL = int(os.environ.get("GO_VOCAL_RETRY_TOTAL", 5))  # Total number of retries
@@ -27,25 +27,25 @@ RETRY_STATUS_FORCELIST = [429, 500, 502, 503, 504]  # HTTP status codes to trigg
 history_capture = False  # False for a full refresh for each load, True to accumulate daily snapshots
 
 endpoints = {
-    "COMMENTS": "comments",
-    "IDEAS": "ideas",
-    "REACTIONS": "reactions",
-    "PROJECTS": "projects",
-    "PHASES": "phases",
-    "PROJECT_FOLDERS": "project_folders",
-    "TOPICS": "topics",
-    "USERS": "users",
-    "PROJECT_TOPICS": "project_topics",
-    "IDEA_TOPICS": "idea_topics",
-    "IDEA_PHASES": "idea_phases",
-    "BASKETS": "baskets",
-    "BASKET_IDEAS": "basket_ideas",
-    "EMAIL_CAMPAIGNS": "email_campaigns",
-    "EMAIL_CAMPAIGN_DELIVERIES": "email_campaign_deliveries",
-    "EVENTS": "events",
-    "EVENT_ATTENDANCES": "event_attendances",
-    "VOLUNTEERING_CAUSES": "volunteering_causes",
-    "VOLUNTEERING_VOLUNTEERS": "volunteering_volunteers",
+    # "COMMENTS": "comments",
+     "IDEAS": "ideas",
+    # "REACTIONS": "reactions",
+    # "PROJECTS": "projects",
+    # "PHASES": "phases",
+    # "PROJECT_FOLDERS": "project_folders",
+    # "TOPICS": "topics",
+     "USERS": "users",
+    # "PROJECT_TOPICS": "project_topics",
+    # "IDEA_TOPICS": "idea_topics",
+    # "IDEA_PHASES": "idea_phases",
+    # "BASKETS": "baskets",
+    # "BASKET_IDEAS": "basket_ideas",
+    # "EMAIL_CAMPAIGNS": "email_campaigns",
+    # "EMAIL_CAMPAIGN_DELIVERIES": "email_campaign_deliveries",
+    # "EVENTS": "events",
+    # "EVENT_ATTENDANCES": "event_attendances",
+    # "VOLUNTEERING_CAUSES": "volunteering_causes",
+    # "VOLUNTEERING_VOLUNTEERS": "volunteering_volunteers",
 }
 
 logging.basicConfig(
