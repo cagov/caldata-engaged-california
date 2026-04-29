@@ -56,7 +56,7 @@ jobs:
           name: dbt-manifest-prod
           path: transform/target/manifest.json
           overwrite: true
-          
+
   load-govocal:
     runs-on: ubuntu-latest
     steps:
