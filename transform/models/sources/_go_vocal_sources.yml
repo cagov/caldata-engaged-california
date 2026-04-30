@@ -3,7 +3,7 @@ version: 2
 sources:
   - name: GO_VOCAL
     database: RAW_ENGCA_PRD
-    schema: GO_VOCAL
+    schema: GOVOCAL
     description: |
       ODI Go Vocal data, loaded into Snowflake via Github Actions job running load_govocal.py
     tables:
