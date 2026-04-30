@@ -73,8 +73,8 @@ jobs:
         env:
           SNOWFLAKE_ROLE: >-
             ${{ github.ref == 'refs/heads/main'
-            && 'RAW_ENGCA_PRD_READWRITECONTROL'
-            || 'RAW_ENGCA_DEV_READWRITECONTROL' }}
+            && 'LOADER_ENGACA_PRD'
+            || 'LOADER_ENGACA_DEV' }}
           SNOWFLAKE_DATABASE: >-
             ${{ github.ref == 'refs/heads/main'
             && 'RAW_ENGCA_PRD'
