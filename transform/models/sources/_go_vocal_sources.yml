@@ -1,0 +1,581 @@
+version: 2
+
+sources:
+  - name: GO_VOCAL
+    database: RAW_ENGCA_PRD
+    schema: GO_VOCAL
+    description: |
+      ODI Go Vocal data, loaded into Snowflake via Github Actions job running load_govocal.py
+    tables:
+      - name: COMMENTS
+        description: All comments on the platform.
+        columns:
+          - name: ID
+            description: Unique identifier for each comment.
+          - name: BODY
+            description: Comment content in HTML format.
+          - name: AUTHOR_ID
+            description: User ID of the comment author.
+          - name: IDEA_ID
+            description: Idea ID that the comment belongs to.
+          - name: PARENT_ID
+            description: Parent comment ID for threaded replies.
+          - name: CREATED_AT
+            description: When the comment was created.
+          - name: UPDATED_AT
+            description: When the comment was last updated.
+          - name: BODY_UPDATED_AT
+            description: When the comment body was last changed.
+          - name: LIKES_COUNT
+            description: Number of likes on the comment.
+          - name: DISLIKES_COUNT
+            description: Number of dislikes on the comment.
+          - name: CHILDREN_COUNT
+            description: Number of replies to this comment.
+          - name: PUBLICATION_STATUS
+            description: Publication status of the comment.
+          - name: PROJECT_ID
+            description: Project ID where the comment was posted.
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: IDEAS
+        description: Ideas, proposals and survey responses written by users.
+        columns:
+          - name: ID
+            description: Unique identifier for each idea.
+          - name: TITLE
+            description: Idea title.
+          - name: BODY
+            description: Idea content in HTML format.
+          - name: AUTHOR_ID
+            description: User ID of the idea author.
+          - name: LIKES_COUNT
+            description: Number of likes on the idea.
+          - name: DISLIKES_COUNT
+            description: Number of dislikes on the idea.
+          - name: COMMENTS_COUNT
+            description: Number of comments on the idea.
+          - name: PUBLISHED_AT
+            description: Timestamp when the idea was published.
+          - name: SUBMITTED_AT
+            description: Timestamp when the idea was submitted.
+          - name: PUBLICATION_STATUS
+            description: Publication status of the idea.
+          - name: PROJECT_ID
+            description: Project ID that contains the idea.
+          - name: PROJECT_TITLE
+            description: Title of the project that contains the idea.
+          - name: CREATED_AT
+            description: Timestamp when the idea was created.
+          - name: UPDATED_AT
+            description: Timestamp when the idea was last updated.
+          - name: LOCATION_POINT
+            description: Geospatial point of the idea location.
+          - name: LOCATION_DESCRIPTION
+          - name: SLUG
+            description: URL-friendly identifier for the idea.
+          - name: BUDGET
+          - name: BASKETS_COUNT
+          - name: VOTES_COUNT
+          - name: OFFICIAL_FEEDBACKS_COUNT
+          - name: ASSIGNEE_ID
+          - name: ASSIGNED_AT
+          - name: PROPOSED_BUDGET
+          - name: CREATION_PHASE_ID
+          - name: CREATION_PHASE_TITLE
+          - name: SURVEY_TITLE
+          - name: IMAGES
+          - name: HREF
+            description: URL to the idea on the platform.
+          - name: STATUS
+          - name: CUSTOM_FIELD_VALUES
+            description: Custom field values associated with the idea.
+          - name: TYPE
+            description: Idea type, such as "idea" or "survey".
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: REACTIONS
+        description: Likes and dislikes.
+        columns:
+          - name: ID
+            description: Unique identifier for each reaction.
+          - name: MODE
+            description: Reaction type, such as "up".
+          - name: USER_ID
+            description: User ID of the person who cast the reaction.
+          - name: REACTABLE_ID
+            description: ID of the item that was reacted to.
+          - name: REACTABLE_TYPE
+            description: Resource type that was reacted to, such as "idea" or "comment".
+          - name: IDEA_ID
+            description: ID of the idea that was reacted to.
+          - name: PROJECT_ID
+            description: ID of the project that contains the idea that was reacted to.
+          - name: CREATED_AT
+            description: Timestamp when the reaction was created.
+          - name: UPDATED_AT
+            description: Timestamp when the reaction was last updated.
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: PROJECTS
+        description: |
+          Go Vocal Projects. Projects are participation scopes. They establish a framework, including the context,
+          duration, and expected input from participants.
+        columns:
+          - name: ID
+            description: Unique identifier for each project.
+          - name: TITLE
+            description: Project title.
+          - name: DESCRIPTION_HTML
+            description: Project description in HTML format.
+          - name: DESCRIPTION_PREVIEW
+          - name: SLUG
+            description: URL-friendly identifier for the project.
+          - name: FOLDER_ID
+          - name: HREF
+            description: URL to the project on the platform.
+          - name: VISIBLE_TO
+            description: Who can see the project, such as "public".
+          - name: IMAGES
+          - name: CREATED_AT
+            description: Timestamp when the project was created.
+          - name: UPDATED_AT
+            description: Timestamp when the project was last updated.
+          - name: IDEAS_COUNT
+            description: Number of ideas in the project.
+          - name: COMMENTS_COUNT
+            description: Number of comments in the project.
+          - name: MAP_CENTER_GEOJSON
+          - name: PUBLICATION_STATUS
+            description: Publication status of the project, such as "published".
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: PHASES
+        description: Go Vocal phases that define the stages in a project.
+        columns:
+          - name: ID
+            description: Unique identifier for each phase.
+          - name: TITLE
+            description: Phase title.
+          - name: DESCRIPTION
+            description: Phase description in HTML format.
+          - name: PARTICIPATION_METHOD
+            description: Participation method used in the phase, such as "ideation" or "voting".
+          - name: PROJECT_ID
+            description: ID of the project that the phase belongs to.
+          - name: PROJECT_TITLE
+            description: Title of the project that the phase belongs to.
+          - name: CREATED_AT
+            description: Timestamp when the phase was created.
+          - name: UPDATED_AT
+            description: Timestamp when the phase was last updated.
+          - name: IDEAS_COUNT
+            description: Number of ideas in the phase.
+          - name: BASKETS_COUNT
+            description: Number of baskets in the phase.
+          - name: VOTES_COUNT
+            description: Number of votes in the phase.
+          - name: SUBMISSION_ENABLED
+            description: Whether submission is enabled for the phase.
+          - name: AUTOSHARE_RESULTS_ENABLED
+          - name: COMMENTING_ENABLED
+          - name: REACTING_ENABLED
+          - name: REACTING_LIKE_METHOD
+          - name: REACTING_LIKE_LIMITED_MAX
+          - name: REACTING_DISLIKE_ENABLED
+          - name: REACTING_DISLIKE_METHOD
+          - name: REACTING_DISLIKE_LIMITED_MAX
+          - name: VOTING_METHOD
+          - name: VOTING_MAX_TOTAL
+          - name: VOTING_MIN_TOTAL
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: PROJECT_FOLDERS
+        description: Project folders used to organize projects into groups.
+        columns:
+          - name: ID
+            description: Unique identifier for each project folder.
+          - name: SLUG
+            description: URL-friendly identifier for the project folder.
+          - name: PUBLICATION_STATUS
+            description: Publication status of the project folder.
+          - name: TITLE
+            description: Title of the project folder.
+          - name: TITLE_MULTILOC
+          - name: DESCRIPTION
+            description: Description of the project folder in HTML format.
+          - name: DESCRIPTION_MULTILOC
+          - name: DESCRIPTION_PREVIEW
+          - name: DESCRIPTION_PREVIEW_MULTILOC
+          - name: CREATED_AT
+            description: Timestamp when the project folder was created.
+          - name: UPDATED_AT
+            description: Timestamp when the project folder was last updated.
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: USERS
+        description: All users registered on the platform.
+        columns:
+          - name: ID
+            description: Unique identifier for each user.
+          - name: EMAIL
+            description: Email address of the user.
+          - name: SLUG
+            description: URL-friendly identifier for the user profile.
+          - name: ROLES
+            description: Roles assigned to the user.
+          - name: FIRST_NAME
+            description: First name of the user.
+          - name: LAST_NAME
+            description: Last name of the user.
+          - name: LOCALE
+            description: Locale / language preference of the user, such as "en" or "fr".
+          - name: BIO
+          - name: REGISTRATION_COMPLETED_AT
+          - name: VERIFIED
+            description: true or false
+          - name: EMAIL_CONFIRMED_AT
+            description: Timestamp when the user's email was confirmed.
+          - name: EMAIL_CONFIRMATION_CODE_SENT_AT
+            description: Timestamp when the email confirmation code was sent.
+          - name: CONFIRMATION_REQUIRED
+            description: true or false
+          - name: CUSTOM_FIELD_VALUES
+            description: Key-value pairs for profile field values including demographic information..
+          - name: STATUS
+            description: User status, such as "active".
+          - name: CREATED_AT
+            description: Timestamp when the user was created.
+          - name: UPDATED_AT
+            description: Timestamp when the user was last updated.
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: GLOBAL_TOPICS
+        description: |
+          Global topics are platform-wide topics used to categorize projects and pages. Unlike input topics which are
+          project-specific, global topics exist at the platform level and can be associated with multiple projects and
+          static pages.
+        columns:
+          - name: ID
+            description: Unique identifier for each global topic.
+          - name: TITLE
+            description: Title of the topic.
+          - name: DESCRIPTION
+            description: Description of the topic.
+          - name: CREATED_AT
+            description: Timestamp when the topic was created.
+          - name: UPDATED_AT
+            description: Timestamp when the topic was last updated.
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: PROJECT_GLOBAL_TOPICS
+        description: |
+          Associations between projects and global topics. This is a many-to-many relationship: Projects can have
+          multiple topics, and topics can be associated with multiple projects.
+        columns:
+          - name: PROJECT_ID
+            description: ID of the project.
+          - name: GLOBAL_TOPIC_ID
+            description: ID of the global topic.
+          - name: CREATED_AT
+            description: Timestamp when the association was created.
+          - name: UPDATED_AT
+            description: Timestamp when the association was last updated.
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: INPUT_TOPICS
+        description: |
+          Input topics are project-level topics used to categorize ideas and other inputs within a project.
+          Unlike global topics which are platform-wide, input topics are specific to a project and can be
+          managed independently.
+        columns:
+          - name: ID
+            description: Unique identifier for each input topic.
+          - name: PROJECT_ID
+            description: ID of the project that the input topic belongs to.
+          - name: TITLE
+            description: Title of the topic.
+          - name: DESCRIPTION
+            description: Description of the topic.
+          - name: CREATED_AT
+            description: Timestamp when the topic was created.
+          - name: UPDATED_AT
+            description: Timestamp when the topic was last updated.
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: IDEAS_INPUT_TOPICS
+        description: |
+          Associations between ideas and input topics. This is a many-to-many relationship: Ideas can have multiple
+          input topics, and input topics can be associated with multiple ideas.
+        columns:
+          - name: IDEA_ID
+            description: ID of the idea.
+          - name: INPUT_TOPIC_ID
+            description: ID of the input topic.
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: IDEA_PHASES
+        description: |
+          Associations between ideas and phases. This is a many-to-many relationship: Ideas can belong to multiple
+          phases, and phases can be associated with multiple ideas.
+        columns:
+          - name: IDEA_ID
+            description: ID of the idea.
+          - name: PHASE_ID
+            description: ID of the phase.
+          - name: BASKETS_COUNT
+            description: Number of baskets the idea is associated with in the phase.
+          - name: VOTES_COUNT
+            description: Number of votes the idea received in the phase.
+          - name: CREATED_AT
+            description: Timestamp when the association was created.
+          - name: UPDATED_AT
+            description: Timestamp when the association was last updated.
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: BASKETS
+        description: |
+          User baskets used for voting in a project or phase. A user will get a single basket per voting phase or
+          project. Votes (stored in basket ideas) remain uncounted until the basket is submitted and there is a
+          submitted_at date for the basket.
+        columns:
+          - name: ID
+            description: Unique identifier for each basket.
+          - name: USER_ID
+            description: ID of the user that the basket belongs to.
+          - name: PROJECT_ID
+            description: ID of the project that the basket belongs to.
+          - name: PHASE_ID
+            description: ID of the phase that the basket belongs to.
+          - name: SUBMITTED_AT
+            description: Timestamp when the basket was submitted. Votes in the basket are only counted after submission.
+          - name: CREATED_AT
+            description: Timestamp when the basket was created.
+          - name: UPDATED_AT
+            description: Timestamp when the basket was last updated.
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: BASKET_IDEAS
+        description: |
+          Vote associations between baskets and ideas. Basket idea associations define which ideas a user has voted for.
+          The votes field defines how many votes a user has given to the idea or in the case of budgeting
+          projects/phases, how much budget they have allocated.
+        columns:
+          - name: ID
+            description: Unique identifier for each basket idea association.
+          - name: BASKET_ID
+            description: ID of the basket.
+          - name: IDEA_ID
+            description: ID of the idea.
+          - name: PROJECT_ID
+            description: ID of the project.
+          - name: PHASE_ID
+            description: ID of the phase.
+          - name: USER_ID
+            description: ID of the user.
+          - name: VOTES
+            description: Number of votes given to the idea or budget allocated.
+          - name: CREATED_AT
+            description: Timestamp when the basket idea association was created.
+          - name: UPDATED_AT
+            description: Timestamp when the basket idea association was last updated.
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: EMAIL_CAMPAIGNS
+        description: Email campaigns created on the platform.
+        columns:
+          - name: ID
+            description: Unique identifier for each email campaign.
+          - name: SENDER
+            description: Email address of the sender for the email.
+          - name: REPLY_TO
+            description: Email address for recipients to reply to.
+          - name: SUBJECT
+            description: Subject line of the email.
+          - name: BODY
+            description: Main content of the email.
+          - name: SUBJECT_MULTILOC
+            description: Key-value pairs of language and translations of the subject line of the email.
+          - name: BODY_MULTILOC
+            description: Key-value pairs of language and translations of the main content of the email.
+          - name: DELIVERIES_COUNT
+            description: Number of delivery records for the email campaign.
+          - name: CREATED_AT
+            description: Timestamp when the email campaign was created.
+          - name: UPDATED_AT
+            description: Timestamp when the email campaign was last updated.
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: EMAIL_CAMPAIGN_DELIVERIES
+        description: Delivery records for email campaigns.
+        columns:
+          - name: ID
+            description: Unique identifier for each email delivery record.
+          - name: EMAIL_CAMPAIGN_ID
+            description: ID of the email campaign that the delivery record belongs to.
+          - name: USER_ID
+            description: ID of the user that the email was sent to.
+          - name: DELIVERY_STATUS
+            description: Status of the email delivery, such as "sent".
+          - name: SENT_AT
+            description: Timestamp when the email was sent.
+          - name: CREATED_AT
+            description: Timestamp when the delivery record was created.
+          - name: UPDATED_AT
+            description: Timestamp when the delivery record was last updated.
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: EVENTS
+        description: |
+          All events. Events are created within projects and users can sign up to attend events (EVENT_ATTENDANCES).
+        columns:
+          - name: ID
+            description: Unique identifier for each event.
+          - name: PROJECT_ID
+            description: ID of the project that the event belongs to.
+          - name: TITLE
+            description: Title of the event.
+          - name: DESCRIPTION
+            description: Description of the event in html format.
+          - name: DESCRIPTION_MULTILOC
+            description: Key-value pairs of language and translations of the event description in html format.
+          - name: LOCATION
+            description: Location of the event.
+          - name: LOCATION_MULTILOC
+            description: Key-value pairs of language and translations of the event location.
+          - name: LOCATION_POINT
+          - name: MAXIMUM_ATTENDEES
+            description: Maximum number of attendees allowed for the event.
+          - name: ATTENDEES_COUNT
+            description: Number of attendees signed up for the event.
+          - name: START_AT
+            description: Timestamp when the event starts.
+          - name: END_AT
+            description: Timestamp when the event ends.
+          - name: CREATED_AT
+            description: Timestamp when the event was created.
+          - name: UPDATED_AT
+            description: Timestamp when the event was last updated.
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: EVENT_ATTENDANCES
+        description: Users signed up to attend events.
+        columns:
+          - name: ID
+            description: Unique identifier for each event attendance record.
+          - name: EVENT_ID
+            description: ID of the event.
+          - name: ATTENDEE_ID
+            description: ID of the user who signed up to attend the event.
+          - name: CREATED_AT
+            description: Timestamp when the event attendance record was created.
+          - name: UPDATED_AT
+            description: Timestamp when the event attendance record was last updated.
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: VOLUNTEERING_CAUSES
+        description: Volunteering opportunities on the platform.
+        columns:
+          - name: ID
+            description: Unique identifier for each volunteering cause.
+          - name: PROJECT_ID
+            description: ID of the project that the volunteering cause belongs to.
+          - name: PHASE_ID
+            description: ID of the phase that the volunteering cause belongs to.
+          - name: TITLE
+            description: Title of the volunteering cause.
+          - name: TITLE_MULTILOC
+            description: Key-value pairs of language and translations of the volunteering cause title.
+          - name: DESCRIPTION
+            description: Description of the volunteering cause in html format.
+          - name: DESCRIPTION_MULTILOC
+            description: |
+              Key-value pairs of language and translations of the volunteering cause description, in html format.
+          - name: VOLUNTEERS_COUNT
+            description: Number of volunteers signed up for the volunteering cause.
+          - name: CREATED_AT
+            description: Timestamp when the volunteering cause was created.
+          - name: UPDATED_AT
+            description: Timestamp when the volunteering cause was last updated.
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: VOLUNTEERING_VOLUNTEERS
+        description: Users signed up as volunteers for volunteering causes.
+        columns:
+          - name: ID
+            description: Unique identifier for each volunteering volunteer record.
+          - name: VOLUNTEERING_CAUSE_ID
+            description: ID of the volunteering cause.
+          - name: USER_ID
+            description: ID of the user who signed up as a volunteer.
+          - name: CREATED_AT
+            description: Timestamp when the user signed up as a volunteer.
+          - name: UPDATED_AT
+            description: Timestamp when the volunteering signup record was last updated.
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
+      - name: FILE_ATTACHMENTS
+        description: Files attached to ideas, initiatives, etc.
+        columns:
+          - name: ID
+            description: Unique identifier for each file attachment.
+          - name: PROJECT_ID
+            description: ID of the project that the file is attached to.
+          - name: ATTACHABLE_ID
+            description: ID of the resource that the file is attached to, such as an idea.
+          - name: ATTACHABLE_TYPE
+            description: Resource type that the file is attached to, such as "Idea".
+          - name: FILE_NAME
+            description: Name of the attached file.
+          - name: FILE_URL
+            description: URL of the attached file.
+          - name: FILE_SIZE
+            description: Size of the attached file.
+          - name: CREATED_AT
+            description: Timestamp when the file attachment was created.
+          - name: UPDATED_AT
+            description: Timestamp when the file attachment was last updated.
+          - name: _LOAD_DATE
+            description: Date the row was loaded into Snowflake.
+          - name: _LOADED_AT
+            description: Timestamp when the row was loaded into Snowflake.
