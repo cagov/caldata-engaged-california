@@ -18,7 +18,8 @@ env:
   LLM_MODEL_LOW: ${{ secrets.LLM_MODEL_LOW}}
   LLM_MODEL_MED: ${{ secrets.LLM_MODEL_MED}}
   LLM_MODEL_HIGH: ${{ secrets.LLM_MODEL_HIGH}}
-  LLM_MODEL: ${{ github.ref == 'refs/heads/main' && secrets.LLM_MODEL_HIGH || secrets.LLM_MODEL_LOW }}
+  ##this job doesn't run any LLM tests, but we need to set this env variable to avoid errors in dbt:
+  LLM_MODEL: ${{ secrets.LLM_MODEL_LOW }}
 
 jobs:
   cleanup-tests:

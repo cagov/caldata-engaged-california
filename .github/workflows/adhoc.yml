@@ -33,6 +33,8 @@ jobs:
           LLM_MODEL_MED: ${{ secrets.LLM_MODEL_MED}}
           LLM_MODEL_HIGH: ${{ secrets.LLM_MODEL_HIGH}}
           LLM_MODEL: ${{ github.ref == 'refs/heads/main' && secrets.LLM_MODEL_HIGH || secrets.LLM_MODEL_LOW }}
+          GO_VOCAL_CLIENT_ID: ${{ secrets.GO_VOCAL_CLIENT_ID }}
+          GO_VOCAL_CLIENT_SECRET: ${{ secrets.GO_VOCAL_CLIENT_SECRET }}
         run: |
           uv run dbt deps --project-dir transform --target prd
           uv run dbt build --project-dir transform --target prd

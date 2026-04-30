@@ -60,6 +60,10 @@ sources:
           - name: MEMBER_RATING
           - name: LAST_CHANGED
           - name: WEB_ID
+          - name: MERGE_DEPT
+          - name: MERGE_TITLE
+          - name: MERGE_FOCUS_AREA
+          - name: MERGE_TOPICS
       - name: INTEREST
         description: Key table of all interests in Mailchimp
         columns:
@@ -123,6 +127,12 @@ sources:
           - name: WINNER_CRITERIA
           - name: WAIT_TIME
           - name: TEST_SIZE
+          - name: REPORT_SUMMARY_UNIQUE_OPENS
+          - name: REPORT_SUMMARY_OPENS
+          - name: REPORT_SUMMARY_SUBSCRIBER_CLICKS
+          - name: REPORT_SUMMARY_OPEN_RATE
+          - name: REPORT_SUMMARY_CLICK_RATE
+          - name: REPORT_SUMMARY_CLICKS
       - name: CAMPAIGN_RECIPIENT
         description: All recipients of all Mailchimp campaigns
         columns:
