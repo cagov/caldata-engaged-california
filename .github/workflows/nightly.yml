@@ -40,7 +40,9 @@ jobs:
         run: |
           uv run dbt deps --project-dir transform --target prd
 
-          #this nightly job only runs models tagged as "marketing", now that all deliberations are completed:
+          #this production job should only run models either tagged "marketing", or
+          #tagged with the name of an active engagement. This is to ensure that we are only refreshing
+          #data that is actively being used for decision making in production.
           uv run dbt build --project-dir transform --target prd --select tag:marketing
 
           uv run dbt run-operation validate_all_schemas --project-dir transform --target prd
