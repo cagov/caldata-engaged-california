@@ -33,10 +33,11 @@ endpoints = {
     "PROJECTS": "projects",
     "PHASES": "phases",
     "PROJECT_FOLDERS": "project_folders",
-    "TOPICS": "topics",
     "USERS": "users",
-    "PROJECT_TOPICS": "project_topics",
-    "IDEA_TOPICS": "idea_topics",
+    "GLOBAL_TOPICS": "global_topics",
+    "PROJECT_GLOBAL_TOPICS": "project_global_topics",
+    "INPUT_TOPICS": "input_topics",
+    "IDEAS_INPUT_TOPICS": "ideas_input_topics",
     "IDEA_PHASES": "idea_phases",
     "BASKETS": "baskets",
     "BASKET_IDEAS": "basket_ideas",
@@ -46,6 +47,8 @@ endpoints = {
     "EVENT_ATTENDANCES": "event_attendances",
     "VOLUNTEERING_CAUSES": "volunteering_causes",
     "VOLUNTEERING_VOLUNTEERS": "volunteering_volunteers",
+    "FILE_ATTACHMENTS": "file_attachments",
+    # insights/visits is not currently included because it has a different structure that requires custom handling
 }
 
 logging.basicConfig(
