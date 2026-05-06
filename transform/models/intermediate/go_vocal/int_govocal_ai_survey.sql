@@ -45,5 +45,17 @@ select
     economic_impact_expectation,
     government_action_suggestion,
     personal_ai_impact,
-    left(availability_for_discussion, length(availability_for_discussion) - 4) as availability_for_discussion
+    left(availability_for_discussion, length(availability_for_discussion) - 4) as availability_for_discussion,
+
+    -- Count the number of survey fields completed by each respondent.
+    (
+        iff(current_work_status is not null, 1, 0)
+        + iff(role_at_work is not null, 1, 0)
+        + iff(county is not null, 1, 0)
+        + iff(field_of_work is not null, 1, 0)
+        + iff(economic_impact_expectation is not null, 1, 0)
+        + iff(government_action_suggestion is not null, 1, 0)
+        + iff(personal_ai_impact is not null, 1, 0)
+        + iff(availability_for_discussion is not null, 1, 0)
+    ) as fields_completed_count
 from extract_survey_responses
