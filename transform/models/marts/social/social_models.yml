@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: facebook_pages__post_metrics
+  - name: facebook_pages_post_metrics
     description: |
       Final model that aggregates key engagement and video metrics for each Facebook post.
     columns:
