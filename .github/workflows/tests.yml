@@ -58,13 +58,13 @@ jobs:
           #slim ci: if a manifest from the most recent successful production run is available,
           #use it to only run models that have changed since that run.
           #If no manifest is available, run the full dbt build.
-          if [ -f transform/prod-target/dbt-manifest-prod/manifest.json ]; then
+          if [ -f transform/prod-target/manifest.json ]; then
             echo "Manifest found, running slim CI"
             uv run dbt build \
               --project-dir transform \
               --select state:modified+ \
               --defer \
-              --state transform/prod-target/dbt-manifest-prod/
+              --state prod-target/
           else
             echo "No manifest found, running full build"
             uv run dbt build --project-dir transform
