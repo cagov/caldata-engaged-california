@@ -70,4 +70,4 @@ jobs:
             uv run dbt build --project-dir transform
           fi
 
-          uv run dbt run-operation validate_all_schemas --project-dir transform
+          uv run dbt run-operation validate_all_schemas --args '{"slim_ci": true}' --project-dir transform
