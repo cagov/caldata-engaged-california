@@ -49,6 +49,8 @@ jobs:
             --name dbt-manifest-prod \
             --dir transform/prod-target/ \
           || echo "No manifest found, will run full build"
+      - name: Debug manifest location
+        run: find transform/prod-target/ -name "manifest.json" 2>/dev/null || echo "No manifest found"
       - name: Build dbt project
         run: |
           uv run dbt deps --project-dir transform
@@ -62,7 +64,7 @@ jobs:
               --project-dir transform \
               --select state:modified+ \
               --defer \
-              --state transform/prod-target/
+              --state prod-target/
           else
             echo "No manifest found, running full build"
             uv run dbt build --project-dir transform
