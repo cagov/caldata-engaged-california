@@ -50,6 +50,8 @@ sources:
             description: The number of times the post has been shared.
           - name: PERMALINK_URL
             description: The URL of the post's permalink.
+          - name: _FIVETRAN_SYNCED
+            description: Timestamp when Fivetran last synced this row.
 
       - name: LIFETIME_POST_METRICS_TOTAL
         description:
@@ -61,21 +63,7 @@ sources:
           - name: date
             description: Date the lifetime metrics were last fetched from the Facebook API.
           - name: post_id
-            description: Foreign key to POST_HISTORY.
-          - name: media_views_total
-            description: Number of times a media attachment on the post was viewed.
-          - name: reactions_love
-            description: Count of Love reactions.
-          - name: reactions_haha
-            description: Count of Haha reactions.
-          - name: reactions_wow
-            description: Count of Wow reactions.
-          - name: reactions_sorry
-            description: Count of Sorry (Sad) reactions.
-          - name: reactions_anger
-            description: Count of Anger reactions.
-          - name: reactions_total
-            description: Total reactions, calculated as the sum of all reaction types.
+            description: Unique identifier for each Facebook post.
           - name: post_video_views
             description: Total video views (organic + paid). Null for non-video posts.
           - name: post_video_view_time
