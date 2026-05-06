@@ -1,0 +1,79 @@
+version: 2
+
+models:
+  - name: facebook_pages__post_metrics
+    description: |
+      Final model that aggregates key engagement and video metrics for each Facebook post.
+    columns:
+      - name: post_id
+        description: Unique Facebook post ID (primary key).
+      - name: page_id
+        description: ID of the Facebook Page that owns the post.
+      - name: post_type
+        description: >
+          How the post was created, sourced from status_type.
+          Examples: added_photos, added_video, mobile_status_update,
+          shared_story, wall_post.
+      - name: post_message
+        description: Text body of the post.
+      - name: permalink_url
+        description: Direct public URL to the post on Facebook.
+      - name: picture_url
+        description: URL of the full-size thumbnail image.
+      - name: created_at
+        description: UTC timestamp when the post was published.
+      - name: updated_at
+        description: UTC timestamp when the post was last edited.
+      - name: post_views_total
+        description: Total number of times the post was seen.
+      - name: clicks_total
+        description: Total clicks on any part of the post.
+      - name: reactions_total
+        description: Sum of all reaction types (like + love + haha + wow + sorry + anger).
+      - name: reactions_like
+        description: Count of Like reactions.
+      - name: reactions_love
+        description: Count of Love reactions.
+      - name: reactions_haha
+        description: Count of Haha reactions.
+      - name: reactions_wow
+        description: Count of Wow reactions.
+      - name: reactions_sorry
+        description: Count of Sorry (Sad) reactions.
+      - name: reactions_anger
+        description: Count of Anger reactions.
+      - name: post_video_views
+        description: Total video views. Null for non-video posts.
+      - name: post_video_view_time
+        description: Total milliseconds the video was watched across all views.
+      - name: post_video_avg_time_watched
+        description: Average milliseconds watched per view.
+      - name: post_video_length
+        description: Duration of the video in milliseconds.
+      - name: post_video_complete_views_organic
+        description: Full video watches via organic distribution.
+      - name: post_video_complete_views_paid
+        description: Full video watches via paid distribution.
+      - name: total_engagements
+        description: reactions_total + clicks_total.
+      - name: engagement_rate_pct
+        description: >
+          (reactions + clicks) / post_views_total × 100.
+          Null when post_views_total = 0.
+      - name: click_through_rate_pct
+        description: >
+          clicks_total / post_views_total × 100.
+          Null when post_views_total = 0.
+      - name: reaction_rate_pct
+        description: >
+          reactions_total / post_views_total × 100.
+          Null when post_views_total = 0.
+      - name: is_video_post
+        description: True when post_type is 'added_video' or 'shared_story'.
+      - name: is_photo_post
+        description: True when post_type is 'added_photos'.
+      - name: is_status_post
+        description: True when post_type is 'mobile_status_update'.
+      - name: is_link_post
+        description: True when post_type is 'wall_post'.
+ 

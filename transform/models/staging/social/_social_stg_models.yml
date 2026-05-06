@@ -1,0 +1,77 @@
+version: 2
+
+models:
+  - name: stg_facebook_pages__posts
+    description: |
+      Staging model for Facebook posts, sourced from the `POST_HISTORY` table in the `FACEBOOK` source. This model selects a subset of key engagement and video metrics for each post, along with Fivetran sync metadata. Metrics represent cumulative totals over the post's entire lifespan and are overwritten on each Fivetran sync. 
+      Note that this model is intended to be a clean, streamlined version of the raw source data, and intentionally excludes some of the more granular video metrics available in the source table. We can always add more metrics to this model later if needed.
+      The primary key is `post_id`, which can be used to join to other Facebook-related models (e.g. comments, reactions) that also include `post_id` as a foreign key.
+    columns:
+      - name: post_id
+        description: Unique identifier for each Facebook post. This serves as the primary key for this model and can be used to join to other Facebook-related models (e.g. comments, reactions) that also include `post_id` as a foreign key.
+      - name: page_id
+        description: Identifier for the Facebook page to which the post belongs.
+      - name: post_message
+        description: The text content of the Facebook post.
+      - name: post_type
+        description: The type of the Facebook post (e.g. status, link, photo, video).
+      - name: permalink_url
+        description: The URL of the Facebook post.
+      - name: picture_url
+        description: The URL of the image associated with the Facebook post.
+      - name: created_at
+        description: The timestamp when the Facebook post was created.
+      - name: updated_at
+        description: The timestamp when the Facebook post was last updated.
+      - name: is_expired
+        description: Indicates whether the Facebook post is expired (i.e. no longer active or visible on the page).
+      - name: _fivetran_synced
+        description: The timestamp when the data was last synced by Fivetran.
+
+  - name: stg_facebook_pages__post_metrics
+    description: |
+      Staging model for Facebook post metrics, sourced from the `POST_HISTORY` table in the `FACEBOOK` source. This model selects a subset of key engagement and video metrics for each post, along with Fivetran sync metadata. Metrics represent cumulative totals over the post's entire lifespan and are overwritten on each Fivetran sync. 
+      Note that this model is intended to be a clean, streamlined version of the raw source data, and intentionally excludes some of the more granular video metrics available in the source table. We can always add more metrics to this model later if needed.
+      The primary key is `post_id`, which can be used to join to other Facebook-related models (e.g. comments, reactions) that also include `post_id` as a foreign key.
+    columns:
+        - name: post_id
+          description: Unique identifier for each Facebook post. This serves as the primary key for this model and can be used to join to other Facebook-related models (e.g. comments, reactions) that also include `post_id` as a foreign key.
+        - name: metrics_date
+          description: The date when the metrics were last fetched from the Facebook API. Note that these metrics represent cumulative totals over the post's entire lifespan and are overwritten on each Fivetran sync, so the `metrics_date` indicates the recency of the metrics data.
+        - name: clicks_total
+          description: Total clicks on any part of the post (link, photo, name, etc.).
+        - name: media_views_total
+          description: Number of times a media attachment on the post was viewed.
+        - name: reactions_like
+          description: Count of Like reactions.
+        - name: reactions_love
+          description: Count of Love reactions.
+        - name: reactions_haha
+          description: Count of Haha reactions.
+        - name: reactions_wow
+          description: Count of Wow reactions.
+        - name: reactions_sorry
+          description: Count of Sorry (Sad) reactions.
+        - name: reactions_anger
+          description: Count of Anger reactions.
+        - name: reactions_total
+          description: Total reactions, calculated as the sum of all reaction types (Like, Love, Haha, Wow, Sorry, Anger).
+        - name: post_video_views
+          description: Total video views (organic + paid). Null for non-video posts.
+        - name: post_video_view_time
+          description: Total milliseconds the video was watched across all views.
+        - name: post_video_views_organic
+          description: Video views from organic (non-paid) distribution.
+        - name: post_video_views_paid
+          description: Video views from paid/boosted distribution.
+        - name: post_video_avg_time_watched
+          description: Average milliseconds watched per view.
+        - name: post_video_length
+          description: Duration of the video in milliseconds.
+        - name: post_video_complete_views_organic
+          description: Video views that were watched to completion via organic distribution.
+        - name: post_video_complete_views_paid
+          description: Video views that were watched to completion via paid/boosted distribution.
+        - name: _fivetran_synced
+          description: The timestamp when the data was last synced by Fivetran.
+        
