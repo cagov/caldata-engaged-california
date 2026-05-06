@@ -58,6 +58,9 @@ models:
       social:
         +schema: social
         +tags: ["marketing"]
+      go_vocal:
+        +schema: govocal
+        +tags: ["ai_impact"]
 
     intermediate:
       +materialized: view
@@ -79,6 +82,9 @@ models:
       social:
         +schema: social
         +tags: ["marketing"]
+      go_vocal:
+        +schema: govocal
+        +tags: ["ai_impact"]
 
     marts:
       +materialized: table
@@ -101,6 +107,9 @@ models:
       social:
         +schema: social
         +tags: ["marketing"]
+      go_vocal:
+        +schema: govocal
+        +tags: ["ai_impact"]
       daily_report:
         +schema: daily_report
         ethelo_la_agenda_setting:
