@@ -49,6 +49,8 @@ jobs:
             --name dbt-manifest-prod \
             --dir transform/prod-target/ \
           || echo "No manifest found, will run full build"
+      - name: Debug manifest location
+        run: find transform/prod-target/ -name "manifest.json" 2>/dev/null || echo "No manifest found"
       - name: Build dbt project
         run: |
           uv run dbt deps --project-dir transform
@@ -56,7 +58,7 @@ jobs:
           #slim ci: if a manifest from the most recent successful production run is available,
           #use it to only run models that have changed since that run.
           #If no manifest is available, run the full dbt build.
-          if [ -f transform/prod-target/manifest.json ]; then
+          if [ -f transform/prod-target/dbt-manifest-prod/manifest.json ]; then
             echo "Manifest found, running slim CI"
             uv run dbt build \
               --project-dir transform \
