@@ -9,7 +9,7 @@
 --   engagement_tier        = 'high' / 'medium' / 'low' / 'unknown'
 
 
- with enriched as (
+with enriched as (
 
     select * from {{ ref('int_facebook_pages__post_analytics') }}
 
@@ -45,10 +45,10 @@ final as (
         engagement_rate_pct,
         click_through_rate_pct,
         reaction_rate_pct,
-        post_type in ('added_video', 'shared_story')        as is_video_post,
-        post_type = 'added_photos'                          as is_photo_post,
-        post_type = 'mobile_status_update'                  as is_status_post,
-        post_type = 'wall_post'                             as is_link_post
+        post_type in ('added_video', 'shared_story') as is_video_post,
+        post_type = 'added_photos' as is_photo_post,
+        post_type = 'mobile_status_update' as is_status_post,
+        post_type = 'wall_post' as is_link_post
 
     from enriched
 

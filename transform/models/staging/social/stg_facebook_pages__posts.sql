@@ -7,9 +7,10 @@ with source as (
 current_posts as (
     -- Keep only the active (latest) version of each post
     select * from source
-    where is_hidden = FALSE
-    and is_expired = FALSE 
-    and is_published = TRUE
+    where
+        is_hidden = FALSE
+        and is_expired = FALSE
+        and is_published = TRUE
 
 ),
 
@@ -17,7 +18,7 @@ renamed as (
     select
         id as post_id,
         page_id,
-        message  as post_message,
+        message as post_message,
         status_type as post_type,
         permalink_url,
         full_picture as picture_url,

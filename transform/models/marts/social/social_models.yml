@@ -76,4 +76,3 @@ models:
         description: True when post_type is 'mobile_status_update'.
       - name: is_link_post
         description: True when post_type is 'wall_post'.
- 
