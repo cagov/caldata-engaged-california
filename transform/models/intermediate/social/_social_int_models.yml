@@ -1,0 +1,53 @@
+version: 2
+
+models:
+  - name: int_facebook_pages__post_analytics
+    description: |
+      Intermediate model that aggregates key engagement and video metrics for each Facebook post, sourced from the `stg_facebook_pages__posts` and `stg_facebook_pages__post_metrics` staging models. This model is designed to provide a comprehensive view of post performance by combining multiple metrics into a single table, which can then be easily queried for analysis and reporting. The primary key is `post_id`, which can be used to join to other Facebook-related models (e.g. comments, reactions) that also include `post_id` as a foreign key.
+    columns:
+      - name: post_id
+        description: Unique identifier for each Facebook post. This serves as the primary key for this model and can be used to join to other Facebook-related models (e.g. comments, reactions) that also include `post_id` as a foreign key.
+      - name: page_id
+        description: Identifier for the Facebook page to which the post belongs.
+      - name: post_message
+        description: The text content of the Facebook post.
+      - name: post_type
+        description: The type of the Facebook post (e.g. status, link, photo, video).
+      - name: permalink_url
+        description: The URL of the Facebook post.
+      - name: picture_url
+        description: The URL of the image associated with the Facebook post.
+      - name: created_at
+        description: The timestamp when the Facebook post was created.
+      - name: updated_at
+        description: The timestamp when the Facebook post was last updated.
+      - name: is_expired
+        description: Indicates whether the Facebook post is expired (i.e. no longer active or visible on the page).
+      - name: post_views_total
+        description: Total number of views for the post (including both organic and paid views).
+      - name: clicks_total
+        description: Total clicks on any part of the post (link, photo, name, etc.).
+      - name: reactions_total
+        description: Total reactions across all reaction types (Like, Love, Haha, Wow, Sorry, Anger).
+      - name: reactions_like
+        description: Count of Like reactions.
+      - name: reactions_love
+        description: Count of Love reactions.
+      - name: reactions_haha
+        description: Count of Haha reactions.
+      - name: reactions_wow
+        description: Count of Wow reactions.
+      - name: reactions_sorry
+        description: Count of Sorry (Sad) reactions.
+      - name: reactions_anger
+        description: Count of Anger reactions.
+      - name: post_video_views
+        description: Total video views (organic + paid). Null for non-video posts.
+      - name: post_video_view_time
+        description: Total milliseconds the video was watched across all views.
+      - name: post_video_avg_time_watched
+        description: Average milliseconds watched per view.
+      - name: total_engagements
+        description: Total engagements, calculated as the sum of all reactions and clicks.
+      - name: engagement_rate_pct
+        description: Engagement rate, calculated as (total reactions + clicks) / total views × 100. Null if total views is zero. Expressed as a percentage with 4 decimal places.

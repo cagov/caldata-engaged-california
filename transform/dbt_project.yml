@@ -55,6 +55,9 @@ models:
       ethelo_e3:
         +schema: ethelo_e3
         +tags: ["state_employees"]
+      social:
+        +schema: social
+        +tags: ["marketing"]
 
     intermediate:
       +materialized: view
@@ -73,6 +76,9 @@ models:
       ethelo_e3:
         +schema: ethelo_e3
         +tags: ["state_employees"]
+      social:
+        +schema: social
+        +tags: ["marketing"]
 
     marts:
       +materialized: table
@@ -92,6 +98,9 @@ models:
       ethelo_e3:
         +schema: ethelo_e3
         +tags: ["state_employees"]
+      social:
+        +schema: social
+        +tags: ["marketing"]
       daily_report:
         +schema: daily_report
         ethelo_la_agenda_setting:
