@@ -1,0 +1,40 @@
+with
+
+ideas as (select * from {{ source('GOVOCAL', 'IDEAS') }})
+
+select
+    id as idea_id,
+    title,
+    body,
+    author_id,
+    likes_count,
+    dislikes_count,
+    comments_count,
+    published_at::timestamp_ltz as published_at,
+    submitted_at::timestamp_ltz as submitted_at,
+    publication_status,
+    project_id,
+    project_title,
+    created_at::timestamp_ltz as created_at,
+    updated_at::timestamp_ltz as updated_at,
+    location_point,
+    location_description,
+    slug,
+    budget,
+    baskets_count,
+    votes_count,
+    official_feedbacks_count,
+    assignee_id,
+    assigned_at::timestamp_ltz as assigned_at,
+    proposed_budget,
+    creation_phase_id,
+    creation_phase_title,
+    survey_title,
+    images,
+    href,
+    status as idea_status,
+    parse_json(custom_field_values) as custom_field_values,
+    type as idea_type,
+    _load_date,
+    _loaded_at
+from ideas

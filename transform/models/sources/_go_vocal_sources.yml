@@ -1,7 +1,7 @@
 version: 2
 
 sources:
-  - name: GO_VOCAL
+  - name: GOVOCAL
     database: RAW_ENGCA_PRD
     schema: GOVOCAL
     description: |
