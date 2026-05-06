@@ -7,14 +7,15 @@ sources:
     description: Facebook data for the EngagedCA Facebook page.
     tables:
       - name: POST_HISTORY
-        description: Lifetime engagement and video metrics per post, sourced from the
+        description:
+          Lifetime engagement and video metrics per post, sourced from the
           Facebook Pages API. One row per post. Metrics represent cumulative
           totals over the post's entire lifespan and are overwritten on each
           Fivetran sync.
         columns:
           - name: date
             description: Date the lifetime metrics were last fetched from the Facebook API.
-            
+
           - name: post_id
             description: Foreign key to POST_HISTORY.
           - name: post_clicks
@@ -82,14 +83,15 @@ sources:
           - name: _fivetran_synced
             description: Timestamp when Fivetran last synced this row.
       - name: LIFETIME_POST_METRICS_TOTAL
-        description: Cumulative engagement and video metrics per post, sourced from the
+        description:
+          Cumulative engagement and video metrics per post, sourced from the
           Facebook Pages API. One row per post. Metrics represent cumulative
           totals over the post's entire lifespan and are overwritten on each
           Fivetran sync.
         columns:
           - name: date
             description: Date the lifetime metrics were last fetched from the Facebook API.
-            
+
           - name: post_id
             description: Foreign key to POST_HISTORY.
           - name: clicks_total
@@ -109,7 +111,7 @@ sources:
           - name: reactions_anger
             description: Count of Anger reactions.
           - name: reactions_total
-            description: Total reactions, calculated as the sum of all reaction types (Like, Love, Haha, Wow, Sorry, Anger).
+            description: Total reactions, calculated as the sum of all reaction types.
           - name: post_video_views
             description: Total video views (organic + paid). Null for non-video posts.
           - name: post_video_view_time

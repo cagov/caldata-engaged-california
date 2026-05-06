@@ -1,20 +1,19 @@
-
 -- Joins staged posts with their lifetime metrics and derives all KPIs needed for the mart layer.
- 
+
 with posts as (
- 
+
     select * from {{ ref('stg_facebook_pages__posts') }}
- 
+
 ),
- 
+
 metrics as (
- 
+
     select * from {{ ref('stg_facebook_pages__post_metrics') }}
- 
+
 ),
- 
+
 joined as (
- 
+
     select
         p.post_id,
         p.page_id,
@@ -30,7 +29,7 @@ joined as (
         coalesce(m.reactions_total, 0) as reactions_total,
         coalesce(m.reactions_like, 0) as reactions_like,
         coalesce(m.reactions_love, 0) as reactions_love,
-        coalesce(m.reactions_haha, 0)as reactions_haha,
+        coalesce(m.reactions_haha, 0) as reactions_haha,
         coalesce(m.reactions_wow, 0) as reactions_wow,
         coalesce(m.reactions_sorry, 0) as reactions_sorry,
         coalesce(m.reactions_anger, 0) as reactions_anger,
@@ -40,10 +39,10 @@ joined as (
         m.post_video_length,
         m.post_video_complete_views_organic,
         m.post_video_complete_views_paid,
- 
+
         -- Total engagement = all reactions + clicks
         coalesce(m.reactions_total, 0)
-            + coalesce(m.clicks_total, 0) as total_engagements,
+        + coalesce(m.clicks_total, 0) as total_engagements,
 
         -- Engagement rate: (reactions + clicks) / impressions × 100
         case
@@ -53,7 +52,7 @@ joined as (
                 / nullif(m.media_views_total, 0)::numeric * 100, 4
             )
         end as engagement_rate_pct,
- 
+
         -- CTR: clicks / impressions × 100
         case
             when coalesce(m.media_views_total, 0) = 0 then null
@@ -62,7 +61,7 @@ joined as (
                 / nullif(m.media_views_total, 0)::numeric * 100, 4
             )
         end as click_through_rate_pct,
- 
+
         -- Reaction rate: reactions / impressions × 100
         case
             when coalesce(m.media_views_total, 0) = 0 then null
@@ -71,12 +70,12 @@ joined as (
                 / nullif(m.media_views_total, 0)::numeric * 100, 4
             )
         end as reaction_rate_pct
- 
-         
+
+
     from posts as p
     left join metrics as m
         on p.post_id = m.post_id
- 
+
 )
- 
+
 select * from joined

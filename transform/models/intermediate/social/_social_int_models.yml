@@ -2,11 +2,10 @@ version: 2
 
 models:
   - name: int_facebook_pages__post_analytics
-    description: |
-      Intermediate model that aggregates key engagement and video metrics for each Facebook post, sourced from the `stg_facebook_pages__posts` and `stg_facebook_pages__post_metrics` staging models. This model is designed to provide a comprehensive view of post performance by combining multiple metrics into a single table, which can then be easily queried for analysis and reporting. The primary key is `post_id`, which can be used to join to other Facebook-related models (e.g. comments, reactions) that also include `post_id` as a foreign key.
+    description: Intermediate model that aggregates key engagement and video metrics for each Facebook post.
     columns:
       - name: post_id
-        description: Unique identifier for each Facebook post. This serves as the primary key for this model and can be used to join to other Facebook-related models (e.g. comments, reactions) that also include `post_id` as a foreign key.
+        description: Unique identifier for each Facebook post.
       - name: page_id
         description: Identifier for the Facebook page to which the post belongs.
       - name: post_message
@@ -50,4 +49,4 @@ models:
       - name: total_engagements
         description: Total engagements, calculated as the sum of all reactions and clicks.
       - name: engagement_rate_pct
-        description: Engagement rate, calculated as (total reactions + clicks) / total views × 100. Null if total views is zero. Expressed as a percentage with 4 decimal places.
+        description: Engagement rate, calculated as (total reactions + clicks) / total views × 100.
