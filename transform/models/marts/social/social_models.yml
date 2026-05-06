@@ -5,74 +5,65 @@ models:
     description: |
       Final model that aggregates key engagement and video metrics for each Facebook post.
     columns:
-      - name: post_id
-        description: Unique Facebook post ID (primary key).
-      - name: page_id
-        description: ID of the Facebook Page that owns the post.
-      - name: post_type
-        description: >
-          How the post was created, sourced from status_type.
-          Examples: added_photos, added_video, mobile_status_update,
-          shared_story, wall_post.
-      - name: post_message
-        description: Text body of the post.
-      - name: permalink_url
-        description: Direct public URL to the post on Facebook.
-      - name: picture_url
-        description: URL of the full-size thumbnail image.
-      - name: created_at
-        description: UTC timestamp when the post was published.
-      - name: updated_at
-        description: UTC timestamp when the post was last edited.
-      - name: post_views_total
-        description: Total number of times the post was seen.
-      - name: clicks_total
-        description: Total clicks on any part of the post.
-      - name: reactions_total
-        description: Sum of all reaction types (like + love + haha + wow + sorry + anger).
-      - name: reactions_like
+      - name: POST_ID
+        description: Unique identifier for each Facebook post.
+      - name: PAGE_ID
+        description: Identifier for the Facebook page to which the post belongs.
+      - name: POST_MESSAGE
+        description: The text content of the Facebook post.
+      - name: POST_TYPE
+        description: The type of the Facebook post (e.g. status, link, photo, video).
+      - name: PERMALINK_URL
+        description: The URL of the Facebook post.
+      - name: PICTURE_URL
+        description: The URL of the image associated with the Facebook post.
+      - name: CREATED_AT
+        description: The timestamp when the Facebook post was created.
+      - name: UPDATED_AT
+        description: The timestamp when the Facebook post was last updated.
+      - name: POST_VIEWS_TOTAL
+        description: Total number of views for the post (including both organic and paid views).
+      - name: CLICKS_TOTAL
+        description: Total clicks on any part of the post (link, photo, name, etc.).
+      - name: REACTIONS_TOTAL
+        description: Total reactions across all reaction types (Like, Love, Haha, Wow, Sorry, Anger).
+      - name: REACTIONS_LIKE
         description: Count of Like reactions.
-      - name: reactions_love
+      - name: REACTIONS_LOVE
         description: Count of Love reactions.
-      - name: reactions_haha
+      - name: REACTIONS_HAHA
         description: Count of Haha reactions.
-      - name: reactions_wow
+      - name: REACTIONS_WOW
         description: Count of Wow reactions.
-      - name: reactions_sorry
+      - name: REACTIONS_SORRY
         description: Count of Sorry (Sad) reactions.
-      - name: reactions_anger
+      - name: REACTIONS_ANGER
         description: Count of Anger reactions.
-      - name: post_video_views
-        description: Total video views. Null for non-video posts.
-      - name: post_video_view_time
+      - name: POST_VIDEO_VIEWS
+        description: Total video views (organic + paid). Null for non-video posts.
+      - name: POST_VIDEO_VIEW_TIME
         description: Total milliseconds the video was watched across all views.
-      - name: post_video_avg_time_watched
+      - name: POST_VIDEO_AVG_TIME_WATCHED
         description: Average milliseconds watched per view.
-      - name: post_video_length
-        description: Duration of the video in milliseconds.
-      - name: post_video_complete_views_organic
-        description: Full video watches via organic distribution.
-      - name: post_video_complete_views_paid
-        description: Full video watches via paid distribution.
-      - name: total_engagements
-        description: reactions_total + clicks_total.
-      - name: engagement_rate_pct
-        description: >
-          (reactions + clicks) / post_views_total × 100.
-          Null when post_views_total = 0.
-      - name: click_through_rate_pct
-        description: >
-          clicks_total / post_views_total × 100.
-          Null when post_views_total = 0.
-      - name: reaction_rate_pct
-        description: >
-          reactions_total / post_views_total × 100.
-          Null when post_views_total = 0.
-      - name: is_video_post
-        description: True when post_type is 'added_video' or 'shared_story'.
-      - name: is_photo_post
-        description: True when post_type is 'added_photos'.
-      - name: is_status_post
-        description: True when post_type is 'mobile_status_update'.
-      - name: is_link_post
-        description: True when post_type is 'wall_post'.
+      - name: POST_VIDEO_LENGTH
+        description: The length of the video in seconds.
+      - name: POST_VIDEO_COMPLETE_VIEWS_ORGANIC
+        description: Total organic complete views of the video.
+      - name: POST_VIDEO_COMPLETE_VIEWS_PAID
+        description: Total paid complete views of the video.
+      - name: TOTAL_ENGAGEMENTS
+        description: Total engagements, calculated as the sum of all reactions and clicks.
+      - name: ENGAGEMENT_RATE_PCT
+        description: Engagement rate, calculated as (total reactions + clicks) / total views × 100.
+      - name: CLICK_THROUGH_RATE_PCT
+        description: Click-through rate, calculated as (clicks) / (views) × 100.
+      - name: REACTION_RATE_PCT
+        description: Reaction rate, calculated as (reactions) / (views) × 100.
+      - name: IS_VIDEO_POST
+        description: Indicates whether the Facebook post is a video post.
+      - name: IS_PHOTO_POST
+        description: Indicates whether the Facebook post is a photo post.
+      - name: IS_STATUS_POST
+        description: Indicates whether the Facebook post is a status post.
+      - name: IS_LINK_POST
+        description: Indicates whether the Facebook post is a link post.

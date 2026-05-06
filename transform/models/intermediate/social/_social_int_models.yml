@@ -50,3 +50,13 @@ models:
         description: Total engagements, calculated as the sum of all reactions and clicks.
       - name: engagement_rate_pct
         description: Engagement rate, calculated as (total reactions + clicks) / total views × 100.
+      - name: POST_VIDEO_LENGTH
+        description: The length of the video in seconds.
+      - name: POST_VIDEO_COMPLETE_VIEWS_ORGANIC
+        description: Total organic complete views of the video.
+      - name: POST_VIDEO_COMPLETE_VIEWS_PAID
+        description: Total paid complete views of the video.
+      - name: CLICK_THROUGH_RATE_PCT
+        description: Click-through rate, calculated as (clicks) / (views) × 100.
+      - name: REACTION_RATE_PCT
+        description: Reaction rate, calculated as (reactions) / (views) × 100.
