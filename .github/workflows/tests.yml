@@ -62,7 +62,7 @@ jobs:
               --project-dir transform \
               --select state:modified+ \
               --defer \
-              --state transform/prod-target/
+              --state transform/prod-target/dbt-manifest-prod/
           else
             echo "No manifest found, running full build"
             uv run dbt build --project-dir transform
