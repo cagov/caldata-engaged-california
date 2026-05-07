@@ -129,9 +129,9 @@ sources:
             description: Your app user's Instagram profile username.
           - name: WEBSITE
             description: Your app user's website URL.
-          - name: HAS_PROFILE_PIC,
+          - name: HAS_PROFILE_PIC
             description: Indicates if the user has a profile picture.
-          - name: PROFILE_PIC_URL
+          - name: PROFILE_PICTURE_URL
             description: URL of the user's profile picture.
           - name: IS_PUBLISHED
             description: Indicates whether the user history record is published.
