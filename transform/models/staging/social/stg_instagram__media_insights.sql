@@ -1,4 +1,4 @@
---this model is incremental because the instagram media_insights table 
+--this model is incremental because the instagram media_insights table
 --only gives results for posts created within the last 2 years
 
 {{ config(
@@ -32,11 +32,8 @@ WITH ig AS (
         story_taps_back,
         story_taps_forward,
         story_swipe_forward,
-        --reel_aggregated_all_plays_count,
-        --reel_clips_replays_count,
         reel_comments,
         reel_likes,
-        --reel_plays,
         reel_shares,
         reel_total_interactions,
         _fivetran_id,
@@ -48,7 +45,7 @@ SELECT * FROM ig
 
 {% if is_incremental() %}
     WHERE _fivetran_synced >= (
-        SELECT COALESCE(MAX(_fivetran_synced),'1900-01-01') - INTERVAL '1 day'
-        FROM {{ this }} 
+        SELECT COALESCE(MAX(incremental_table._fivetran_synced), '1900-01-01') - INTERVAL '1 day'
+        FROM {{ this }} AS incremental_table
     )
 {% endif %}
