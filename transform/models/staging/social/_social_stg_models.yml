@@ -13,6 +13,8 @@ models:
         description: The text content of the Facebook post.
       - name: post_type
         description: The type of the Facebook post (e.g. status, link, photo, video).
+      - name: share_count
+        description: The number of times the Facebook post has been shared.
       - name: permalink_url
         description: The URL of the Facebook post.
       - name: picture_url
@@ -90,8 +92,6 @@ models:
   - name: stg_instagram__media_history
     description: Records of published Instagram media over time.
     columns:
-      - name: USER_ID
-        description: Identifier of the Instagram business account.
       - name: IS_STORY
         description: Indicates if the media is an Instagram Story.
       - name: CAROUSEL_ALBUM_ID
@@ -165,22 +165,17 @@ models:
         description: Number of times users tapped forward on the Story
       - name: STORY_SWIPE_FORWARD
         description: Number of times users swiped forward on the Story
-      - name: REEL_AGGREGATED_ALL_PLAYS_COUNT
-        description: Total plays across all Reel placements
-      - name: REEL_CLIPS_REPLAYS_COUNT
-        description: Number of times Reel clips were replayed
       - name: REEL_COMMENTS
         description: Total number of comments on the Reel
       - name: REEL_LIKES
         description: Total number of likes on the Reel
-      - name: REEL_PLAYS
-        description: Total number of times the Reel was played
       - name: REEL_SHARES
         description: Number of times the Reel was shared
       - name: REEL_TOTAL_INTERACTIONS
         description: |
           Total interactions on the Reel.
           Interactions are likes, saves, comments, or shares minus the number of unlikes, unsaves, and deleted comments.
+      - name: _FIVETRAN_ID
       - name: _FIVETRAN_SYNCED
         description: Time stamp of Fivetran Sync.
   - name: stg_instagram__media_comment

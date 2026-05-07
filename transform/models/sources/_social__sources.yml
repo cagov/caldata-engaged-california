@@ -129,6 +129,12 @@ sources:
             description: Your app user's Instagram profile username.
           - name: WEBSITE
             description: Your app user's website URL.
+          - name: HAS_PROFILE_PIC,
+            description: Indicates if the user has a profile picture.
+          - name: PROFILE_PIC_URL
+            description: URL of the user's profile picture.
+          - name: IS_PUBLISHED
+            description: Indicates whether the user history record is published.
           - name: _FIVETRAN_SYNCED
             description: Time stamp of Fivetran Sync.
       - name: MEDIA_HISTORY
@@ -136,6 +142,7 @@ sources:
         columns:
           - name: _FIVETRAN_ID
             description: Fivetran ID.
+          - name: OWNER_ID
           - name: USER_ID
             description: Identifier of the Instagram business account.
           - name: IS_STORY
@@ -223,16 +230,10 @@ sources:
             description: Number of times users tapped forward on the Story
           - name: STORY_SWIPE_FORWARD
             description: Number of times users swiped forward on the Story
-          - name: REEL_AGGREGATED_ALL_PLAYS_COUNT
-            description: Total plays across all Reel placements
-          - name: REEL_CLIPS_REPLAYS_COUNT
-            description: Number of times Reel clips were replayed
           - name: REEL_COMMENTS
             description: Total number of comments on the Reel
           - name: REEL_LIKES
             description: Total number of likes on the Reel
-          - name: REEL_PLAYS
-            description: Total number of times the Reel was played
           - name: REEL_SHARES
             description: Number of times the Reel was shared
           - name: REEL_TOTAL_INTERACTIONS
@@ -240,6 +241,24 @@ sources:
               Total interactions on the Reel.
               Interactions are likes, saves, comments, or shares minus
               the number of unlikes, unsaves, and deleted comments.
+          - name: VIDEO_PHOTO_VIEWS
+          - name: VIDEO_PHOTO_SHARES
+          - name: VIDEO_PHOTO_FOLLOWS
+          - name: CAROUSEL_ALBUM_VIEWS
+          - name: CAROUSEL_ALBUM_SHARES
+          - name: CAROUSEL_ALBUM_FOLLOWS
+          - name: STORY_VIEWS
+          - name: STORY_SHARES
+          - name: STORY_FOLLOWS
+          - name: REEL_VIEWS
+          - name: IG_REELS_AVG_WATCH_TIME
+          - name: IG_REELS_VIDEO_VIEW_TOTAL_TIME
+          - name: VIDEO_PHOTO_REPOSTS
+          - name: REELS_SKIP_RATE
+          - name: REEL_FACEBOOK_VIEWS
+          - name: REEL_REPOSTS
+          - name: REEL_CROSSPOSTED_VIEWS
+          - name: CAROUSEL_ALBUM_REPOSTS
           - name: _FIVETRAN_SYNCED
             description: Time stamp of Fivetran Sync.
       - name: MEDIA_COMMENT
@@ -261,6 +280,7 @@ sources:
             description: Content of the comment.
           - name: OWNER_ID
             description: Unique identifier of the user who posted the comment.
+          - name: OWNER_USERNAME
           - name: CREATED_TIME
             description: Timestamp when the comment was created.
           - name: _FIVETRAN_SYNCED
