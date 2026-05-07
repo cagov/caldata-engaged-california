@@ -67,3 +67,88 @@ models:
         description: Indicates whether the Facebook post is a status post.
       - name: IS_LINK_POST
         description: Indicates whether the Facebook post is a link post.
+  - name: facebook_pages_post_metrics
+    description: |
+      Final model that aggregates key engagement and video metrics for each Facebook post.
+    columns:
+      - name: PERMALINK
+        description: URL to instagram post.
+      - name: MEDIA_TYPE
+      - name: MEDIA_PRODUCT_TYPE
+      - name: MEDIA_URL
+        description: URL to the media contained within an instagram post.
+      - name: CAPTION
+      - name: CAROUSEL_ALBUM_ID
+      - name: IS_COMMENT_ENABLED
+      - name: IS_STORY
+      - name: CREATED_TIME
+      - name: MEDIA_ID
+      - name: LIKE_COUNT
+      - name: COMMENT_COUNT
+      - name: VIDEO_PHOTO_IMPRESSIONS
+      - name: VIDEO_PHOTO_REACH
+      - name: VIDEO_PHOTO_SAVED
+      - name: CAROUSEL_ALBUM_ENGAGEMENT
+      - name: CAROUSEL_ALBUM_IMPRESSIONS
+      - name: CAROUSEL_ALBUM_REACH
+      - name: CAROUSEL_ALBUM_SAVED
+      - name: STORY_IMPRESSIONS
+      - name: STORY_REACH
+      - name: NAVIGATION
+      - name: REEL_REACH
+      - name: REEL_SAVED
+      - name: VIDEO_PHOTO_ENGAGEMENT
+      - name: STORY_EXITS
+      - name: STORY_REPLIES
+      - name: STORY_TAPS_BACK
+      - name: STORY_TAPS_FORWARD
+      - name: STORY_SWIPE_FORWARD
+      - name: REEL_AGGREGATED_ALL_PLAYS_COUNT
+      - name: REEL_CLIPS_REPLAYS_COUNT
+      - name: REEL_COMMENTS
+      - name: REEL_LIKES
+      - name: REEL_PLAYS
+      - name: REEL_SHARES
+      - name: REEL_TOTAL_INTERACTIONS
+      - name: _FIVETRAN_ID
+      - name: _FIVETRAN_SYNCED
+  - name: instagram_business_post_metrics
+    columns:
+      - name: PERMALINK
+        description: URL to instagram post.
+      - name: MEDIA_TYPE
+      - name: MEDIA_PRODUCT_TYPE
+      - name: MEDIA_URL
+        description: URL to the media contained within an instagram post.
+      - name: CAPTION
+      - name: CAROUSEL_ALBUM_ID
+      - name: IS_COMMENT_ENABLED
+      - name: IS_STORY
+      - name: CREATED_TIME
+      - name: MEDIA_ID
+      - name: LIKE_COUNT
+      - name: COMMENT_COUNT
+      - name: VIDEO_PHOTO_IMPRESSIONS
+      - name: VIDEO_PHOTO_REACH
+      - name: VIDEO_PHOTO_SAVED
+      - name: CAROUSEL_ALBUM_ENGAGEMENT
+      - name: CAROUSEL_ALBUM_IMPRESSIONS
+      - name: CAROUSEL_ALBUM_REACH
+      - name: CAROUSEL_ALBUM_SAVED
+      - name: STORY_IMPRESSIONS
+      - name: STORY_REACH
+      - name: NAVIGATION
+      - name: REEL_REACH
+      - name: REEL_SAVED
+      - name: VIDEO_PHOTO_ENGAGEMENT
+      - name: STORY_EXITS
+      - name: STORY_REPLIES
+      - name: STORY_TAPS_BACK
+      - name: STORY_TAPS_FORWARD
+      - name: STORY_SWIPE_FORWARD
+      - name: REEL_COMMENTS
+      - name: REEL_LIKES
+      - name: REEL_SHARES
+      - name: REEL_TOTAL_INTERACTIONS
+      - name: _FIVETRAN_ID
+      - name: _FIVETRAN_SYNCED
