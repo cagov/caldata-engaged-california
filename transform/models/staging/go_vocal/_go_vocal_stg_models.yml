@@ -6,7 +6,7 @@ models:
       - name: EMAIL_CAMPAIGN_ID
         description: Unique identifier for each email campaign.
       - name: SENDER
-        description: Email address of the sender for the email.
+        description: Originator of the email. Example 'author'.
       - name: REPLY_TO
         description: Email address for recipients to reply to.
       - name: SUBJECT
