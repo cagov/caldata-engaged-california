@@ -67,7 +67,7 @@ models:
         description: Indicates whether the Facebook post is a status post.
       - name: IS_LINK_POST
         description: Indicates whether the Facebook post is a link post.
-  - name: facebook_pages_post_metrics
+  - name: instagram_business_post_metrics
     description: |
       Final model that aggregates key engagement and video metrics for each Facebook post.
     columns:
