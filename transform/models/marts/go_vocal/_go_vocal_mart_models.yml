@@ -1,36 +1,66 @@
 version: 2
 models:
-  - name: govocal_user_counts
+  - name: GOVOCAL_USER_COUNTS
     description: |
       This model joins user data with AI Survey data to calculate the count of Go Vocal users by various demographic
       and survey response fields.
     columns:
-      - name: role_at_work
+      - name: ROLE_AT_WORK
         description: Response to the question "What is your role at work?"
-      - name: county
+      - name: COUNTY
         description: Response to the question "Which county do you live in?"
-      - name: field_of_work
+      - name: FIELD_OF_WORK
         description: Response to the question "Which best describes your field of work?"
-      - name: age
+      - name: AGE
         description: Response to the question "What is your age?"
-      - name: gender
+      - name: GENDER
         description: |
           Response to the question "What is your gender identity?" with multiple responses categorized as "multiple".
-      - name: race_ethnicity
+      - name: RACE_ETHNICITY
         description: |
           Response to the question "What is your race or ethnicity?" with multiple responses categorized as "multiple".
-      - name: gv_users_count
+      - name: GV_USERS_COUNT
         description: Count of Go Vocal users in each demographic and survey response category.
-      - name: respondents_count
+      - name: RESPONDENTS_COUNT
         description: Count of survey respondents in each demographic and survey response category.
-      - name: submitted_count
+      - name: SUBMITTED_COUNT
         description: Count of survey responses submitted by users in each demographic and survey response category.
-      - name: drafts_count
+      - name: DRAFTS_COUNT
         description: |
           Count of survey responses saved as drafts by users in each demographic and survey response category.
-      - name: available_for_discussion_count
+      - name: AVAILABLE_FOR_DISCUSSION_COUNT
         description: |
           Count of survey respondents who answered "Yes" or "Maybe" to whether they would be open to joining a live
           discussion about AI.
-      - name: all_fields_completed_count
+      - name: ALL_FIELDS_COMPLETED_COUNT
         description: Count of survey respondents who completed all fields in the AI survey.
+  - name: GOVOCAL_EMAIL_METRICS
+    description: |
+      Email campaign metrics aggregating delivery statistics and engagement metrics across all campaign deliveries.
+    columns:
+      - name: EMAIL_CAMPAIGN_ID
+        description: Unique identifier for each email campaign.
+      - name: SENDER
+        description: Email address of the sender for the email.
+      - name: REPLY_TO
+        description: Email address for recipients to reply to.
+      - name: SUBJECT
+        description: Subject line of the email.
+      - name: DELIVERIES_COUNT
+        description: Number of delivery records for the email campaign.
+      - name: CREATED_AT
+        description: Timestamp when the email campaign was created.
+      - name: UPDATED_AT
+        description: Timestamp when the email campaign was last updated.
+      - name: SENT
+        description: Count of email deliveries with status "sent".
+      - name: DELIVERED
+        description: Count of email deliveries with status "delivered".
+      - name: OPENED
+        description: Count of email deliveries with status "opened".
+      - name: CLICKED
+        description: Count of email deliveries with status "clicked".
+      - name: FIRST_SENT_AT
+        description: Timestamp of the earliest email sent for this campaign.
+      - name: LAST_SENT_AT
+        description: Timestamp of the latest email sent for this campaign.
