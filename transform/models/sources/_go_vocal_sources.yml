@@ -411,12 +411,12 @@ sources:
       #     - name: _LOADED_AT
       #       description: Timestamp when the row was loaded into Snowflake.
       - name: EMAIL_CAMPAIGNS
-        description: Email campaigns created on the platform.
+        description: Email campaigns created on the platform. Does not include SendGrid emails.
         columns:
           - name: ID
             description: Unique identifier for each email campaign.
           - name: SENDER
-            description: Email address of the sender for the email.
+            description: Originator of the email. Example 'author'.
           - name: REPLY_TO
             description: Email address for recipients to reply to.
           - name: SUBJECT
@@ -438,7 +438,7 @@ sources:
           - name: _LOADED_AT
             description: Timestamp when the row was loaded into Snowflake.
       - name: EMAIL_CAMPAIGN_DELIVERIES
-        description: Delivery records for email campaigns.
+        description: Delivery records for email sent through Go Vocal platform, including SendGrid emails.
         columns:
           - name: ID
             description: Unique identifier for each email delivery record.

@@ -34,3 +34,35 @@ models:
           discussion about AI.
       - name: all_fields_completed_count
         description: Count of survey respondents who completed all fields in the AI survey.
+  - name: govocal_email_metrics
+    description: |
+      Email campaign metrics aggregating delivery statistics and engagement metrics across all campaign deliveries.
+    columns:
+      - name: email_campaign_id
+        description: Unique identifier for each email campaign.
+      - name: sender
+        description: |
+          Origination source of the email. Example 'author'. Email campaigns originating outside the Go Vocal
+          platform and not appearing in the campaigns source are labeled 'external'.
+      - name: reply_to
+        description: Email address for recipients to reply to.
+      - name: subject
+        description: Subject line of the email.
+      - name: deliveries_count
+        description: Number of delivery records for the email campaign.
+      - name: created_at
+        description: Timestamp when the email campaign was created.
+      - name: updated_at
+        description: Timestamp when the email campaign was last updated.
+      - name: sent
+        description: Count of email deliveries with status "sent".
+      - name: delivered
+        description: Count of email deliveries with status "delivered".
+      - name: opened
+        description: Count of email deliveries with status "opened".
+      - name: clicked
+        description: Count of email deliveries with status "clicked".
+      - name: first_sent_at
+        description: Timestamp of the earliest email sent for this campaign.
+      - name: last_sent_at
+        description: Timestamp of the latest email sent for this campaign.
