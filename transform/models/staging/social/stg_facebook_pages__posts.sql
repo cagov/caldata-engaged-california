@@ -22,6 +22,7 @@ renamed as (
         status_type as post_type,
         permalink_url,
         full_picture as picture_url,
+        share_count,
         cast(created_time as timestamp) as created_at,
         cast(updated_time as timestamp) as updated_at,
         is_expired,

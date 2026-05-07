@@ -26,6 +26,7 @@ joined as (
         p.updated_at,
         coalesce(m.media_views_total, 0) as post_views_total,
         coalesce(m.clicks_total, 0) as clicks_total,
+        coalesce(p.share_count, 0) as share_count,
         coalesce(m.reactions_total, 0) as reactions_total,
         coalesce(m.reactions_like, 0) as reactions_like,
         coalesce(m.reactions_love, 0) as reactions_love,
@@ -42,13 +43,15 @@ joined as (
 
         -- Total engagement = all reactions + clicks
         coalesce(m.reactions_total, 0)
-        + coalesce(m.clicks_total, 0) as total_engagements,
+        + coalesce(m.clicks_total, 0)
+        + coalesce(p.share_count, 0)
+            as total_engagements,
 
         -- Engagement rate: (reactions + clicks) / impressions × 100
         case
             when coalesce(m.media_views_total, 0) = 0 then null
             else round(
-                (coalesce(m.reactions_total, 0) + coalesce(m.clicks_total, 0))
+                (coalesce(m.reactions_total, 0) + coalesce(m.clicks_total, 0) + coalesce(p.share_count, 0))
                 / nullif(m.media_views_total, 0)::numeric * 100, 4
             )
         end as engagement_rate_pct,
