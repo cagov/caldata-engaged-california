@@ -55,6 +55,9 @@ models:
       ethelo_e3:
         +schema: ethelo_e3
         +tags: ["state_employees"]
+      social:
+        +schema: social
+        +tags: ["marketing"]
       go_vocal:
         +schema: govocal
         +tags: ["ai_impact"]
@@ -76,6 +79,9 @@ models:
       ethelo_e3:
         +schema: ethelo_e3
         +tags: ["state_employees"]
+      social:
+        +schema: social
+        +tags: ["marketing"]
       go_vocal:
         +schema: govocal
         +tags: ["ai_impact"]
@@ -98,6 +104,9 @@ models:
       ethelo_e3:
         +schema: ethelo_e3
         +tags: ["state_employees"]
+      social:
+        +schema: social
+        +tags: ["marketing"]
       go_vocal:
         +schema: govocal
         +tags: ["ai_impact"]
