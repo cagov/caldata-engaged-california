@@ -26,6 +26,8 @@ models:
         description: Total number of views for the post (including both organic and paid views).
       - name: clicks_total
         description: Total clicks on any part of the post (link, photo, name, etc.).
+      - name: share_count
+        description: The number of times the Facebook post has been shared.
       - name: reactions_total
         description: Total reactions across all reaction types (Like, Love, Haha, Wow, Sorry, Anger).
       - name: reactions_like
