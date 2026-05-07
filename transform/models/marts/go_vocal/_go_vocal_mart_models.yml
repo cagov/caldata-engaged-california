@@ -1,66 +1,66 @@
 version: 2
 models:
-  - name: GOVOCAL_USER_COUNTS
+  - name: govocal_user_counts
     description: |
       This model joins user data with AI Survey data to calculate the count of Go Vocal users by various demographic
       and survey response fields.
     columns:
-      - name: ROLE_AT_WORK
+      - name: role_at_work
         description: Response to the question "What is your role at work?"
-      - name: COUNTY
+      - name: county
         description: Response to the question "Which county do you live in?"
-      - name: FIELD_OF_WORK
+      - name: field_of_work
         description: Response to the question "Which best describes your field of work?"
-      - name: AGE
+      - name: age
         description: Response to the question "What is your age?"
-      - name: GENDER
+      - name: gender
         description: |
           Response to the question "What is your gender identity?" with multiple responses categorized as "multiple".
-      - name: RACE_ETHNICITY
+      - name: race_ethnicity
         description: |
           Response to the question "What is your race or ethnicity?" with multiple responses categorized as "multiple".
-      - name: GV_USERS_COUNT
+      - name: gv_users_count
         description: Count of Go Vocal users in each demographic and survey response category.
-      - name: RESPONDENTS_COUNT
+      - name: respondents_count
         description: Count of survey respondents in each demographic and survey response category.
-      - name: SUBMITTED_COUNT
+      - name: submitted_count
         description: Count of survey responses submitted by users in each demographic and survey response category.
-      - name: DRAFTS_COUNT
+      - name: drafts_count
         description: |
           Count of survey responses saved as drafts by users in each demographic and survey response category.
-      - name: AVAILABLE_FOR_DISCUSSION_COUNT
+      - name: available_for_discussion_count
         description: |
           Count of survey respondents who answered "Yes" or "Maybe" to whether they would be open to joining a live
           discussion about AI.
-      - name: ALL_FIELDS_COMPLETED_COUNT
+      - name: all_fields_completed_count
         description: Count of survey respondents who completed all fields in the AI survey.
-  - name: GOVOCAL_EMAIL_METRICS
+  - name: govocal_email_metrics
     description: |
       Email campaign metrics aggregating delivery statistics and engagement metrics across all campaign deliveries.
     columns:
-      - name: EMAIL_CAMPAIGN_ID
+      - name: email_campaign_id
         description: Unique identifier for each email campaign.
-      - name: SENDER
+      - name: sender
         description: Email address of the sender for the email.
-      - name: REPLY_TO
+      - name: reply_to
         description: Email address for recipients to reply to.
-      - name: SUBJECT
+      - name: subject
         description: Subject line of the email.
-      - name: DELIVERIES_COUNT
+      - name: deliveries_count
         description: Number of delivery records for the email campaign.
-      - name: CREATED_AT
+      - name: created_at
         description: Timestamp when the email campaign was created.
-      - name: UPDATED_AT
+      - name: updated_at
         description: Timestamp when the email campaign was last updated.
-      - name: SENT
+      - name: sent
         description: Count of email deliveries with status "sent".
-      - name: DELIVERED
+      - name: delivered
         description: Count of email deliveries with status "delivered".
-      - name: OPENED
+      - name: opened
         description: Count of email deliveries with status "opened".
-      - name: CLICKED
+      - name: clicked
         description: Count of email deliveries with status "clicked".
-      - name: FIRST_SENT_AT
+      - name: first_sent_at
         description: Timestamp of the earliest email sent for this campaign.
-      - name: LAST_SENT_AT
+      - name: last_sent_at
         description: Timestamp of the latest email sent for this campaign.
