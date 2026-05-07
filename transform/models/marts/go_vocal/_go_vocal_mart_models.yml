@@ -43,7 +43,7 @@ models:
       - name: sender
         description: |
           Origination source of the email. Example 'author'. Email campaigns originating outside the Go Vocal
-          platform are labeled 'sendgrid'.
+          platform and not appearing in the campaigns source are labeled 'external'.
       - name: reply_to
         description: Email address for recipients to reply to.
       - name: subject

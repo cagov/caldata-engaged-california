@@ -6,7 +6,7 @@ email_campaigns as (select * from {{ ref('stg_govocal_email_campaigns') }})
 
 select
     d.email_campaign_id,
-    iff(c.sender is null, 'sendgrid', c.sender) as sender,
+    iff(c.sender is null, 'external', c.sender) as sender,
     c.reply_to,
     c.subject,
     c.deliveries_count,
