@@ -41,7 +41,9 @@ models:
       - name: email_campaign_id
         description: Unique identifier for each email campaign.
       - name: sender
-        description: Email address of the sender for the email.
+        description: |
+          Origination source of the email. Example 'author'. Email campaigns originating outside the Go Vocal
+          platform are labeled 'sendgrid'.
       - name: reply_to
         description: Email address for recipients to reply to.
       - name: subject
