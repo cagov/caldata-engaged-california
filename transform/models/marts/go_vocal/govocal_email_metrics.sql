@@ -4,6 +4,14 @@ email_campaign_deliveries as (select * from {{ ref('stg_govocal_email_campaign_d
 
 email_campaigns as (select * from {{ ref('stg_govocal_email_campaigns') }})
 
+
+-- The email campaign deliveries source contains one row per email sent. The delivery_status is updated
+-- on the record if the email's status changes (for example, a user opens an email).
+-- An email can move from sent to clicked, but each later status implies that the email first went
+-- through the previous statuses. For example, an email delivery that has been clicked must have been
+-- sent, accepted, delivered, and opened too. Therefore, to count the emails that have been opened we need
+-- to count the emails that have a status of 'opened' and also the emails that have a status of 'clicked'.
+
 select
     d.email_campaign_id,
     iff(c.sender is null, 'external', c.sender) as sender,

@@ -28,7 +28,12 @@ models:
       - name: _LOADED_AT
         description: Timestamp when the row was loaded into Snowflake.
   - name: stg_govocal_email_campaign_deliveries
-    description: Delivery records for email campaigns.
+    description: |
+      Delivery records for email campaigns. The email campaign deliveries source contains one row per email sent.
+      The delivery_status is updated on the record if the email's status changes (for example, a user opens an email).
+      An email can move from sent to clicked, but each later status implies that the email first went through the
+      previous statuses. For example, an email delivery that has been clicked must have been sent, accepted,
+      delivered, and opened too. Bounced and failed statuses are dead ends and do not lead to delivered emails.
     columns:
       - name: EMAIL_CAMPAIGN_DELIVERY_ID
         description: Unique identifier for each email delivery record.
