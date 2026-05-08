@@ -67,7 +67,9 @@ counts as (
                     s.fields_completed_count + u.demographic_fields_completed_count = {{ total_survey_fields }}
                     then s.author_id
             end
-        ) as all_fields_completed_count
+        ) as all_fields_completed_count,
+
+        max(u._loaded_at) as data_loaded_at
 
     from handle_multiselect_arrays as u
     left join survey as s on u.user_id = s.author_id

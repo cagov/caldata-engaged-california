@@ -34,6 +34,8 @@ models:
           discussion about AI.
       - name: all_fields_completed_count
         description: Count of survey respondents who completed all fields in the AI survey.
+      - name: data_loaded_at
+        description: Timestamp of the most recent load of Go Vocal data into Snowflake. From _loaded_at.
   - name: govocal_email_metrics
     description: |
       Email campaign metrics aggregating delivery statistics and engagement metrics across all campaign deliveries.
@@ -70,3 +72,5 @@ models:
         description: Timestamp of the earliest email sent for this campaign.
       - name: last_sent_at
         description: Timestamp of the latest email sent for this campaign.
+      - name: data_loaded_at
+        description: Timestamp of the most recent load of Go Vocal data into Snowflake. From _loaded_at.
