@@ -62,7 +62,7 @@ sources:
           - name: SUBMITTED_AT
             description: Timestamp when the idea was submitted.
           - name: PUBLICATION_STATUS
-            description: Publication status of the idea.
+            description: Publication status of the idea. The possible statuses are 'draft', 'submitted', 'published'.
           - name: PROJECT_ID
             description: Project ID that contains the idea.
           - name: PROJECT_TITLE
@@ -90,10 +90,15 @@ sources:
           - name: HREF
             description: URL to the idea on the platform.
           - name: STATUS
+            description: The idea status, such as 'Proposed' or 'Under consideration'. Can be custom-defined.
           - name: CUSTOM_FIELD_VALUES
             description: Custom field values associated with the idea.
           - name: TYPE
-            description: Idea type, such as "idea" or "survey".
+            description: |
+              Idea type, such as "idea" or "survey". Defined by creation phase.
+              'survey' — creation phase supports a survey form
+              'proposal' — creation phase exists but isn't a survey
+              'idea' — no creation phase
           - name: _LOAD_DATE
             description: Date the row was loaded into Snowflake.
           - name: _LOADED_AT
@@ -153,7 +158,7 @@ sources:
             description: Number of comments in the project.
           - name: MAP_CENTER_GEOJSON
           - name: PUBLICATION_STATUS
-            description: Publication status of the project, such as "published".
+            description: Publication status of the project. The possible statuses are 'draft', 'published', 'archived'.
           - name: _LOAD_DATE
             description: Date the row was loaded into Snowflake.
           - name: _LOADED_AT
@@ -255,7 +260,11 @@ sources:
           - name: CUSTOM_FIELD_VALUES
             description: Key-value pairs for profile field values including demographic information..
           - name: STATUS
-            description: User status, such as "active".
+            description: |
+              User status. The possible statuses are
+              'invited' if invite_status is pending,
+              'active' if a user is registered and not blocked,
+              'incomplete' for all else.
           - name: CREATED_AT
             description: Timestamp when the user was created.
           - name: UPDATED_AT
@@ -447,7 +456,9 @@ sources:
           - name: USER_ID
             description: ID of the user that the email was sent to.
           - name: DELIVERY_STATUS
-            description: Status of the email delivery, such as "sent".
+            description: |
+              Status of the email delivery.
+              The possible statuses are: 'sent', 'bounced', 'failed', 'accepted', 'delivered', 'opened', 'clicked'.
           - name: SENT_AT
             description: Timestamp when the email was sent.
           - name: CREATED_AT

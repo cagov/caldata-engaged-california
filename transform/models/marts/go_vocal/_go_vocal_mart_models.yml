@@ -6,19 +6,19 @@ models:
       and survey response fields.
     columns:
       - name: role_at_work
-        description: Response to the question "What is your role at work?"
+        description: Response to the question 'What is your role at work?'
       - name: county
-        description: Response to the question "Which county do you live in?"
+        description: Response to the question 'Which county do you live in?'
       - name: field_of_work
-        description: Response to the question "Which best describes your field of work?"
+        description: Response to the question 'Which best describes your field of work?'
       - name: age
-        description: Response to the question "What is your age?"
+        description: Response to the question 'What is your age?'
       - name: gender
         description: |
-          Response to the question "What is your gender identity?" with multiple responses categorized as "multiple".
+          Response to the question 'What is your gender identity?' with multiple responses categorized as 'multiple'.
       - name: race_ethnicity
         description: |
-          Response to the question "What is your race or ethnicity?" with multiple responses categorized as "multiple".
+          Response to the question 'What is your race or ethnicity?' with multiple responses categorized as 'multiple'.
       - name: gv_users_count
         description: Count of Go Vocal users in each demographic and survey response category.
       - name: respondents_count
@@ -30,10 +30,12 @@ models:
           Count of survey responses saved as drafts by users in each demographic and survey response category.
       - name: available_for_discussion_count
         description: |
-          Count of survey respondents who answered "Yes" or "Maybe" to whether they would be open to joining a live
+          Count of survey respondents who answered 'Yes' or 'Maybe' to whether they would be open to joining a live
           discussion about AI.
       - name: all_fields_completed_count
         description: Count of survey respondents who completed all fields in the AI survey.
+      - name: data_loaded_at
+        description: Timestamp of the most recent load of Go Vocal data into Snowflake. From _loaded_at.
   - name: govocal_email_metrics
     description: |
       Email campaign metrics aggregating delivery statistics and engagement metrics across all campaign deliveries.
@@ -54,15 +56,21 @@ models:
         description: Timestamp when the email campaign was created.
       - name: updated_at
         description: Timestamp when the email campaign was last updated.
-      - name: sent
-        description: Count of email deliveries with status "sent".
+      - name: attempted
+        description: Count of email deliveries (with any status).
       - name: delivered
-        description: Count of email deliveries with status "delivered".
+        description: Count of email deliveries with status 'delivered','accepted','opened', or 'clicked'.
       - name: opened
-        description: Count of email deliveries with status "opened".
+        description: Count of email deliveries with status 'opened' or 'clicked'.
       - name: clicked
-        description: Count of email deliveries with status "clicked".
+        description: Count of email deliveries with status 'clicked'.
+      - name: click_rate
+        description: Count of emails clicked, divided by count of emails delivered. Null if zero delivered emails.
+      - name: open_rate
+        description: Count of emails opened, divided by count of emails delivered. Null if zero delivered emails.
       - name: first_sent_at
         description: Timestamp of the earliest email sent for this campaign.
       - name: last_sent_at
         description: Timestamp of the latest email sent for this campaign.
+      - name: data_loaded_at
+        description: Timestamp of the most recent load of Go Vocal data into Snowflake. From _loaded_at.
