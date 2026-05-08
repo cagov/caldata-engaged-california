@@ -19,7 +19,8 @@ select
     case when delivered = 0 then null else clicked / delivered end as click_rate,
     case when delivered = 0 then null else opened / delivered end as open_rate,
     min(d.sent_at) as first_sent_at,
-    max(d.sent_at) as last_sent_at
+    max(d.sent_at) as last_sent_at,
+    max(d._loaded_at) as data_loaded_at
 from email_campaign_deliveries as d
 left join
     email_campaigns as c
