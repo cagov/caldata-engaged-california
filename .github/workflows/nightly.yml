@@ -1,8 +1,8 @@
 name: nightly
 on:
   schedule:
-    # Run a daily job in the 5AM hour, 9AM, and 2PM hour
-    - cron: "33 12,16,21 * * *"
+    # Run an hourly job at the 33rd minute.
+    - cron: "33 * * * *"
   # Also allow for manual triggers
   workflow_dispatch:
 
