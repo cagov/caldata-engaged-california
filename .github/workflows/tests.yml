@@ -39,7 +39,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh run list \
-            --workflow=nightly.yml \
+            --workflow=pipeline.yml \
             --branch=main \
             --status=success \
             --limit=1 \
