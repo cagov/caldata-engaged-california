@@ -42,6 +42,7 @@ jobs:
           GO_VOCAL_CLIENT_SECRET: ${{ secrets.GO_VOCAL_CLIENT_SECRET }}
         run: |
           uv run python -m jobs.load_govocal
+          uv run python -m jobs.load_sendgrid
 
       - name: Build dbt project
         env:
