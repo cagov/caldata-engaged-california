@@ -40,6 +40,7 @@ jobs:
             || 'LOADING_XS_ENGCA_DEV' }}
           GO_VOCAL_CLIENT_ID: ${{ secrets.GO_VOCAL_CLIENT_ID }}
           GO_VOCAL_CLIENT_SECRET: ${{ secrets.GO_VOCAL_CLIENT_SECRET }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
         run: |
           uv run python -m jobs.load_govocal
           uv run python -m jobs.load_sendgrid
