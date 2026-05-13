@@ -1,0 +1,57 @@
+version: 2
+models:
+  - name: mailchimp_campaign_summary
+    description: "Summary of Mailchimp campaigns, including engagement metrics."
+    columns:
+      - name: list_name
+        description: "Name of the Mailchimp list/audience."
+      - name: LIST_ID
+        description: "Unique identifier for the Mailchimp list/audience."
+      - name: campaign_id
+        description: "Unique identifier for the campaign."
+      - name: campaign_type
+        description: "Type of campaign."
+      - name: title
+        description: "Title of the campaign."
+      - name: subject_line
+        description: "Subject line of the campaign email."
+      - name: archive_url
+        description: ""
+      - name: template_id
+        description: "Template identifier used for the campaign."
+      - name: send_time
+        description: "Timestamp when the campaign was sent."
+      - name: unique_email_ids_sent
+        description: "Count of unique email addresses the campaign was sent to."
+      - name: unique_opens
+        description: "Count of unique email addresses that opened the campaign."
+      - name: unique_clicks
+        description: "Count of unique email addresses that clicked in the campaign."
+      - name: unique_bounces
+        description: "Count of unique email addresses that bounced."
+      - name: max_fivetran_sync_date
+        description: "Latest Fivetran sync date."
+  - name: mailchimp_engaged_california_subscribers_by_segment
+    description: "Subscriber counts by Mailchimp segment."
+    columns:
+      - name: list_name
+        description: "Name of the Mailchimp list/audience."
+      - name: segments
+        description: "Segment string for Mailchimp subscribers."
+      - name: total_subscribers
+        description: "Total number of subscribers in the segment."
+      - name: max_fivetran_sync_date
+        description: "Latest Fivetran sync date."
+  - name: mailchimp_list_metrics
+    description: "Metrics for Mailchimp lists, including subscribe status, source, and unsubscribe reason."
+    columns:
+      - name: list_name
+        description: "Name of the Mailchimp list."
+      - name: value
+        description: "Value for the metric (e.g., status, source, reason)."
+      - name: metric
+        description: "Type of metric (subscribe status, subscriber source, unsubscribe reason)."
+      - name: number_unique_emails
+        description: "Number of unique emails for the metric."
+      - name: max_fivetran_sync_date
+        description: "Latest Fivetran sync date."
