@@ -169,16 +169,6 @@ def fetch_message_subject_records(session: requests.Session, hours_back: int = H
     return _extract_subjects(all_messages)
 
 
-def safe_serialize_nested_values(df: pd.DataFrame) -> pd.DataFrame:
-    """Serialize any nested list or dict values to JSON strings for Snowflake compatibility."""
-    for col in df.columns:
-        if df[col].dtype == object:
-            df[col] = df[col].apply(
-                lambda x: json.dumps(x, default=str) if isinstance(x, (list, dict)) else x
-            )
-    return df
-
-
 def main() -> None:
     logger.info("Starting SendGrid load")
     session = create_retry_session()
@@ -204,7 +194,6 @@ def main() -> None:
             _LOAD_DATE=load_date,
             _LOADED_AT=loaded_at,
         )
-        df = safe_serialize_nested_values(df)
         df.columns = [col.upper() for col in df.columns]
 
         if table_exists(snowflake_conn, name):
