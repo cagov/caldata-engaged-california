@@ -61,6 +61,9 @@ models:
       go_vocal:
         +schema: govocal
         +tags: ["ai_impact"]
+      sendgrid:
+        +schema: sendgrid
+        +tags: ["marketing"]
 
     intermediate:
       +materialized: view
@@ -85,6 +88,9 @@ models:
       go_vocal:
         +schema: govocal
         +tags: ["ai_impact"]
+      sendgrid:
+        +schema: sendgrid
+        +tags: ["marketing"]
 
     marts:
       +materialized: table
@@ -119,4 +125,7 @@ models:
         ethelo_e3:
           +tags: ["state_employees"]
         marketing:
+          +tags: ["marketing"]
+        sendgrid:
+          +schema: sendgrid
           +tags: ["marketing"]
