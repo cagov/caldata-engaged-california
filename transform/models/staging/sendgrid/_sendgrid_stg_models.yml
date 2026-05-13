@@ -1,0 +1,33 @@
+version: 2
+
+models:
+  - name: stg_sendgrid_subject_line_map
+    description: All subject lines for emails sent through SendGrid, with message ID for mapping.
+    columns:
+      - name: msg_id
+        description: Unique identifier for each SendGrid message.
+      - name: short_id
+        description: Shortened identifier for each SendGrid message.
+      - name: subject
+        description: The subject line of the email.
+      - name: _load_date
+      - name: _loaded_at
+  - name: stg_sendgrid_email_activity
+    description: All email activity for emails sent through SendGrid, including opens, clicks, bounces, etc.
+    columns:
+      - name: SG_EVENT_ID
+        description: Unique identifier for each SendGrid event.
+      - name: SG_MESSAGE_ID
+        description: Unique identifier for each SendGrid message.
+      - name: SINGLESEND_ID
+        description: Unique identifier for each single send email.
+      - name: SINGLESEND_NAME
+        description: The name of the single send email.
+      - name: EMAIL
+        description: The email of the recipient. 
+      - name: EVENT
+        description: The type of event (e.g., "open", "click", "bounce").
+      - name: TIMESTAMP
+        description: The timestamp when the event occurred.
+      - name: _FIVETRAN_SYNCED
+        description: Timestamp of when the data was synced from Fivetran.

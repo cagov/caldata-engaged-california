@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: int_sendgrid_subject_line_map
+    description: Subject line mapping for emails sent through SendGrid, with message ID for mapping.
+    description: All subject lines for emails sent through SendGrid, with message ID for mapping.
+    columns:
+      - name: msg_id
+        description: Unique identifier for each SendGrid message.
+      - name: short_id
+        description: Shortened identifier for each SendGrid message.
+      - name: subject
+        description: The subject line of the email.
+      - name: _load_date
+      - name: _loaded_at
