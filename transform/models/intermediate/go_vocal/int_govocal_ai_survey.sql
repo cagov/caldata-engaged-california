@@ -92,5 +92,5 @@ select
         + iff(government_action_suggestion is not null, 1, 0)
         + iff(personal_ai_impact is not null, 1, 0)
         + iff(availability_for_discussion is not null, 1, 0)
-    ) as fields_completed_count
+    ) as survey_fields_completed_count
 from extract_survey_responses

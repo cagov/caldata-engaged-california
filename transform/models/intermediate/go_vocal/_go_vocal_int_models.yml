@@ -92,6 +92,6 @@ models:
       - name: availability_for_discussion
         description: Response to a question about whether the respondent is open to joining a live discussion about AI.
       - name: fields_completed_count
-        description: Count of how many survey questions the respondent answered.
+        description: Count of how many survey questions and demographic questions the respondent answered.
       - name: _loaded_at
         description: Timestamp of the most recent load of Go Vocal data into Snowflake. From _loaded_at.

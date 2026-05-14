@@ -6,16 +6,6 @@ with
 
 users_x_survey as (select * from {{ ref('int_govocal_users_x_ai_survey') }}),
 
-count_user_demographic_fields as (
-    select
-        *,
-        iff(age is not NULL, 1, 0)
-        + iff(gender_category is not NULL, 1, 0)
-        + iff(race_ethnicity_category is not NULL, 1, 0)
-            as user_demographic_fields_completed_count
-    from users_x_survey
-),
-
 counts as (
     select
         role_at_work,
@@ -33,14 +23,14 @@ counts as (
         count(
             distinct case
                 when
-                    fields_completed_count + user_demographic_fields_completed_count = {{ total_survey_fields }}
+                    fields_completed_count = {{ total_survey_fields }}
                     then survey_respondent_id
             end
         ) as all_fields_completed_count,
 
         max(_loaded_at) as data_loaded_at
 
-    from count_user_demographic_fields
+    from users_x_survey
     group by
         role_at_work,
         county,
