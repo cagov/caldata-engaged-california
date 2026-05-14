@@ -116,6 +116,9 @@ models:
       go_vocal:
         +schema: govocal
         +tags: ["ai_impact"]
+      sendgrid:
+        +schema: sendgrid
+        +tags: ["marketing"]
       daily_report:
         +schema: daily_report
         ethelo_la_agenda_setting:
@@ -125,7 +128,4 @@ models:
         ethelo_e3:
           +tags: ["state_employees"]
         marketing:
-          +tags: ["marketing"]
-        sendgrid:
-          +schema: sendgrid
           +tags: ["marketing"]
