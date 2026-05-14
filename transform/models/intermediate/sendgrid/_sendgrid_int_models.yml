@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: int_sendgrid_email_activity
+    description: Sendgrid email activity -- one row per email per recipient per action
+    columns:
+      - name: msg_id
+        description: Unique identifier for each SendGrid message.
+      - name: short_id
+        description: Shortened identifier for each SendGrid message.
+      - name: subject_line
+        description: The subject line of the email.
+      - name: sg_event_id
+        description: unique id for each action took
+      - name: sg_message_id
+        description: unique id for each email x recipient combination
+      - name: singlesend_id
+      - name: singlesend_name
+      - name: email_user_id
+        description: |
+          unique identifier for each email address recipient. should come from Go Vocal,
+          but created surrogate key if not
+      - name: event
+        description: action took (send, open, click, etc.)
+      - name: email_activity_timestamp
+        description: timestamp of action took
+      - name: _fivetran_synced
+        description: time email activity data was loaded
+      - name: _loaded_at
+        description: time subject line data was loaded
