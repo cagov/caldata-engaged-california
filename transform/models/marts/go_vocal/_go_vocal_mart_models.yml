@@ -2,8 +2,7 @@ version: 2
 models:
   - name: govocal_user_counts
     description: |
-      This model joins user data with AI Survey data to calculate the count of Go Vocal users by various demographic
-      and survey response fields.
+      This model calculates the count of Go Vocal users by various demographic and survey response fields.
     columns:
       - name: role_at_work
         description: Response to the question 'What is your role at work?'
@@ -73,4 +72,54 @@ models:
       - name: last_sent_at
         description: Timestamp of the latest email sent for this campaign.
       - name: data_loaded_at
+        description: Timestamp of the most recent load of Go Vocal data into Snowflake. From _loaded_at.
+  - name: govocal_ai_survey_respondents
+    description: |
+      This model provides Phase 1 AI survey responses with demographic info added from user profiles.
+      It is limited to only the non-admin respondents who submitted ('published') the survey, removing drafts.
+    columns:
+      - name: survey_respondent_id
+        description: User ID of the survey respondent.
+      - name: age
+        description: Response to the question 'What is your age?'
+      - name: gender_array
+        description: Responses to the question "What is your gender identity?"
+      - name: gender_category
+        description: |
+          Response to the question 'What is your gender identity?' with multiple responses categorized as 'multiple'.
+      - name: race_ethnicity_array
+        description: Responses to the question "What is your race or ethnicity?"
+      - name: race_ethnicity_category
+        description: |
+          Response to the question 'What is your race or ethnicity?' with multiple responses categorized as 'multiple'.
+      - name: user_status
+        description: |
+          User status. The possible statuses are
+          'invited' if invite_status is pending,
+          'active' if a user is registered and not blocked,
+          'incomplete' for all else.
+      - name: publication_status
+        description: Status of publication (e.g., published, draft).
+      - name: current_work_status
+        description: Response to the question "Are you currently working?"
+      - name: role_at_work
+        description: Response to the question "What is your role at work?"
+      - name: county
+        description: Response to the question "Which county do you live in?"
+      - name: field_of_work
+        description: Response to the question "Which best describes your field of work?"
+      - name: economic_impact_expectation
+        description: Response to the question "What do you expect the impact of AI to be on the economy?"
+      - name: government_action_suggestion
+        description: |
+          Response to the question "What would you like the government to do about what you see as these impacts?"
+      - name: personal_ai_impact
+        description: |
+          Response to the question "What has been your experience if any of the impact of AI on your own job
+          and workplace?"
+      - name: availability_for_discussion
+        description: Response to a question about whether the respondent is open to joining a live discussion about AI.
+      - name: fields_completed_count
+        description: Count of how many survey questions the respondent answered.
+      - name: _loaded_at
         description: Timestamp of the most recent load of Go Vocal data into Snowflake. From _loaded_at.

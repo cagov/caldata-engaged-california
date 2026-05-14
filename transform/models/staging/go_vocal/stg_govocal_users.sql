@@ -31,31 +31,9 @@ users_extract_demographics as (
         *,
         -- Extract demographic information from custom field values
         custom_field_values:"what_is_your_age_t0m"::string as age,
-        custom_field_values:"what_is_your_gender_identity_lez"::array as gender,
-        custom_field_values:"what_is_your_race_or_ethnicity_7mf"::array as race_ethnicity
+        custom_field_values:"what_is_your_gender_identity_lez"::array as gender_array,
+        custom_field_values:"what_is_your_race_or_ethnicity_7mf"::array as race_ethnicity_array
     from users_convert_types
-),
-
-gen as (
-    select
-        ued.user_id,
-        array_agg(
-            left(f.value::string, length(f.value::string) - 4)
-        ) as gender_array
-    from users_extract_demographics as ued,
-        lateral flatten(input => ued.gender) as f
-    group by ued.user_id
-),
-
-re as (
-    select
-        ued.user_id,
-        array_agg(
-            left(f.value::string, length(f.value::string) - 4)
-        ) as race_ethnicity_array
-    from users_extract_demographics as ued,
-        lateral flatten(input => ued.race_ethnicity) as f
-    group by ued.user_id
 ),
 
 users_demographics as (
@@ -76,9 +54,37 @@ users_demographics as (
         u.email_confirmation_code_sent_at,
         u.confirmation_required,
         u.custom_field_values,
-        left(u.age, length(u.age) - 4) as age,
-        gen.gender_array,
-        re.race_ethnicity_array,
+        case left(u.age, length(u.age) - 4)
+            when 'under_18' then 'Under 18'
+            when '18_24' then '18-24'
+            when '25_44' then '25-44'
+            when '45_64' then '45-64'
+            when 'over_65' then 'Over 65'
+            when 'i_don_t_want_to_say' then 'I don''t want to say'
+        end as age,
+        transform(
+            u.gender_array, val varchar ->
+            case left(val, length(val) - 4)
+                when 'man' then 'Man'
+                when 'woman' then 'Woman'
+                when
+                    'another_gender_identity_like_transgender_non_binary_or_gender_non_conforming'
+                    then 'Another gender identity (like transgender, non-binary, or gender non-conforming)'
+                when 'i_don_t_want_to_say' then 'I don''t want to say'
+            end
+        ) as gender_array,
+        transform(
+            u.race_ethnicity_array, val varchar ->
+            case left(val, length(val) - 4)
+                when 'american_indian_or_alaska_native' then 'American Indian or Alaska Native'
+                when 'asian' then 'Asian'
+                when 'black_or_african_american' then 'Black or African American'
+                when 'hispanic_or_latino' then 'Hispanic or Latino'
+                when 'middle_eastern_or_north_african' then 'Middle Eastern or North African'
+                when 'native_hawaiian_or_pacific_islander' then 'Native Hawaiian or Pacific Islander'
+                when 'white' then 'White'
+            end
+        ) as race_ethnicity_array,
         u.user_status,
         u.created_at,
         u.updated_at,
@@ -86,10 +92,6 @@ users_demographics as (
         u._loaded_at
 
     from users_extract_demographics as u
-    left join gen
-        on u.user_id = gen.user_id
-    left join re
-        on u.user_id = re.user_id
 )
 
 select * from users_demographics
