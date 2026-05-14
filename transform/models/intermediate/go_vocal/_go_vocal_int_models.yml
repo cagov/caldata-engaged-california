@@ -41,7 +41,7 @@ models:
           and workplace?"
       - name: availability_for_discussion
         description: Response to a question about whether the respondent is open to joining a live discussion about AI.
-      - name: fields_completed_count
+      - name: survey_fields_completed_count
         description: Count of how many survey questions the respondent answered.
   - name: int_govocal_users_x_ai_survey
     description: |
