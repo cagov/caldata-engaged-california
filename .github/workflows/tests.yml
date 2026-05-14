@@ -21,6 +21,8 @@ env:
   GO_VOCAL_CLIENT_ID: ${{ secrets.GO_VOCAL_CLIENT_ID }}
   GO_VOCAL_CLIENT_SECRET: ${{ secrets.GO_VOCAL_CLIENT_SECRET }}
   SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+  BITLY_API_KEY: ${{ secrets.BITLY_API_KEY }}
+  BITLY_GROUP_GUID: ${{ secrets.BITLY_GROUP_GUID }}
 
 jobs:
   build-models:
