@@ -1,0 +1,18 @@
+version: 2
+models:
+  - name: sendgrid_email_metrics
+    description: Summary stats for Sendgrid emails
+    columns:
+      - name: subject_line
+      - name: first_send_date
+      - name: latest_send_date
+      - name: recipients
+      - name: sends
+      - name: deliveries
+      - name: opens
+      - name: bounces
+      - name: clicks
+      - name: defers
+      - name: unsubscribes
+      - name: drops
+      - name: spam_reports

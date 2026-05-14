@@ -1,0 +1,79 @@
+version: 2
+
+sources:
+  - name: SENDGRID_API
+    database: RAW_ENGCA_PRD
+    schema: SENDGRID
+    description: |
+      SendGrid subject line mapping data for the EngagedCA
+      campaign ingested from the Sendgrid Email Actions API.
+    tables:
+      - name: MESSAGE_SUBJECTS
+        description: Information about each SendGrid subject line mapping.
+        columns:
+          - name: MSG_ID
+            description: Unique identifier for each SendGrid message.
+          - name: SHORT_ID
+            description: Shortened identifier for each SendGrid message.
+          - name: SUBJECT
+            description: The subject line of the email.
+          - name: _LOAD_DATE
+          - name: _LOADED_AT
+
+  - name: SENDGRID_WEBHOOKS
+    database: RAW_ENGCA_PRD
+    schema: ENGAGEDCA_SENDGRID_GOVOCAL
+    description: |
+      SendGrid data for the EngagedCA account, which includes
+      emails sent through Go Vocal, ingested using Fivetran.
+    tables:
+      - name: EVENT
+        description: |
+          Information about each SendGrid event. An event is generated each time a recipient
+          interacts with an email (e.g., opens, clicks, bounces).
+        columns:
+          - name: SG_EVENT_ID
+            description: Unique identifier for each SendGrid event.
+          - name: SINGLESEND_ID
+            description: Unique identifier for each single send email.
+          - name: SINGLESEND_NAME
+            description: The name of the single send email.
+          - name: SG_MESSAGE_ID
+            description: Unique identifier for each SendGrid message.
+          - name: EVENT
+            description: The type of event (e.g., "open", "click", "bounce").
+          - name: TIMESTAMP
+            description: The timestamp when the event occurred.
+          - name: EMAIL
+          - name: MC_STATS
+          - name: PHASE_ID
+          - name: SEND_AT
+          - name: IP
+          - name: URL
+          - name: USERAGENT
+          - name: SG_USER_ID
+          - name: CERT_ERR
+          - name: STATUS
+          - name: REASON
+          - name: TYPE
+          - name: RESPONSE
+          - name: TLS
+          - name: ATTEMPT
+          - name: POST_TYPE
+          - name: SG_MACHINE_OPEN
+          - name: URL_OFFSET_INDEX
+          - name: URL_OFFSET_TYPE
+          - name: POOL_NAME
+          - name: POOL_ID
+          - name: CAMPAIGN_ID
+          - name: CAMPAIGN_VERSION
+          - name: CAMPAIGN_SPLIT_ID
+          - name: SMTP_ID
+          - name: _FIVETRAN_ID
+          - name: _FIVETRAN_SYNCED
+          - name: CUSTOM_SG_CONTENT_TYPE
+          - name: CUSTOM_BOUNCE_CLASSIFICATION
+          - name: CUSTOM_DATE
+          - name: CUSTOM_RESELLER_ID
+          - name: CUSTOM_DOMAIN
+          - name: CUSTOM_FROM
