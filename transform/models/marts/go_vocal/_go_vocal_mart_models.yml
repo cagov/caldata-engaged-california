@@ -82,6 +82,8 @@ models:
     columns:
       - name: survey_respondent_id
         description: User ID of the survey respondent.
+      - name: survey_id
+        description: Unique identifier for each 'Impact of AI on work' survey.
       - name: age
         description: Response to the question 'What is your age?'
       - name: gender_array
