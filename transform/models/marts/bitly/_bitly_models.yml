@@ -50,3 +50,9 @@ models:
     columns:
       - name: last_update
         description: Timestamp of the last update of bitly data from Fivetran. Min of the '_fivetran_synced' field.
+
+  - name: bitly_qr_scans
+    description: Timestamp of the last full update of bitly data from Fivetran.
+    columns:
+      - name: last_update
+        description: Timestamp of the last update of bitly data from Fivetran. Min of the '_fivetran_synced' field.
