@@ -8,6 +8,8 @@ models:
         description: Response to the question 'What is your role at work?'
       - name: county
         description: Response to the question 'Which county do you live in?'
+      - name: region
+        description: Region corresponding to the California county, as described by sortition strategy.
       - name: field_of_work
         description: Response to the question 'Which best describes your field of work?'
       - name: age
@@ -80,6 +82,8 @@ models:
     columns:
       - name: survey_respondent_id
         description: User ID of the survey respondent.
+      - name: survey_id
+        description: Unique identifier for each 'Impact of AI on work' survey.
       - name: age
         description: Response to the question 'What is your age?'
       - name: gender_array
@@ -106,6 +110,8 @@ models:
         description: Response to the question "What is your role at work?"
       - name: county
         description: Response to the question "Which county do you live in?"
+      - name: region
+        description: Region corresponding to the California county, as described by sortition strategy.
       - name: field_of_work
         description: Response to the question "Which best describes your field of work?"
       - name: economic_impact_expectation

@@ -183,3 +183,19 @@ sources:
           - name: target_count
             description: Target count for this demographic group in the fire area
             data_type: integer
+
+  - name: DEMOGRAPHICS
+    database: RAW_ENGCA_PRD
+    schema: DEMOGRAPHICS
+    description: |
+      Source datasets for EngagedCA demographics information.
+    tables:
+      - name: COUNTY_REGION_MAP
+        description: |
+          Mapping table between California counties and regions. Used to assign counties to regions
+          for the AI Impact sortition process. One row per California county. (58 counties)
+        columns:
+          - name: COUNTY
+            description: California county. For example, 'Inyo County'.
+          - name: REGION
+            description: Region. For example, 'Sierra Region'.
