@@ -10,6 +10,7 @@ counts as (
     select
         role_at_work,
         county,
+        region,
         field_of_work,
         age,
         gender_category as gender,
@@ -34,6 +35,7 @@ counts as (
     group by
         role_at_work,
         county,
+        region,
         field_of_work,
         age,
         gender_category,
