@@ -6,21 +6,21 @@ ai_users as (
     select * from {{ ref('int_govocal_users_x_ai_survey') }}
 )
 
-select 
-            s.SURVEY_ID as IDEA_ID,
-            s.COUNTY,
-            s.FIELD_OF_WORK,
-            s.CURRENT_WORK_STATUS,
-            s.ROLE_AT_WORK,
-            s.AVAILABILITY_FOR_DISCUSSION,
-            s.ECONOMIC_IMPACT_EXPECTATION,
-            s.GOVERNMENT_ACTION_SUGGESTION,
-            s.PERSONAL_AI_IMPACT,
-            s.PUBLISHED_AT,
-            s.SUBMITTED_AT,
-            u.AGE,
-            u.GENDER_CATEGORY,
-            u.RACE_ETHNICITY_CATEGORY
-        FROM ai_survey s
-        LEFT JOIN ai_users u
-            ON u.USER_ID = s.SURVEY_RESPONDENT_ID
+select
+    s.survey_id as idea_id,
+    s.county,
+    s.field_of_work,
+    s.current_work_status,
+    s.role_at_work,
+    s.availability_for_discussion,
+    s.economic_impact_expectation,
+    s.government_action_suggestion,
+    s.personal_ai_impact,
+    s.published_at,
+    s.submitted_at,
+    u.age,
+    u.gender_category,
+    u.race_ethnicity_category
+from ai_survey as s
+left join ai_users as u
+    on s.survey_respondent_id = u.user_id
