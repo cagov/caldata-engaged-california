@@ -129,3 +129,40 @@ models:
         description: Count of how many survey questions the respondent answered.
       - name: _loaded_at
         description: Timestamp of the most recent load of Go Vocal data into Snowflake. From _loaded_at.
+  - name: govocal_survey_streamlit
+    description: |
+      Combining data for exploration in Streamlit app.
+    columns:
+      - name: IDEA_ID
+        description: Unique identifier for each idea submitted in the survey.
+      - name: COUNTY
+        description: County where the respondent lives.
+      - name: FIELD_OF_WORK
+        description: Field of work of the respondent.
+      - name: CURRENT_WORK_STATUS
+        description: Current work status of the respondent.
+      - name: ROLE_AT_WORK
+        description: Role of the respondent at work.
+      - name: AVAILABILITY_FOR_DISCUSSION
+        description: Availability of the respondent for Ph.2 discussion about AI.
+      - name: ECONOMIC_IMPACT_EXPECTATION
+        description: Response to the question "What do you expect the impact of AI to be on the economy?"
+      - name: GOVERNMENT_ACTION_SUGGESTION
+        description: |
+          Response to the question "What would you like the government to do about what you see as these impacts?"
+      - name: PERSONAL_AI_IMPACT
+        description: |
+          Response to the question "What has been your experience if any of the impact of AI on your own job
+          and workplace?"
+      - name: PUBLISHED_AT
+        description: Timestamp of when the survey was published.
+      - name: SUBMITTED_AT
+        description: Timestamp of when the survey was submitted.
+      - name: AGE
+        description: Age of the respondent.
+      - name: GENDER_CATEGORY
+        description: |
+          Response to the question 'What is your gender identity?'.
+      - name: RACE_ETHNICITY_CATEGORY
+        description: |
+          Response to the question 'What is your race or ethnicity?'.
