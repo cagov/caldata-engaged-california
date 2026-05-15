@@ -4,8 +4,8 @@ models:
     description: |
       This model extracts and transforms survey responses from the 'Impact of AI on work' survey.
     columns:
-      - name: idea_id
-        description: Unique identifier for each idea.
+      - name: survey_id
+        description: Unique identifier for each 'Impact of AI on work' survey.
       - name: survey_respondent_id
         description: User ID of the survey respondent.
       - name: published_at
@@ -43,6 +43,8 @@ models:
         description: Response to a question about whether the respondent is open to joining a live discussion about AI.
       - name: survey_fields_completed_count
         description: Count of how many survey questions the respondent answered.
+      - name: region
+        description: Region corresponding to the California county, as described by sortition strategy.
   - name: int_govocal_users_x_ai_survey
     description: |
       This model joins all non-admin users with their responses from the ai survey. Users who did not
@@ -52,6 +54,8 @@ models:
         description: Unique identifier for the Go Vocal user.
       - name: survey_respondent_id
         description: User ID of the survey respondent.
+      - name: survey_id
+        description: Unique identifier for each 'Impact of AI on work' survey.
       - name: age
         description: Response to the question 'What is your age?'
       - name: gender_array
@@ -78,6 +82,8 @@ models:
         description: Response to the question "What is your role at work?"
       - name: county
         description: Response to the question "Which county do you live in?"
+      - name: region
+        description: Region corresponding to the California county, as described by sortition strategy.
       - name: field_of_work
         description: Response to the question "Which best describes your field of work?"
       - name: economic_impact_expectation

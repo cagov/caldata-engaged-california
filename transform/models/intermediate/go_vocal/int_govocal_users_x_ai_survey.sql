@@ -37,6 +37,7 @@ count_user_demographic_fields as (
 select
     u.user_id,
     s.survey_respondent_id,
+    s.survey_id,
     u.age,
     u.gender_array,
     u.gender_category,
@@ -47,6 +48,7 @@ select
     s.current_work_status,
     s.role_at_work,
     s.county,
+    s.region,
     s.field_of_work,
     s.economic_impact_expectation,
     s.government_action_suggestion,
