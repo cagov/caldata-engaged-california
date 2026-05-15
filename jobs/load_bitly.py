@@ -1,5 +1,5 @@
-#The purpose of this loader script is to pull data from Bitly. It is only 
-# used to pull QR codes and their scan metrics, which are not available in the 
+# The purpose of this loader script is to pull data from Bitly. It is only
+# used to pull QR codes and their scan metrics, which are not available in the
 # standard bitlink endpoints, which we load in elsewhere.
 
 import logging
