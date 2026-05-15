@@ -28,9 +28,11 @@ extract_survey_responses as (
 )
 -- noqa: enable=LT05
 
+-- Go Vocal custom survey fields and user demographic fields are appended with 3 digit identifiers
+-- For example, 'woman' may be stored as 'woman_xyz'. These ids are removed and replaced with display-friendly text.
 select
     idea_id,
-    author_id,
+    author_id as survey_respondent_id,
     published_at,
     submitted_at,
     publication_status,
@@ -38,14 +40,47 @@ select
     updated_at,
     href,
     custom_field_values,
-    left(current_work_status, length(current_work_status) - 4) as current_work_status,
-    left(role_at_work, length(role_at_work) - 4) as role_at_work,
-    left(county, length(county) - 4) as county,
-    left(field_of_work, length(field_of_work) - 4) as field_of_work,
+    case left(current_work_status, length(current_work_status) - 4)
+        when 'yes_i_currently_work' then 'Yes, I currently work'
+        when
+            'no_i_don_t_currently_work_but_i_m_looking_for_work'
+            then 'No, I don''t currently work but I''m looking for work'
+        when 'no_i_m_retired_or_choose_not_to_work' then 'No, I''m retired or choose not to work'
+        when 'i_don_t_want_to_say' then 'I don''t want to say'
+    end as current_work_status,
+    case left(role_at_work, length(role_at_work) - 4)
+        when 'employee_non_management' then 'Employee (non-management)'
+        when 'manager' then 'Manager'
+        when 'executive_or_leader' then 'Executive or leader'
+        when 'business_owner_or_entrepreneur' then 'Business owner or entrepreneur'
+        when 'contractor_freelancer_or_gig_worker' then 'Contractor, freelancer, or gig worker'
+        when 'i_don_t_currently_work' then 'I don''t currently work'
+        when 'i_don_t_want_to_say' then 'I don''t want to say'
+    end as role_at_work,
+    case left(county, length(county) - 4)
+        when 'i_don_t_want_to_say' then 'I don''t want to say'
+        when 'i_live_outside_of_california' then 'I live outside of California'
+        else initcap(replace(left(county, length(county) - 4), '_', ' '))
+    end as county,
+    case left(field_of_work, length(field_of_work) - 4)
+        when 'agriculture_forestry_or_fishing' then 'Agriculture, forestry, or fishing'
+        when 'architecture_or_engineering' then 'Architecture or engineering'
+        when 'arts_entertainment_or_media' then 'Arts, entertainment, or media'
+        when 'corporate_ownership_or_governance' then 'Corporate ownership or governance'
+        when 'i_don_t_currently_work' then 'I don''t currently work'
+        when 'i_don_t_want_to_say' then 'I don''t want to say'
+        when 'information_technology' then 'Information technology'
+        when 'non_profit' then 'Non-profit'
+        when 'real_estate_or_leasing' then 'Real estate or leasing'
+        when 'retail_or_wholesale_trade' then 'Retail or wholesale trade'
+        when 'transportation_or_warehousing' then 'Transportation or warehousing'
+        when 'utilities_or_waste_management' then 'Utilities or waste management'
+        else initcap(left(field_of_work, length(field_of_work) - 4))
+    end as field_of_work,
     economic_impact_expectation,
     government_action_suggestion,
     personal_ai_impact,
-    left(availability_for_discussion, length(availability_for_discussion) - 4) as availability_for_discussion,
+    initcap(left(availability_for_discussion, length(availability_for_discussion) - 4)) as availability_for_discussion,
 
     -- Count the number of survey fields completed by each respondent.
     (
@@ -57,5 +92,5 @@ select
         + iff(government_action_suggestion is not null, 1, 0)
         + iff(personal_ai_impact is not null, 1, 0)
         + iff(availability_for_discussion is not null, 1, 0)
-    ) as fields_completed_count
+    ) as survey_fields_completed_count
 from extract_survey_responses
