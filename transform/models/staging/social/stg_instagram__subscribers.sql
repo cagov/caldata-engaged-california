@@ -5,24 +5,12 @@ WITH ig AS (
         _fivetran_synced,
         TO_DATE(_fivetran_synced) AS last_updated_date
     FROM {{ source('INSTAGRAM_BUSINESS', 'USER_HISTORY') }}
-),
-
-max_timestamp AS (
-    SELECT
-        instagram_account_id,
-        MAX_BY(_fivetran_synced, last_updated_date) AS max_time,
-        last_updated_date
-    FROM ig
-    GROUP BY ALL
 )
 
 SELECT
-    ig.instagram_account_id,
-    ig.snapshot_followers_count,
-    ig.last_updated_date
+    instagram_account_id,
+    snapshot_followers_count,
+    last_updated_date
 FROM ig
-INNER JOIN max_timestamp
-    ON
-        ig.last_updated_date = max_timestamp.last_updated_date
-        AND ig._fivetran_synced = max_timestamp.max_time
-ORDER BY ig.last_updated_date
+QUALIFY MAX_BY(_fivetran_synced, last_updated_date) OVER (PARTITION BY instagram_account_id) = _fivetran_synced
+ORDER BY last_updated_date
