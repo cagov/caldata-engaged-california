@@ -52,7 +52,7 @@ models:
         description: Timestamp of the last update of bitly data from Fivetran. Min of the '_fivetran_synced' field.
 
   - name: bitly_qr_scans
-    description: Timestamp of the last full update of bitly data from Fivetran.
+    description: QR code scan counts for Bitly QR codes, including QR code metadata. Only includes Strategy bitly Group.
     columns:
       - name: qr_code_id
         description: Unique identifier for the QR code
