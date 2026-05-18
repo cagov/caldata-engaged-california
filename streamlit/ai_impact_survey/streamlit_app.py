@@ -311,7 +311,7 @@ def _analyze_group(group_value: str, group_rows: pd.DataFrame, answer_col: str, 
 
 def collect_cited_ints(texts: list[str]) -> list[int]:
     """Return ordered list of unique integer cite IDs across all texts, in order of first appearance.
-    
+
     This is run as a post-AI analysis step to gather comment id citations and link them to cached survey results.
     """
     seen = []
