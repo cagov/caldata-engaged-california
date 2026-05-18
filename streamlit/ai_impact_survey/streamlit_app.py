@@ -694,6 +694,7 @@ with tab2:
         use_container_width=True,
         hide_index=True,
         column_config={
+            "IDEA_ID":                       st.column_config.TextColumn("Idea ID"),
             "REGION":                        st.column_config.TextColumn("Region"),
             "COUNTY":                        st.column_config.TextColumn("County"),
             "GENDER_CATEGORY":               st.column_config.TextColumn("Gender"),
