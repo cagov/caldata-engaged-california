@@ -147,6 +147,51 @@ sources:
             description: Indicates if this is the user's primary email
           - name: IS_VERIFIED
             description: Indicates if the email address is verified
+      - name: QR_CODE_IDS
+        description: Bitly shortened links and their metadata
+        columns:
+          - name: QR_CODE_ID
+            description: Unique identifier for the QR code
+          - name: TITLE
+            description: Title of the QR code
+          - name: QR_CODE_TYPE
+            description: Type of the QR code, e.g. 'bitlink' or 'long_url'
+          - name: LONG_URL
+            description: The original long URL
+          - name: BITLINK_ID
+            description: Unique identifier for the bitlink
+          - name: IS_CUSTOMIZED
+            description: Indicates if the QR code is customized
+          - name: ARCHIVED
+            description: Indicates if the QR code is archived
+          - name: CREATED_BY
+            description: The user id who created the QR code
+          - name: CREATED
+            description: Timestamp when the QR code was created
+          - name: UPDATED
+            description: Timestamp when the QR code was last updated
+          - name: _LOAD_DATE
+            description: Date when the record was loaded
+          - name: _LOADED_AT
+            description: Timestamp when the record was loaded
+      - name: QR_CODE_SCAN_METRICS
+        description: Bitly shortened links and their metadata
+        columns:
+          - name: QR_CODE_ID
+            description: Unique identifier for the QR code
+          - name: TOTAL_SCANS
+            description: Total number of scans for the QR code
+          - name: UNIT
+            description: Unit of time for lookback window
+          - name: UNITS
+            description: Number of units for the lookback window
+          - name: UNIT_REFERENCE
+            description: Start time for lookback window
+          - name: _LOAD_DATE
+            description: Date when the record was loaded
+          - name: _LOADED_AT
+            description: Timestamp when the record was loaded
+
   - name: BITLY_CALINNOVATE
     database: RAW_ENGCA_PRD
     schema: BITLY_CALINNOVATE
