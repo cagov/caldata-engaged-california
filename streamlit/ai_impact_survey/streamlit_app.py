@@ -73,6 +73,7 @@ DIMENSION_COLS = {
     "Field of Work":  "FIELD_OF_WORK",
     "Role at Work":   "ROLE_AT_WORK",
     "Work Status":    "CURRENT_WORK_STATUS",
+    "Region":         "REGION",
     "County":         "COUNTY",
 }
 
@@ -205,14 +206,13 @@ def load_survey_data() -> pd.DataFrame:
             s.ECONOMIC_IMPACT_EXPECTATION,
             s.GOVERNMENT_ACTION_SUGGESTION,
             s.PERSONAL_AI_IMPACT,
-            s.PUBLISHED_AT,
-            s.SUBMITTED_AT,
-            u.AGE,
-            u.GENDER_CATEGORY,
-            u.RACE_ETHNICITY_CATEGORY
-        FROM TRANSFORM_ENGCA_PRD.GOVOCAL.INT_GOVOCAL_AI_SURVEY s
-        LEFT JOIN TRANSFORM_ENGCA_PRD.GOVOCAL.INT_GOVOCAL_USERS_X_AI_SURVEY u
-            ON u.USER_ID = s.SURVEY_RESPONDENT_ID
+            --s.PUBLISHED_AT,
+            -- s.SUBMITTED_AT,
+            S.AGE,
+            S.REGION,
+            S.GENDER_CATEGORY,
+            S.RACE_ETHNICITY_CATEGORY
+        FROM ANALYTICS_ENGCA_PRD.GOVOCAL.GOVOCAL_AI_SURVEY_RESPONDENTS s
         WHERE s.PUBLICATION_STATUS = 'published'
     """).to_pandas()
     for col in ("AGE", "GENDER_CATEGORY", "RACE_ETHNICITY_CATEGORY"):
@@ -359,6 +359,7 @@ FILTER_COLS = {
     "Field of Work":            "FIELD_OF_WORK",
     "Role at Work":             "ROLE_AT_WORK",
     "Work Status":              "CURRENT_WORK_STATUS",
+    "Region":                   "REGION",
     "County":                   "COUNTY",
     "Available for Discussion": "AVAILABILITY_FOR_DISCUSSION",
 }
@@ -641,6 +642,7 @@ with tab2:
     st.caption(f"Showing {len(filtered_df):,} of {len(df):,} responses based on current sidebar filters.")
 
     display_cols = [
+        "REGION",
         "COUNTY",
         "FIELD_OF_WORK",
         "ROLE_AT_WORK",
@@ -656,6 +658,7 @@ with tab2:
         use_container_width=True,
         hide_index=True,
         column_config={
+            "REGION":                        st.column_config.TextColumn("Region"),
             "COUNTY":                        st.column_config.TextColumn("County"),
             "FIELD_OF_WORK":                 st.column_config.TextColumn("Field of Work"),
             "ROLE_AT_WORK":                  st.column_config.TextColumn("Role at Work"),
@@ -678,10 +681,6 @@ with tab3:
 
     if not filtered_df.empty:
         export_df = filtered_df.copy()
-        for ts_col in ("PUBLISHED_AT", "SUBMITTED_AT"):
-            if ts_col in export_df.columns and pd.api.types.is_datetime64_any_dtype(export_df[ts_col]):
-                export_df[ts_col] = export_df[ts_col].dt.strftime("%Y-%m-%d %H:%M:%S")
-
         csv_data = export_df.to_csv(index=False)
         filename = f"engagedca_ai_survey_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
 
