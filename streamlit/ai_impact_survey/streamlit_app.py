@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from dotenv import load_dotenv
 import streamlit as st
 import os
@@ -13,7 +14,7 @@ from datetime import datetime
 # ---------------------------------------------------------------------------
 
 def get_session():
-    load_dotenv()
+    load_dotenv()  # LLM model names are stored here, optionally local Snowflake creds too
     try:
         # If running inside Snowflake
         from snowflake.snowpark.context import get_active_session
@@ -41,6 +42,8 @@ llm_model_high = os.environ.get("LLM_MODEL_HIGH", "")
 llm_model_med  = os.environ.get("LLM_MODEL_MED",  "")
 llm_model_low  = os.environ.get("LLM_MODEL_LOW",  "")
 
+# Hardcoded AI cost formulas used to estimate analysis costs for users
+# They're not exact, but they're not far off either.
 COST_PER_SNOWFLAKE_CREDIT = 3.16
 MODEL_CREDIT_COSTS = {
     llm_model_high: 2.55,
@@ -114,13 +117,9 @@ MAP_PROMPT = (
     "citation tags. Be concise — this summary will be used as input to a larger synthesis."
 )
 
+
+# Pre-packaged analysis prompts
 PROMPTS = {
-    # TODO:
-    ## Ask Michael Marks to review?
-    ## Look into best practices
-    ## Ensure prompts are specific to the chosen question and call out when no relevant responses
-    ## Add race, gender, and age filters
-    ## Add rollups to match demographics to sortition strat
     "Thematic Analysis": (
         "Perform an open-coding analysis on these survey responses and identify 3–6 emerging themes.\n\n"
         "For each theme, use this format:\n\n"
@@ -190,6 +189,18 @@ st.markdown(
 
 
 # ---------------------------------------------------------------------------
+# Types
+# ---------------------------------------------------------------------------
+
+@dataclass
+class GroupAnalysis:
+    group_value: str
+    n: int
+    text: str
+    tokens: int
+
+
+# ---------------------------------------------------------------------------
 # Data loading & analysis helpers
 # ---------------------------------------------------------------------------
 
@@ -217,6 +228,7 @@ def load_survey_data() -> pd.DataFrame:
     """).to_pandas()
     for col in ("AGE", "GENDER_CATEGORY", "RACE_ETHNICITY_CATEGORY"):
         if col in df.columns:
+            # Regex to strip out parenthetical substrings that make categories more cluttered
             df[col] = df[col].str.replace(r'\s*\([^)]*\)', '', regex=True).str.strip()
     return df
 
@@ -226,7 +238,11 @@ def _esc(s: str) -> str:
     return s.replace("'", "''")
 
 
-def assemble_chunk_text(rows: pd.DataFrame, question_col: str, uuid_to_int: dict) -> str:
+def assemble_chunk_text(rows: pd.DataFrame, question_col: str, uuid_to_int: dict[str, int]) -> str:
+    """Concatenates data from a column of a Dataframe into a single formatted string.
+
+    Row ids are converted from uuid to ints to reduce tokens and context size.
+    """
     parts = []
     for _, row in rows.iterrows():
         val = row.get(question_col)
@@ -236,9 +252,14 @@ def assemble_chunk_text(rows: pd.DataFrame, question_col: str, uuid_to_int: dict
     return "; ".join(parts)
 
 
-def run_cortex_complete(assembled_text: str, model: str, user_prompt: str, synthesis: bool = False) -> dict:
+def run_cortex_complete(assembled_text: str, model: str, user_prompt: str, synthesis: bool = False):
+    """Core function that runs the AI analysis of assembled survey text.
+
+    Both first-pass analysis on sub-groups and second-pass sythesis are supported by this function,
+    based on the value of `synthesis`. The only difference is the system prompt passed to the model.
+    """
     sys_prompt = SYNTHESIS_SYSTEM_PROMPT if synthesis else SYSTEM_PROMPT
-    full_user = f"{user_prompt}\n\nResponses:\n{assembled_text}" if assembled_text else user_prompt
+    full_user = f"{user_prompt}\n\nResponses:\n{assembled_text}"
     query = f"""
     SELECT SNOWFLAKE.CORTEX.COMPLETE(
         '{_esc(model)}',
@@ -253,10 +274,10 @@ def run_cortex_complete(assembled_text: str, model: str, user_prompt: str, synth
     return json.loads(row["RESULT"])
 
 
-def build_synthesis_prompt(dimension_label: str, sub_results: list, user_prompt: str) -> str:
+def build_synthesis_prompt(dimension_label: str, sub_results: list[GroupAnalysis], user_prompt: str) -> str:
     sub_texts = "\n\n".join(
-        f"**{group_value}** ({n} responses):\n{text}"
-        for group_value, n, text in sub_results
+        f"**{r.group_value}** ({r.n} responses):\n{r.text}"
+        for r in sub_results
     )
     return (
         f"The following are analyses of survey responses broken down by {dimension_label}, "
@@ -272,20 +293,27 @@ def build_synthesis_prompt(dimension_label: str, sub_results: list, user_prompt:
     )
 
 
-def _analyze_group(group_value, group_rows, answer_col, uuid_to_int, model, dimension_label):
+def _analyze_group(group_value: str, group_rows: pd.DataFrame, answer_col: str, uuid_to_int: dict[str, int], model: str, dimension_label: str) -> GroupAnalysis:
     """Run one map-pass LLM call for a single demographic group. Safe to call from a thread."""
     chunk_text   = assemble_chunk_text(group_rows, answer_col, uuid_to_int)
     group_prompt = (
         f"The following responses are from respondents in this group — "
         f"{dimension_label}: **{group_value}**.\n\n{MAP_PROMPT}"
     )
-    result  = run_cortex_complete(chunk_text, model, group_prompt)
-    tokens  = result.get("usage", {}).get("total_tokens", 0)
-    return group_value, len(group_rows), result["choices"][0]["messages"], tokens
+    result = run_cortex_complete(chunk_text, model, group_prompt)
+    return GroupAnalysis(
+        group_value=group_value,
+        n=len(group_rows),
+        text=result["choices"][0]["messages"],
+        tokens=result["usage"]["total_tokens"],
+    )
 
 
-def collect_cited_ints(texts: list) -> list:
-    """Return ordered list of unique integer cite IDs across all texts, in order of first appearance."""
+def collect_cited_ints(texts: list[str]) -> list[int]:
+    """Return ordered list of unique integer cite IDs across all texts, in order of first appearance.
+    
+    This is run as a post-AI analysis step to gather comment id citations and link them to cached survey results.
+    """
     seen = []
     for text in texts:
         if not text:
@@ -297,7 +325,7 @@ def collect_cited_ints(texts: list) -> list:
     return seen
 
 
-def apply_global_citations(text: str, global_cite_map: dict) -> str:
+def apply_global_citations(text: str, global_cite_map: dict[int, int]) -> str:
     """Replace [cite:N] tags with anchor-linked footnote markers using a global numbering map."""
     def replacer(m):
         n = int(m.group(1))
@@ -333,6 +361,7 @@ st.markdown(
     "Use the sidebar to filter by demographics, then run LLM-powered analysis on the filtered responses."
 )
 
+# TODO: these summary stats could probably be fleshed out with more informative metrics
 col1, col2, col3, col4, col5 = st.columns(5)
 with col1:
     st.metric("Total Responses", len(df), delta_color="off")
@@ -367,7 +396,7 @@ FILTER_COLS = {
 with st.sidebar:
     st.header("Demographic Filters")
     st.caption("Leave blank to include all values.")
-    selected_filters: dict = {}
+    selected_filters: dict[str, list[str]] = {}
     for label, col in FILTER_COLS.items():
         options = sorted(df[col].dropna().unique().tolist())
         selected_filters[col] = st.multiselect(label, options)
@@ -497,7 +526,7 @@ with tab1:
             st.error("No LLM model configured.")
         elif respondents_with_answers.empty:
             st.warning("No responses match the selected question and filters.")
-        else:
+        else:  # Run analysis
             all_ids = respondents_with_answers["IDEA_ID"].tolist()
             uuid_to_int = {uuid: i + 1 for i, uuid in enumerate(all_ids)}
             int_to_uuid  = {v: k for k, v in uuid_to_int.items()}
@@ -508,13 +537,13 @@ with tab1:
                 key=lambda g: -len(g[1]),
             )
 
-            sub_results  = []
+            sub_results: list[GroupAnalysis] = []
             total_tokens = 0
             total_cost   = 0.0
 
             # Pre-filter groups to those with at least one answer
             valid_groups = [
-                (gv, gdf[gdf[answer_col].notna() & (gdf[answer_col].str.strip() != "")])
+                (str(gv), gdf[gdf[answer_col].notna() & (gdf[answer_col].str.strip() != "")])
                 for gv, gdf in groups
             ]
             valid_groups = [(gv, rows) for gv, rows in valid_groups if not rows.empty]
@@ -525,6 +554,8 @@ with tab1:
                 f"{selected_dimension_label} group{'s' if len(valid_groups) != 1 else ''}…",
                 expanded=True,
             ) as status:
+                # All this complexity is to enable executing sub-group analysis in parallel.
+                # This *substantially* speeds up execution while also keeping context manageable
                 futures = {}
                 with ThreadPoolExecutor(max_workers=min(len(valid_groups), 12)) as executor:
                     for group_value, group_rows in valid_groups:
@@ -538,17 +569,18 @@ with tab1:
                     for future in as_completed(futures):
                         group_value = futures[future]
                         try:
-                            gv, n, analysis_text, tokens = future.result()
-                            total_tokens += tokens
-                            total_cost   += (tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
-                            sub_results.append((gv, n, analysis_text))
-                            st.write(f"✓ **{gv}** ({n} responses)")
+                            ga = future.result()
+                            total_tokens += ga.tokens
+                            total_cost   += (ga.tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
+                            sub_results.append(ga)
+                            st.write(f"✓ **{ga.group_value}** ({ga.n} responses)")
                         except Exception as e:
                             st.warning(f"Analysis failed for '{group_value}': {e}")
 
                 # Restore original group order (largest first)
-                sub_results.sort(key=lambda r: group_order.index(r[0]))
+                sub_results.sort(key=lambda r: group_order.index(r.group_value))
 
+                # With first pass analysis complete, we synthesize the results into a final output.
                 synthesis_text = None
                 if len(sub_results) > 1:
                     st.write("Synthesizing results across groups…")
@@ -559,7 +591,7 @@ with tab1:
                             synthesis=True,
                         )
                         synthesis_text  = synth_result["choices"][0]["messages"]
-                        tokens          = synth_result.get("usage", {}).get("total_tokens", 0)
+                        tokens          = synth_result["usage"]["total_tokens"]
                         total_tokens   += tokens
                         total_cost     += (tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
                     except Exception as e:
@@ -573,12 +605,12 @@ with tab1:
 
             if not sub_results:
                 st.warning("No analysis results returned.")
-            else:
+            else:  # Display results
                 n_groups = len(sub_results)
-                n_total  = sum(n for _, n, _ in sub_results)
+                n_total  = sum(r.n for r in sub_results)
 
                 # Build global citation map from only the text that is displayed to the user
-                displayed_text  = synthesis_text if synthesis_text else sub_results[0][2]
+                displayed_text  = synthesis_text if synthesis_text else sub_results[0].text
                 all_cited_ints  = collect_cited_ints([displayed_text])
                 global_cite_map = {n: i + 1 for i, n in enumerate(all_cited_ints)}
                 total_citations = len(all_cited_ints)
@@ -599,10 +631,9 @@ with tab1:
                     # Single group — show its analysis directly
                     if n_groups == 1:
                         st.caption(f"Only one {selected_dimension_label} group found — showing direct analysis.")
-                    _, _, solo_text = sub_results[0]
-                    st.markdown(apply_global_citations(solo_text, global_cite_map), unsafe_allow_html=True)
+                    st.markdown(apply_global_citations(sub_results[0].text, global_cite_map), unsafe_allow_html=True)
 
-                if total_citations:
+                if total_citations:  # Generate citation HTML
                     st.divider()
                     st.markdown("**Cited Responses**")
                     st.caption(
@@ -642,11 +673,16 @@ with tab2:
     st.caption(f"Showing {len(filtered_df):,} of {len(df):,} responses based on current sidebar filters.")
 
     display_cols = [
+        "IDEA_ID",
         "REGION",
         "COUNTY",
+        "GENDER_CATEGORY",
+        "AGE",
+        "RACE_ETHNICITY_CATEGORY",
         "FIELD_OF_WORK",
         "ROLE_AT_WORK",
         "CURRENT_WORK_STATUS",
+        "AVAILABILITY_FOR_DISCUSSION",
         "ECONOMIC_IMPACT_EXPECTATION",
         "GOVERNMENT_ACTION_SUGGESTION",
         "PERSONAL_AI_IMPACT",
@@ -660,9 +696,13 @@ with tab2:
         column_config={
             "REGION":                        st.column_config.TextColumn("Region"),
             "COUNTY":                        st.column_config.TextColumn("County"),
+            "GENDER_CATEGORY":               st.column_config.TextColumn("Gender"),
+            "AGE":                           st.column_config.TextColumn("Age"),
+            "RACE_ETHNICITY_CATEGORY":       st.column_config.TextColumn("Race/Ethnicity"),
             "FIELD_OF_WORK":                 st.column_config.TextColumn("Field of Work"),
             "ROLE_AT_WORK":                  st.column_config.TextColumn("Role at Work"),
             "CURRENT_WORK_STATUS":           st.column_config.TextColumn("Work Status"),
+            "AVAILABILITY_FOR_DISCUSSION":   st.column_config.TextColumn("Available for Discussion"),
             "ECONOMIC_IMPACT_EXPECTATION":   st.column_config.TextColumn("Economic Impact", width="large"),
             "GOVERNMENT_ACTION_SUGGESTION":  st.column_config.TextColumn("Government Action", width="large"),
             "PERSONAL_AI_IMPACT":            st.column_config.TextColumn("Personal AI Impact", width="large"),
