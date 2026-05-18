@@ -1,5 +1,6 @@
-with scan_metrics as (select * from RAW_ENGCA_PRD.BITLY.QR_CODE_SCAN_METRICS),
-qr_codes as (select * from RAW_ENGCA_PRD.BITLY.QR_CODE_IDS)
+with scan_metrics as (select * from {{ ref('stg_bitly_qr_scans') }}),
+
+qr_codes as (select * from {{ ref('stg_bitly_qr_codes') }})
 
 
 select
@@ -13,7 +14,7 @@ select
     scan_metrics.total_scans,
     greatest(qr_codes._loaded_at, scan_metrics._loaded_at) as _loaded_at
 
-from qr_codes 
-left join 
-scan_metrics 
-on qr_codes.qr_code_id = scan_metrics.qr_code_id
+from qr_codes
+left join
+    scan_metrics
+    on qr_codes.qr_code_id = scan_metrics.qr_code_id
