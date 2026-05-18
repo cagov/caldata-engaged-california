@@ -30,7 +30,7 @@ ig_media_join as (
         TO_VARCHAR(a.carousel_album_id) as carousel_album_id,
         a.is_comment_enabled,
         a.is_story,
-        TO_DATE(a.created_time) as created_time,
+        TO_TIMESTAMP(a.created_time) as created_time,
         b.*
     from ig_media_history as a
     inner join ig_media_insights as b on a.media_id = b.media_id
