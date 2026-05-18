@@ -54,5 +54,19 @@ models:
   - name: bitly_qr_scans
     description: Timestamp of the last full update of bitly data from Fivetran.
     columns:
-      - name: last_update
-        description: Timestamp of the last update of bitly data from Fivetran. Min of the '_fivetran_synced' field.
+      - name: qr_code_id
+        description: Unique identifier for the QR code
+      - name: qr_code_type
+        description: Type of the QR code
+      - name: long_url
+        description: Original long URL
+      - name: bitlink_id
+        description: Associated Bitly link ID
+      - name: created_time
+        description: Timestamp of the creation of the QR code
+      - name: updated_time
+        description: Timestamp of the last update of the QR code
+      - name: total_scans
+        description: Total number of scans for the QR code
+      - name: _loaded_at
+        description: Timestamp when the QR code data was loaded into Snowflake
