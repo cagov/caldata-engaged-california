@@ -7,20 +7,10 @@ with ig as (select * from {{ ref("stg_instagram__media_insights") }})
 
 --the media insights table has multiple rows per media/post id (every time a metrics value changes)
 --so we want to pick the most recent numbers per id
-max_sync_date as (
-    select
-        media_id,
-        MAX(_fivetran_synced) as max_sync_date
-    from ig
-    group by media_id
-),
-
 ig_media_insights as (
-    select ig.*
+    select *
     from ig
-    inner join max_sync_date on
-        ig.media_id = max_sync_date.media_id
-        and ig._fivetran_synced = max_sync_date.max_sync_date
+    qualify MAX(_fivetran_synced) over (partition by media_id) = _fivetran_synced
 ),
 
 --we want to be able to show metadata about posts next to the media insights metrics
