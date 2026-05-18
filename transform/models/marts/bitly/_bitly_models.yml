@@ -58,6 +58,8 @@ models:
         description: Unique identifier for the QR code
       - name: qr_code_type
         description: Type of the QR code
+      - name: title
+        description: Title of the QR code
       - name: long_url
         description: Original long URL
       - name: bitlink_id
