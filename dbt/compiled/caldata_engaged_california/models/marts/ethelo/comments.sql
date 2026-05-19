@@ -1,0 +1,1 @@
+select * from TRANSFORM_ENGCA_PRD.ethelo.stg_comments

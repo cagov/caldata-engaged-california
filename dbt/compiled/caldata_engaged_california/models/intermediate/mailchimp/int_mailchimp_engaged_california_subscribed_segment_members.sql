@@ -1,0 +1,91 @@
+--ODI will define segments using a combination of Interests, Tags, Merge Fields, and Activities
+--All segments built in Mailchimp Paid accounts are 'dynamic' segments, which are unavailable
+--to pull directly from the API. So we have to recreate them by audience definition here.
+
+--This view contains logic specific to the Engaged California Mailchimp audience ("list").
+
+with
+subscribers as (
+    select * from TRANSFORM_ENGCA_PRD.mailchimp.stg_mailchimp_list_members
+    where
+        subscribe_status = 'subscribed' --only include subscribed members
+        and list_name = 'Engaged California' --only include members from the Engaged California list
+),
+
+interests as (
+    select * from TRANSFORM_ENGCA_PRD.mailchimp.stg_mailchimp_interest_members
+),
+
+member_merge_fields as (
+    select
+        id,
+        merge_evaczone
+    from RAW_ENGCA_PRD.MAILCHIMP.MEMBER
+    where
+        merge_evaczone is not null
+        and merge_evaczone != '' --only include members with an evaczone merge field value
+),
+
+--define any segments that rely on interests here:
+interest_segments as (
+    select
+        subscribers.list_name,
+        subscribers.list_id,
+        subscribers.unique_email_id,
+        subscribers._fivetran_synced,
+        case
+            when interests.interest_name = 'Los Angeles fires recovery: Palisades' then 'palisadesphase1'
+            when interests.interest_name = 'Los Angeles fires recovery: Eaton' then 'eatonphase1'
+            when interests.interest_name = 'Future topics' then 'futurephase1'
+            else 'nointerest'
+        end as segment
+    from subscribers
+    left join interests --not all subscribers have an interest, we want to count the ones that don't too
+        on
+            subscribers.member_id = interests.member_id
+            and subscribers.list_id = interests.list_id
+),
+
+--define any segments that rely on merge fields here:
+mergefield_segments as (
+    select
+        subscribers.list_name,
+        subscribers.list_id,
+        subscribers.unique_email_id,
+        subscribers._fivetran_synced,
+        case
+            when member_merge_fields.merge_evaczone = 'Yes, in the Eaton fire evacuation zone' then 'eatonphase2'
+            when
+                member_merge_fields.merge_evaczone = 'Yes, in the Palisades fire evacuation zone'
+                then 'palisadesphase2'
+            when member_merge_fields.merge_evaczone = 'No' then 'nofirephase2'
+        end as segment -- currently, this works because users MUST select an option
+    --and can ONLY select one value in this field
+    from subscribers
+    inner join member_merge_fields --only include members with a merge field value,
+    --since the interests cte already captures those without a value
+        on subscribers.member_id = member_merge_fields.id
+),
+
+segment_components as (
+    select * from interest_segments
+    union all
+    select * from mergefield_segments
+),
+
+--create a string that captures all segments a member is a part of:
+basic_segments as (
+    select
+        list_name,
+        list_id,
+        unique_email_id,
+        listagg(distinct segment, '_') within group (
+            order by segment
+        ) as segments,
+        max(_fivetran_synced) as max_fivetran_sync_date
+    from segment_components
+    group by list_name, list_id, unique_email_id
+)
+
+--final output
+select * from basic_segments
