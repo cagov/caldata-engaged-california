@@ -67,3 +67,29 @@ models:
         description: Indicates whether the Facebook post is a status post.
       - name: IS_LINK_POST
         description: Indicates whether the Facebook post is a link post.
+  - name: instagram_business_post_metrics
+    description: |
+      Final model that aggregates key engagement and video metrics for each Instagram post.
+    columns:
+      - name: PERMALINK
+        description: URL to instagram post.
+      - name: MEDIA_TYPE
+      - name: MEDIA_PRODUCT_TYPE
+      - name: MEDIA_URL
+        description: URL to the media contained within an instagram post.
+      - name: CAPTION
+      - name: CREATED_TIME
+      - name: MEDIA_ID
+      - name: LIKE_COUNT
+      - name: COMMENT_COUNT
+      - name: VIDEO_PHOTO_REACH
+      - name: VIDEO_PHOTO_SAVED
+      - name: CAROUSEL_ALBUM_ENGAGEMENT
+      - name: CAROUSEL_ALBUM_REACH
+      - name: REEL_REACH
+      - name: VIDEO_PHOTO_ENGAGEMENT
+      - name: REEL_COMMENTS
+      - name: REEL_LIKES
+      - name: REEL_SHARES
+      - name: REEL_TOTAL_INTERACTIONS
+      - name: _FIVETRAN_SYNCED
