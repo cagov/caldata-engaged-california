@@ -1,10 +1,8 @@
 # The purpose of this loader script is to pull data from Bitly.
 # It has two main functions:
-# Pull QR codes and their scan metrics, which are not available in the
-# standard bitlink endpoints available through Fivetran.
+# Pull QR codes and their scan metrics.
 #
-# It also pulls all bitlinks and their click metrics directly from the API,
-# bypassing Fivetran, to validate against the Bitly console when there is a discrepancy.
+# Pull bitlinks and their click metrics.
 
 import logging
 import os
