@@ -27,8 +27,6 @@ REQUEST_TIMEOUT = int(os.environ.get("BITLY_REQUEST_TIMEOUT", 30))
 RETRY_TOTAL = int(os.environ.get("BITLY_RETRY_TOTAL", 5))
 RETRY_BACKOFF = float(os.environ.get("BITLY_RETRY_BACKOFF", 1.0))
 RETRY_STATUS_FORCELIST = [429, 500, 502, 503, 504]
-BITLY_CREATED_AFTER = os.environ.get("BITLY_CREATED_AFTER")  # e.g. "2024-01-01T00:00:00+0000"
-BITLY_ARCHIVED = os.environ.get("BITLY_ARCHIVED", "off")  # "on", "off", or "both"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -169,8 +167,6 @@ def fetch_scan_metrics(
 def fetch_bitlinks_for_group(
     session: requests.Session,
     group_guid: str,
-    created_after: str | None = None,  # ISO 8601, e.g. "2024-01-01T00:00:00+0000"
-    archived: str = "off",             # "on", "off", or "both"
 ) -> list[dict]:
     """
     Page through GET /v4/groups/{group_guid}/bitlinks and return one record
@@ -180,11 +176,7 @@ def fetch_bitlinks_for_group(
     url = f"{BITLY_API_BASE}/groups/{group_guid}/bitlinks"
     params: dict[str, Any] = {
         "size": 100,
-        "archived": archived,
     }
-
-    if created_after:
-        params["created_after"] = created_after
 
     records: list[dict] = []
     page = 0
@@ -351,8 +343,6 @@ def main() -> None:
         bitlink_records = fetch_bitlinks_for_group(
             session,
             BITLY_GROUP_GUID,
-            created_after=BITLY_CREATED_AFTER,
-            archived=BITLY_ARCHIVED,
         )
 
         if not bitlink_records:
