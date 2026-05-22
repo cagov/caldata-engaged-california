@@ -170,6 +170,8 @@ sources:
             description: Timestamp when the QR code was created
           - name: UPDATED
             description: Timestamp when the QR code was last updated
+          - name: _LOAD_DATE
+            description: Date when the record was loaded
           - name: _LOADED_AT
             description: Timestamp when the record was loaded
       - name: QR_CODE_SCAN_METRICS
@@ -187,6 +189,8 @@ sources:
             description: Start time for lookback window
           - name: _LOADED_AT
             description: Timestamp when the record was loaded
+          - name: _LOAD_DATE
+            description: Date when the record was loaded
       - name: BITLINKS_API
         description: Bitly shortened links and their metadata
         columns:
