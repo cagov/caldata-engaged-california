@@ -22,3 +22,7 @@ dev = [
     "sqlfluff>=3.4.1",
     "sqlfluff-templater-dbt>=3.4.1",
 ]
+streamlit = [
+    "streamlit>=1.40",
+    "snowflake-snowpark-python>=1.20",
+]
