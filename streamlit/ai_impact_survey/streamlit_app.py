@@ -224,7 +224,6 @@ def load_survey_data() -> pd.DataFrame:
             S.GENDER_CATEGORY,
             S.RACE_ETHNICITY_CATEGORY
         FROM ANALYTICS_ENGCA_PRD.GOVOCAL.GOVOCAL_AI_SURVEY_RESPONDENTS s
-        WHERE s.PUBLICATION_STATUS = 'published'
     """).to_pandas()
     for col in ("AGE", "GENDER_CATEGORY", "RACE_ETHNICITY_CATEGORY"):
         if col in df.columns:
