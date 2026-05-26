@@ -441,18 +441,15 @@ with tab1:
         st.warning("No responses match the current filters.")
         st.stop()
 
-    # Question and dimension selectors
-    col_q, col_dim = st.columns(2)
-    with col_q:
-        selected_question = st.selectbox(
-            "Survey Question to Analyze",
-            list(QUESTION_COL_MAP.keys()),
-        )
-    with col_dim:
-        selected_dimension_label = st.selectbox(
-            "Analyze by",
-            list(DIMENSION_COLS.keys()),
-        )
+    selected_question = st.selectbox(
+        "Survey Question to Analyze *",
+        list(QUESTION_COL_MAP.keys()),
+    )
+    selected_dimension_label = st.selectbox(
+        "Analyze by *",
+        list(DIMENSION_COLS.keys()),
+        help="Determines the primary dimension the LLM will compare and contrast in its analysis.",
+    )
     answer_col = QUESTION_COL_MAP[selected_question]
     dimension_col = DIMENSION_COLS[selected_dimension_label]
 
