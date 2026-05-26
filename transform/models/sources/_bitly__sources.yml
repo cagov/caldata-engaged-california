@@ -187,8 +187,44 @@ sources:
             description: Number of units for the lookback window
           - name: UNIT_REFERENCE
             description: Start time for lookback window
+          - name: _LOADED_AT
+            description: Timestamp when the record was loaded
           - name: _LOAD_DATE
             description: Date when the record was loaded
+      - name: BITLINKS_API
+        description: Bitly shortened links and their metadata
+        columns:
+          - name: BITLINK_ID
+            description: Unique identifier for the Bitly link
+          - name: TITLE
+            description: Title of the Bitly link
+          - name: LONG_URL
+            description: The original long URL
+          - name: LINK
+            description: The Bitly short link
+          - name: ARCHIVED
+            description: Indicates if the Bitly link is archived
+          - name: CREATED_BY
+            description: User who created the Bitly link
+          - name: CREATED_AT
+            description: Timestamp when the Bitly link was created
+          - name: CUSTOM_BITLINKS
+            description: Array of custom shortlinks linked to this bitlink
+          - name: TAGS
+            description: Tags associated with the Bitly link
+          - name: _LOADED_AT
+            description: Timestamp when the record was loaded
+      - name: BITLINK_CLICK_METRICS_API
+        description: Bitly shortened links and their metrics
+        columns:
+          - name: BITLINK_ID
+            description: Unique identifier for the bitlink
+          - name: TOTAL_CLICKS
+            description: Total number of scans for the bitlink
+          - name: UNIT
+            description: Unit of time for lookback window
+          - name: UNITS
+            description: Number of units for the lookback window
           - name: _LOADED_AT
             description: Timestamp when the record was loaded
 

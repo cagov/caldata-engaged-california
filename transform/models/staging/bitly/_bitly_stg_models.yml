@@ -100,3 +100,35 @@ models:
         description: Total number of scans for the QR code
       - name: _loaded_at
         description: Timestamp when the record was loaded
+
+  - name: stg_bitly_links_api
+    description: Bitly shortened links and their metadata, pulled diretly from the Bitly API.
+    columns:
+      - name: bitlink_id
+        description: Unique identifier for the Bitly link
+      - name: title
+        description: Title of the Bitly link
+      - name: long_url
+        description: The original long URL
+      - name: link
+        description: The Bitly short link
+      - name: archived
+        description: Indicates if the Bitly link is archived
+      - name: created_time
+        description: Timestamp when the Bitly link was created
+      - name: custom_bitlinks
+        description: Array of custom shortlinks linked to this bitlink
+      - name: tags
+        description: Tags associated with the Bitly link
+      - name: _loaded_at
+        description: Timestamp when the record was loaded
+
+  - name: stg_bitly_links_metrics_api
+    description: Bitly shortened links and their metrics
+    columns:
+      - name: bitlink_id
+        description: Unique identifier for the Bitly link
+      - name: total_clicks
+        description: Total number of clicks for the Bitly link
+      - name: _loaded_at
+        description: Timestamp when the record was loaded
