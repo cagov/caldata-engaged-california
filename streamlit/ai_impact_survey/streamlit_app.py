@@ -242,12 +242,12 @@ def assemble_chunk_text(rows: pd.DataFrame, question_col: str, uuid_to_int: dict
 
     Row ids are converted from uuid to ints to reduce tokens and context size.
     """
-    parts = []
-    for _, row in rows.iterrows():
-        val = row.get(question_col)
-        if pd.notna(val) and str(val).strip():
-            n = uuid_to_int[row["IDEA_ID"]]
-            parts.append(f"[cite:{n}] {str(val).strip()}")
+    mask = rows[question_col].notna() & (rows[question_col].str.strip() != "")
+    filtered = rows[mask]
+    if filtered.empty:
+        return ""
+    cite_ids = filtered["IDEA_ID"].map(uuid_to_int)
+    parts = "[cite:" + cite_ids.astype(str) + "] " + filtered[question_col].str.strip()
     return "; ".join(parts)
 
 
