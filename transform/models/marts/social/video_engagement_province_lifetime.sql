@@ -42,7 +42,8 @@ final as (
         sum(engaged_views) as engaged_views_total,
         sum(watch_time_minutes) as watch_time_minutes_total,
         max(video_duration_seconds) as video_duration_seconds,
-        round(sum(watch_time_minutes) * 60.0 / nullif(max(video_duration_seconds), 0) * 100, 1) as watch_time_normalized_pct
+        round(sum(watch_time_minutes) * 60.0 / nullif(max(video_duration_seconds), 0) * 100, 1)
+            as watch_time_normalized_pct
     from joined
     group by channel_id, video_id, snippet_title, privacy_status, country_code, province_code
 

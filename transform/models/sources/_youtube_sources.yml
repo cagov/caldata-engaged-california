@@ -6,7 +6,6 @@ sources:
     schema: YOUTUBE_ANALYTICS
     description: Data from Youtube loaded into Snowflake via Fivetran
     tables:
-
       - name: VIDEO
         description: Video metadata
         columns:
