@@ -312,10 +312,10 @@ def build_synthesis_prompt(dimension_label: str | None, sub_results: list[GroupA
             f"provided as source material. Using these, write a single response that directly answers "
             f"the original analysis question below.\n\n"
             f"Guidelines:\n"
-            f"- Be selective — highlight the most representative findings, not every group\n"
-            f"- Only call out differences between {dimension_label} groups when they are notable and meaningful\n"
-            f"- Do not structure your response as a per-group breakdown\n"
-            f"- Preserve representative quotes from the sub-analyses where they add value\n\n"
+            f"- **Lead with differences**: If notable differences exist between {dimension_label} groups, present those first — they are more analytically valuable than shared observations. Name the specific groups involved.\n"
+            f"- **Then cover universal themes**: After any notable differences, summarize perspectives or concerns that appear consistently across groups.\n"
+            f"- Do not produce a mechanical group-by-group breakdown, but do name specific groups whenever their responses stand out.\n"
+            f"- Preserve representative quotes from the sub-analyses where they add value.\n\n"
             f"Original analysis question:\n{user_prompt}\n\n"
             f"Sub-analyses by {dimension_label}:\n\n{sub_texts}"
         )
@@ -357,7 +357,9 @@ def _analyze_group(group_value: str, group_rows: pd.DataFrame, answer_col: str, 
         chunk_text   = assemble_chunk_text(chunks[0], answer_col, uuid_to_int)
         group_prompt = (
             f"The following responses are from respondents in this group — "
-            f"{dimension_label}: **{group_value}**.\n\n{MAP_PROMPT}"
+            f"{dimension_label}: **{group_value}**.\n\n{MAP_PROMPT} "
+            f"If any themes or perspectives seem distinctive to this group specifically, "
+            f"flag them clearly — this will help identify meaningful differences across groups in a later synthesis step."
         )
         result = run_cortex_complete(chunk_text, model, group_prompt)
         return GroupAnalysis(
