@@ -64,9 +64,15 @@ LLM_TIERS = [
 # ---------------------------------------------------------------------------
 
 QUESTION_COL_MAP = {
-    "Economic Impact":    "ECONOMIC_IMPACT_EXPECTATION",
-    "Government Action":  "GOVERNMENT_ACTION_SUGGESTION",
-    "Personal AI Impact": "PERSONAL_AI_IMPACT",
+    "Personal AI impact": "PERSONAL_AI_IMPACT",
+    "Economic impact":    "ECONOMIC_IMPACT_EXPECTATION",
+    "Government action":  "GOVERNMENT_ACTION_SUGGESTION",
+}
+
+QUESTION_TEXT = {
+    "Personal AI impact": "How has AI impacted your job and workplace, if at all?",
+    "Economic impact":    "How do you expect AI to impact the economy?",
+    "Government action":  "What do you think the government should do about these impacts?",
 }
 
 DIMENSION_COLS = {
@@ -81,9 +87,9 @@ DIMENSION_COLS = {
 }
 
 SYSTEM_PROMPT = (
-    "You are analyzing survey responses collected by EngagedCA, an official initiative of "
+    "You are analyzing survey responses collected by Engaged California, an official initiative of "
     "California's Government Operations Agency and Office of Data and Innovation. "
-    "EngagedCA uses deliberative democracy practices to give Californians a direct voice in "
+    "Engaged California uses deliberative democracy practices to give Californians a direct voice in "
     "state policymaking. This survey asked California residents to share their thoughts on "
     "how artificial intelligence may impact their work and lives, and what actions they "
     "believe government should take in response. Findings from these responses inform "
@@ -97,9 +103,9 @@ SYSTEM_PROMPT = (
 )
 
 SYNTHESIS_SYSTEM_PROMPT = (
-    "You are analyzing survey responses collected by EngagedCA, an official initiative of "
+    "You are analyzing survey responses collected by Engaged California, an official initiative of "
     "California's Government Operations Agency and Office of Data and Innovation. "
-    "EngagedCA uses deliberative democracy practices to give Californians a direct voice in "
+    "Engaged California uses deliberative democracy practices to give Californians a direct voice in "
     "state policymaking. This survey asked California residents to share their thoughts on "
     "how artificial intelligence may impact their work and lives, and what actions they "
     "believe government should take in response. Findings from these responses inform "
@@ -176,7 +182,7 @@ PROMPTS = {
 # Page config
 # ---------------------------------------------------------------------------
 
-st.set_page_config(page_title="EngagedCA — AI Impact Survey Explorer", layout="wide")
+st.set_page_config(page_title="Engaged California — AI impact survey explorer", layout="wide")
 
 st.markdown(
     """
@@ -354,7 +360,7 @@ if df.empty:
 # Header
 # ---------------------------------------------------------------------------
 
-st.header("EngagedCA — AI Impact Survey Explorer")
+st.header("Engaged California — AI impact survey explorer")
 st.markdown(
     "Explore and analyze responses from California residents on AI's impact on their lives. "
     "Use the sidebar to filter by demographics, then run LLM-powered analysis on the filtered responses."
@@ -363,15 +369,15 @@ st.markdown(
 # TODO: these summary stats could probably be fleshed out with more informative metrics
 col1, col2, col3, col4, col5 = st.columns(5)
 with col1:
-    st.metric("Total Responses", len(df), delta_color="off")
+    st.metric("Total responses", len(df), delta_color="off")
 with col2:
-    st.metric("Economic Impact Answers", df["ECONOMIC_IMPACT_EXPECTATION"].notna().sum(), delta_color="off")
+    st.metric("Personal AI impact answers", df["PERSONAL_AI_IMPACT"].notna().sum(), delta_color="off")
 with col3:
-    st.metric("Government Action Answers", df["GOVERNMENT_ACTION_SUGGESTION"].notna().sum(), delta_color="off")
+    st.metric("Economic impact answers", df["ECONOMIC_IMPACT_EXPECTATION"].notna().sum(), delta_color="off")
 with col4:
-    st.metric("Personal AI Impact Answers", df["PERSONAL_AI_IMPACT"].notna().sum(), delta_color="off")
+    st.metric("Government action answers", df["GOVERNMENT_ACTION_SUGGESTION"].notna().sum(), delta_color="off")
 with col5:
-    st.metric("Counties Represented", df["COUNTY"].nunique(), delta_color="off")
+    st.metric("Counties represented", df["COUNTY"].nunique(), delta_color="off")
 
 st.divider()
 
@@ -393,7 +399,7 @@ FILTER_COLS = {
 }
 
 with st.sidebar:
-    st.header("Demographic Filters")
+    st.header("Demographic filters")
     st.caption("Leave blank to include all values.")
     selected_filters: dict[str, list[str]] = {}
     for label, col in FILTER_COLS.items():
@@ -431,7 +437,7 @@ if "last_query_tokens" not in st.session_state:
 # Tabs
 # ---------------------------------------------------------------------------
 
-tab1, tab2, tab3 = st.tabs(["LLM Analysis", "Browse Responses", "Data Export"])
+tab1, tab2, tab3 = st.tabs(["LLM analysis", "Browse responses", "Data export"])
 
 
 # ── Tab 1: LLM Analysis ──────────────────────────────────────────────────────
@@ -442,9 +448,10 @@ with tab1:
         st.stop()
 
     selected_question = st.selectbox(
-        "Survey Question to Analyze *",
+        "Survey question to analyze *",
         list(QUESTION_COL_MAP.keys()),
     )
+    st.caption(f"_{QUESTION_TEXT[selected_question]}_")
     selected_dimension_label = st.selectbox(
         "Analyze by *",
         list(DIMENSION_COLS.keys()),
@@ -515,7 +522,7 @@ with tab1:
     st.write("")
 
     # Run button
-    if st.button("Run Analysis", type="primary"):
+    if st.button("Run analysis", type="primary"):
         if selected_prompt_label == "Custom…" and not user_prompt.strip():
             st.error("Enter a custom prompt before running.")
         elif not selected_llm:
@@ -665,7 +672,7 @@ with tab1:
 # ── Tab 2: Browse Responses ──────────────────────────────────────────────────
 
 with tab2:
-    st.subheader("Browse Responses")
+    st.subheader("Browse responses")
     st.caption(f"Showing {len(filtered_df):,} of {len(df):,} responses based on current sidebar filters.")
 
     display_cols = [
@@ -700,9 +707,9 @@ with tab2:
             "ROLE_AT_WORK":                  st.column_config.TextColumn("Role at Work"),
             "CURRENT_WORK_STATUS":           st.column_config.TextColumn("Work Status"),
             "AVAILABILITY_FOR_DISCUSSION":   st.column_config.TextColumn("Available for Discussion"),
-            "ECONOMIC_IMPACT_EXPECTATION":   st.column_config.TextColumn("Economic Impact", width="large"),
-            "GOVERNMENT_ACTION_SUGGESTION":  st.column_config.TextColumn("Government Action", width="large"),
-            "PERSONAL_AI_IMPACT":            st.column_config.TextColumn("Personal AI Impact", width="large"),
+            "ECONOMIC_IMPACT_EXPECTATION":   st.column_config.TextColumn("Economic impact", width="large"),
+            "GOVERNMENT_ACTION_SUGGESTION":  st.column_config.TextColumn("Government action", width="large"),
+            "PERSONAL_AI_IMPACT":            st.column_config.TextColumn("Personal AI impact", width="large"),
         },
     )
 
@@ -710,7 +717,7 @@ with tab2:
 # ── Tab 3: Data Export ───────────────────────────────────────────────────────
 
 with tab3:
-    st.subheader("Data Export")
+    st.subheader("Data export")
     st.markdown(
         f"Download the filtered dataset as CSV. "
         f"**{len(filtered_df):,} records** will be exported."
@@ -719,7 +726,7 @@ with tab3:
     if not filtered_df.empty:
         export_df = filtered_df.copy()
         csv_data = export_df.to_csv(index=False)
-        filename = f"engagedca_ai_survey_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        filename = f"engaged_california_ai_survey_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
 
         st.download_button(
             label="Download CSV",
