@@ -52,6 +52,8 @@ MODEL_CREDIT_COSTS = {
 }
 MODEL_COSTS = {m: c * COST_PER_SNOWFLAKE_CREDIT for m, c in MODEL_CREDIT_COSTS.items() if m}
 
+MAX_CHARS_PER_LLM_CALL = int(os.environ.get("MAX_CHARS_PER_LLM_CALL", "200000"))
+
 LLM_TIERS = [
     (llm_model_low,  "Low",    "Fast & economical"),
     (llm_model_med,  "Medium", "Balanced"),
@@ -204,6 +206,7 @@ class GroupAnalysis:
     n: int
     text: str
     tokens: int
+    num_chunks: int = 1
 
 
 # ---------------------------------------------------------------------------
@@ -257,6 +260,25 @@ def assemble_chunk_text(rows: pd.DataFrame, question_col: str, uuid_to_int: dict
     return "; ".join(parts)
 
 
+def chunk_rows(rows: pd.DataFrame, answer_col: str, max_chars: int) -> list[pd.DataFrame]:
+    """Split rows into DataFrames where each chunk's assembled answer text stays under max_chars."""
+    valid = rows[rows[answer_col].notna() & (rows[answer_col].str.strip() != "")]
+    chunks: list[list] = []
+    current: list = []
+    current_len = 0
+    for idx, row in valid.iterrows():
+        entry_len = len(str(row[answer_col]).strip()) + 15  # cite tag + separator overhead
+        if current and current_len + entry_len > max_chars:
+            chunks.append(valid.loc[current])
+            current, current_len = [idx], entry_len
+        else:
+            current.append(idx)
+            current_len += entry_len
+    if current:
+        chunks.append(valid.loc[current])
+    return chunks
+
+
 def run_cortex_complete(assembled_text: str, model: str, user_prompt: str, synthesis: bool = False):
     """Core function that runs the AI analysis of assembled survey text.
 
@@ -279,38 +301,93 @@ def run_cortex_complete(assembled_text: str, model: str, user_prompt: str, synth
     return json.loads(row["RESULT"])
 
 
-def build_synthesis_prompt(dimension_label: str, sub_results: list[GroupAnalysis], user_prompt: str) -> str:
-    sub_texts = "\n\n".join(
-        f"**{r.group_value}** ({r.n} responses):\n{r.text}"
-        for r in sub_results
-    )
+def build_synthesis_prompt(dimension_label: str | None, sub_results: list[GroupAnalysis], user_prompt: str) -> str:
+    if dimension_label:
+        sub_texts = "\n\n".join(
+            f"**{r.group_value}** ({r.n} responses):\n{r.text}"
+            for r in sub_results
+        )
+        return (
+            f"The following are analyses of survey responses broken down by {dimension_label}, "
+            f"provided as source material. Using these, write a single response that directly answers "
+            f"the original analysis question below.\n\n"
+            f"Guidelines:\n"
+            f"- Be selective — highlight the most representative findings, not every group\n"
+            f"- Only call out differences between {dimension_label} groups when they are notable and meaningful\n"
+            f"- Do not structure your response as a per-group breakdown\n"
+            f"- Preserve representative quotes from the sub-analyses where they add value\n\n"
+            f"Original analysis question:\n{user_prompt}\n\n"
+            f"Sub-analyses by {dimension_label}:\n\n{sub_texts}"
+        )
+    else:
+        sub_texts = "\n\n".join(
+            f"Batch {i+1} ({r.n} responses):\n{r.text}"
+            for i, r in enumerate(sub_results)
+        )
+        return (
+            f"The following are analyses of batches of survey responses. Using these, write a single "
+            f"response that directly answers the original analysis question below.\n\n"
+            f"Guidelines:\n"
+            f"- Be selective — highlight the most representative findings, not every batch\n"
+            f"- Do not structure your response as a per-batch breakdown\n"
+            f"- Preserve representative quotes where they add value\n\n"
+            f"Original analysis question:\n{user_prompt}\n\n"
+            f"Batch analyses:\n\n{sub_texts}"
+        )
+
+
+def build_intra_group_synthesis_prompt(group_value: str, dimension_label: str, chunk_summaries: list[str]) -> str:
+    """Combine multiple chunk summaries for a single demographic group into a compact MAP-style output."""
+    parts = "\n\n".join(f"Batch {i+1}:\n{s}" for i, s in enumerate(chunk_summaries))
     return (
-        f"The following are analyses of survey responses broken down by {dimension_label}, "
-        f"provided as source material. Using these, write a single response that directly answers "
-        f"the original analysis question below.\n\n"
-        f"Guidelines:\n"
-        f"- Be selective — highlight the most representative findings, not every group\n"
-        f"- Only call out differences between {dimension_label} groups when they are notable and meaningful\n"
-        f"- Do not structure your response as a per-group breakdown\n"
-        f"- Preserve representative quotes from the sub-analyses where they add value\n\n"
-        f"Original analysis question:\n{user_prompt}\n\n"
-        f"Sub-analyses by {dimension_label}:\n\n{sub_texts}"
+        f"The following are theme extractions from separate batches of responses from "
+        f"{dimension_label}: **{group_value}**. Merge them into a single compact summary — "
+        f"the 3–5 most prominent themes with 1–2 sentence descriptions and 1–2 verbatim quotes each. "
+        f"Preserve all citation tags. This will be used as input to a larger synthesis.\n\n{parts}"
     )
 
 
 def _analyze_group(group_value: str, group_rows: pd.DataFrame, answer_col: str, uuid_to_int: dict[str, int], model: str, dimension_label: str) -> GroupAnalysis:
-    """Run one map-pass LLM call for a single demographic group. Safe to call from a thread."""
-    chunk_text   = assemble_chunk_text(group_rows, answer_col, uuid_to_int)
-    group_prompt = (
-        f"The following responses are from respondents in this group — "
-        f"{dimension_label}: **{group_value}**.\n\n{MAP_PROMPT}"
+    """Run MAP-pass LLM analysis for one demographic group, with dynamic intra-group chunking. Safe to call from a thread."""
+    chunks = chunk_rows(group_rows, answer_col, MAX_CHARS_PER_LLM_CALL)
+    if not chunks:
+        return GroupAnalysis(group_value=group_value, n=len(group_rows), text="", tokens=0)
+
+    if len(chunks) == 1:
+        chunk_text   = assemble_chunk_text(chunks[0], answer_col, uuid_to_int)
+        group_prompt = (
+            f"The following responses are from respondents in this group — "
+            f"{dimension_label}: **{group_value}**.\n\n{MAP_PROMPT}"
+        )
+        result = run_cortex_complete(chunk_text, model, group_prompt)
+        return GroupAnalysis(
+            group_value=group_value,
+            n=len(group_rows),
+            text=result["choices"][0]["messages"],
+            tokens=result["usage"]["total_tokens"],
+            num_chunks=1,
+        )
+
+    # Multiple chunks: MAP each sequentially, then synthesize into a compact group summary
+    total_tokens    = 0
+    chunk_summaries: list[str] = []
+    for i, chunk in enumerate(chunks):
+        chunk_text   = assemble_chunk_text(chunk, answer_col, uuid_to_int)
+        chunk_prompt = f"Batch {i+1} of {len(chunks)} from {dimension_label}: **{group_value}**.\n\n{MAP_PROMPT}"
+        result = run_cortex_complete(chunk_text, model, chunk_prompt)
+        chunk_summaries.append(result["choices"][0]["messages"])
+        total_tokens += result["usage"]["total_tokens"]
+
+    synth_result  = run_cortex_complete(
+        "", model, build_intra_group_synthesis_prompt(group_value, dimension_label, chunk_summaries)
     )
-    result = run_cortex_complete(chunk_text, model, group_prompt)
+    total_tokens += synth_result["usage"]["total_tokens"]
     return GroupAnalysis(
         group_value=group_value,
         n=len(group_rows),
-        text=result["choices"][0]["messages"],
-        tokens=result["usage"]["total_tokens"],
+        text=synth_result["choices"][0]["messages"],
+        tokens=total_tokens,
+        num_chunks=len(chunks),
     )
 
 
@@ -455,12 +532,13 @@ with tab1:
     )
     st.caption(f"_{QUESTION_TEXT[selected_question]}_")
     selected_dimension_label = st.selectbox(
-        "Analyze by *",
-        list(DIMENSION_COLS.keys()),
-        help="Determines the primary dimension the LLM will compare and contrast in its analysis.",
+        "Analyze by",
+        [None] + list(DIMENSION_COLS.keys()),
+        format_func=lambda x: "None — analyze all responses" if x is None else x,
+        help="Choose a demographic dimension to break down the analysis, or leave as None for a holistic view.",
     )
-    answer_col = QUESTION_COL_MAP[selected_question]
-    dimension_col = DIMENSION_COLS[selected_dimension_label]
+    answer_col    = QUESTION_COL_MAP[selected_question]
+    dimension_col = DIMENSION_COLS[selected_dimension_label] if selected_dimension_label else None
 
     # Prompt selector
     prompt_options = list(PROMPTS.keys()) + ["Custom…"]
@@ -536,73 +614,182 @@ with tab1:
             uuid_to_int = {uuid: i + 1 for i, uuid in enumerate(all_ids)}
             int_to_uuid  = {v: k for k, v in uuid_to_int.items()}
 
-            dim_series = respondents_with_answers[dimension_col].fillna("Not specified")
-            groups = sorted(
-                respondents_with_answers.assign(_dim=dim_series).groupby("_dim"),
-                key=lambda g: -len(g[1]),
-            )
-
             sub_results: list[GroupAnalysis] = []
             total_tokens = 0
             total_cost   = 0.0
+            synthesis_text = None
 
-            # Pre-filter groups to those with at least one answer
-            valid_groups = [
-                (str(gv), gdf[gdf[answer_col].notna() & (gdf[answer_col].str.strip() != "")])
-                for gv, gdf in groups
-            ]
-            valid_groups = [(gv, rows) for gv, rows in valid_groups if not rows.empty]
-            group_order  = [gv for gv, _ in valid_groups]
+            if selected_dimension_label is None:
+                # ── Holistic: no demographic breakdown ──────────────────────────
+                chunks = chunk_rows(respondents_with_answers, answer_col, MAX_CHARS_PER_LLM_CALL)
 
-            with st.status(
-                f"Analyzing {len(all_ids):,} responses across {len(valid_groups)} "
-                f"{selected_dimension_label} group{'s' if len(valid_groups) != 1 else ''}…",
-                expanded=True,
-            ) as status:
-                # All this complexity is to enable executing sub-group analysis in parallel.
-                # This *substantially* speeds up execution while also keeping context manageable
-                futures = {}
-                with ThreadPoolExecutor(max_workers=min(len(valid_groups), 12)) as executor:
-                    for group_value, group_rows in valid_groups:
-                        future = executor.submit(
-                            _analyze_group,
-                            group_value, group_rows, answer_col, uuid_to_int,
-                            selected_llm, selected_dimension_label,
-                        )
-                        futures[future] = group_value
+                if len(chunks) == 1:
+                    with st.status(f"Analyzing {len(respondents_with_answers):,} responses…", expanded=True) as status:
+                        all_text = assemble_chunk_text(respondents_with_answers, answer_col, uuid_to_int)
+                        result   = run_cortex_complete(all_text, selected_llm, user_prompt)
+                        status.update(label="Analysis complete", state="complete", expanded=False)
+                    sub_results  = [GroupAnalysis(
+                        group_value="",
+                        n=len(respondents_with_answers),
+                        text=result["choices"][0]["messages"],
+                        tokens=result["usage"]["total_tokens"],
+                    )]
+                    total_tokens = sub_results[0].tokens
+                    total_cost   = (total_tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
 
-                    for future in as_completed(futures):
-                        group_value = futures[future]
+                else:
+                    with st.status(
+                        f"Analyzing {len(respondents_with_answers):,} responses in {len(chunks)} batches…",
+                        expanded=True,
+                    ) as status:
+                        for i, chunk in enumerate(chunks):
+                            st.write(f"Analyzing batch {i+1} of {len(chunks)} ({len(chunk):,} responses)…")
+                            chunk_text = assemble_chunk_text(chunk, answer_col, uuid_to_int)
+                            result     = run_cortex_complete(chunk_text, selected_llm, f"Batch {i+1} of {len(chunks)}.\n\n{MAP_PROMPT}")
+                            tokens     = result["usage"]["total_tokens"]
+                            sub_results.append(GroupAnalysis(
+                                group_value=f"Batch {i+1}",
+                                n=len(chunk),
+                                text=result["choices"][0]["messages"],
+                                tokens=tokens,
+                            ))
+                            total_tokens += tokens
+                            total_cost   += (tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
+                            st.write(f"✓ Batch {i+1} ({len(chunk):,} responses)")
+
+                        st.write("Synthesizing batches…")
                         try:
-                            ga = future.result()
-                            total_tokens += ga.tokens
-                            total_cost   += (ga.tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
-                            sub_results.append(ga)
-                            st.write(f"✓ **{ga.group_value}** ({ga.n} responses)")
+                            synth_result   = run_cortex_complete(
+                                "", selected_llm,
+                                build_synthesis_prompt(None, sub_results, user_prompt),
+                                synthesis=True,
+                            )
+                            synthesis_text = synth_result["choices"][0]["messages"]
+                            tokens         = synth_result["usage"]["total_tokens"]
+                            total_tokens  += tokens
+                            total_cost    += (tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
                         except Exception as e:
-                            st.warning(f"Analysis failed for '{group_value}': {e}")
+                            st.warning(f"Synthesis failed: {e}")
 
-                # Restore original group order (largest first)
-                sub_results.sort(key=lambda r: group_order.index(r.group_value))
+                        status.update(label="Analysis complete", state="complete", expanded=False)
 
-                # With first pass analysis complete, we synthesize the results into a final output.
-                synthesis_text = None
-                if len(sub_results) > 1:
-                    st.write("Synthesizing results across groups…")
-                    try:
-                        synth_result   = run_cortex_complete(
-                            "", selected_llm,
-                            build_synthesis_prompt(selected_dimension_label, sub_results, user_prompt),
-                            synthesis=True,
-                        )
-                        synthesis_text  = synth_result["choices"][0]["messages"]
-                        tokens          = synth_result["usage"]["total_tokens"]
-                        total_tokens   += tokens
-                        total_cost     += (tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
-                    except Exception as e:
-                        st.warning(f"Synthesis failed: {e}")
+            else:
+                # ── Dimension-based analysis ─────────────────────────────────────
+                dim_series = respondents_with_answers[dimension_col].fillna("Not specified")
+                groups = sorted(
+                    respondents_with_answers.assign(_dim=dim_series).groupby("_dim"),
+                    key=lambda g: -len(g[1]),
+                )
+                valid_groups = [
+                    (str(gv), gdf[gdf[answer_col].notna() & (gdf[answer_col].str.strip() != "")])
+                    for gv, gdf in groups
+                ]
+                valid_groups = [(gv, rows) for gv, rows in valid_groups if not rows.empty]
+                group_order  = [gv for gv, _ in valid_groups]
 
-                status.update(label="Analysis complete", state="complete", expanded=False)
+                if len(valid_groups) == 1:
+                    gv, group_rows_single = valid_groups[0]
+                    chunks = chunk_rows(group_rows_single, answer_col, MAX_CHARS_PER_LLM_CALL)
+
+                    if len(chunks) == 1:
+                        # Single group fits in one call: apply user's prompt directly
+                        with st.status(f"Analyzing {len(group_rows_single):,} responses…", expanded=True) as status:
+                            all_text = assemble_chunk_text(group_rows_single, answer_col, uuid_to_int)
+                            result   = run_cortex_complete(all_text, selected_llm, user_prompt)
+                            status.update(label="Analysis complete", state="complete", expanded=False)
+                        sub_results  = [GroupAnalysis(
+                            group_value=gv,
+                            n=len(group_rows_single),
+                            text=result["choices"][0]["messages"],
+                            tokens=result["usage"]["total_tokens"],
+                        )]
+                        total_tokens = sub_results[0].tokens
+                        total_cost   = (total_tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
+
+                    else:
+                        # Single group too large: MAP chunks then synthesize with user's prompt
+                        with st.status(
+                            f"Analyzing {len(group_rows_single):,} responses in {len(chunks)} batches…",
+                            expanded=True,
+                        ) as status:
+                            for i, chunk in enumerate(chunks):
+                                st.write(f"Analyzing batch {i+1} of {len(chunks)} ({len(chunk):,} responses)…")
+                                chunk_text = assemble_chunk_text(chunk, answer_col, uuid_to_int)
+                                result     = run_cortex_complete(chunk_text, selected_llm, f"Batch {i+1} of {len(chunks)}.\n\n{MAP_PROMPT}")
+                                tokens     = result["usage"]["total_tokens"]
+                                sub_results.append(GroupAnalysis(
+                                    group_value=f"Batch {i+1}",
+                                    n=len(chunk),
+                                    text=result["choices"][0]["messages"],
+                                    tokens=tokens,
+                                ))
+                                total_tokens += tokens
+                                total_cost   += (tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
+                                st.write(f"✓ Batch {i+1} ({len(chunk):,} responses)")
+
+                            st.write("Synthesizing batches…")
+                            try:
+                                synth_result   = run_cortex_complete(
+                                    "", selected_llm,
+                                    build_synthesis_prompt(None, sub_results, user_prompt),
+                                    synthesis=True,
+                                )
+                                synthesis_text = synth_result["choices"][0]["messages"]
+                                tokens         = synth_result["usage"]["total_tokens"]
+                                total_tokens  += tokens
+                                total_cost    += (tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
+                            except Exception as e:
+                                st.warning(f"Synthesis failed: {e}")
+
+                            status.update(label="Analysis complete", state="complete", expanded=False)
+
+                else:
+                    # Multiple groups: parallel MAP-reduce, with intra-group chunking via _analyze_group
+                    with st.status(
+                        f"Analyzing {len(all_ids):,} responses across {len(valid_groups)} "
+                        f"{selected_dimension_label} group{'s' if len(valid_groups) != 1 else ''}…",
+                        expanded=True,
+                    ) as status:
+                        futures = {}
+                        with ThreadPoolExecutor(max_workers=min(len(valid_groups), 12)) as executor:
+                            for group_value, group_rows in valid_groups:
+                                future = executor.submit(
+                                    _analyze_group,
+                                    group_value, group_rows, answer_col, uuid_to_int,
+                                    selected_llm, selected_dimension_label,
+                                )
+                                futures[future] = group_value
+
+                            for future in as_completed(futures):
+                                group_value = futures[future]
+                                try:
+                                    ga = future.result()
+                                    total_tokens += ga.tokens
+                                    total_cost   += (ga.tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
+                                    sub_results.append(ga)
+                                    chunk_note = f" — {ga.num_chunks} batches" if ga.num_chunks > 1 else ""
+                                    st.write(f"✓ **{ga.group_value}** ({ga.n} responses{chunk_note})")
+                                except Exception as e:
+                                    st.warning(f"Analysis failed for '{group_value}': {e}")
+
+                        sub_results.sort(key=lambda r: group_order.index(r.group_value))
+
+                        if len(sub_results) > 1:
+                            st.write("Synthesizing results across groups…")
+                            try:
+                                synth_result   = run_cortex_complete(
+                                    "", selected_llm,
+                                    build_synthesis_prompt(selected_dimension_label, sub_results, user_prompt),
+                                    synthesis=True,
+                                )
+                                synthesis_text  = synth_result["choices"][0]["messages"]
+                                tokens          = synth_result["usage"]["total_tokens"]
+                                total_tokens   += tokens
+                                total_cost     += (tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
+                            except Exception as e:
+                                st.warning(f"Synthesis failed: {e}")
+
+                        status.update(label="Analysis complete", state="complete", expanded=False)
 
             st.session_state.last_query_tokens = total_tokens
             st.session_state.last_query_cost   = total_cost
@@ -622,7 +809,7 @@ with tab1:
 
                 st.subheader(
                     f"Analysis of {n_total:,} responses"
-                    + (f" across {n_groups} {selected_dimension_label} groups" if n_groups > 1 else "")
+                    + (f" across {n_groups} {selected_dimension_label} groups" if n_groups > 1 and selected_dimension_label else "")
                 )
                 if total_citations:
                     st.caption(
@@ -633,9 +820,8 @@ with tab1:
                 if synthesis_text:
                     st.markdown(apply_global_citations(synthesis_text, global_cite_map), unsafe_allow_html=True)
                 else:
-                    # Single group — show its analysis directly
-                    if n_groups == 1:
-                        st.caption(f"Only one {selected_dimension_label} group found — showing direct analysis.")
+                    if n_groups == 1 and selected_dimension_label and sub_results[0].group_value:
+                        st.caption(f"Only one {selected_dimension_label} group found.")
                     st.markdown(apply_global_citations(sub_results[0].text, global_cite_map), unsafe_allow_html=True)
 
                 if total_citations:  # Generate citation HTML
