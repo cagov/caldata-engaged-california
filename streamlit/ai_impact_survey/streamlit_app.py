@@ -377,7 +377,8 @@ with col3:
 with col4:
     st.metric("Government action answers", df["GOVERNMENT_ACTION_SUGGESTION"].notna().sum(), delta_color="off")
 with col5:
-    st.metric("Counties represented", df["COUNTY"].nunique(), delta_color="off")
+    # Don't county any response that doesn't have "County" in it
+    st.metric("Counties represented", df["COUNTY"].dropna()[df["COUNTY"].dropna().str.contains("County")].nunique(), delta_color="off")
 
 st.divider()
 
@@ -404,7 +405,8 @@ with st.sidebar:
     selected_filters: dict[str, list[str]] = {}
     for label, col in FILTER_COLS.items():
         options = sorted(df[col].dropna().unique().tolist())
-        selected_filters[col] = st.multiselect(label, options)
+        default = [v for v in options if "County" in v] if col == "COUNTY" else []
+        selected_filters[col] = st.multiselect(label, options, default=default)
 
     st.divider()
     if st.button("Refresh data", type="primary", help="Reload survey responses from Snowflake"):
