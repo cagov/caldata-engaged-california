@@ -195,6 +195,8 @@ models:
         description: Viewer subscription status at time of view.
       - name: country_code
         description: ISO country code of the viewer.
+      - name: views
+        description: Total number of views.
       - name: engaged_views
         description: Number of views where the viewer engaged with the video.
       - name: comments

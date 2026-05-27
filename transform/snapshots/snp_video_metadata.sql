@@ -9,6 +9,6 @@
     )
 }}
 
-select * from {{ source('YOUTUBE_ANALYTICS', 'VIDEO') }}
+    select * from {{ source('YOUTUBE_ANALYTICS', 'VIDEO') }}
 
 {% endsnapshot %}

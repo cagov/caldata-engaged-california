@@ -16,9 +16,9 @@ video_metadata as (
         snippet_category_id,
         content_details_duration,
         (
-            coalesce(try_to_number(regexp_substr(content_details_duration, '(\\d+)H', 1, 1, 'e', 1)), 0) * 3600 +
-            coalesce(try_to_number(regexp_substr(content_details_duration, '(\\d+)M', 1, 1, 'e', 1)), 0) * 60 +
-            coalesce(try_to_number(regexp_substr(content_details_duration, '(\\d+)S', 1, 1, 'e', 1)), 0)
+            coalesce(try_to_number(regexp_substr(content_details_duration, '(\\d+)H', 1, 1, 'e', 1)), 0) * 3600
+            + coalesce(try_to_number(regexp_substr(content_details_duration, '(\\d+)M', 1, 1, 'e', 1)), 0) * 60
+            + coalesce(try_to_number(regexp_substr(content_details_duration, '(\\d+)S', 1, 1, 'e', 1)), 0)
         ) as video_duration_seconds,
         privacy_status,
         statistics_view_count,
