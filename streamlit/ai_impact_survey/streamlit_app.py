@@ -615,7 +615,7 @@ with tab1:
     selected_dimension_label = st.selectbox(
         "Analyze by",
         [None] + list(DIMENSION_COLS.keys()),
-        format_func=lambda x: "None — analyze all responses" if x is None else x,
+        format_func=lambda x: "None — synthesize across all groups" if x is None else x,
         help="Choose a demographic dimension to break down the analysis, or leave as None for a holistic view.",
     )
     answer_col    = QUESTION_COL_MAP[selected_question]
