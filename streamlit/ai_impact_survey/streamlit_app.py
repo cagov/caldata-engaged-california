@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from dotenv import load_dotenv
+from pathlib import Path
 import streamlit as st
+import plotly.express as px
 import os
 import re
 import json
@@ -263,7 +265,7 @@ def assemble_chunk_text(rows: pd.DataFrame, question_col: str, uuid_to_int: dict
 def chunk_rows(rows: pd.DataFrame, answer_col: str, max_chars: int) -> list[pd.DataFrame]:
     """Split rows into DataFrames where each chunk's assembled answer text stays under max_chars."""
     valid = rows[rows[answer_col].notna() & (rows[answer_col].str.strip() != "")]
-    chunks: list[list] = []
+    chunks: list[pd.DataFrame] = []
     current: list = []
     current_len = 0
     for idx, row in valid.iterrows():
@@ -420,6 +422,81 @@ def apply_global_citations(text: str, global_cite_map: dict[int, int]) -> str:
     return re.sub(r'\[cite:(\d+)\]', replacer, text)
 
 
+CHART_HEIGHT = 350
+PALETTE = px.colors.qualitative.Plotly
+
+
+def render_demographics_section(df: pd.DataFrame) -> None:
+    BAR_DIMS = [
+        ("AGE",                     "Age"),
+        ("REGION",                  "Region"),
+        ("GENDER_CATEGORY",         "Gender"),
+        ("RACE_ETHNICITY_CATEGORY", "Race / Ethnicity"),
+        ("CURRENT_WORK_STATUS",     "Work Status"),
+        ("FIELD_OF_WORK",           "Field of Work"),
+        ("ROLE_AT_WORK",            "Role at Work"),
+    ]
+    with st.expander("Respondent demographics"):
+        # California county choropleth
+        geojson_path = Path(__file__).parent / "california_counties.geojson"
+        with open(geojson_path) as f:
+            ca_geojson = json.load(f)
+
+        county_counts = (
+            df[df["COUNTY"].str.contains("County")]["COUNTY"]
+            .value_counts().reset_index()
+        )
+        county_counts.columns = ["COUNTY", "Count"]
+        county_counts["NAME"] = county_counts["COUNTY"].str.replace(" County", "")
+        total_county = county_counts["Count"].sum()
+        county_counts["% of Respondents"] = (
+            (county_counts["Count"] / total_county * 100).round(1).astype(str) + "%"
+        )
+
+        fig_map = px.choropleth_map(
+            county_counts,
+            geojson=ca_geojson,
+            locations="NAME",
+            featureidkey="properties.NAME",
+            color="Count",
+            color_continuous_scale="Blues",
+            hover_name="COUNTY",
+            hover_data={"NAME": False, "Count": True, "% of Respondents": True},
+            # map_style="white-bg",
+            center={"lat": 37.5, "lon": -119.5},
+            zoom=5,
+            title="Geographic distribution of responses",
+        )
+        fig_map.update_layout(margin=dict(l=0, r=0, t=40, b=0), height=800, title_font_size=14)
+        st.plotly_chart(fig_map, use_container_width=True)
+
+        col_a, col_b = st.columns(2)
+        for i, (col, label) in enumerate(BAR_DIMS):
+            counts = df[col].dropna().value_counts().reset_index()
+            counts.columns = [label, "Count"]
+            total = counts["Count"].sum()
+            counts["Pct"] = (counts["Count"] / total * 100).round(1).astype(str) + "%"
+            fig = px.bar(
+                counts, x="Count", y=label, orientation="h",
+                title=label, height=CHART_HEIGHT,
+                text="Count",
+                custom_data=["Pct"],
+                color_discrete_sequence=[PALETTE[i % len(PALETTE)]],
+            )
+            fig.update_traces(
+                textposition="inside",
+                textfont=dict(size=11, color="white"),
+                hovertemplate="<b>%{y}</b><br>%{customdata[0]} of respondents<extra></extra>",
+            )
+            fig.update_layout(
+                margin=dict(l=0, r=20, t=40, b=0),
+                yaxis=dict(categoryorder="total ascending"),
+                title_font_size=14,
+                showlegend=False,
+            )
+            (col_a if i % 2 == 0 else col_b).plotly_chart(fig, use_container_width=True)
+
+
 # ---------------------------------------------------------------------------
 # Load data
 # ---------------------------------------------------------------------------
@@ -512,6 +589,8 @@ if active_filter_count:
 if "last_query_tokens" not in st.session_state:
     st.session_state.last_query_tokens = 0
     st.session_state.last_query_cost = 0.0
+
+render_demographics_section(filtered_df)
 
 
 # ---------------------------------------------------------------------------
