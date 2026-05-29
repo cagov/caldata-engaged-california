@@ -1,0 +1,87 @@
+sources:
+  - name: engaged_ca_linkedin_company_pages
+    database: RAW_ENGCA_PRD
+    schema: ENGAGED_CA_LINKEDIN_COMPANY_PAGES
+    description: LinkedIn Company Pages data synced via Fivetran
+
+    tables:
+      - name: UGC_POST_HISTORY
+        description: Records of posts made by the organization on LinkedIn, including content and metadata.
+        columns:
+          - name: ID
+            description: Unique identifier for each post in URN format (urn:li:ugcPost:xxx).
+          - name: FIRST_PUBLISHED_AT
+            description: Timestamp when the post was first published.
+          - name: CREATED_TIME
+            description: Timestamp when the post was created.
+          - name: LAST_MODIFIED_TIME
+            description: Timestamp when the post was last modified.
+          - name: COMMENTARY
+            description: Text content of the post.
+          - name: VISIBILITY
+            description: Visibility setting of the post (e.g. PUBLIC).
+          - name: LIFECYCLE_STATE
+            description: Current state of the post (e.g. PUBLISHED).
+          - name: AUTHOR
+            description: URN of the author who created the post.
+          - name: CONTAINER_ENTITY
+            description: URN of the organization that owns the post.
+
+      - name: SHARE_STATISTIC
+        description: Engagement metrics for each LinkedIn post including impressions, clicks, likes, comments, and shares.
+        columns:
+          - name: _FIVETRAN_ID
+            description: Fivetran generated unique identifier for each record.
+          - name: _SHARE_ENTITY_URN
+            description: URN of the post this statistic belongs to. Joins to UGC_POST_HISTORY.ID.
+          - name: _ORGANIZATION_ENTITY_URN
+            description: URN of the organization that owns the post.
+          - name: IMPRESSION_COUNT
+            description: Total number of times the post was shown in the feed, including passive views.
+          - name: CLICK_COUNT
+            description: Total number of clicks on the post.
+          - name: LIKE_COUNT
+            description: Total number of likes on the post.
+          - name: COMMENT_COUNT
+            description: Total number of comments on the post.
+          - name: SHARE_COUNT
+            description: Total number of times the post was shared.
+          - name: ENGAGEMENT
+            description: Engagement rate calculated as total organic interactions over impressions.
+
+      - name: PAGE_STATISTIC_BY_SENIORITY
+        description: Page view statistics broken down by seniority level of visitors who clicked through to the LinkedIn company page.
+        columns:
+          - name: SENIORITY_ID
+            description: Numeric identifier for the seniority level.
+          - name: _ORGANIZATION_ENTITY_URN
+            description: URN of the organization this statistic belongs to.
+          - name: ALL_PAGE_VIEWS
+            description: Total page views across all sections and devices.
+          - name: ALL_MOBILE_PAGE_VIEWS
+            description: Total page views from mobile devices.
+          - name: OVERVIEW_PAGE_VIEWS
+            description: Views of the overview page section.
+          - name: PEOPLE_PAGE_VIEWS
+            description: Views of the people page section.
+          - name: JOBS_PAGE_VIEWS
+            description: Views of the jobs page section.
+          - name: LIFE_AT_PAGE_VIEWS
+            description: Views of the life at page section.
+          - name: INSIGHTS_PAGE_VIEWS
+            description: Views of the insights page section.
+          - name: CAREERS_PAGE_VIEWS
+            description: Views of the careers page section.
+          - name: PRODUCTS_PAGE_VIEWS
+            description: Views of the products page section.
+          - name: _FIVETRAN_ID
+            description: Fivetran generated unique identifier.
+          - name: _FIVETRAN_SYNCED
+            description: Timestamp of when Fivetran last synced this record.
+      - name: SENIORITY
+        description: Lookup table mapping seniority IDs to seniority names.
+        columns:
+          - name: ID
+            description: Unique identifier for the seniority level.
+          - name: NAME
+            description: Name of the seniority level (e.g. Senior, Director, Manager).
