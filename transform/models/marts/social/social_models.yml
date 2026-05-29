@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: youtube_engagement_daily
+  - name: youtube_video_engagement_daily
     description: |
       Daily YouTube video engagement stats aggregated by video and date across all countries.
       Unlisted videos are excluded. Rows with no matching video metadata are excluded.
@@ -41,7 +41,7 @@ models:
       - name: avg_completion_pct
         description: Average percentage of the video watched per view.
 
-  - name: youtube_engagement_lifetime
+  - name: youtube_video_engagement_lifetime
     description: |
       All-time YouTube video engagement stats aggregated by video across all countries.
       Unlisted videos are excluded.
@@ -76,10 +76,10 @@ models:
         description: Total all-time watch time in minutes.
       - name: video_duration_seconds
         description: Duration of the video in seconds.
-      - name: watch_time_normalized_pct
-        description: Total watch time as a percentage of video duration. Can exceed 100% for videos with many views.
+      - name: avg_completion_pct
+        description: Average percentage of the video watched per view.
 
-  - name: channel_engagement_daily
+  - name: youtube_channel_engagement_daily
     description: |
       Daily YouTube channel engagement stats aggregated by channel across all countries.
     columns:
@@ -97,10 +97,12 @@ models:
         description: Total likes across all videos on this date.
       - name: dislikes_total
         description: Total dislikes across all videos on this date.
+      - name: shares_total
+        description: Total shares across all videos on this date.
       - name: watch_time_minutes_total
         description: Total watch time in minutes across all videos on this date.
 
-  - name: channel_engagement_lifetime
+  - name: youtube_channel_engagement_lifetime
     description: |
       All-time YouTube channel engagement stats aggregated by channel across all countries.
     columns:
@@ -116,6 +118,8 @@ models:
         description: Total all-time likes.
       - name: dislikes_total
         description: Total all-time dislikes.
+      - name: shares_total
+        description: Total all-time shares.
       - name: watch_time_minutes_total
         description: Total all-time watch time in minutes.
       - name: watch_time_minutes_avg

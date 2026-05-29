@@ -12,7 +12,7 @@ with final as (
         sum(views) as views,
         sum(engaged_views) as engaged_views,
         sum(comments) as comments,
-        sum(likes) as likes,
+        greatest(sum(likes), 0) as likes,
         sum(dislikes) as dislikes,
         sum(shares) as shares,
         sum(watch_time_minutes) as watch_time_minutes,
