@@ -183,7 +183,7 @@ models:
     columns:
       - name: _fivetran_id
         description: Unique identifier assigned by Fivetran.
-      - name: date
+      - name: video_date
         description: Date of the stats.
       - name: channel_id
         description: YouTube channel identifier.
@@ -196,15 +196,20 @@ models:
       - name: country_code
         description: ISO country code of the viewer.
       - name: views
-        description: Total number of views.
+        description: Total number of times the video was viewed, including very short or accidental views.
       - name: engaged_views
-        description: Number of views where the viewer engaged with the video.
+        description: |
+          Number of views where the viewer watched past the initial seconds of the video.
+          Unlike views, this metric filters out accidental or near-instant plays,
+          reflecting meaningful viewer engagement.
       - name: comments
         description: Number of comments on the video.
       - name: likes
         description: Number of likes on the video.
       - name: dislikes
         description: Number of dislikes on the video.
+      - name: shares
+        description: Number of times the video was shared.
       - name: watch_time_minutes
         description: Total watch time in minutes.
       - name: average_view_duration_seconds
@@ -216,37 +221,7 @@ models:
       - name: subscribers_gained
         description: Number of subscribers gained after watching the video.
 
-  - name: stg_youtube_state_stats_daily
-    description: Daily YouTube video stats per US state/province, sourced from the CHANNEL_PROVINCE_A_2 table.
-    columns:
-      - name: _fivetran_id
-        description: Unique identifier assigned by Fivetran.
-      - name: date
-        description: Date of the stats.
-      - name: channel_id
-        description: YouTube channel identifier.
-      - name: video_id
-        description: YouTube video identifier.
-      - name: live_or_on_demand
-        description: Indicates whether the video was streamed live or on demand.
-      - name: subscribed_status
-        description: Viewer subscription status at time of view.
-      - name: country_code
-        description: ISO country code of the viewer.
-      - name: province_code
-        description: Province or state code of the viewer.
-      - name: views
-        description: Total number of views.
-      - name: watch_time_minutes
-        description: Total watch time in minutes.
-      - name: average_view_duration_seconds
-        description: Average view duration in seconds.
-      - name: average_view_duration_percentage
-        description: Average percentage of the video watched.
-      - name: engaged_views
-        description: Number of views where the viewer engaged with the video.
-
-  - name: stg_video_metadata
+  - name: stg_youtube_video_metadata
     description: YouTube video metadata sourced from the VIDEO table.
     columns:
       - name: id

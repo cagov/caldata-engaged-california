@@ -52,39 +52,6 @@ sources:
           - name: PLAYER_EMBED_WIDTH
           - name: _FIVETRAN_SYNCED
 
-      - name: CHANNEL_PROVINCE_A_2
-        description: Daily video stats per province
-        columns:
-          - name: _FIVETRAN_ID
-          - name: DATE
-          - name: CHANNEL_ID
-          - name: VIDEO_ID
-          - name: LIVE_OR_ON_DEMAND
-          - name: SUBSCRIBED_STATUS
-          - name: COUNTRY_CODE
-          - name: PROVINCE_CODE
-          - name: VIEWS
-          - name: WATCH_TIME_MINUTES
-          - name: AVERAGE_VIEW_DURATION_SECONDS
-          - name: AVERAGE_VIEW_DURATION_PERCENTAGE
-          - name: ENGAGED_VIEWS
-          - name: ANNOTATION_CLICK_THROUGH_RATE
-          - name: ANNOTATION_CLOSE_RATE
-          - name: ANNOTATION_IMPRESSIONS
-          - name: ANNOTATION_CLICKABLE_IMPRESSIONS
-          - name: ANNOTATION_CLOSABLE_IMPRESSIONS
-          - name: ANNOTATION_CLICKS
-          - name: ANNOTATION_CLOSES
-          - name: CARD_CLICK_RATE
-          - name: CARD_TEASER_CLICK_RATE
-          - name: CARD_IMPRESSIONS
-          - name: CARD_TEASER_IMPRESSIONS
-          - name: CARD_CLICKS
-          - name: CARD_TEASER_CLICKS
-          - name: RED_VIEWS
-          - name: RED_WATCH_TIME_MINUTES
-          - name: _FIVETRAN_SYNCED
-
       - name: CHANNEL_BASIC_A_2
         description: Daily video stats per country
         columns:

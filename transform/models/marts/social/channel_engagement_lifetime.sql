@@ -8,7 +8,7 @@ final as (
 
     select
         channel_id,
-        country_code,
+        sum(views_total) as views_total,
         sum(engaged_views_total) as engaged_views_total,
         sum(comments_total) as comments_total,
         sum(likes_total) as likes_total,
@@ -16,7 +16,7 @@ final as (
         sum(watch_time_minutes_total) as watch_time_minutes_total,
         avg(watch_time_minutes_total) as watch_time_minutes_avg
     from daily
-    group by channel_id, country_code
+    group by channel_id
 
 )
 

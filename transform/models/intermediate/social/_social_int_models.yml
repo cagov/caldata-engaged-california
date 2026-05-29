@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: int_video_daily
+  - name: int_youtube_video_daily
     description: |
       Daily YouTube video stats joined with video metadata. Sourced from country-level
       analytics (CHANNEL_BASIC_A_2). Rows with no matching video metadata are excluded.
@@ -18,6 +18,10 @@ models:
         description: Title of the video.
       - name: snippet_published_at
         description: Timestamp when the video was published.
+      - name: snippet_description
+        description: Description of the video.
+      - name: snippet_tags
+        description: Tags associated with the video.
       - name: privacy_status
         description: Privacy status of the video (public, private, unlisted, or unknown if missing).
       - name: country_code
@@ -32,6 +36,8 @@ models:
         description: Number of likes on the video.
       - name: dislikes
         description: Number of dislikes on the video.
+      - name: shares
+        description: Number of times the video was shared.
       - name: watch_time_minutes
         description: Total watch time in minutes.
       - name: average_view_duration_seconds

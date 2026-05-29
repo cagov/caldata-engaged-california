@@ -8,7 +8,7 @@ renamed as (
 
     select
         _fivetran_id,
-        date,
+        date as video_date,
         channel_id,
         video_id,
         live_or_on_demand,
@@ -19,6 +19,7 @@ renamed as (
         comments,
         likes,
         dislikes,
+        shares,
         watch_time_minutes,
         average_view_duration_seconds,
         average_view_duration_percentage,

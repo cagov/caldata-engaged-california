@@ -8,10 +8,11 @@ joined as (
 
     select
         _fivetran_id,
-        date,
+        video_date,
         channel_id,
         video_id,
         country_code,
+        views,
         engaged_views,
         comments,
         likes,
@@ -24,16 +25,17 @@ joined as (
 final as (
 
     select
-        date,
+        video_date,
         channel_id,
         country_code,
+        sum(views) as views_total,
         sum(engaged_views) as engaged_views_total,
         sum(comments) as comments_total,
         sum(likes) as likes_total,
         sum(dislikes) as dislikes_total,
         sum(watch_time_minutes) as watch_time_minutes_total
     from joined
-    group by date, channel_id, country_code
+    group by video_date, channel_id, country_code
 
 )
 
