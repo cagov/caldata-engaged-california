@@ -17,7 +17,7 @@ final as (
         sum(views) as views_total,
         sum(engaged_views) as engaged_views_total,
         sum(comments) as comments_total,
-        sum(likes) as likes_total,
+        greatest(sum(likes), 0) as likes_total,
         sum(dislikes) as dislikes_total,
         sum(shares) as shares_total,
         sum(watch_time_minutes) as watch_time_minutes_total,

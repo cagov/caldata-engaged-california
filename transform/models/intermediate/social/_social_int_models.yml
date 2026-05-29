@@ -8,7 +8,7 @@ models:
     columns:
       - name: _fivetran_id
         description: Unique row identifier assigned by Fivetran.
-      - name: date
+      - name: video_date
         description: Date of the stats.
       - name: channel_id
         description: YouTube channel identifier.
@@ -47,19 +47,21 @@ models:
       - name: video_duration_seconds
         description: Duration of the video in seconds.
       - name: watch_time_normalized_pct
-        description: Watch time as a percentage of video duration. Can exceed 100% for videos with many views.
+        description: Watch time as a percentage of video duration.
 
-  - name: int_channel_daily
+  - name: int_youtube_channel_daily
     description: |
       Daily YouTube channel stats aggregated from country-level analytics (CHANNEL_BASIC_A_2).
       Grouped by date, channel, and country.
     columns:
-      - name: date
+      - name: video_date
         description: Date of the stats.
       - name: channel_id
         description: YouTube channel identifier.
       - name: country_code
         description: ISO country code of the viewer.
+      - name: views_total
+        description: Total views for the channel on this date and country.
       - name: engaged_views_total
         description: Total engaged views for the channel on this date and country.
       - name: comments_total
@@ -68,6 +70,8 @@ models:
         description: Total likes across all videos on this date and country.
       - name: dislikes_total
         description: Total dislikes across all videos on this date and country.
+      - name: shares_total
+        description: Total shares across all videos on this date and country.
       - name: watch_time_minutes_total
         description: Total watch time in minutes across all videos on this date and country.
 

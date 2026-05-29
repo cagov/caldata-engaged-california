@@ -17,6 +17,7 @@ joined as (
         comments,
         likes,
         dislikes,
+        shares,
         watch_time_minutes
     from stats
 
@@ -33,6 +34,7 @@ final as (
         sum(comments) as comments_total,
         sum(likes) as likes_total,
         sum(dislikes) as dislikes_total,
+        sum(shares) as shares_total,
         sum(watch_time_minutes) as watch_time_minutes_total
     from joined
     group by video_date, channel_id, country_code
