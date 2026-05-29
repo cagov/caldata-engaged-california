@@ -25,4 +25,5 @@ dev = [
 streamlit = [
     "streamlit>=1.40",
     "snowflake-snowpark-python>=1.20",
+    "plotly>=5",
 ]
