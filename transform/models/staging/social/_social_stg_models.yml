@@ -183,7 +183,7 @@ models:
     columns:
       - name: _fivetran_id
         description: Unique identifier assigned by Fivetran.
-      - name: video_date
+      - name: stats_date
         description: Date of the stats.
       - name: channel_id
         description: YouTube channel identifier.

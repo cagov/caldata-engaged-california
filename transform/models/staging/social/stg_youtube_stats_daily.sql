@@ -8,7 +8,7 @@ renamed as (
 
     select
         _fivetran_id,
-        date as video_date,
+        date as stats_date,
         channel_id,
         video_id,
         live_or_on_demand,
