@@ -1,7 +1,7 @@
 with final as (
 
     select
-        video_date,
+        stats_date,
         channel_id,
         video_id,
         snippet_title,
@@ -12,7 +12,7 @@ with final as (
         sum(views) as views,
         sum(engaged_views) as engaged_views,
         sum(comments) as comments,
-        greatest(sum(likes), 0) as likes,
+        sum(likes) as likes,
         sum(dislikes) as dislikes,
         sum(shares) as shares,
         sum(watch_time_minutes) as watch_time_minutes,
@@ -22,7 +22,7 @@ with final as (
     from {{ ref('int_youtube_video_daily') }}
     where privacy_status != 'unlisted'
     group by
-        video_date,
+        stats_date,
         channel_id,
         video_id,
         snippet_title,

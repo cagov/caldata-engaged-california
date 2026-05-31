@@ -8,7 +8,7 @@ joined as (
 
     select
         _fivetran_id,
-        video_date,
+        stats_date,
         channel_id,
         video_id,
         country_code,
@@ -26,7 +26,7 @@ joined as (
 final as (
 
     select
-        video_date,
+        stats_date,
         channel_id,
         country_code,
         sum(views) as views_total,
@@ -37,7 +37,7 @@ final as (
         sum(shares) as shares_total,
         sum(watch_time_minutes) as watch_time_minutes_total
     from joined
-    group by video_date, channel_id, country_code
+    group by stats_date, channel_id, country_code
 
 )
 

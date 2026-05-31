@@ -8,7 +8,7 @@ models:
     columns:
       - name: _fivetran_id
         description: Unique row identifier assigned by Fivetran.
-      - name: video_date
+      - name: stats_date
         description: Date of the stats.
       - name: channel_id
         description: YouTube channel identifier.
@@ -43,18 +43,24 @@ models:
       - name: average_view_duration_seconds
         description: Average view duration in seconds.
       - name: average_view_duration_percentage
-        description: Average percentage of the video watched.
+        description: |
+          Sourced directly from YouTube Analytics. The average percentage of the video watched
+          per view for this row's segment (date/country/subscribed status). Already accounts
+          for the number of viewers.
       - name: video_duration_seconds
         description: Duration of the video in seconds.
       - name: watch_time_normalized_pct
-        description: Watch time as a percentage of video duration.
+        description: |
+          Total watch time for this segment as a percentage of one full video playthrough
+          (watch_time_minutes * 60 / video_duration_seconds * 100). Not a per-viewer metric
+          — inflates with popularity. Use avg_completion_pct in the marts for a per-viewer average.
 
   - name: int_youtube_channel_daily
     description: |
       Daily YouTube channel stats aggregated from country-level analytics (CHANNEL_BASIC_A_2).
       Grouped by date, channel, and country.
     columns:
-      - name: video_date
+      - name: stats_date
         description: Date of the stats.
       - name: channel_id
         description: YouTube channel identifier.

@@ -14,7 +14,7 @@ final as (
 
     select
         s._fivetran_id,
-        s.video_date,
+        s.stats_date,
         s.channel_id,
         s.video_id,
         v.snippet_title,

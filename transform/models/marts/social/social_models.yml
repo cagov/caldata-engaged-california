@@ -6,7 +6,7 @@ models:
       Daily YouTube video engagement stats aggregated by video and date across all countries.
       Unlisted videos are excluded. Rows with no matching video metadata are excluded.
     columns:
-      - name: video_date
+      - name: stats_date
         description: Date of the stats.
       - name: channel_id
         description: YouTube channel identifier.
@@ -39,7 +39,9 @@ models:
       - name: video_duration_seconds
         description: Duration of the video in seconds.
       - name: avg_completion_pct
-        description: Average percentage of the video watched per view.
+        description: |
+          Average percentage of the video watched per view, calculated as total watch time
+          divided by total views divided by video duration. Aggregated across all countries.
 
   - name: youtube_video_engagement_lifetime
     description: |
@@ -77,13 +79,15 @@ models:
       - name: video_duration_seconds
         description: Duration of the video in seconds.
       - name: avg_completion_pct
-        description: Average percentage of the video watched per view.
+        description: |
+          Average percentage of the video watched per view across all time, calculated as
+          total watch time divided by total views divided by video duration.
 
   - name: youtube_channel_engagement_daily
     description: |
       Daily YouTube channel engagement stats aggregated by channel across all countries.
     columns:
-      - name: video_date
+      - name: stats_date
         description: Date of the stats.
       - name: channel_id
         description: YouTube channel identifier.
@@ -123,7 +127,9 @@ models:
       - name: watch_time_minutes_total
         description: Total all-time watch time in minutes.
       - name: watch_time_minutes_avg
-        description: Average daily watch time in minutes.
+        description: |
+          Average daily watch time in minutes, calculated as total watch time divided
+          by the number of distinct days with data.
 
   - name: facebook_pages_post_metrics
     description: |
