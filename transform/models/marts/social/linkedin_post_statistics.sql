@@ -11,6 +11,6 @@ SELECT
     s.comment_count,
     s.share_count,
     s.engagement
-FROM {{ ref('stg_linkedin_post_history') }} p
-LEFT JOIN {{ ref('stg_linkedin_share_stats') }} s
-    ON s.post_id = p.post_id
+FROM {{ ref('stg_linkedin_post_history') }} AS p
+LEFT JOIN {{ ref('stg_linkedin_share_stats') }} AS s
+    ON p.post_id = s.post_id
