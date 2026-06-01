@@ -1,4 +1,5 @@
 SELECT
+    _fivetran_id,
     seniority_id,
     _organization_entity_urn AS organization_urn,
     all_page_views,
