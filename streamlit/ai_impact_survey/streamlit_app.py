@@ -303,7 +303,16 @@ def run_cortex_complete(assembled_text: str, model: str, user_prompt: str, synth
     return json.loads(row["RESULT"])
 
 
-def build_synthesis_prompt(dimension_label: str | None, sub_results: list[GroupAnalysis], user_prompt: str) -> str:
+def build_synthesis_prompt(
+    dimension_label: str | None,
+    sub_results: list[GroupAnalysis],
+    user_prompt: str,
+    theme_citation_map: dict[str, set[int]] | None = None,
+    total_n: int = 0,
+) -> str:
+    counts_block = format_theme_counts_block(theme_citation_map, total_n) if theme_citation_map else ""
+    counts_section = f"\n\n{counts_block}\n" if counts_block else ""
+
     if dimension_label:
         sub_texts = "\n\n".join(
             f"**{r.group_value}** ({r.n} responses):\n{r.text}"
@@ -317,7 +326,9 @@ def build_synthesis_prompt(dimension_label: str | None, sub_results: list[GroupA
             f"- **Lead with differences**: If notable differences exist between {dimension_label} groups, present those first — they are more analytically valuable than shared observations. Name the specific groups involved.\n"
             f"- **Then cover universal themes**: After any notable differences, summarize perspectives or concerns that appear consistently across groups.\n"
             f"- Do not produce a mechanical group-by-group breakdown, but do name specific groups whenever their responses stand out.\n"
-            f"- Preserve representative quotes from the sub-analyses where they add value.\n\n"
+            f"- Preserve representative quotes from the sub-analyses where they add value.\n"
+            f"- **Use exact counts**: When describing theme prevalence, use the quantitative counts provided below — do not use qualitative language like 'many' or 'some'."
+            f"{counts_section}"
             f"Original analysis question:\n{user_prompt}\n\n"
             f"Sub-analyses by {dimension_label}:\n\n{sub_texts}"
         )
@@ -332,7 +343,9 @@ def build_synthesis_prompt(dimension_label: str | None, sub_results: list[GroupA
             f"Guidelines:\n"
             f"- Be selective — highlight the most representative findings, not every batch\n"
             f"- Do not structure your response as a per-batch breakdown\n"
-            f"- Preserve representative quotes where they add value\n\n"
+            f"- Preserve representative quotes where they add value\n"
+            f"- **Use exact counts**: When describing theme prevalence, use the quantitative counts provided below — do not use qualitative language like 'many' or 'some'."
+            f"{counts_section}"
             f"Original analysis question:\n{user_prompt}\n\n"
             f"Batch analyses:\n\n{sub_texts}"
         )
@@ -420,6 +433,102 @@ def apply_global_citations(text: str, global_cite_map: dict[int, int]) -> str:
             return f'<a href="#cite-{fn}" style="text-decoration:none;">[†{fn}]</a>'
         return "[†?]"
     return re.sub(r'\[cite:(\d+)\]', replacer, text)
+
+
+_CITE_ASSIGNMENT_RE = re.compile(r'\[cite:(\d+)\]:\s*(.+)')
+
+CLASSIFICATION_BATCH_SIZE = int(os.environ.get("CLASSIFICATION_BATCH_SIZE", "25"))
+
+
+def parse_classification_output(text: str) -> dict[str, set[int]]:
+    """Parse classification call output (one line per response) → {theme: {ids}}."""
+    theme_citations: dict[str, set[int]] = {}
+    for m in _CITE_ASSIGNMENT_RE.finditer(text):
+        cite_id = int(m.group(1))
+        for label in m.group(2).split(','):
+            label = label.strip()
+            if label and label.lower() != 'none':
+                theme_citations.setdefault(label, set()).add(cite_id)
+    return theme_citations
+
+
+def extract_canonical_themes(map_summaries: list[str], model: str) -> list[str]:
+    """Single LLM call: extract 3–6 canonical theme labels from MAP summaries."""
+    combined = "\n\n---\n\n".join(map_summaries)
+    prompt = (
+        "The following are thematic summaries of survey responses. "
+        "Extract a consolidated list of 3–6 top themes across all summaries. "
+        "Output only the theme labels, one per line, no numbering or descriptions. "
+        "Use concise 2–5 word labels."
+    )
+    result = run_cortex_complete(combined, model, prompt, synthesis=True)
+    lines = result["choices"][0]["messages"].strip().splitlines()
+    return [ln.strip().lstrip("-•*0123456789. ") for ln in lines if ln.strip()]
+
+
+def run_classification_pass(
+    rows: pd.DataFrame,
+    answer_col: str,
+    uuid_to_int: dict[str, int],
+    themes: list[str],
+    model: str,
+) -> dict[str, set[int]]:
+    """Classify all responses into themes using small parallelised batches. Returns {theme: {ids}}."""
+    valid = rows[rows[answer_col].notna() & (rows[answer_col].str.strip() != "")]
+    indices = list(valid.index)
+    batches = [
+        valid.loc[indices[i:i + CLASSIFICATION_BATCH_SIZE]]
+        for i in range(0, len(indices), CLASSIFICATION_BATCH_SIZE)
+    ]
+    theme_list = "\n".join(f"- {t}" for t in themes)
+    all_maps: list[dict[str, set[int]]] = [{}] * len(batches)
+
+    def _classify_one(batch: pd.DataFrame) -> dict[str, set[int]]:
+        chunk_text = assemble_chunk_text(batch, answer_col, uuid_to_int)
+        prompt = (
+            f"Classify each survey response below against these themes:\n{theme_list}\n\n"
+            f"Output one line per response: [cite:N]: Theme Label\n"
+            f"A response may match multiple themes — separate with commas.\n"
+            f"If a response doesn't fit any theme: [cite:N]: none\n"
+            f"Use the exact theme labels listed above."
+        )
+        result = run_cortex_complete(chunk_text, model, prompt)
+        return parse_classification_output(result["choices"][0]["messages"])
+
+    with ThreadPoolExecutor(max_workers=12) as executor:
+        futures = {executor.submit(_classify_one, batch): i for i, batch in enumerate(batches)}
+        for future in as_completed(futures):
+            i = futures[future]
+            try:
+                all_maps[i] = future.result()
+            except Exception:
+                pass
+    return merge_theme_citation_maps(all_maps)
+
+
+def merge_theme_citation_maps(maps: list[dict[str, set[int]]]) -> dict[str, set[int]]:
+    """Merge per-chunk citation maps, combining ID sets for same-named themes."""
+    merged: dict[str, set[int]] = {}
+    for m in maps:
+        for label, ids in m.items():
+            merged.setdefault(label, set()).update(ids)
+    return merged
+
+
+def format_theme_counts_block(theme_citation_map: dict[str, set[int]], total_n: int) -> str:
+    """Format theme citation counts into a prompt-injectable block for use by the synthesis LLM."""
+    if not theme_citation_map or total_n == 0:
+        return ""
+    lines = [
+        f"Quantitative theme counts — computed from citation IDs, exact. "
+        f"Use these for any numeric claims; do not use qualitative language like 'many' or 'some'.",
+        f"Total responses in this analysis: {total_n}",
+    ]
+    for label, ids in sorted(theme_citation_map.items(), key=lambda x: -len(x[1])):
+        n = len(ids)
+        pct = round(n / total_n * 100)
+        lines.append(f"- {label}: {n} of {total_n} responses ({pct}%)")
+    return "\n".join(lines)
 
 
 CHART_HEIGHT = 350
@@ -682,6 +791,16 @@ with tab1:
 
     st.write("")
 
+    quantitative_mode = st.checkbox(
+        "Include quantitative counts",
+        value=True,
+        help=(
+            "Runs a small-batch classification pass after the main analysis to count exactly "
+            "how many responses support each theme. Adds ~15–30 seconds and a small amount of "
+            "additional cost. Only active when analysis requires multiple batches."
+        ),
+    )
+
     # Run button
     if st.button("Run analysis", type="primary"):
         if selected_prompt_label == "Custom…" and not user_prompt.strip():
@@ -738,11 +857,18 @@ with tab1:
                             total_cost   += (tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
                             st.write(f"✓ Batch {i+1} ({len(chunk):,} responses)")
 
+                        counts_map: dict[str, set[int]] = {}
+                        if quantitative_mode and sub_results:
+                            st.write("Extracting themes for quantitative counts…")
+                            themes = extract_canonical_themes([r.text for r in sub_results], selected_llm)
+                            st.write(f"Classifying {len(respondents_with_answers):,} responses across {len(themes)} themes…")
+                            counts_map = run_classification_pass(respondents_with_answers, answer_col, uuid_to_int, themes, selected_llm)
+
                         st.write("Synthesizing batches…")
                         try:
                             synth_result   = run_cortex_complete(
                                 "", selected_llm,
-                                build_synthesis_prompt(None, sub_results, user_prompt),
+                                build_synthesis_prompt(None, sub_results, user_prompt, counts_map or None, len(respondents_with_answers)),
                                 synthesis=True,
                             )
                             synthesis_text = synth_result["choices"][0]["messages"]
@@ -808,11 +934,18 @@ with tab1:
                                 total_cost   += (tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
                                 st.write(f"✓ Batch {i+1} ({len(chunk):,} responses)")
 
+                            counts_map_sg: dict[str, set[int]] = {}
+                            if quantitative_mode and sub_results:
+                                st.write("Extracting themes for quantitative counts…")
+                                themes_sg = extract_canonical_themes([r.text for r in sub_results], selected_llm)
+                                st.write(f"Classifying {len(group_rows_single):,} responses across {len(themes_sg)} themes…")
+                                counts_map_sg = run_classification_pass(group_rows_single, answer_col, uuid_to_int, themes_sg, selected_llm)
+
                             st.write("Synthesizing batches…")
                             try:
                                 synth_result   = run_cortex_complete(
                                     "", selected_llm,
-                                    build_synthesis_prompt(None, sub_results, user_prompt),
+                                    build_synthesis_prompt(None, sub_results, user_prompt, counts_map_sg or None, len(group_rows_single)),
                                     synthesis=True,
                                 )
                                 synthesis_text = synth_result["choices"][0]["messages"]
@@ -856,11 +989,18 @@ with tab1:
                         sub_results.sort(key=lambda r: group_order.index(r.group_value))
 
                         if len(sub_results) > 1:
+                            counts_map_mg: dict[str, set[int]] = {}
+                            if quantitative_mode and sub_results:
+                                st.write("Extracting themes for quantitative counts…")
+                                themes_mg = extract_canonical_themes([r.text for r in sub_results], selected_llm)
+                                st.write(f"Classifying {len(all_ids):,} responses across {len(themes_mg)} themes…")
+                                counts_map_mg = run_classification_pass(respondents_with_answers, answer_col, uuid_to_int, themes_mg, selected_llm)
+
                             st.write("Synthesizing results across groups…")
                             try:
                                 synth_result   = run_cortex_complete(
                                     "", selected_llm,
-                                    build_synthesis_prompt(selected_dimension_label, sub_results, user_prompt),
+                                    build_synthesis_prompt(selected_dimension_label, sub_results, user_prompt, counts_map_mg or None, len(all_ids)),
                                     synthesis=True,
                                 )
                                 synthesis_text  = synth_result["choices"][0]["messages"]
