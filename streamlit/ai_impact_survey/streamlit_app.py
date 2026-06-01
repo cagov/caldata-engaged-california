@@ -385,18 +385,25 @@ def _analyze_group(group_value: str, group_rows: pd.DataFrame, answer_col: str, 
             num_chunks=1,
         )
 
-    # Multiple chunks: MAP each sequentially, then synthesize into a compact group summary
-    total_tokens    = 0
-    chunk_summaries: list[str] = []
-    for i, chunk in enumerate(chunks):
-        chunk_text   = assemble_chunk_text(chunk, answer_col, uuid_to_int)
-        chunk_prompt = f"Batch {i+1} of {len(chunks)} from {dimension_label}: **{group_value}**.\n\n{MAP_PROMPT}"
-        result = run_cortex_complete(chunk_text, model, chunk_prompt)
-        chunk_summaries.append(result["choices"][0]["messages"])
-        total_tokens += result["usage"]["total_tokens"]
+    # Multiple chunks: MAP each in parallel, then synthesize into a compact group summary
+    total_tokens = 0
+    chunk_summaries: list[str | None] = [None] * len(chunks)
+
+    def _map_chunk(idx: int, chunk_df: pd.DataFrame) -> tuple[int, str, int]:
+        text   = assemble_chunk_text(chunk_df, answer_col, uuid_to_int)
+        prompt = f"Batch {idx+1} of {len(chunks)} from {dimension_label}: **{group_value}**.\n\n{MAP_PROMPT}"
+        r      = run_cortex_complete(text, model, prompt)
+        return idx, r["choices"][0]["messages"], r["usage"]["total_tokens"]
+
+    with ThreadPoolExecutor(max_workers=min(len(chunks), 12)) as executor:
+        futures = {executor.submit(_map_chunk, i, chunk): i for i, chunk in enumerate(chunks)}
+        for future in as_completed(futures):
+            idx, summary, tokens = future.result()
+            chunk_summaries[idx]  = summary
+            total_tokens         += tokens
 
     synth_result  = run_cortex_complete(
-        "", model, build_intra_group_synthesis_prompt(group_value, dimension_label, chunk_summaries)
+        "", model, build_intra_group_synthesis_prompt(group_value, dimension_label, [s for s in chunk_summaries if s is not None])
     )
     total_tokens += synth_result["usage"]["total_tokens"]
     return GroupAnalysis(
@@ -842,20 +849,29 @@ with tab1:
                         f"Analyzing {len(respondents_with_answers):,} responses in {len(chunks)} batches…",
                         expanded=True,
                     ) as status:
-                        for i, chunk in enumerate(chunks):
-                            st.write(f"Analyzing batch {i+1} of {len(chunks)} ({len(chunk):,} responses)…")
-                            chunk_text = assemble_chunk_text(chunk, answer_col, uuid_to_int)
-                            result     = run_cortex_complete(chunk_text, selected_llm, f"Batch {i+1} of {len(chunks)}.\n\n{MAP_PROMPT}")
-                            tokens     = result["usage"]["total_tokens"]
-                            sub_results.append(GroupAnalysis(
-                                group_value=f"Batch {i+1}",
-                                n=len(chunk),
-                                text=result["choices"][0]["messages"],
-                                tokens=tokens,
-                            ))
-                            total_tokens += tokens
-                            total_cost   += (tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
-                            st.write(f"✓ Batch {i+1} ({len(chunk):,} responses)")
+                        batch_results: list[GroupAnalysis | None] = [None] * len(chunks)
+
+                        def _map_holistic_chunk(idx: int, chunk_df: pd.DataFrame) -> tuple[int, str, int]:
+                            text   = assemble_chunk_text(chunk_df, answer_col, uuid_to_int)
+                            prompt = f"Batch {idx+1} of {len(chunks)}.\n\n{MAP_PROMPT}"
+                            r      = run_cortex_complete(text, selected_llm, prompt)
+                            return idx, r["choices"][0]["messages"], r["usage"]["total_tokens"]
+
+                        with ThreadPoolExecutor(max_workers=min(len(chunks), 12)) as executor:
+                            futures = {executor.submit(_map_holistic_chunk, i, chunk): i for i, chunk in enumerate(chunks)}
+                            for future in as_completed(futures):
+                                idx, text, tokens = future.result()
+                                batch_results[idx] = GroupAnalysis(
+                                    group_value=f"Batch {idx+1}",
+                                    n=len(chunks[idx]),
+                                    text=text,
+                                    tokens=tokens,
+                                )
+                                total_tokens += tokens
+                                total_cost   += (tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
+                                st.write(f"✓ Batch {idx+1} ({len(chunks[idx]):,} responses)")
+
+                        sub_results = [r for r in batch_results if r is not None]
 
                         counts_map: dict[str, set[int]] = {}
                         if quantitative_mode and sub_results:
@@ -919,20 +935,29 @@ with tab1:
                             f"Analyzing {len(group_rows_single):,} responses in {len(chunks)} batches…",
                             expanded=True,
                         ) as status:
-                            for i, chunk in enumerate(chunks):
-                                st.write(f"Analyzing batch {i+1} of {len(chunks)} ({len(chunk):,} responses)…")
-                                chunk_text = assemble_chunk_text(chunk, answer_col, uuid_to_int)
-                                result     = run_cortex_complete(chunk_text, selected_llm, f"Batch {i+1} of {len(chunks)}.\n\n{MAP_PROMPT}")
-                                tokens     = result["usage"]["total_tokens"]
-                                sub_results.append(GroupAnalysis(
-                                    group_value=f"Batch {i+1}",
-                                    n=len(chunk),
-                                    text=result["choices"][0]["messages"],
-                                    tokens=tokens,
-                                ))
-                                total_tokens += tokens
-                                total_cost   += (tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
-                                st.write(f"✓ Batch {i+1} ({len(chunk):,} responses)")
+                            batch_results_sg: list[GroupAnalysis | None] = [None] * len(chunks)
+
+                            def _map_sg_chunk(idx: int, chunk_df: pd.DataFrame) -> tuple[int, str, int]:
+                                text   = assemble_chunk_text(chunk_df, answer_col, uuid_to_int)
+                                prompt = f"Batch {idx+1} of {len(chunks)}.\n\n{MAP_PROMPT}"
+                                r      = run_cortex_complete(text, selected_llm, prompt)
+                                return idx, r["choices"][0]["messages"], r["usage"]["total_tokens"]
+
+                            with ThreadPoolExecutor(max_workers=min(len(chunks), 12)) as executor:
+                                futures = {executor.submit(_map_sg_chunk, i, chunk): i for i, chunk in enumerate(chunks)}
+                                for future in as_completed(futures):
+                                    idx, text, tokens = future.result()
+                                    batch_results_sg[idx] = GroupAnalysis(
+                                        group_value=f"Batch {idx+1}",
+                                        n=len(chunks[idx]),
+                                        text=text,
+                                        tokens=tokens,
+                                    )
+                                    total_tokens += tokens
+                                    total_cost   += (tokens / 1_000_000) * MODEL_COSTS.get(selected_llm, 0)
+                                    st.write(f"✓ Batch {idx+1} ({len(chunks[idx]):,} responses)")
+
+                            sub_results = [r for r in batch_results_sg if r is not None]
 
                             counts_map_sg: dict[str, set[int]] = {}
                             if quantitative_mode and sub_results:
