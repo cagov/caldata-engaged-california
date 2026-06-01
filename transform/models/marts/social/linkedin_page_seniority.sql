@@ -10,6 +10,7 @@ SELECT
     p.insights_page_views,
     p.careers_page_views,
     p.products_page_views
-FROM {{ ref('stg_linkedin_page_seniority') }} p
-LEFT JOIN {{ ref('stg_linkedin_seniority') }} s
-    ON s.seniority_id = p.seniority_id
+FROM {{ ref('stg_linkedin_page_seniority') }} AS p
+INNER JOIN {{ ref('stg_linkedin_seniority') }} AS s
+    ON p.seniority_id = s.seniority_id
+ORDER BY p.seniority_id

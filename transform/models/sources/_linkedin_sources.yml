@@ -28,7 +28,9 @@ sources:
             description: URN of the organization that owns the post.
 
       - name: SHARE_STATISTIC
-        description: Engagement metrics for each LinkedIn post including impressions, clicks, likes, comments, and shares.
+        description: |
+          Engagement metrics for each LinkedIn post including impressions, clicks,
+          likes, comments, and shares.
         columns:
           - name: _FIVETRAN_ID
             description: Fivetran generated unique identifier for each record.
@@ -50,7 +52,9 @@ sources:
             description: Engagement rate calculated as total organic interactions over impressions.
 
       - name: PAGE_STATISTIC_BY_SENIORITY
-        description: Page view statistics broken down by seniority level of visitors who clicked through to the LinkedIn company page.
+        description: |
+          Page view statistics broken down by seniority level of visitors who clicked
+          through to the LinkedIn company page.
         columns:
           - name: SENIORITY_ID
             description: Numeric identifier for the seniority level.
@@ -85,3 +89,43 @@ sources:
             description: Unique identifier for the seniority level.
           - name: NAME
             description: Name of the seniority level (e.g. Senior, Director, Manager).
+
+      - name: INDUSTRY
+        description: Lookup table mapping industry IDs to industry names.
+        columns:
+          - name: ID
+            description: Unique identifier for the industry.
+          - name: NAME
+            description: Name of the industry.
+
+      - name: FOLLOWERS_BY_SENIORITY
+        description: Follower counts for the organization broken down by seniority level.
+        columns:
+          - name: _FIVETRAN_ID
+            description: Fivetran generated unique identifier for each record.
+          - name: _ORGANIZATION_ENTITY_URN
+            description: URN of the organization this statistic belongs to.
+          - name: SENIORITY_ID
+            description: Numeric identifier for the seniority level. Joins to SENIORITY.ID.
+          - name: ORGANIC_FOLLOWER_COUNT
+            description: Number of followers gained organically.
+          - name: PAID_FOLLOWER_COUNT
+            description: Number of followers gained through paid campaigns.
+          - name: _FIVETRAN_SYNCED
+            description: Timestamp of when Fivetran last synced this record.
+
+      - name: FOLLOWERS_BY_INDUSTRY
+        description: Follower counts for the organization broken down by industry.
+        columns:
+          - name: _FIVETRAN_ID
+            description: Fivetran generated unique identifier for each record.
+          - name: _ORGANIZATION_ENTITY_URN
+            description: URN of the organization this statistic belongs to.
+          - name: INDUSTRY_ID
+            description: Numeric identifier for the industry. Joins to INDUSTRY.ID.
+          - name: ORGANIC_FOLLOWER_COUNT
+            description: Number of followers gained organically.
+          - name: PAID_FOLLOWER_COUNT
+            description: Number of followers gained through paid campaigns.
+          - name: _FIVETRAN_SYNCED
+            description: Timestamp of when Fivetran last synced this record.

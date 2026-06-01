@@ -1,6 +1,6 @@
 SELECT
     p.post_id,
-    p.post_published_at AS post_date,
+    p.post_published_at,
     p.post_commentary,
     p.post_visibility,
     p.post_lifecycle_state,

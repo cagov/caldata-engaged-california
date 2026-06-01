@@ -276,3 +276,125 @@ models:
         description: Timestamp when the comment was created.
       - name: _FIVETRAN_SYNCED
         description: Time stamp of Fivetran Sync.
+
+  - name: stg_linkedin_post_history
+    description: Records of posts made by the organization on LinkedIn, including content and metadata.
+    columns:
+      - name: post_id
+        description: Unique identifier for each post in URN format (urn:li:ugcPost:xxx).
+      - name: post_published_at
+        description: Timestamp when the post was first published.
+      - name: post_created_at
+        description: Timestamp when the post was created.
+      - name: post_last_modified_at
+        description: Timestamp when the post was last modified.
+      - name: post_commentary
+        description: Text content of the post.
+      - name: post_visibility
+        description: Visibility setting of the post (e.g. PUBLIC).
+      - name: post_lifecycle_state
+        description: Current state of the post (e.g. PUBLISHED).
+      - name: post_author_urn
+        description: URN of the author who created the post.
+      - name: post_organization_urn
+        description: URN of the organization that owns the post.
+
+  - name: stg_linkedin_share_stats
+    description: Engagement metrics for each LinkedIn post including impressions, clicks, likes, comments, and shares.
+    columns:
+      - name: share_statistic_id
+        description: Fivetran generated unique identifier for each record.
+      - name: post_id
+        description: URN of the post this statistic belongs to. Joins to stg_linkedin_post_history.post_id.
+      - name: organization_urn
+        description: URN of the organization this statistic belongs to.
+      - name: impression_count
+        description: Total number of times the post was shown in the feed, including passive views.
+      - name: click_count
+        description: Total number of clicks on the post.
+      - name: like_count
+        description: Total number of likes on the post.
+      - name: comment_count
+        description: Total number of comments on the post.
+      - name: share_count
+        description: Total number of times the post was shared.
+      - name: engagement
+        description: Engagement rate calculated as total organic interactions over impressions.
+
+  - name: stg_linkedin_page_seniority
+    description: Page view statistics broken down by seniority level of visitors to the LinkedIn company page.
+    columns:
+      - name: _fivetran_id
+        description: Fivetran generated unique identifier for each record.
+      - name: seniority_id
+        description: Numeric identifier for the seniority level. Joins to stg_linkedin_seniority.seniority_id.
+      - name: organization_urn
+        description: URN of the organization this statistic belongs to.
+      - name: all_page_views
+        description: Total page views across all sections and devices.
+      - name: all_mobile_page_views
+        description: Total page views from mobile devices.
+      - name: overview_page_views
+        description: Views of the overview page section.
+      - name: people_page_views
+        description: Views of the people page section.
+      - name: jobs_page_views
+        description: Views of the jobs page section.
+      - name: life_at_page_views
+        description: Views of the life at page section.
+      - name: insights_page_views
+        description: Views of the insights page section.
+      - name: careers_page_views
+        description: Views of the careers page section.
+      - name: products_page_views
+        description: Views of the products page section.
+
+  - name: stg_linkedin_seniority
+    description: Lookup table mapping seniority IDs to seniority names.
+    columns:
+      - name: seniority_id
+        description: Unique identifier for the seniority level.
+      - name: seniority_name
+        description: Name of the seniority level (e.g. Senior, Director, Manager).
+
+  - name: stg_linkedin_industry
+    description: Lookup table mapping industry IDs to industry names.
+    columns:
+      - name: industry_id
+        description: Unique identifier for the industry.
+      - name: industry_name
+        description: Name of the industry.
+
+  - name: stg_linkedin_follower_seniority
+    description: Follower counts for the organization broken down by seniority level.
+    columns:
+      - name: _fivetran_id
+        description: Fivetran generated unique identifier for each record.
+      - name: organization_urn
+        description: URN of the organization this statistic belongs to.
+      - name: seniority_id
+        description: Numeric identifier for the seniority level. Joins to stg_linkedin_seniority.seniority_id.
+      - name: organic_follower_count
+        description: Number of followers gained organically.
+      - name: paid_follower_count
+        description: Number of followers gained through paid campaigns.
+      - name: fivetran_synced
+        description: Timestamp of when Fivetran last synced this record.
+
+  - name: stg_linkedin_follower_industry
+    description: Follower counts for the organization broken down by industry.
+    columns:
+      - name: _fivetran_id
+        description: Fivetran generated unique identifier for each record.
+      - name: organization_urn
+        description: URN of the organization this statistic belongs to.
+      - name: industry_id
+        description: Numeric identifier for the industry. Joins to stg_linkedin_industry.industry_id.
+      - name: organic_follower_count
+        description: Number of followers gained organically.
+      - name: paid_follower_count
+        description: Number of followers gained through paid campaigns.
+      - name: fivetran_synced
+        description: Timestamp of when Fivetran last synced this record.
+      - name: fivetran_synced
+        description: Timestamp of when Fivetran last synced this record.
