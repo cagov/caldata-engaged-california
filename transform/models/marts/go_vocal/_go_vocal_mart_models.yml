@@ -136,7 +136,7 @@ models:
       This model tracks the progress of Go Vocal survey respondents towards the sortition targets defined in the
       "EngagedCA - AI Impact - Sortition Strategy" document. It aggregates respondent counts by survey
       response, allowing for monitoring of how well the survey sample is aligning with the desired representation
-      across different groups and characteristics. This model uses a target of 120 participants.
+      across different characteristics. This model uses a target of 120 participants.
     columns:
       - name: question
         description: The AI Impact survey question and sortition category. (e.g., 'Age').

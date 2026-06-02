@@ -129,7 +129,7 @@ models:
   - name: int_govocal_sortition_candidate_counts
     description: |
       This model aggregates counts of eligible sortition candidates by survey question and answer.
-      It is derived from non-admin respondents who are available for discussion and meet eligibility
+      Respondents are considered as eligible if they are available for discussion and meet certain eligibility
       filters (e.g., age, current work status).
     columns:
       - name: question
@@ -141,8 +141,7 @@ models:
   - name: int_govocal_sortition_targets
     description: |
       This model combines sortition candidate counts with sortition targets and computes adjusted target
-      percentages accounting for non-responses. It joins candidate counts to the AI_SORTITION_TARGETS
-      source and provides an adjusted target percentage per answer.
+      percentages by scaling down the target percentages to account for a proportional amount of non-responses.
     columns:
       - name: question
         description: The AI Impact survey question, or sortition category. (e.g., 'Age').
