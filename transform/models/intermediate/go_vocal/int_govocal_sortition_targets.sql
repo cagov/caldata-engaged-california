@@ -20,7 +20,7 @@ targets as (
         st.target_pct,
         -- scale down the target percentages based on the actual non-response percentages
         case when cc.answer = 'Non-response' then np.nonresponse_pct else st.target_pct * (1 - np.nonresponse_pct) end
-            as adj_target_pct
+            as adjusted_target_pct
     from candidate_counts as cc
     left join
         sortition_targets as st
@@ -29,4 +29,4 @@ targets as (
 )
 
 select * from targets
-order by question asc, answer asc, adj_target_pct desc
+order by question asc, answer asc, adjusted_target_pct desc

@@ -126,3 +126,31 @@ models:
         description: Label for the survey response, "pos", "neg", or "mix".
       - name: ai_response_rationale
         description: Rationale for the assigned AI response label.
+  - name: int_govocal_sortition_candidate_counts
+    description: |
+      This model aggregates counts of eligible sortition candidates by survey question and answer.
+      It is derived from non-admin respondents who are available for discussion and meet eligibility
+      filters (e.g., age, current work status).
+    columns:
+      - name: question
+        description: The AI Impact survey question or category used for sortition (e.g., 'Age').
+      - name: answer
+        description: The specific response or category for the question (e.g., '25-44').
+      - name: candidates_count
+        description: Count of candidates (respondents meeting eligibility criteria) who provided this answer.
+  - name: int_govocal_sortition_targets
+    description: |
+      This model combines sortition candidate counts with sortition targets and computes adjusted target
+      percentages accounting for non-responses. It joins candidate counts to the AI_SORTITION_TARGETS
+      source and provides an adjusted target percentage per answer.
+    columns:
+      - name: question
+        description: The AI Impact survey question, or sortition category. (e.g., 'Age').
+      - name: answer
+        description: The specific response to the survey question, or category group (e.g., '25-44').
+      - name: candidates_count
+        description: Count of survey respondents who provided this answer to the question.
+      - name: target_pct
+        description: Target percentage for this answer category based on sortition strategy (from source).
+      - name: adjusted_target_pct
+        description: Adjusted target percentage accounting for non-responses.
