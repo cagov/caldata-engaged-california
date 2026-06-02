@@ -178,6 +178,83 @@ models:
       - name: _FIVETRAN_ID
       - name: _FIVETRAN_SYNCED
         description: Time stamp of Fivetran Sync.
+  - name: stg_youtube_stats_daily
+    description: Daily YouTube video stats per country, sourced from the CHANNEL_BASIC_A_2 table.
+    columns:
+      - name: _fivetran_id
+        description: Unique identifier assigned by Fivetran.
+      - name: stats_date
+        description: Date of the stats.
+      - name: channel_id
+        description: YouTube channel identifier.
+      - name: video_id
+        description: YouTube video identifier.
+      - name: live_or_on_demand
+        description: Indicates whether the video was streamed live or on demand.
+      - name: subscribed_status
+        description: Viewer subscription status at time of view.
+      - name: country_code
+        description: ISO country code of the viewer.
+      - name: views
+        description: Total number of times the video was viewed, including very short or accidental views.
+      - name: engaged_views
+        description: |
+          Number of views where the viewer watched past the initial seconds of the video.
+          Unlike views, this metric filters out accidental or near-instant plays,
+          reflecting meaningful viewer engagement.
+      - name: comments
+        description: Number of comments on the video.
+      - name: likes
+        description: Number of likes on the video.
+      - name: dislikes
+        description: Number of dislikes on the video.
+      - name: shares
+        description: Number of times the video was shared.
+      - name: watch_time_minutes
+        description: Total watch time in minutes.
+      - name: average_view_duration_seconds
+        description: Average view duration in seconds.
+      - name: average_view_duration_percentage
+        description: Average percentage of the video watched.
+      - name: subscribers_lost
+        description: Number of subscribers lost after watching the video.
+      - name: subscribers_gained
+        description: Number of subscribers gained after watching the video.
+
+  - name: stg_youtube_video_metadata
+    description: YouTube video metadata sourced from the VIDEO table.
+    columns:
+      - name: id
+        description: Unique YouTube video identifier.
+      - name: snippet_title
+        description: Title of the video.
+      - name: snippet_description
+        description: Description of the video.
+      - name: snippet_tags
+        description: Tags associated with the video.
+      - name: snippet_published_at
+        description: Timestamp when the video was published.
+      - name: snippet_channel_title
+        description: Display name of the channel.
+      - name: snippet_category_id
+        description: YouTube category ID for the video.
+      - name: content_details_duration
+        description: Duration of the video in ISO 8601 format.
+      - name: video_duration_seconds
+        description: Duration of the video in seconds, parsed from content_details_duration.
+      - name: privacy_status
+        description: Privacy status of the video (public, private, unlisted).
+      - name: statistics_view_count
+        description: Total number of views.
+      - name: statistics_like_count
+        description: Total number of likes.
+      - name: statistics_dislike_count
+        description: Total number of dislikes.
+      - name: statistics_comment_count
+        description: Total number of comments.
+      - name: statistics_favorite_count
+        description: Total number of times the video was favorited.
+
   - name: stg_instagram__media_comment
     description: User comments on Instagram media.
     columns:

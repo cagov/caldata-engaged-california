@@ -1,6 +1,136 @@
 version: 2
 
 models:
+  - name: youtube_video_engagement_daily
+    description: |
+      Daily YouTube video engagement stats aggregated by video and date across all countries.
+      Unlisted videos are excluded. Rows with no matching video metadata are excluded.
+    columns:
+      - name: stats_date
+        description: Date of the stats.
+      - name: channel_id
+        description: YouTube channel identifier.
+      - name: video_id
+        description: YouTube video identifier.
+      - name: snippet_title
+        description: Title of the video.
+      - name: snippet_published_at
+        description: Timestamp when the video was published.
+      - name: snippet_description
+        description: Description of the video.
+      - name: snippet_tags
+        description: Tags associated with the video.
+      - name: privacy_status
+        description: Privacy status of the video (public, private, or unknown).
+      - name: views
+        description: Total number of views across all countries.
+      - name: engaged_views
+        description: Number of views where the viewer watched past the initial seconds of the video.
+      - name: comments
+        description: Number of comments on the video.
+      - name: likes
+        description: Number of likes on the video.
+      - name: dislikes
+        description: Number of dislikes on the video.
+      - name: shares
+        description: Number of times the video was shared.
+      - name: watch_time_minutes
+        description: Total watch time in minutes across all countries.
+      - name: video_duration_seconds
+        description: Duration of the video in seconds.
+      - name: avg_completion_pct
+        description: |
+          Average percentage of the video watched per view, calculated as total watch time
+          divided by total views divided by video duration. Aggregated across all countries.
+
+  - name: youtube_video_engagement_lifetime
+    description: |
+      All-time YouTube video engagement stats aggregated by video across all countries.
+      Unlisted videos are excluded.
+    columns:
+      - name: channel_id
+        description: YouTube channel identifier.
+      - name: video_id
+        description: YouTube video identifier.
+      - name: snippet_title
+        description: Title of the video.
+      - name: snippet_published_at
+        description: Timestamp when the video was published.
+      - name: snippet_description
+        description: Description of the video.
+      - name: snippet_tags
+        description: Tags associated with the video.
+      - name: privacy_status
+        description: Privacy status of the video (public, private, or unknown).
+      - name: views_total
+        description: Total all-time views.
+      - name: engaged_views_total
+        description: Total all-time engaged views.
+      - name: comments_total
+        description: Total all-time comments.
+      - name: likes_total
+        description: Total all-time likes.
+      - name: dislikes_total
+        description: Total all-time dislikes.
+      - name: shares_total
+        description: Total all-time shares.
+      - name: watch_time_minutes_total
+        description: Total all-time watch time in minutes.
+      - name: video_duration_seconds
+        description: Duration of the video in seconds.
+      - name: avg_completion_pct
+        description: |
+          Average percentage of the video watched per view across all time, calculated as
+          total watch time divided by total views divided by video duration.
+
+  - name: youtube_channel_engagement_daily
+    description: |
+      Daily YouTube channel engagement stats aggregated by channel across all countries.
+    columns:
+      - name: stats_date
+        description: Date of the stats.
+      - name: channel_id
+        description: YouTube channel identifier.
+      - name: views_total
+        description: Total views for the channel on this date.
+      - name: engaged_views_total
+        description: Total engaged views for the channel on this date.
+      - name: comments_total
+        description: Total comments across all videos on this date.
+      - name: likes_total
+        description: Total likes across all videos on this date.
+      - name: dislikes_total
+        description: Total dislikes across all videos on this date.
+      - name: shares_total
+        description: Total shares across all videos on this date.
+      - name: watch_time_minutes_total
+        description: Total watch time in minutes across all videos on this date.
+
+  - name: youtube_channel_engagement_lifetime
+    description: |
+      All-time YouTube channel engagement stats aggregated by channel across all countries.
+    columns:
+      - name: channel_id
+        description: YouTube channel identifier.
+      - name: views_total
+        description: Total all-time views.
+      - name: engaged_views_total
+        description: Total all-time engaged views.
+      - name: comments_total
+        description: Total all-time comments.
+      - name: likes_total
+        description: Total all-time likes.
+      - name: dislikes_total
+        description: Total all-time dislikes.
+      - name: shares_total
+        description: Total all-time shares.
+      - name: watch_time_minutes_total
+        description: Total all-time watch time in minutes.
+      - name: watch_time_minutes_avg
+        description: |
+          Average daily watch time in minutes, calculated as total watch time divided
+          by the number of distinct days with data.
+
   - name: facebook_pages_post_metrics
     description: |
       Final model that aggregates key engagement and video metrics for each Facebook post.
