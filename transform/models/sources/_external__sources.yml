@@ -243,3 +243,17 @@ sources:
             description: Timestamp of when the data has been modified
           - name: _FIVETRAN_SYNCED
             description: Timestamp of when the data has been synced with Fivetran
+      - name: AI_SORTITION_TARGETS
+        description: |
+          Target sortition percentages for the AI Impact sortition process. One row per category-group.
+          The targets are defined in "EngagedCA - AI Impact - Sortition Strategy".
+          https://docs.google.com/document/d/10c2Y3mZQSqGPv06SaCboTElp7jtGVN2ybmqeAMDvwK0/
+        columns:
+          - name: CATEGORY
+            description: Sortition category. For example, 'Age'.
+          - name: NAME
+            description: Specific group within the category. For example, '25-44'.
+          - name: TARGET_PCT
+            description: |
+              Target percentage for this group in the sortition outcome. Formatted as a decimal.
+              For example, 0.35 for 35% of sortition candidates.
