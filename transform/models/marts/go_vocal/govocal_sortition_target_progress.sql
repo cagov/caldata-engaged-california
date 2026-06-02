@@ -6,8 +6,12 @@ targets as (select * from {{ ref('int_govocal_sortition_targets') }}),
 
 evals as (
     select
-        *,
-        round(adj_target_pct * {{ num_participants }}, 0) as target,
+        question,
+        answer,
+        candidates_count,
+        target_pct,
+        adjusted_target_pct,
+        round(adjusted_target_pct * {{ num_participants }}, 0) as target,
         target * 3 as goal,  -- assumes 66% attrition
         candidates_count / goal as pct_of_goal,
         case

@@ -131,3 +131,32 @@ models:
         description: Count of how many survey questions the respondent answered.
       - name: _loaded_at
         description: Timestamp of the most recent load of Go Vocal data into Snowflake. From _loaded_at.
+  - name: govocal_sortition_target_progress
+    description: |
+      This model tracks the progress of Go Vocal survey respondents towards the sortition targets defined in the
+      "EngagedCA - AI Impact - Sortition Strategy" document. It aggregates respondent counts by survey
+      response, allowing for monitoring of how well the survey sample is aligning with the desired representation
+      across different groups and characteristics. This model uses a target of 120 participants.
+    columns:
+      - name: question
+        description: The AI Impact survey question and sortition category. (e.g., 'Age').
+      - name: answer
+        description: The specific response to the survey question, or category group (e.g., '25-44').
+      - name: candidates_count
+        description: Count of survey respondents who provided this answer to the question.
+      - name: target_pct
+        description: Target percentage for this answer category based on sortition strategy.
+      - name: adjusted_target_pct
+        description: Adjusted target percentage accounting for sortition strategy refinements.
+      - name: target
+        description: Target count of respondents needed for this category, calculated from adjusted target percentage.
+      - name: goal
+        description: Goal count of respondents, calculated as target multiplied by 3 to account for 66% attrition.
+      - name: pct_of_goal
+        description: Percentage of goal achieved, calculated as candidates_count divided by goal.
+      - name: eval
+        description: |
+          Evaluation status indicating whether sortition targets can be met. Possible values are:
+          '⛔ impossible to meet sortition targets' if candidates_count is less than target,
+          '⚠ more would be good' if candidates_count is less than goal,
+          'probably have enough respondents' otherwise.
