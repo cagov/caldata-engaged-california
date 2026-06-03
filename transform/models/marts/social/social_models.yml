@@ -130,6 +130,87 @@ models:
         description: |
           Average daily watch time in minutes, calculated as total watch time divided
           by the number of distinct days with data.
+  - name: linkedin_post_statistics
+    description: LinkedIn post engagement statistics broken down by post, joining metadata with share metrics.
+    columns:
+      - name: post_id
+        description: Unique identifier for each post in URN format.
+      - name: post_published_at
+        description: Timestamp when the post was first published.
+      - name: post_commentary
+        description: Text content of the post.
+      - name: post_visibility
+        description: Visibility setting of the post (e.g. PUBLIC).
+      - name: post_lifecycle_state
+        description: Current state of the post (e.g. PUBLISHED).
+      - name: post_author_urn
+        description: URN of the author who created the post.
+      - name: impression_count
+        description: Total number of times the post was shown in the feed, including passive views.
+      - name: click_count
+        description: Total number of clicks on the post.
+      - name: like_count
+        description: Total number of likes on the post.
+      - name: comment_count
+        description: Total number of comments on the post.
+      - name: share_count
+        description: Total number of times the post was shared.
+      - name: engagement
+        description: Engagement rate calculated as total organic interactions over impressions.
+
+  - name: linkedin_page_seniority
+    description: LinkedIn company page view statistics broken down by visitor seniority level.
+    columns:
+      - name: seniority_name
+        description: Name of the seniority level (e.g. Senior, Director, Manager).
+      - name: organization_urn
+        description: URN of the organization this statistic belongs to.
+      - name: all_page_views
+        description: Total page views across all sections and devices.
+      - name: all_mobile_page_views
+        description: Total page views from mobile devices.
+      - name: overview_page_views
+        description: Views of the overview page section.
+      - name: people_page_views
+        description: Views of the people page section.
+      - name: jobs_page_views
+        description: Views of the jobs page section.
+      - name: life_at_page_views
+        description: Views of the life at page section.
+      - name: insights_page_views
+        description: Views of the insights page section.
+      - name: careers_page_views
+        description: Views of the careers page section.
+      - name: products_page_views
+        description: Views of the products page section.
+
+  - name: linkedin_followers_by_industry
+    description: LinkedIn follower counts for the organization broken down by industry.
+    columns:
+      - name: industry_name
+        description: Name of the industry.
+      - name: organization_urn
+        description: URN of the organization this statistic belongs to.
+      - name: organic_follower_count
+        description: Number of followers gained organically.
+      - name: paid_follower_count
+        description: Number of followers gained through paid campaigns.
+      - name: total_follower_count
+        description: Total followers, calculated as organic plus paid.
+
+  - name: linkedin_followers_by_seniority
+    description: LinkedIn follower counts for the organization broken down by seniority level.
+    columns:
+      - name: seniority_name
+        description: Name of the seniority level (e.g. Senior, Director, Manager).
+      - name: organization_urn
+        description: URN of the organization this statistic belongs to.
+      - name: organic_follower_count
+        description: Number of followers gained organically.
+      - name: paid_follower_count
+        description: Number of followers gained through paid campaigns.
+      - name: total_follower_count
+        description: Total followers, calculated as organic plus paid.
 
   - name: facebook_pages_post_metrics
     description: |

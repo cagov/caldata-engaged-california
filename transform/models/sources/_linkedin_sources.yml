@@ -1,0 +1,206 @@
+sources:
+  - name: engaged_ca_linkedin_company_pages
+    database: RAW_ENGCA_PRD
+    schema: ENGAGED_CA_LINKEDIN_COMPANY_PAGES
+    description: LinkedIn Company Pages data synced via Fivetran
+
+    tables:
+      - name: UGC_POST_HISTORY
+        description: Records of posts made by the organization on LinkedIn, including content and metadata.
+        columns:
+          - name: ID
+            description: Unique identifier for each post in URN format (urn:li:ugcPost:xxx).
+          - name: FIRST_PUBLISHED_AT
+            description: Timestamp when the post was first published.
+          - name: CREATED_TIME
+            description: Timestamp when the post was created.
+          - name: LAST_MODIFIED_TIME
+            description: Timestamp when the post was last modified.
+          - name: COMMENTARY
+            description: Text content of the post.
+          - name: VISIBILITY
+            description: Visibility setting of the post (e.g. PUBLIC).
+          - name: LIFECYCLE_STATE
+            description: Current state of the post (e.g. PUBLISHED).
+          - name: AUTHOR
+            description: URN of the author who created the post.
+          - name: CONTAINER_ENTITY
+            description: URN of the organization that owns the post.
+          - name: AD_CONTEXT_DSC_AD_ACCOUNT
+            description: Ad account associated with the post if boosted.
+          - name: AD_CONTEXT_DSC_AD_TYPE
+            description: Type of ad if the post was boosted.
+          - name: AD_CONTEXT_DSC_NAME
+            description: Name of the ad campaign if the post was boosted.
+          - name: AD_CONTEXT_DSC_STATUS
+            description: Status of the ad campaign if the post was boosted.
+          - name: AD_CONTEXT_IS_DSC
+            description: Indicates whether the post is a Direct Sponsored Content ad.
+          - name: DISTRIBUTION_EXTERNAL_DISTRIBUTION_CHANNELS
+            description: External channels the post was distributed to.
+          - name: DISTRIBUTION_FEED_DISTRIBUTION
+            description: Feed distribution setting for the post.
+          - name: LIFECYCLE_STATE_INFO_CONTENT_STATUS
+            description: Content moderation status of the post.
+          - name: LIFECYCLE_STATE_INFO_IS_EDITED_BY_AUTHOR
+            description: Indicates whether the post was edited by the author after publishing.
+          - name: LIFECYCLE_STATE_INFO_REVIEW_STATUS
+            description: Review status of the post.
+          - name: RESPONSE_CONTEXT_PARENT
+            description: URN of the parent post if this is a reply.
+          - name: RESPONSE_CONTEXT_ROOT
+            description: URN of the root post in a thread.
+          - name: CONTENT_LANDING_PAGE
+            description: Landing page URL associated with the post content.
+          - name: CONTENT_CALL_TO_ACTION_LABEL
+            description: Call to action label on the post (e.g. Learn More, Sign Up).
+          - name: IS_RESHARE_DISABLED_BY_AUTHOR
+            description: Indicates whether the author disabled resharing of the post.
+          - name: _FIVETRAN_SYNCED
+            description: Timestamp of when Fivetran last synced this record.
+
+      - name: SHARE_STATISTIC
+        description: |
+          Engagement metrics for each LinkedIn post including impressions, clicks,
+          likes, comments, and shares.
+        columns:
+          - name: _FIVETRAN_ID
+            description: Fivetran generated unique identifier for each record.
+          - name: _SHARE_ENTITY_URN
+            description: URN of the post this statistic belongs to. Joins to UGC_POST_HISTORY.ID.
+          - name: _ORGANIZATION_ENTITY_URN
+            description: URN of the organization that owns the post.
+          - name: IMPRESSION_COUNT
+            description: Total number of times the post was shown in the feed, including passive views.
+          - name: CLICK_COUNT
+            description: Total number of clicks on the post.
+          - name: LIKE_COUNT
+            description: Total number of likes on the post.
+          - name: COMMENT_COUNT
+            description: Total number of comments on the post.
+          - name: SHARE_COUNT
+            description: Total number of times the post was shared.
+          - name: ENGAGEMENT
+            description: Engagement rate calculated as total organic interactions over impressions.
+          - name: _FIVETRAN_SYNCED
+            description: Timestamp of when Fivetran last synced this record.
+
+      - name: PAGE_STATISTIC_BY_SENIORITY
+        description: |
+          Page view statistics broken down by seniority level of visitors who clicked
+          through to the LinkedIn company page.
+        columns:
+          - name: SENIORITY_ID
+            description: Numeric identifier for the seniority level.
+          - name: _ORGANIZATION_ENTITY_URN
+            description: URN of the organization this statistic belongs to.
+          - name: ALL_PAGE_VIEWS
+            description: Total page views across all sections and devices.
+          - name: ALL_DESKTOP_PAGE_VIEWS
+            description: Total page views from desktop devices.
+          - name: ALL_MOBILE_PAGE_VIEWS
+            description: Total page views from mobile devices.
+          - name: OVERVIEW_PAGE_VIEWS
+            description: Views of the overview page section.
+          - name: PEOPLE_PAGE_VIEWS
+            description: Views of the people page section.
+          - name: JOBS_PAGE_VIEWS
+            description: Views of the jobs page section.
+          - name: LIFE_AT_PAGE_VIEWS
+            description: Views of the life at page section.
+          - name: INSIGHTS_PAGE_VIEWS
+            description: Views of the insights page section.
+          - name: CAREERS_PAGE_VIEWS
+            description: Views of the careers page section.
+          - name: PRODUCTS_PAGE_VIEWS
+            description: Views of the products page section.
+          - name: ABOUT_PAGE_VIEWS
+            description: Views of the about page section.
+          - name: DESKTOP_OVERVIEW_PAGE_VIEWS
+            description: Desktop views of the overview page section.
+          - name: DESKTOP_PEOPLE_PAGE_VIEWS
+            description: Desktop views of the people page section.
+          - name: DESKTOP_JOBS_PAGE_VIEWS
+            description: Desktop views of the jobs page section.
+          - name: DESKTOP_LIFE_AT_PAGE_VIEWS
+            description: Desktop views of the life at page section.
+          - name: DESKTOP_INSIGHTS_PAGE_VIEWS
+            description: Desktop views of the insights page section.
+          - name: DESKTOP_CAREERS_PAGE_VIEWS
+            description: Desktop views of the careers page section.
+          - name: DESKTOP_PRODUCTS_PAGE_VIEWS
+            description: Desktop views of the products page section.
+          - name: DESKTOP_ABOUT_PAGE_VIEWS
+            description: Desktop views of the about page section.
+          - name: MOBILE_OVERVIEW_PAGE_VIEWS
+            description: Mobile views of the overview page section.
+          - name: MOBILE_PEOPLE_PAGE_VIEWS
+            description: Mobile views of the people page section.
+          - name: MOBILE_JOBS_PAGE_VIEWS
+            description: Mobile views of the jobs page section.
+          - name: MOBILE_LIFE_AT_PAGE_VIEWS
+            description: Mobile views of the life at page section.
+          - name: MOBILE_INSIGHTS_PAGE_VIEWS
+            description: Mobile views of the insights page section.
+          - name: MOBILE_CAREERS_PAGE_VIEWS
+            description: Mobile views of the careers page section.
+          - name: MOBILE_PRODUCTS_PAGE_VIEWS
+            description: Mobile views of the products page section.
+          - name: MOBILE_ABOUT_PAGE_VIEWS
+            description: Mobile views of the about page section.
+          - name: _FIVETRAN_ID
+            description: Fivetran generated unique identifier.
+          - name: _FIVETRAN_SYNCED
+            description: Timestamp of when Fivetran last synced this record.
+
+      - name: SENIORITY
+        description: Lookup table mapping seniority IDs to seniority names.
+        columns:
+          - name: ID
+            description: Unique identifier for the seniority level.
+          - name: NAME
+            description: Name of the seniority level (e.g. Senior, Director, Manager).
+          - name: _FIVETRAN_SYNCED
+            description: Timestamp of when Fivetran last synced this record.
+
+      - name: INDUSTRY
+        description: Lookup table mapping industry IDs to industry names.
+        columns:
+          - name: ID
+            description: Unique identifier for the industry.
+          - name: NAME
+            description: Name of the industry.
+          - name: _FIVETRAN_SYNCED
+            description: Timestamp of when Fivetran last synced this record.
+
+      - name: FOLLOWERS_BY_SENIORITY
+        description: Follower counts for the organization broken down by seniority level.
+        columns:
+          - name: _FIVETRAN_ID
+            description: Fivetran generated unique identifier for each record.
+          - name: _ORGANIZATION_ENTITY_URN
+            description: URN of the organization this statistic belongs to.
+          - name: SENIORITY_ID
+            description: Numeric identifier for the seniority level. Joins to SENIORITY.ID.
+          - name: FOLLOWER_COUNTS_ORGANIC_FOLLOWER_COUNT
+            description: Number of followers gained organically.
+          - name: FOLLOWER_COUNTS_PAID_FOLLOWER_COUNT
+            description: Number of followers gained through paid campaigns.
+          - name: _FIVETRAN_SYNCED
+            description: Timestamp of when Fivetran last synced this record.
+
+      - name: FOLLOWERS_BY_INDUSTRY
+        description: Follower counts for the organization broken down by industry.
+        columns:
+          - name: _FIVETRAN_ID
+            description: Fivetran generated unique identifier for each record.
+          - name: _ORGANIZATION_ENTITY_URN
+            description: URN of the organization this statistic belongs to.
+          - name: INDUSTRY_ID
+            description: Numeric identifier for the industry. Joins to INDUSTRY.ID.
+          - name: FOLLOWER_COUNTS_ORGANIC_FOLLOWER_COUNT
+            description: Number of followers gained organically.
+          - name: FOLLOWER_COUNTS_PAID_FOLLOWER_COUNT
+            description: Number of followers gained through paid campaigns.
+          - name: _FIVETRAN_SYNCED
+            description: Timestamp of when Fivetran last synced this record.
