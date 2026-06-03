@@ -49,7 +49,7 @@ group_categorize as (
                         when 'Manufacturing' then 'Logistics'
                         when 'Healthcare' then 'Healthcare'
                         when 'Government' then 'Public sector'
-                        when 'Academia' then 'Education'
+                        when 'Education' then 'Academia'
                         when 'Arts, entertainment, or media' then 'Creative'
                         when 'Retail or wholesale trade' then 'Retail'
                         when 'Information technology' then 'Information technology'
