@@ -21,6 +21,7 @@ load_dotenv()
 ######## Sortition settings
 
 final_panel_size = 120
+min_panel_size = 100
 id_column = "survey_respondent_id"
 columns_to_keep = []  # additional columns to keep in the output
 selection_algorithm = "maximin"  # default is maximin
@@ -31,9 +32,9 @@ selection_algorithm = "maximin"  # default is maximin
 snowflake_conn = snowflake_connection_from_environment(schema="GOVOCAL")
 cur = snowflake_conn.cursor()
 
-features_sql = """
-SELECT category, name, min, target as max
-FROM RAW_ENGCA_PRD.DEMOGRAPHICS.SORTITION_TARGETS
+features_sql = f"""
+SELECT question as category, answer as name, adjusted_target_pct * {min_panel_size} as min, adjusted_target_pct * {final_panel_size} as max
+FROM TRANSFORM_ENGCA_DEV.DBT_CHOLLINGSWORTH_GOVOCAL.INT_GOVOCAL_SORTITION_TARGETS -- Update with correct source once PR is merged
 """
 
 people_sql = """
