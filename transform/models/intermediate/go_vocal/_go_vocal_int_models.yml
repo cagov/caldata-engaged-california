@@ -127,27 +127,45 @@ models:
       - name: ai_response_rationale
         description: Rationale for the assigned AI response label.
   - name: int_govocal_sortition_candidate_counts
+  - name: int_govocal_sortition_candidates
     description: |
-      This model aggregates counts of eligible sortition candidates by survey question and answer.
+      This model filters AI Impact survey respondents to identify the respondents who are eligible for sortition.
       Respondents are considered as eligible if they are available for discussion and meet certain eligibility
-      filters (e.g., age, current work status).
+      filters (e.g., age, current work status). The model also recategorizes some question answers to align with
+      the categories and groups used in the sortition strategy. This includes generally grouping all null and
+      'I don't want to say' responses into a single 'Non-response' grouping. The resulting model has one row per
+      candidate.
     columns:
-      - name: question
-        description: The AI Impact survey question or category used for sortition (e.g., 'Age').
-      - name: answer
-        description: The specific response or category for the question (e.g., '25-44').
-      - name: candidates_count
-        description: Count of candidates (respondents meeting eligibility criteria) who provided this answer.
+      - name: survey_respondent_id
+        description: User ID of the survey respondent.
+      - name: age
+        description: Response to the question 'What is your age?' with handling for non-responses.
+      - name: gender_category
+        description: |
+          Response to the question 'What is your gender identity?' with handling for non-responses and
+          with multiple responses and 'Another gender identity' responses categorized together as
+          'Nonbinary / multi / other'.
+      - name: race_ethnicity_category
+        description: |
+          Response to the question 'What is your race or ethnicity?' with handling for non-responses.
+      - name: region
+        description: Region corresponding to the California county, as described by sortition strategy.
+      - name: field_of_work
+        description: |
+          Response to the question "Which best describes your field of work?" with handling for non-responses and
+          with a remapping of some responses to align with sortition strategy groupings.
   - name: int_govocal_sortition_targets
     description: |
-      This model combines sortition candidate counts with sortition targets and computes adjusted target
-      percentages by scaling down the target percentages to account for a proportional amount of non-responses.
+      This model counts the number of sortition candidates matching each target category from the sortition strategy.
+      Then the model computes adjusted target percentages by scaling down the sortition strategytarget percentages
+      to account for a proportional amount of non-responses. The model has one row per question and answer (or
+      sortition category and group).
     columns:
       - name: question
         description: The AI Impact survey question, or sortition category. (e.g., 'Age').
       - name: answer
         description: The specific response to the survey question, or category group (e.g., '25-44').
-      - name: candidates_count
+      - name: candidate_count
         description: Count of survey respondents who provided this answer to the question.
       - name: target_pct
         description: Target percentage for this answer category based on sortition strategy (from source).

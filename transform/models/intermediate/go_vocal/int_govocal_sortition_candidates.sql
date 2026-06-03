@@ -58,16 +58,6 @@ group_categorize as (
                 )
         end as field_of_work
     from candidates
-),
-
-unpivoted as (
-    select
-        question,
-        answer,
-        count(*) as candidates_count
-    from group_categorize
-    unpivot (answer for question in (age, gender_category, race_ethnicity_category, region, field_of_work))
-    group by question, answer
 )
 
-select * from unpivoted
+select * from group_categorize
