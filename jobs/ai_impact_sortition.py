@@ -26,6 +26,10 @@ columns_to_keep = []  # additional columns to keep in the output
 selection_algorithm = "maximin"  # default is maximin
 
 
+SOURCE_SCHEMA = "GOVOCAL"
+TARGET_SCHEMA = "AI_IMPACT"
+TARGET_TABLE = "INT_SORTITION_SELECTIONS"
+
 FEATURES_SQL = f"""
 SELECT
     question as category,
@@ -43,9 +47,6 @@ ALREADY_SELECTED_SQL = """
 select * from TRANSFORM_ENGCA_DEV.DBT_CHOLLINGSWORTH_GOVOCAL.INT_GOVOCAL_SORTITION_CANDIDATES
 WHERE FALSE
 """
-
-TARGET_SCHEMA = "AI_IMPACT"
-TARGET_TABLE = "AI_IMPACT_SELECTED_PANELS"
 
 
 def prepare_sortition_inputs(features_df, people_df, already_selected_df, settings, number_people_wanted):
@@ -124,10 +125,9 @@ def main():
     source_cur = None
     target_conn = None
     target_cur = None
-    report_content = None
 
     try:
-        source_conn = snowflake_connection_from_environment(schema="GOVOCAL")
+        source_conn = snowflake_connection_from_environment(schema=SOURCE_SCHEMA)
         source_cur = source_conn.cursor()
 
         features_df = source_cur.execute(FEATURES_SQL).fetch_pandas_all()
