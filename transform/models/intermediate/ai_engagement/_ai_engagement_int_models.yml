@@ -1,0 +1,18 @@
+version: 2
+models:
+  - name: int_ai_engagement_phase2_invitee_status
+    description: |
+      This table contains information about invitees of Phase 2 events.
+    columns:
+      - name: invitee_email
+        description: The email address of the invitee.
+      - name: invitee_status
+        description: The status of the invitee (e.g., accepted, declined).
+  - name: INT_AI_ENGAGEMENT_SORTITION_SELECTIONS
+    description: |
+      This table is output by the sortition process.
+    columns:
+      - name: survey_respondent_id
+        description: User ID of the survey respondent.
+      - name: selection_timestamp
+        description: Timestamp when the sortition selection was made.

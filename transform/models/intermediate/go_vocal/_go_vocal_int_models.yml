@@ -126,7 +126,6 @@ models:
         description: Label for the survey response, "pos", "neg", or "mix".
       - name: ai_response_rationale
         description: Rationale for the assigned AI response label.
-  - name: int_govocal_sortition_candidate_counts
   - name: int_govocal_sortition_candidates
     description: |
       This model filters AI Impact survey respondents to identify the respondents who are eligible for sortition.
