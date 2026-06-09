@@ -17,3 +17,10 @@ seeds:
   - name: TEST_PARTICIPANTS
     description: >
       Contains participant IDs that are known to be from test accounts and should be excluded from analysis.
+
+  - name: ai_response_label_exemplars
+    description: >
+      Contains participant IDs, their AI response label, and the rationale for that label, for a set of exemplar
+      responses that were used to calibrate the LLM's classifications of survey responses about the impact
+      of AI on work. These exemplars were identified during the initial classification process, and were sanity
+      checked by humans.

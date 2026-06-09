@@ -45,6 +45,7 @@ select
     u.race_ethnicity_category,
     u.user_status,
     s.publication_status,
+    s.published_at,
     s.current_work_status,
     s.role_at_work,
     s.county,

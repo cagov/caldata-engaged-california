@@ -104,6 +104,8 @@ models:
           'incomplete' for all else.
       - name: publication_status
         description: Status of publication (e.g., published, draft).
+      - name: published_at
+        description: Timestamp when the survey was published.
       - name: current_work_status
         description: Response to the question "Are you currently working?"
       - name: role_at_work
