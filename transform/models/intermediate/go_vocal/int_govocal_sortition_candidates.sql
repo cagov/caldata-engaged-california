@@ -43,17 +43,23 @@ group_categorize as (
             when field_of_work is null or field_of_work = 'I don''t want to say' then 'Non-response' else
                 (
                     case field_of_work
-                        when 'Legal' then 'Legal / Financial'
-                        when 'Finance' then 'Legal / Financial'
+                        when 'Agriculture, forestry, or fishing' then 'Goods producing and harvesting'
+                        when 'Architecture or engineering' then 'Professional services'
+                        when 'Construction' then 'Goods producing and harvesting'
+                        when 'Corporate ownership or governance' then 'Professional services'
+                        when 'Finance' then 'Financial'
+                        when 'I don''t currently work' then 'Unemployed, looking'
+                        when 'Insurance' then 'Financial'
+                        when 'Legal' then 'Professional services'
+                        when 'Manufacturing' then 'Goods producing and harvesting'
+                        when 'Mining, quarrying, or oil and gas extraction' then 'Goods producing and harvesting'
+                        when 'Non-profit' then 'Other'
+                        when 'Real estate or leasing' then 'Financial'
+                        when 'Retail or wholesale trade' then 'Retail or wholesale trade'
+                        when 'Science' then 'Professional services'
                         when 'Transportation or warehousing' then 'Logistics'
-                        when 'Manufacturing' then 'Logistics'
-                        when 'Healthcare' then 'Healthcare'
-                        when 'Government' then 'Public sector'
-                        when 'Education' then 'Academia'
-                        when 'Arts, entertainment, or media' then 'Creative'
-                        when 'Retail or wholesale trade' then 'Retail'
-                        when 'Information technology' then 'Information technology'
-                        else 'Other'
+                        when 'Utilities or waste management' then 'Logistics'
+                        else field_of_work
                     end
                 )
         end as field_of_work
