@@ -4,7 +4,7 @@ users_x_survey as (select * from {{ ref('int_govocal_users_x_ai_survey') }}),
 
 ai_response_label as (select * from {{ ref('int_govocal_ai_response_label') }}),
 
-
+invitee_status as (select * from {{ ref('int_ai_engagement_phase2_invitee_status') }}),
 
 candidates as (
     select *
@@ -75,6 +75,15 @@ add_ai_labels as (
     from group_categorize as g
     left join ai_response_label as ai
         on g.survey_respondent_id = ai.survey_respondent_id
+),
+
+add_invitee_status as (
+    select
+        a.*,
+        i.invitee_status
+    from add_ai_labels as a
+    left join invitee_status as i
+        on a.survey_respondent_id = i.survey_respondent_id
 )
 
-select * from add_ai_labels
+select * from add_invitee_status
