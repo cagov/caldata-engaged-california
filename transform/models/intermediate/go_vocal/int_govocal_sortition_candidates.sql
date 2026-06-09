@@ -10,8 +10,6 @@ candidates as (
         and publication_status <> 'draft'
         and availability_for_discussion in ('Yes', 'Maybe')
         and region is not null  -- this will exclude county in ('I don''t want to say', 'I live outside of California')
-        -- and county <> 'I don''t want to say'
-        -- and county <> 'I live outside of California'
         and age <> 'Under 18'
         and current_work_status <> 'No, I''m retired or choose not to work'
         and current_work_status is not null
