@@ -1,6 +1,6 @@
 with
 
-invitees as (select * from {{ env_var('SNOWFLAKE_DATABASE') }}.int_ai_engagement_sortition_selections),
+invitees as (select * from {{ env_var('SNOWFLAKE_DATABASE') }}.ai_engagement.int_ai_engagement_sortition_selections),
 
 users as (
     select
