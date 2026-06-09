@@ -208,7 +208,8 @@ sources:
     tables:
       - name: PH_2_ATTENDEES
         description: |
-          Contains registrant information. Sourced from a manual download of the csv that collects registration information for the AI Engagement. Updated manually.
+          Contains registrant information. Sourced from a manual download of the csv that collects
+          registration information for the AI Engagement. Updated manually.
         columns:
           - name: EVENT_TYPE_NAME
             description: The name of the event

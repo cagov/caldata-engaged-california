@@ -16,7 +16,7 @@ models:
       - name: invitee_status
         description: The status of the invitee (e.g., accepted, declined).
       - name: marked_as_no_show
-        description: Indicates if the invitee was marked as a no-show.  
+        description: Indicates if the invitee was marked as a no-show.
       - name: start_date_time
         description: The date and time when the event starts.
       - name: end_date_time
@@ -25,5 +25,5 @@ models:
         description: The date and time when the event was created.
       - name: _file
         description: The name of the file from which the data was sourced.
-      - name: _fivetran_synced  
+      - name: _fivetran_synced
         description: Timestamp of when the data has been synced with Fivetran.
