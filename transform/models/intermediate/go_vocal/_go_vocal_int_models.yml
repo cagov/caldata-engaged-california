@@ -103,3 +103,26 @@ models:
         description: Count of how many survey questions and demographic questions the respondent answered.
       - name: _loaded_at
         description: Timestamp of the most recent load of Go Vocal data into Snowflake. From _loaded_at.
+  - name: int_govocal_ai_response_exemplars
+    description: |
+      This model joins the exemplar survey responses that were used to calibrate the LLM's
+      classifications of ai survey
+      responses with user responses. These exemplars were identified during the initial
+      classification process,
+      and were sanity checked by humans.
+    columns:
+      - name: exemplar_block
+        description: |
+          Full text of the exemplars used for the LLM classification calibration,
+          formatted for insertion into the prompt.
+          These data are very long, so this was done to keep the dbt model reasonably readable.
+  - name: int_govocal_ai_response_label
+    description: |
+      This model contains the AI response label classifications for all survey responses. Incremental.
+    columns:
+      - name: survey_respondent_id
+        description: User ID of the survey respondent.
+      - name: ai_response_label
+        description: Label for the survey response, "pos", "neg", or "mix".
+      - name: ai_response_label_rationale
+        description: Rationale for the assigned AI response label.
