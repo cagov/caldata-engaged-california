@@ -199,3 +199,47 @@ sources:
             description: California county. For example, 'Inyo County'.
           - name: REGION
             description: Region. For example, 'Sierra Region'.
+
+  - name: FILE_DOWNLOADS
+    database: RAW_ENGCA_PRD
+    schema: ENGAGEDCA_GOOGLE_DRIVE_AI
+    description: |
+      Manually downloaded files for the AI Engagement.
+    tables:
+      - name: PH_2_ATTENDEES
+        description: |
+          Contains registrant information. Sourced from a manual download of the csv that collects
+          registration information for the AI Engagement. Updated manually.
+        columns:
+          - name: EVENT_TYPE_NAME
+            description: The name of the event
+          - name: INVITEE_EMAIL
+            description: The email address of the invitee
+          - name: INVITEE_FIRST_NAME
+            description: The first name of the invitee.
+          - name: INVITEE_LAST_NAME
+            description: The last name of the invitee
+          - name: INVITEE_NAME
+            description: The name of the invitee
+          - name: INVITEE_STATUS
+            description: The status of the invitee (e.g., accepted, declined)
+          - name: INVITEE_TIME_ZONE
+            description: The time zone of the invitee
+          - name: MARKED_AS_NO_SHOW
+            description: Indicates if the invitee was marked as a no-show
+          - name: START_DATE_TIME
+            description: The date and time when the event starts
+          - name: END_DATE_TIME
+            description: The date and time when the event ends
+          - name: EVENT_CREATED_DATE_TIME
+            description: The date and time when the event was created
+          - name: USER_NAME
+            description: The user name of the user hosting the event
+          - name: _FILE
+            description: The name of the file from which the data was sourced
+          - name: _LINE
+            description: The line number in the source file
+          - name: _MODIFIED
+            description: Timestamp of when the data has been modified
+          - name: _FIVETRAN_SYNCED
+            description: Timestamp of when the data has been synced with Fivetran

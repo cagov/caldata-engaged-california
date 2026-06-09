@@ -1,0 +1,29 @@
+version: 2
+models:
+  - name: stg_phase2_attendees
+    description: |
+      This table contains information about attendees of Phase 2 events.
+      This data appends new rows each time a file with matching column names is added to a Google Drive folder.
+    columns:
+      - name: event_name
+        description: The name of the event.
+      - name: invitee_email
+        description: The email address of the invitee.
+      - name: invitee_first_name
+        description: The first name of the invitee.
+      - name: invitee_last_name
+        description: The last name of the invitee.
+      - name: invitee_status
+        description: The status of the invitee (e.g., accepted, declined).
+      - name: marked_as_no_show
+        description: Indicates if the invitee was marked as a no-show.
+      - name: start_date_time
+        description: The date and time when the event starts.
+      - name: end_date_time
+        description: The date and time when the event ends.
+      - name: event_created_date_time
+        description: The date and time when the event was created.
+      - name: _file
+        description: The name of the file from which the data was sourced.
+      - name: _fivetran_synced
+        description: Timestamp of when the data has been synced with Fivetran.
