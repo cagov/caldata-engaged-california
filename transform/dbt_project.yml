@@ -35,6 +35,8 @@ seeds:
   caldata_engaged_california:
     # resource-paths
     ethelo_la_agenda_setting:
+    govocal_ai:
+      +enabled: true
 
 models:
   caldata_engaged_california:
