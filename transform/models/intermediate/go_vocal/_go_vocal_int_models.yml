@@ -124,5 +124,5 @@ models:
         description: User ID of the survey respondent.
       - name: ai_response_label
         description: Label for the survey response, "pos", "neg", or "mix".
-      - name: ai_response_label_rationale
+      - name: ai_response_rationale
         description: Rationale for the assigned AI response label.
