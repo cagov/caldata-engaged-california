@@ -1,11 +1,9 @@
 # https://sortitionfoundation.github.io/sortition-algorithms/api-reference/
-# this could probably be genericized if we decide to do sortition for other projects after AI Impact
-
 
 import pandas as pd
+from pathlib import Path
 import os
 from dotenv import load_dotenv
-from tempfile import NamedTemporaryFile
 import snowflake.connector
 from snowflake.connector.pandas_tools import write_pandas
 from jobs.utils.snowflake import snowflake_connection_from_environment
@@ -18,195 +16,203 @@ from sortition_algorithms import (
 
 load_dotenv()
 
+
 ######## Sortition settings
 
 final_panel_size = 120
-min_panel_size = 100
-id_column = "survey_respondent_id"
+allowed_deviation = 0.25  # how much deviation from the target distribution we allow
+id_column = "SURVEY_RESPONDENT_ID"
 columns_to_keep = []  # additional columns to keep in the output
 selection_algorithm = "maximin"  # default is maximin
 
 
-######## Get data
-
-snowflake_conn = snowflake_connection_from_environment(schema="GOVOCAL")
-cur = snowflake_conn.cursor()
-
-features_sql = f"""
-SELECT question as category, answer as name, adjusted_target_pct * {min_panel_size} as min, adjusted_target_pct * {final_panel_size} as max
-FROM TRANSFORM_ENGCA_DEV.DBT_CHOLLINGSWORTH_GOVOCAL.INT_GOVOCAL_SORTITION_TARGETS -- Update with correct source once PR is merged
+FEATURES_SQL = f"""
+SELECT
+    question as category,
+    answer as name,
+    ceil(adjusted_target_pct * {final_panel_size} * (1 - {allowed_deviation}), 0) as min,
+    ceil(adjusted_target_pct * {final_panel_size} * (1 + {allowed_deviation}), 0) as max
+FROM TRANSFORM_ENGCA_DEV.DBT_CHOLLINGSWORTH_GOVOCAL.INT_GOVOCAL_SORTITION_TARGETS
 """
 
-people_sql = """
-with
-
-respondents as (select * from ANALYTICS_ENGCA_PRD.GOVOCAL.GOVOCAL_AI_SURVEY_RESPONDENTS),
-
-candidates as (
-    select *
-    from respondents
-    where true
-    and availability_for_discussion in ('Yes', 'Maybe')
-    and county <> 'I live outside of California'
-    and age <> 'Under 18'
-    and current_work_status <> 'No, I''m retired or choose not to work'
-    and current_work_status is not null
-    and current_work_status <> 'I don''t want to say'
-
-    -- until we decide how to handle nulls and non-responses in demographics, these respondents are being removed
-    and age is not null
-    and gender_category is not null
-    and race_ethnicity_category is not null
-    and county is not null
-    and role_at_work is not null
-    and field_of_work is not null
-    and age <> 'I don''t want to say'
-    and gender_category <> 'I don''t want to say (only)'
-    -- and race_ethnicity_category <> 'I don''t want to say (only)'
-    and county <> 'I don''t want to say'
-    and role_at_work <> 'I don''t want to say'
-    and field_of_work <> 'I don''t want to say'
-),
-
-group_categorize as (
-    select
-        survey_respondent_id,
-        age,
-        IFF(gender_category IN
-            ('Another gender identity (like transgender, non-binary, or gender non-conforming) (only)',
-            'Multiple'),
-            'Nonbinary / multi / other',
-            gender_category) as gender_category,
-        race_ethnicity_category,
-        region,
-        IFF(role_at_work IN
-            ('Business owner or entrepreneur', 'Contractor, freelancer, or gig worker'),
-            'UNKNOWN',
-            role_at_work) as role_at_work,
-        CASE field_of_work
-            WHEN 'Corporate ownership or governance' THEN 'Corporate'
-            WHEN 'Finance' THEN 'Corporate'
-            WHEN 'Information technology' THEN 'Corporate'
-            WHEN 'Legal' THEN 'Corporate'
-            WHEN 'Retail or wholesale trade' THEN 'Logistics & retail'
-            WHEN 'Transportation or warehousing' THEN 'Logistics & retail'
-            WHEN 'Healthcare' THEN 'Healthcare'
-            WHEN 'Government' THEN 'Public sector'
-            WHEN 'Non-profit' THEN 'Public sector'
-            WHEN 'Education' THEN 'Education'
-            WHEN 'Arts, entertainment, or media' THEN 'Creative'
-            else 'UNKNOWN' end as field_of_work
-    from candidates
-)
-
-select *
-from group_categorize
--- NEEDS ATTENTION!!! ----------------------------------
-where role_at_work <> 'UNKNOWN' and field_of_work <> 'UNKNOWN'
+PEOPLE_SQL = """
+select * from TRANSFORM_ENGCA_DEV.DBT_CHOLLINGSWORTH_GOVOCAL.INT_GOVOCAL_SORTITION_CANDIDATES
 """
 
-already_selected_sql = """
-SELECT survey_respondent_id, age, gender_category, race_ethnicity_category, county, role_at_work, field_of_work
-FROM ANALYTICS_ENGCA_PRD.GOVOCAL.GOVOCAL_AI_SURVEY_RESPONDENTS
+ALREADY_SELECTED_SQL = """
+select * from TRANSFORM_ENGCA_DEV.DBT_CHOLLINGSWORTH_GOVOCAL.INT_GOVOCAL_SORTITION_CANDIDATES
 WHERE FALSE
 """
 
-features_df = cur.execute(features_sql).fetch_pandas_all()
-people_df = cur.execute(people_sql).fetch_pandas_all()
-already_selected_df = cur.execute(already_selected_sql).fetch_pandas_all()
+TARGET_SCHEMA = "AI_IMPACT"
+TARGET_TABLE = "AI_IMPACT_SELECTED_PANELS"
 
 
-######## Set Up Sortition
+def prepare_sortition_inputs(features_df, people_df, already_selected_df, settings, number_people_wanted):
+    features_df = features_df.copy()
+    features_df.columns = features_df.columns.str.lower()
 
-settings = Settings(
-    id_column=id_column,
-    columns_to_keep=columns_to_keep,
-    selection_algorithm=selection_algorithm,
-)
+    features = read_in_features(
+        list(features_df.columns),
+        features_df.fillna("").to_dict(orient="records"),
+        number_people_wanted,
+    )[0]
 
-number_people_wanted = final_panel_size - len(already_selected_df)
-
-features_df.columns = features_df.columns.str.lower()
-features_head = list(features_df.columns)
-features_body = (
-    features_df
-    .fillna("")
-    .to_dict(orient="records")
-)
-features = read_in_features(
-    features_head,
-    features_body,
-    number_people_wanted,
-)[0]
-
-people_head = list(people_df.columns)
-people_body = (
-    people_df
-    .fillna("")
-    .to_dict(orient="records")
-)
-print(type(features))
-people = read_in_people(
-    people_head,
-    people_body,
-    features,
-    settings,
-)[0]
-
-already_selected = None
-if not already_selected_df.empty:
-    already_selected_head = list(already_selected_df.columns)
-    already_selected_body = (
-        already_selected_df
-        .fillna("")
-        .to_dict(orient="records")
-    )
-    already_selected = read_in_people(
-        already_selected_head,
-        already_selected_body,
+    people = read_in_people(
+        list(people_df.columns),
+        people_df.fillna("").to_dict(orient="records"),
         features,
         settings,
     )[0]
 
+    already_selected = None
+    if not already_selected_df.empty:
+        already_selected = read_in_people(
+            list(already_selected_df.columns),
+            already_selected_df.fillna("").to_dict(orient="records"),
+            features,
+            settings,
+        )[0]
 
-######## Run Sortition
-
-success, selected_panels, report = run_stratification(
-    features=features,
-    people=people,
-    number_people_wanted=number_people_wanted,
-    settings=settings,
-    already_selected=already_selected,
-)
+    return features, people, already_selected
 
 
-######## Write back to Snowflake
+def preflight_snowflake_write(snowflake_conn, sample_df, target_table):
+    preflight_table = f"{target_table}_PREFLIGHT"
+    cur = snowflake_conn.cursor()
+    try:
+        cur.execute(f"USE SCHEMA {TARGET_SCHEMA}")
+        sample = sample_df.head(1).copy()
+        sample["selection_timestamp"] = pd.Timestamp.now("UTC")
 
-if success:
+        write_pandas(
+            snowflake_conn,
+            sample,
+            table_name=preflight_table,
+            auto_create_table=True,
+            overwrite=True,
+            use_logical_type=True,
+        )
 
-    selected_people = selected_panels[0]
+        cur.execute(f"DROP TABLE IF EXISTS {preflight_table}")
+        print("Preflight snowflake write successful.")
 
-    print(f"Successfully selected {len(selected_people)} people")
+    except Exception as exc:
+        raise RuntimeError(
+            "Snowflake write preflight failed. Confirm schema, permissions, and table access."
+        ) from exc
+    finally:
+        cur.close()
 
-    selected_panel_df = people_df[people_df[id_column].isin(selected_people)].copy()
-    selected_panel_df["selection_timestamp"] = pd.Timestamp.now("UTC")
 
-    cur.execute("USE SCHEMA AI_IMPACT")
+def save_report_content(report_content):
+    local_dir = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", ".local")
+    )
+    os.makedirs(local_dir, exist_ok=True)
 
-    write_pandas(
-        snowflake_conn,
-        selected_panel_df,
-        table_name="SELECTED_PANEL",
-        auto_create_table=True,
-        overwrite=False,
-        use_logical_type=True,
+    report_path = os.path.join( local_dir, "ai_impact_sortition_report.txt" )
+
+    with open(report_path, "w") as f:
+        f.write(report_content)
+
+    print(f"Saved report: {report_path}")
+
+
+def main():
+    source_conn = None
+    source_cur = None
+    target_conn = None
+    target_cur = None
+    report_content = None
+
+    try:
+        source_conn = snowflake_connection_from_environment(schema="GOVOCAL")
+        source_cur = source_conn.cursor()
+
+        features_df = source_cur.execute(FEATURES_SQL).fetch_pandas_all()
+        people_df = source_cur.execute(PEOPLE_SQL).fetch_pandas_all()
+        already_selected_df = source_cur.execute(ALREADY_SELECTED_SQL).fetch_pandas_all()
+
+        if people_df.empty:
+            raise ValueError("Candidate data is empty; cannot run selection.")
+
+        settings = Settings(
+            id_column=id_column,
+            columns_to_keep=columns_to_keep,
+            selection_algorithm=selection_algorithm,
+        )
+
+        number_people_wanted = final_panel_size - len(already_selected_df)
+
+        print("Checking snowflake write before sortition...")
+        preflight_snowflake_write(source_conn, people_df, TARGET_TABLE)
+
+    finally:
+        if source_cur is not None:
+            source_cur.close()
+        if source_conn is not None:
+            source_conn.close()
+
+    features, people, already_selected = prepare_sortition_inputs(
+        features_df,
+        people_df,
+        already_selected_df,
+        settings,
+        number_people_wanted,
     )
 
-else:
-    print("Selection failed")
+    success, selected_panels, report = run_stratification(
+        features=features,
+        people=people,
+        number_people_wanted=number_people_wanted,
+        settings=settings,
+        # number_selections = 1,  # note for later - change this to select multiple panels at once
+        already_selected=already_selected,
+    )
 
-    if report.last_error():
-        print(str(report.last_error()))
+    panels_as_strings = [", ".join(panel) for panel in selected_panels]
+    report_content = [report.as_text(), "\n".join(panels_as_strings)]
+    save_report_content("\n\n\n".join(report_content))
 
-print(report.as_text())
-snowflake_conn.close()
+    if not success:
+        print("Selection failed")
+        if report.last_error():
+            print(str(report.last_error()))
+        return
+
+    selected_people = selected_panels[0]
+    print(f"Successfully selected {len(selected_people)} people")
+
+    selected_panel_df = people_df[people_df[id_column].isin(selected_people)].reset_index(drop=True)
+    selected_panel_df["SELECTION_TIMESTAMP"] = pd.Timestamp.now("UTC")
+
+    try:
+        target_conn = snowflake_connection_from_environment(schema=TARGET_SCHEMA)
+        target_cur = target_conn.cursor()
+
+        target_cur.execute(f"USE SCHEMA {TARGET_SCHEMA}")
+        write_pandas(
+            target_conn,
+            selected_panel_df,
+            table_name=TARGET_TABLE,
+            auto_create_table=True,
+            overwrite=False,
+            use_logical_type=True,
+        )
+
+        print("Job completed successfully.")
+
+    except Exception as exc:
+        print(f"Job failed on write back to Snowflake: {exc}")
+        raise
+
+    finally:
+        if target_cur is not None:
+            target_cur.close()
+        if target_conn is not None:
+            target_conn.close()
+
+
+if __name__ == "__main__":
+    main()
