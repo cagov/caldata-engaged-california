@@ -10,7 +10,9 @@ cand_counts as (
         answer,
         count(*) as candidate_count
     from candidates
-    unpivot (answer for question in (age, gender_category, race_ethnicity_category, region, field_of_work))
+    unpivot (
+        answer for question in (age, gender_category, race_ethnicity_category, region, field_of_work, ai_response_label)
+    )
     group by question, answer
 ),
 

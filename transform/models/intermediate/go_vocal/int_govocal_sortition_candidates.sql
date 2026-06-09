@@ -2,6 +2,10 @@ with
 
 users_x_survey as (select * from {{ ref('int_govocal_users_x_ai_survey') }}),
 
+ai_response_label as (select * from {{ ref('int_govocal_ai_response_label') }}),
+
+
+
 candidates as (
     select *
     from users_x_survey
@@ -62,6 +66,15 @@ group_categorize as (
                 )
         end as field_of_work
     from candidates
+),
+
+add_ai_labels as (
+    select
+        g.*,
+        ai.ai_response_label
+    from group_categorize as g
+    left join ai_response_label as ai
+        on g.survey_respondent_id = ai.survey_respondent_id
 )
 
-select * from group_categorize
+select * from add_ai_labels
