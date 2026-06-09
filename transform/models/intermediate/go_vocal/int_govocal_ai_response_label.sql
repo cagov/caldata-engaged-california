@@ -34,7 +34,7 @@ responses_to_classify AS (
         r.survey_respondent_id IS NOT null
         AND r.publication_status = 'published'
         AND (r.economic_impact_expectation != '' OR r.personal_ai_impact != '' OR r.government_action_suggestion != '')
-        {% if is_incremental() %}
+    {% if is_incremental() %}
             AND (
                 r.survey_respondent_id NOT IN (
                     SELECT t.survey_respondent_id FROM {{ this }} AS t
@@ -44,7 +44,7 @@ responses_to_classify AS (
                     WHERE s.ai_response_label IS null
                 )
             )
-        {% endif %}
+    {% endif %}
 ),
 
 
