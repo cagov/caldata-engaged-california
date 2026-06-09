@@ -37,6 +37,8 @@ seeds:
     ethelo_la_agenda_setting:
     govocal_ai:
       +enabled: true
+      +schema: govocal
+      +tags: ["ai_impact"]
 
 models:
   caldata_engaged_california:
