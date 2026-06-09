@@ -24,21 +24,27 @@ exemplars AS (
 -- only the ones we need to classify this run (survey respondent hasn't already been labelled)
 responses_to_classify AS (
     SELECT
-        survey_respondent_id,
-        TRIM(COALESCE(economic_impact_expectation, '')) AS economic_impact_expectation_trimmed,
-        TRIM(COALESCE(government_action_suggestion, '')) AS government_action_suggestion_trimmed,
-        TRIM(COALESCE(personal_ai_impact, '')) AS personal_ai_impact_trimmed
+        r.survey_respondent_id,
+        TRIM(COALESCE(r.economic_impact_expectation, '')) AS economic_impact_expectation_trimmed,
+        TRIM(COALESCE(r.government_action_suggestion, '')) AS government_action_suggestion_trimmed,
+        TRIM(COALESCE(r.personal_ai_impact, '')) AS personal_ai_impact_trimmed
 
-    FROM {{ ref('int_govocal_users_x_ai_survey') }}
+    FROM {{ ref('int_govocal_users_x_ai_survey') }} AS r
     WHERE
-        survey_respondent_id IS NOT null
-        AND publication_status = 'published'
-        AND (economic_impact_expectation != '' OR personal_ai_impact != '' OR government_action_suggestion != '')
-    {% if is_incremental() %}
-            AND (survey_respondent_id NOT IN (
-                SELECT t.survey_respondent_id FROM {{ this }} AS t
-            ) OR ai_response_label IS null)
-    {% endif %}
+        r.survey_respondent_id IS NOT null
+        AND r.publication_status = 'published'
+        AND (r.economic_impact_expectation != '' OR r.personal_ai_impact != '' OR r.government_action_suggestion != '')
+        {% if is_incremental() %}
+            AND (
+                r.survey_respondent_id NOT IN (
+                    SELECT t.survey_respondent_id FROM {{ this }} AS t
+                )
+                OR r.survey_respondent_id IN (
+                    SELECT s.survey_respondent_id FROM {{ this }} AS s
+                    WHERE s.ai_response_label IS null
+                )
+            )
+        {% endif %}
 ),
 
 
