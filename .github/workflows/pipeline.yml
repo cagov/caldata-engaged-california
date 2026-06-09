@@ -63,6 +63,7 @@ jobs:
 
         run: |
           uv run dbt deps --project-dir transform --target prd
+          uv run dbt seed --project-dir transform --target prd --select tag:ai_impact
 
           #this production job should only run models either tagged "marketing", or
           #tagged with the name of an active engagement.
