@@ -1,12 +1,10 @@
 with
 
--- This is a placeholder. It will be repointed once the invitee responses are available.
--- invitees as (select * from {{ env_var('SNOWFLAKE_DATABASE') }}.ai_engagement.int_ai_engagement_sortition_selections),
 invitees as (
     select
-        NULL::VARCHAR as survey_respondent_id,
-        NULL::TIMESTAMP as selection_timestamp
-    where 1 = 0
+        *,
+        rank() over (order by selection_timestamp desc) as sortition_round
+    from {{ source('AI_ENGAGEMENT', 'INT_AI_ENGAGEMENT_SORTITION_SELECTIONS') }}
 ),
 
 users as (
@@ -31,7 +29,7 @@ email_match as (
         u.user_id
     from phase2_responses as p2r
     left join users as u
-        on p2r.invitee_email = u.email
+        on lower(trim(p2r.invitee_email)) = lower(trim(u.email))
 ),
 
 invitee_status as (
