@@ -26,10 +26,11 @@ columns_to_keep = []  # additional columns to keep in the output
 selection_algorithm = "maximin"  # default is maximin
 
 
-# SOURCE_SCHEMA = "GOVOCAL"
 TARGET_SCHEMA = "AI_ENGAGEMENT"
 TARGET_TABLE = "INT_AI_ENGAGEMENT_SORTITION_SELECTIONS"
-SNOWFLAKE_DATABASE = "TRANSFORM_ENGCA_DEV"
+SNOWFLAKE_DATABASE = "TRANSFORM_ENGCA_PRD"
+FEATURES_TABLE = "GOVOCAL.INT_GOVOCAL_SORTITION_TARGETS"
+PEOPLE_TABLE = "GOVOCAL.INT_GOVOCAL_SORTITION_CANDIDATES"
 
 FEATURES_SQL = f"""
 SELECT
@@ -37,15 +38,15 @@ SELECT
     answer as name,
     greatest(round(adjusted_target_pct * {final_panel_size} * (1 - {allowed_deviation}), 0), iff(answer = 'Non-response', 0, 1)) as min,
     round(adjusted_target_pct * {final_panel_size} * (1 + {allowed_deviation}), 0) as max
-FROM TRANSFORM_ENGCA_DEV.DBT_CHOLLINGSWORTH_GOVOCAL.INT_GOVOCAL_SORTITION_TARGETS
+FROM {SNOWFLAKE_DATABASE}.{FEATURES_TABLE}
 """
 
-PEOPLE_SQL = """
-select * from TRANSFORM_ENGCA_DEV.DBT_CHOLLINGSWORTH_GOVOCAL.INT_GOVOCAL_SORTITION_CANDIDATES
+PEOPLE_SQL = f"""
+select * from {SNOWFLAKE_DATABASE}.{PEOPLE_TABLE}
 """
 
-ALREADY_SELECTED_SQL = """
-select * from TRANSFORM_ENGCA_DEV.DBT_CHOLLINGSWORTH_GOVOCAL.INT_GOVOCAL_SORTITION_CANDIDATES
+ALREADY_SELECTED_SQL = f"""
+select * from {SNOWFLAKE_DATABASE}.{PEOPLE_TABLE}
 WHERE FALSE
 """
 
