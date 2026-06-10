@@ -74,6 +74,9 @@ models:
 
     intermediate:
       +materialized: view
+      ai_engagement:
+        +schema: ai_engagement
+        +tags: ["ai_impact"]
       mailchimp:
         +schema: mailchimp
         +tags: ["marketing"]
