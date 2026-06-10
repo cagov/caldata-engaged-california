@@ -26,16 +26,17 @@ columns_to_keep = []  # additional columns to keep in the output
 selection_algorithm = "maximin"  # default is maximin
 
 
-SOURCE_SCHEMA = "GOVOCAL"
-TARGET_SCHEMA = "AI_IMPACT"
-TARGET_TABLE = "INT_SORTITION_SELECTIONS"
+# SOURCE_SCHEMA = "GOVOCAL"
+TARGET_SCHEMA = "AI_ENGAGEMENT"
+TARGET_TABLE = "INT_AI_ENGAGEMENT_SORTITION_SELECTIONS"
+SNOWFLAKE_DATABASE = "TRANSFORM_ENGCA_DEV"
 
 FEATURES_SQL = f"""
 SELECT
     question as category,
     answer as name,
-    ceil(adjusted_target_pct * {final_panel_size} * (1 - {allowed_deviation}), 0) as min,
-    ceil(adjusted_target_pct * {final_panel_size} * (1 + {allowed_deviation}), 0) as max
+    greatest(round(adjusted_target_pct * {final_panel_size} * (1 - {allowed_deviation}), 0), iff(answer = 'Non-response', 0, 1)) as min,
+    round(adjusted_target_pct * {final_panel_size} * (1 + {allowed_deviation}), 0) as max
 FROM TRANSFORM_ENGCA_DEV.DBT_CHOLLINGSWORTH_GOVOCAL.INT_GOVOCAL_SORTITION_TARGETS
 """
 
@@ -82,6 +83,7 @@ def preflight_snowflake_write(snowflake_conn, sample_df, target_table):
     preflight_table = f"{target_table}_PREFLIGHT"
     cur = snowflake_conn.cursor()
     try:
+        cur.execute(f"USE DATABASE {SNOWFLAKE_DATABASE}")
         cur.execute(f"USE SCHEMA {TARGET_SCHEMA}")
         sample = sample_df.head(1).copy()
         sample["selection_timestamp"] = pd.Timestamp.now("UTC")
@@ -127,7 +129,7 @@ def main():
     target_cur = None
 
     try:
-        source_conn = snowflake_connection_from_environment(schema=SOURCE_SCHEMA)
+        source_conn = snowflake_connection_from_environment()
         source_cur = source_conn.cursor()
 
         features_df = source_cur.execute(FEATURES_SQL).fetch_pandas_all()
@@ -184,13 +186,14 @@ def main():
     selected_people = selected_panels[0]
     print(f"Successfully selected {len(selected_people)} people")
 
-    selected_panel_df = people_df[people_df[id_column].isin(selected_people)].reset_index(drop=True)
+    selected_panel_df = people_df.loc[people_df[id_column].isin(selected_people), [id_column]].reset_index(drop=True)
     selected_panel_df["SELECTION_TIMESTAMP"] = pd.Timestamp.now("UTC")
 
     try:
-        target_conn = snowflake_connection_from_environment(schema=TARGET_SCHEMA)
+        target_conn = snowflake_connection_from_environment()
         target_cur = target_conn.cursor()
 
+        target_cur.execute(f"USE DATABASE {SNOWFLAKE_DATABASE}")
         target_cur.execute(f"USE SCHEMA {TARGET_SCHEMA}")
         write_pandas(
             target_conn,
