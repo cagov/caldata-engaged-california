@@ -12,7 +12,7 @@ evals as (
         target_pct,
         adjusted_target_pct,
         round(adjusted_target_pct * {{ num_participants }}, 0) as target,
-        target * 3 as goal,  -- assumes 66% attrition
+        greatest(target, 1) * 3 as goal,  -- assumes 66% attrition
         candidate_count / goal as pct_of_goal,
         case
             when candidate_count < target then '⛔ impossible to meet sortition targets'

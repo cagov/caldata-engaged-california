@@ -2,7 +2,18 @@ with
 
 users_x_survey as (select * from {{ ref('int_govocal_users_x_ai_survey') }}),
 
-ai_response_label as (select * from {{ ref('int_govocal_ai_response_label') }}),
+-- ai labels, mapping 'neutral' to 'mix', 'pro' to 'pos', and 'anti' to 'neg'
+ai_response_label as (
+    select
+        survey_respondent_id,
+        case ai_response_label
+            when 'neutral' then 'mix'
+            when 'pro' then 'pos'
+            when 'anti' then 'neg'
+            else ai_response_label
+        end as ai_response_label
+    from {{ ref('int_govocal_ai_response_label') }}
+),
 
 invitee_status as (select * from {{ ref('int_ai_engagement_phase2_invitee_status') }}),
 
@@ -68,13 +79,15 @@ group_categorize as (
     from candidates
 ),
 
+-- add ai lables, with filtering to ensure any unexpected label values are converted to 'mix'
 add_ai_labels as (
     select
         g.*,
-        ai.ai_response_label
+        coalesce(ai.ai_response_label, 'mix') as ai_response_label
     from group_categorize as g
     left join ai_response_label as ai
         on g.survey_respondent_id = ai.survey_respondent_id
+    where ai.ai_response_label in ('pos', 'neg', 'mix')
 ),
 
 add_invitee_status as (

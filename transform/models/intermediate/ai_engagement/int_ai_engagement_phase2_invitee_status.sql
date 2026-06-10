@@ -1,6 +1,13 @@
 with
 
-invitees as (select * from {{ env_var('SNOWFLAKE_DATABASE') }}.ai_engagement.int_ai_engagement_sortition_selections),
+-- This is a placeholder. It will be repointed once the invitee responses are available.
+-- invitees as (select * from {{ env_var('SNOWFLAKE_DATABASE') }}.ai_engagement.int_ai_engagement_sortition_selections),
+invitees as (
+    select
+        NULL::VARCHAR as survey_respondent_id,
+        NULL::TIMESTAMP as selection_timestamp
+    where 1 = 0
+),
 
 users as (
     select
