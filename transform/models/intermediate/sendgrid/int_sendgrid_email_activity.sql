@@ -17,6 +17,7 @@ activity as (
         singlesend_name,
         email_user_id,
         event,
+        url,
         email_activity_timestamp,
         _fivetran_synced
     from {{ ref('stg_sendgrid_email_activity') }}
@@ -33,6 +34,7 @@ select
     activity.singlesend_name,
     activity.email_user_id,
     activity.event,
+    activity.url,
     activity.email_activity_timestamp,
     activity._fivetran_synced,
 

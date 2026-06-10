@@ -7,6 +7,7 @@ activity as (
         singlesend_name,
         email,
         event,
+        url,
         timestamp as email_activity_timestamp,
         _fivetran_synced
     from {{ source('SENDGRID_WEBHOOKS','EVENT') }}
@@ -29,6 +30,7 @@ select
     activity.singlesend_id,
     activity.singlesend_name,
     activity.event,
+    activity.url,
     email_ids.email_user_id,
     activity.email_activity_timestamp,
     activity._fivetran_synced

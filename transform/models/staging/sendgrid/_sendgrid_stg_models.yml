@@ -27,6 +27,8 @@ models:
         description: A unique identifier for each email address.
       - name: EVENT
         description: The type of event (e.g., "open", "click", "bounce").
+      - name: URL
+        description: The URL clicked, populated only for click events.
       - name: EMAIL_ACTIVITY_TIMESTAMP
         description: The timestamp when the event occurred.
       - name: _FIVETRAN_SYNCED
