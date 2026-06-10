@@ -23,4 +23,5 @@ models:
       - name: subject_line
       - name: url
       - name: total_clicks
+      - name: total_opens
       - name: click_rate
