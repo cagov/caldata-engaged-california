@@ -18,7 +18,8 @@ clicks as (
         url,
         count_if(event = 'click') as total_clicks
     from activity
-    where url is not null
+    where
+        url is not null
         and subject_line is not null
     group by subject_line, url
 ),
