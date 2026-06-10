@@ -9,10 +9,14 @@ sources:
     tables:
       - name: INT_AI_ENGAGEMENT_SORTITION_SELECTIONS
         description: |
-          Records of users selected in random sortition processes for participation in projects or phases. Sortition
-          is a method of random selection used to select participants for engagement in projects or phases.
+          Records of users selected in random sortition processes for
+          participation in projects or phases. Sortition
+          is a method of random selection used to select participants
+          for engagement in projects or phases.
         columns:
           - name: survey_respondent_id
-            description: Unique identifier for each survey respondent. This is the user ID of the respondent in Go Vocal.
+            description: |
+              Unique identifier for each survey respondent. This is the
+              user ID of the respondent in Go Vocal.
           - name: selection_timestamp
             description: Timestamp when the user was selected in the sortition process.
