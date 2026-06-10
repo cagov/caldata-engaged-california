@@ -16,3 +16,11 @@ models:
       - name: unsubscribes
       - name: drops
       - name: spam_reports
+
+  - name: sendgrid_clicks_metrics
+    description: Clicks per URL per email subject line
+    columns:
+      - name: subject_line
+      - name: url
+      - name: total_clicks
+      - name: click_rate

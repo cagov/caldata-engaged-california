@@ -22,6 +22,8 @@ models:
           but created surrogate key if not
       - name: event
         description: action took (send, open, click, etc.)
+      - name: url
+        description: The URL clicked, populated only for click events.
       - name: email_activity_timestamp
         description: timestamp of action took
       - name: _fivetran_synced
