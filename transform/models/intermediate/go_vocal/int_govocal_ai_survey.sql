@@ -74,6 +74,7 @@ clean_response_values as (
             when 'i_don_t_currently_work' then 'I don''t currently work'
             when 'i_don_t_want_to_say' then 'I don''t want to say'
             when 'information_technology' then 'Information technology'
+            when 'mining_quarrying_or_oil_and_gas_extraction' then 'Mining, quarrying, or oil and gas extraction'
             when 'non_profit' then 'Non-profit'
             when 'real_estate_or_leasing' then 'Real estate or leasing'
             when 'retail_or_wholesale_trade' then 'Retail or wholesale trade'

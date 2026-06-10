@@ -1,0 +1,22 @@
+version: 2
+models:
+  - name: int_ai_engagement_phase2_invitee_status
+    description: |
+      This table joins the sortition selections with the statuses of Phase 2 invitees. If a Phase 2 invitee email is
+      not found in the Go Vocal user emails, the invitee status will be 'No Response Found'. The join used is a full
+      outer join in order to preserve any invitee emails that are not matched in the output.
+    columns:
+      - name: survey_respondent_id
+        description: User ID of the survey respondent selected by sortition for Phase 2.
+      - name: invitee_email
+        description: The email address of the invitee.
+      - name: invitee_status
+        description: The status of the invitee (e.g., accepted, declined).
+  - name: INT_AI_ENGAGEMENT_SORTITION_SELECTIONS
+    description: |
+      This table is output by the sortition process.
+    columns:
+      - name: survey_respondent_id
+        description: User ID of the survey respondent.
+      - name: selection_timestamp
+        description: Timestamp when the sortition selection was made.
