@@ -25,3 +25,11 @@ models:
       - name: total_clicks
       - name: total_opens
       - name: click_rate
+
+  - name: sendgrid_clicks_by_time
+    description: Clicks by subject line, date, and hour of day
+    columns:
+      - name: subject_line
+      - name: send_date
+      - name: hour_of_day
+      - name: total_clicks
