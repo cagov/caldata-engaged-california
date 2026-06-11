@@ -22,6 +22,9 @@ exemplars AS (
 
 
 -- only the ones we need to classify this run (survey respondent hasn't already been labelled)
+
+-- noqa: disable=LT02
+-- the `is_incremental()` causes issues with the linter. Disabling indentation QA for this CTE only.
 responses_to_classify AS (
     SELECT
         r.survey_respondent_id,
@@ -34,7 +37,7 @@ responses_to_classify AS (
         r.survey_respondent_id IS NOT null
         AND r.publication_status = 'published'
         AND (r.economic_impact_expectation != '' OR r.personal_ai_impact != '' OR r.government_action_suggestion != '')
-    {% if is_incremental() %}
+        {% if is_incremental() %}
             AND (
                 r.survey_respondent_id NOT IN (
                     SELECT t.survey_respondent_id FROM {{ this }} AS t
@@ -44,10 +47,10 @@ responses_to_classify AS (
                     WHERE s.ai_response_label IS null
                 )
             )
-    {% endif %}
+        {% endif %}
 ),
 
-
+-- noqa: enable=LT02
 classified AS (
     SELECT
         r.survey_respondent_id,
