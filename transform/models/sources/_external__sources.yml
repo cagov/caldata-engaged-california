@@ -257,3 +257,5 @@ sources:
             description: Timestamp of when the data has been modified
           - name: _FIVETRAN_SYNCED
             description: Timestamp of when the data has been synced with Fivetran
+          - name: RESPONSE_1
+          - name: QUESTION_1
