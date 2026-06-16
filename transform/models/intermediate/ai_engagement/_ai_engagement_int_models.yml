@@ -6,6 +6,8 @@ models:
       not found in the Go Vocal user emails, the invitee status will be 'No Response Found'. The join used is a full
       outer join in order to preserve any invitee emails that are not matched in the output.
     columns:
+      - name: sortition_round
+        description: The sortition round during which the survey respondent was selected for Phase 2.
       - name: survey_respondent_id
         description: User ID of the survey respondent selected by sortition for Phase 2.
       - name: invitee_email
