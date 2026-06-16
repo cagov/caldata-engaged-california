@@ -14,26 +14,38 @@ users as (
     from {{ ref('stg_govocal_users') }}
 ),
 
+-- Get the most recent responses for each zoom event (as determined by start_date_time)
 phase2_responses as (
     select
         invitee_email,
         invitee_status
     from {{ ref('stg_phase2_attendees') }}
-    qualify _fivetran_synced = max(_fivetran_synced) over (partition by invitee_email)
+    qualify _fivetran_synced::DATE = max(_fivetran_synced::DATE) over (partition by start_date_time)
+),
+
+any_acceptance as (
+    select
+        invitee_email,
+        -- the only possible statuses are 'accepted' and 'declined'
+        -- if an invitee has 'accepted' any zoom event, then return 'accepted', otherwise return 'declined'
+        min(invitee_status) as invitee_status
+    from phase2_responses
+    group by invitee_email
 ),
 
 email_match as (
     select
-        p2r.invitee_email,
-        p2r.invitee_status,
+        aa.invitee_email,
+        aa.invitee_status,
         u.user_id
-    from phase2_responses as p2r
+    from any_acceptance as aa
     left join users as u
-        on lower(trim(p2r.invitee_email)) = lower(trim(u.email))
+        on lower(trim(aa.invitee_email)) = lower(trim(u.email))
 ),
 
 invitee_status as (
     select
+        i.sortition_round,
         coalesce(i.survey_respondent_id, 'Unknown email') as survey_respondent_id,
         em.invitee_email,
         coalesce(em.invitee_status, 'No Response Found') as invitee_status
