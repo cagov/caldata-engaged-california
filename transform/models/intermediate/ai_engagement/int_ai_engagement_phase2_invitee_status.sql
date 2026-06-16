@@ -45,6 +45,7 @@ email_match as (
 
 invitee_status as (
     select
+        i.sortition_round,
         coalesce(i.survey_respondent_id, 'Unknown email') as survey_respondent_id,
         em.invitee_email,
         coalesce(em.invitee_status, 'No Response Found') as invitee_status
