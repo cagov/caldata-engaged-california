@@ -15,3 +15,5 @@ select
     _file,
     _fivetran_synced
 from phase_2_attendees
+where
+    lower(event_name) not like '%test%'
