@@ -14,3 +14,8 @@ models:
         description: The email address of the invitee.
       - name: invitee_status
         description: The status of the invitee (e.g., accepted, declined).
+      - name: email_match
+        description: |
+          If invitee email was manually matched, this field contains either:
+          - email_address of the matched Go Vocal profile
+          - 'could not match' if no match was found
