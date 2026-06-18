@@ -20,3 +20,36 @@ sources:
               user ID of the respondent in Go Vocal.
           - name: selection_timestamp
             description: Timestamp when the user was selected in the sortition process.
+  - name: ZOOM
+    database: RAW_ENGCA_PRD
+    schema: ZOOM
+    description: |
+      Manually downloaded files for the AI Engagement.
+    tables:
+      - name: UNMATCHED_PARTICIPANTS
+        description: |
+          Manually-updated list of participants who were not matched back to a Go Vocal user profile.
+          This table includes three types of event registrants:
+            - Staff and moderators -- no need to match back to a Go Vocal user profile
+            - Participants who have a logical match back to a Go Vocal user profile, based on a fuzzy match
+            - Participants who do not have a logical match back to a Go Vocal user profile
+        columns:
+          - name: invitee_email
+            description: The email address of the invitee
+          - name: staff_or_moderator
+            description: |
+              TRUE indicates if the invitee is a staff member or moderator,
+              FALSE indicates the invitee is a participant
+          - name: survey_respondent_id_match
+            description: |
+              For participants, this field is the Go Vocal survey respondent ID
+              that is the best match for the invitee.
+          - name: email_match
+            description: |
+              For participants, this field indicates if the invitee's email address matches
+              the email address of the matched Go Vocal survey respondent ID.
+          - name: sortition_round
+            description: |
+              For participants, this field indicates the sortition round to which the
+              invitee likely belongs, based on when their email address was added to the
+              registration list.
