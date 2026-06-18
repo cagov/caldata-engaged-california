@@ -36,6 +36,7 @@ count_user_demographic_fields as (
 
 select
     u.user_id,
+    u.email,
     s.survey_respondent_id,
     s.survey_id,
     u.age,

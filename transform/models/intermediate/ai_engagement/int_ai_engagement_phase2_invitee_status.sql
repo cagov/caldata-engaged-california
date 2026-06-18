@@ -1,10 +1,17 @@
 with
 
+sortition_round as (
+    select
+        *,
+        dense_rank() over (order by selection_timestamp asc) as sortition_round
+    from {{ source('AI_ENGAGEMENT', 'INT_AI_ENGAGEMENT_SORTITION_SELECTIONS') }}
+),
+
 invitees as (
     select
         *,
-        dense_rank() over (order by selection_timestamp desc) as sortition_round
-    from {{ source('AI_ENGAGEMENT', 'INT_AI_ENGAGEMENT_SORTITION_SELECTIONS') }}
+        sortition_round = max(sortition_round) over () as current_sortition_round
+    from sortition_round
 ),
 
 users as (
@@ -41,7 +48,6 @@ manually_matched_participants as (
         email_match,
         sortition_round
     from {{ source('ZOOM', 'UNMATCHED_PARTICIPANTS') }}
-    where staff_or_moderator = FALSE -- remove all staff and moderators who have signed up for time slots
 ),
 
 --reconcile attendees with GV profiles:
@@ -51,7 +57,7 @@ email_match as (
         aa.invitee_status,
         coalesce(u.user_id, um.survey_respondent_id_match) as survey_respondent_id,
         um.email_match,
-        um.sortition_round
+        um.staff_or_moderator
     from any_acceptance as aa
     left join users as u
         on lower(trim(aa.invitee_email)) = lower(trim(u.email)) -- exact matches
@@ -61,14 +67,33 @@ email_match as (
 
 invitee_status as (
     select
-        coalesce(i.sortition_round, em.sortition_round) as sortition_round,
+        i.sortition_round,
         coalesce(i.survey_respondent_id, em.survey_respondent_id, 'Unknown email') as survey_respondent_id,
         em.invitee_email,
         em.email_match,
-        coalesce(em.invitee_status, 'No Response Found') as invitee_status
+        case
+            when em.invitee_status is null and not i.current_sortition_round then 'invitation closed'
+            when em.invitee_status is null and i.current_sortition_round then 'no response found'
+            else em.invitee_status
+        end as invitee_status,
+        em.staff_or_moderator
     from invitees as i
     full outer join email_match as em
         on i.survey_respondent_id = em.survey_respondent_id
+),
+
+filter_staff as (
+    select
+        sortition_round,
+        survey_respondent_id,
+        invitee_email,
+        email_match,
+        invitee_status
+    from invitee_status
+    where
+        -- remove all staff and moderators who have signed up for time slots
+        staff_or_moderator is null
+        or staff_or_moderator = false
 )
 
-select * from invitee_status
+select * from filter_staff
