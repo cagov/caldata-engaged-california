@@ -6,7 +6,9 @@ with
 users_x_survey as (select * from {{ ref('int_govocal_users_x_ai_survey') }}),
 
 survey_respondents as (
-    select * exclude user_id
+    select
+        * exclude user_id,
+        email
     from users_x_survey
     where
         survey_respondent_id is not null
