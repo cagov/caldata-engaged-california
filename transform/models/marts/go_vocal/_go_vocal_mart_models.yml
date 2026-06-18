@@ -160,3 +160,28 @@ models:
           '⛔ impossible to meet sortition targets' if candidate_count is less than target,
           '⚠ more would be good' if candidate_count is less than goal,
           'probably have enough respondents' otherwise.
+  - name: govocal_sortition_candidate_counts
+    description: |
+      This model counts Go Vocal sortition candidates by invite_status and by sortition segment, or question and
+      answer categories. There is one row per question and answer category, with counts of candidates who have been
+      invited, accepted, declined, or not yet invited. This model helps track the pool of potential sortition
+      participants and monitor progress towards filling sortition segments.
+    columns:
+      - name: question
+        description: The AI Impact survey question and sortition category. (e.g., 'Age').
+      - name: answer
+        description: The response to the survey question, or sortition category group (e.g., '25-44').
+      - name: candidate_count
+        description: Total count of sortition candidates for this question and answer category.
+      - name: invited_count
+        description: Count of candidates who have been invited to participate in the sortition.
+      - name: not_yet_invited_count
+        description: Count of candidates who have not yet been invited.
+      - name: accepted_count
+        description: Count of candidates who accepted the invitation.
+      - name: declined_count
+        description: Count of candidates who declined the invitation or whose invitation was closed.
+      - name: invited_no_response_count
+        description: Count of invited candidates who have not yet provided a response.
+      - name: accept_rate
+        description: Ratio of accepted invitations to total invited candidates.
