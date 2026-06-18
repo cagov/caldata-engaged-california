@@ -1,0 +1,34 @@
+version: 2
+models:
+  - name: ai_engagement_phase2_zoom_registrations
+    description: |
+      Tracks Phase 2 Zoom registrations accumulating over time, one row per CSV upload.
+      Each upload contains new registrations only. new_registrations is the count for that
+      upload; total_registrations is the cumulative running total across all uploads. Use
+      this model to chart registration progress toward the participation target.
+    columns:
+      - name: upload_file
+        description: Name of the CSV file uploaded to Google Drive.
+      - name: upload_date
+        description: Date the file was synced into Snowflake, used as a proxy for the upload date.
+      - name: new_registrations
+        description: Count of accepted Zoom registrants in this upload.
+      - name: new_declines
+        description: Count of declined Zoom registrants in this upload.
+      - name: total_registrations
+        description: Cumulative count of accepted Zoom registrants across all uploads to date.
+      - name: total_declines
+        description: Cumulative count of declined Zoom registrants across all uploads to date.
+
+  - name: ai_engagement_phase2_sendgrid_clicks
+    description: |
+      Daily clicks on links within Phase 2 sortition invite emails (subject line starting with
+      'Join a discussion about AI'), broken out by URL. Filter to the Zoom scheduler URL
+      to see clicks specifically on the registration link.
+    columns:
+      - name: click_date
+        description: Date of the click, in Pacific time.
+      - name: url
+        description: The URL that was clicked.
+      - name: clicks
+        description: Number of clicks on that URL on that date.
