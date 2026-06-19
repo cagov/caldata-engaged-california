@@ -73,7 +73,7 @@ invitee_status as (
         em.email_match,
         case
             when em.invitee_status is null and not i.current_sortition_round then 'invitation closed'
-            when em.invitee_status is null and i.current_sortition_round then 'no response found'
+            when em.invitee_status is null and i.current_sortition_round then 'invitation open'
             else em.invitee_status
         end as invitee_status,
         em.staff_or_moderator
