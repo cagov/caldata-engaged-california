@@ -13,7 +13,7 @@ cand_counts as (
         count_if(invitee_status = 'not yet invited') as not_yet_invited_count,
         count_if(invitee_status = 'accepted') as accepted_count,
         count_if(invitee_status = 'declined' or invitee_status = 'invitation closed') as declined_count,
-        count_if(invitee_status = 'no response found') as invited_no_response_count,
+        count_if(invitee_status = 'invitation open') as invited_no_response_count,
         accepted_count / invited_count as accept_rate
     from candidates
     unpivot (
