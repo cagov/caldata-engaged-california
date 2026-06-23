@@ -185,6 +185,12 @@ models:
         description: Count of invited candidates who have not yet provided a response.
       - name: accept_rate
         description: Ratio of accepted invitations to total invited candidates.
+      - name: pct_of_total
+        description: Percentage of all accepting candidates who provided this answer.
+      - name: target_pct
+        description: Target percentage for this answer category based on sortition strategy (from source).
+      - name: adjusted_target_pct
+        description: Adjusted target percentage accounting for non-responses.
   - name: govocal_sortition_candidates
     description: |
       This model exposes the underlying int_govocal_sortition_candidates, which identifies the AI survey respondents
