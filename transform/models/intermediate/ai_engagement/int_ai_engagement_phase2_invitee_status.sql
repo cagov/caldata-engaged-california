@@ -25,7 +25,8 @@ users as (
 phase2_responses as (
     select
         invitee_email,
-        invitee_status
+        invitee_status,
+        start_date_time
     from {{ ref('stg_phase2_attendees') }}
     qualify _fivetran_synced::DATE = max(_fivetran_synced::DATE) over (partition by start_date_time)
 ),
@@ -35,7 +36,10 @@ any_acceptance as (
         invitee_email,
         -- the only possible statuses are 'accepted' and 'declined'
         -- if an invitee has 'accepted' any zoom event, then return 'accepted', otherwise return 'declined'
-        min(invitee_status) as invitee_status
+        min(invitee_status) as invitee_status,
+        array_agg(distinct iff(invitee_status = 'accepted', start_date_time, null)) as start_date_time_array,
+        iff(array_size(start_date_time_array) > 1, 'multiple events accepted', start_date_time_array[0])
+            as accepted_event_start_date_time
     from phase2_responses
     group by invitee_email
 ),
@@ -55,6 +59,7 @@ email_match as (
     select
         aa.invitee_email,
         aa.invitee_status,
+        aa.accepted_event_start_date_time,
         coalesce(u.user_id, um.survey_respondent_id_match) as survey_respondent_id,
         um.email_match,
         um.staff_or_moderator
@@ -76,6 +81,7 @@ invitee_status as (
             when em.invitee_status is null and i.current_sortition_round then 'invitation open'
             else em.invitee_status
         end as invitee_status,
+        em.accepted_event_start_date_time,
         em.staff_or_moderator
     from invitees as i
     full outer join email_match as em
@@ -88,7 +94,8 @@ filter_staff as (
         survey_respondent_id,
         invitee_email,
         email_match,
-        invitee_status
+        invitee_status,
+        accepted_event_start_date_time
     from invitee_status
     where
         -- remove all staff and moderators who have signed up for time slots

@@ -3,8 +3,9 @@ models:
   - name: int_ai_engagement_phase2_invitee_status
     description: |
       This table joins the sortition selections with the statuses of Phase 2 invitees. If a Phase 2 invitee email is
-      not found in the Go Vocal user emails, the invitee status will be 'No Response Found'. The join used is a full
-      outer join in order to preserve any invitee emails that are not matched in the output.
+      not found in the Go Vocal user emails, and is not manually matched, the invitee status will be
+      'No Response Found'. The join used is a full outer join in order to preserve any invitee emails that are not
+      matched in the output. Staff and moderators are removed from the final output.
     columns:
       - name: sortition_round
         description: The sortition round during which the survey respondent was selected for Phase 2.
@@ -19,3 +20,12 @@ models:
           If invitee email was manually matched, this field contains either:
           - email_address of the matched Go Vocal profile
           - 'could not match' if no match was found
+      - name: accepted_event_start_date_time
+        data_tests:
+          - dbt_utils.not_accepted_values:
+              values: ["multiple events accepted"]
+        description: |
+          The start date and time of the Phase 2 event that an invitee has accepted, if an invitee
+          accepted the invitation. Null if the invitee has not accepted an invitation.
+          'multiple events accepted' if an invitee is simultaneously registered for more than one event,
+          which is expected only for moderators and staff and should therefore be filtered out.
