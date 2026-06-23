@@ -181,7 +181,21 @@ models:
       - name: answer
         description: The specific response to the survey question, or category group (e.g., '25-44').
       - name: candidate_count
-        description: Count of survey respondents who provided this answer to the question.
+        description: Total count of eligible candidates who provided this answer to this question.
+      - name: invited_count
+        description: Count of candidates who have been invited to participate in the sortition.
+      - name: not_yet_invited_count
+        description: Count of candidates who have not yet been invited.
+      - name: accepted_count
+        description: Count of candidates who accepted the invitation.
+      - name: declined_count
+        description: Count of candidates who declined the invitation or whose invitation was closed.
+      - name: invited_no_response_count
+        description: Count of invited candidates who have not yet provided a response.
+      - name: accept_rate
+        description: Ratio of accepted invitations to total invited candidates.
+      - name: pct_of_total
+        description: Percentage of all accepting candidates who provided this answer.
       - name: target_pct
         description: Target percentage for this answer category based on sortition strategy (from source).
       - name: adjusted_target_pct

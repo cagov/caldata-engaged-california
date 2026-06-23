@@ -8,7 +8,14 @@ cand_counts as (
     select
         question,
         answer,
-        count(*) as candidate_count
+        count(*) as candidate_count,
+        count_if(invitee_status <> 'not yet invited') as invited_count,
+        count_if(invitee_status = 'not yet invited') as not_yet_invited_count,
+        count_if(invitee_status = 'accepted') as accepted_count,
+        count_if(invitee_status = 'declined' or invitee_status = 'invitation closed') as declined_count,
+        count_if(invitee_status = 'invitation open') as invited_no_response_count,
+        accepted_count / invited_count as accept_rate,
+        accepted_count / (sum(accepted_count) over (partition by question)) as pct_of_total
     from candidates
     unpivot (
         answer for question in (age, gender_category, race_ethnicity_category, region, field_of_work, ai_response_label)
@@ -26,9 +33,7 @@ nonresponsepercents as (
 
 targets as (
     select
-        cc.question,
-        cc.answer,
-        cc.candidate_count,
+        cc.*,
         st.target_pct,
         -- scale down the target percentages based on the actual non-response percentages
         case when cc.answer = 'Non-response' then np.nonresponse_pct else st.target_pct * (1 - np.nonresponse_pct) end
