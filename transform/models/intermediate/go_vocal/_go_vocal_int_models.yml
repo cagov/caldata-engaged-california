@@ -164,6 +164,11 @@ models:
           The status of the respondent (or sortition candidate) indicating whether the respondent has previously
           been selected to participate in an earlier round of sortition or has already accepted an invitation to
           participate.
+      - name: accepted_event_start_date_time
+        description: |
+          The start date and time of the Phase 2 event that the candidate has accepted, if a candidate has already been
+          invited in a sortition lottery and accepted the invitation. Null if the candidate has not yet been invited or
+          has not accepted an invitation.
   - name: int_govocal_sortition_targets
     description: |
       This model counts the number of sortition candidates matching each target category from the sortition strategy.
