@@ -1,5 +1,22 @@
 version: 2
 models:
+  - name: stg_zoom_unmatched_participants
+    description: |
+      Manually-maintained list of Zoom participants who were not automatically matched to a
+      Go Vocal user profile. Includes staff/moderators (staff_or_moderator = true) and
+      participants with fuzzy or no match to a Go Vocal profile.
+    columns:
+      - name: invitee_email
+        description: The email address of the invitee.
+      - name: staff_or_moderator
+        description: True if the invitee is a staff member or moderator, false if a participant.
+      - name: survey_respondent_id_match
+        description: The Go Vocal survey respondent ID that best matches this invitee, if applicable.
+      - name: email_match
+        description: Indicates if the invitee's email matches the matched Go Vocal respondent.
+      - name: sortition_round
+        description: The sortition round this invitee likely belongs to.
+
   - name: stg_phase2_attendees
     description: |
       This table contains information about attendees of Phase 2 events.

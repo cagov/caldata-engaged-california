@@ -2,10 +2,10 @@ version: 2
 models:
   - name: ai_engagement_phase2_zoom_registrations
     description: |
-      Tracks net-new Phase 2 Zoom registrations and declines per upload date. Because each
-      upload is cumulative (contains all registrants ever), this model snapshots totals by
-      _fivetran_synced date and uses lag() to derive the net-new count per status per day.
-      Use this model to chart day-over-day registration progress toward the participation target.
+      Net-new Phase 2 Zoom registrations and declines per upload date, derived from cumulative
+      upload snapshots using lag(). Staff and moderators are excluded. All registrations are
+      counted, including multiple registrations by the same person. Use to track day-over-day
+      registration progress toward the participation target.
     columns:
       - name: upload_date
         description: Date the snapshot was synced into Snowflake via Fivetran, used as the upload date.
