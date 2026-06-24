@@ -6,20 +6,18 @@ source as (
 
 upload_snapshots as (
     select
-        _file as upload_file,
-        min(_fivetran_synced)::date as upload_date,
-        count_if(invitee_status = 'accepted') as new_registrations,
-        count_if(invitee_status = 'declined') as new_declines
+        _fivetran_synced::date as upload_date,
+        count_if(invitee_status = 'accepted') as total_registrations,
+        count_if(invitee_status = 'declined') as total_declines
     from source
-    group by _file
+    group by upload_date
 )
 
 select
-    upload_file,
     upload_date,
-    new_registrations,
-    new_declines,
-    sum(new_registrations) over (order by upload_date, upload_file) as total_registrations,
-    sum(new_declines) over (order by upload_date, upload_file) as total_declines
+    total_registrations - coalesce(lag(total_registrations) over (order by upload_date), 0) as new_registrations,
+    total_declines - coalesce(lag(total_declines) over (order by upload_date), 0) as new_declines,
+    total_registrations,
+    total_declines
 from upload_snapshots
-order by upload_date, upload_file
+order by upload_date

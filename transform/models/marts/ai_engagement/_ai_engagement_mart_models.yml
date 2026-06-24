@@ -2,23 +2,21 @@ version: 2
 models:
   - name: ai_engagement_phase2_zoom_registrations
     description: |
-      Tracks Phase 2 Zoom registrations accumulating over time, one row per CSV upload.
-      Each upload contains new registrations only. new_registrations is the count for that
-      upload; total_registrations is the cumulative running total across all uploads. Use
-      this model to chart registration progress toward the participation target.
+      Tracks net-new Phase 2 Zoom registrations and declines per upload date. Because each
+      upload is cumulative (contains all registrants ever), this model snapshots totals by
+      _fivetran_synced date and uses lag() to derive the net-new count per status per day.
+      Use this model to chart day-over-day registration progress toward the participation target.
     columns:
-      - name: upload_file
-        description: Name of the CSV file uploaded to Google Drive.
       - name: upload_date
-        description: Date the file was synced into Snowflake, used as a proxy for the upload date.
+        description: Date the snapshot was synced into Snowflake via Fivetran, used as the upload date.
       - name: new_registrations
-        description: Count of accepted Zoom registrants in this upload.
+        description: Net-new accepted registrants since the previous upload snapshot.
       - name: new_declines
-        description: Count of declined Zoom registrants in this upload.
+        description: Net-new declined registrants since the previous upload snapshot.
       - name: total_registrations
-        description: Cumulative count of accepted Zoom registrants across all uploads to date.
+        description: Cumulative count of accepted registrants as of this upload.
       - name: total_declines
-        description: Cumulative count of declined Zoom registrants across all uploads to date.
+        description: Cumulative count of declined registrants as of this upload.
 
   - name: ai_engagement_phase2_sendgrid_clicks
     description: |
