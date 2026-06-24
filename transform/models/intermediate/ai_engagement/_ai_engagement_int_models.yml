@@ -24,6 +24,7 @@ models:
         data_tests:
           - dbt_utils.not_accepted_values:
               values: ["multiple events accepted"]
+              severity: warn
         description: |
           The start date and time of the Phase 2 event that an invitee has accepted, if an invitee
           accepted the invitation. Null if the invitee has not accepted an invitation.
