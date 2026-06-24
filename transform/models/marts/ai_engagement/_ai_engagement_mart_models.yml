@@ -1,0 +1,32 @@
+version: 2
+models:
+  - name: ai_engagement_phase2_zoom_registrations
+    description: |
+      Net-new Phase 2 Zoom registrations and declines per upload date, derived from cumulative
+      upload snapshots using lag(). Staff and moderators are excluded. All registrations are
+      counted, including multiple registrations by the same person. Use to track day-over-day
+      registration progress toward the participation target.
+    columns:
+      - name: upload_date
+        description: Date the snapshot was synced into Snowflake via Fivetran, used as the upload date.
+      - name: new_registrations
+        description: Net-new accepted registrants since the previous upload snapshot.
+      - name: new_declines
+        description: Net-new declined registrants since the previous upload snapshot.
+      - name: total_registrations
+        description: Cumulative count of accepted registrants as of this upload.
+      - name: total_declines
+        description: Cumulative count of declined registrants as of this upload.
+
+  - name: ai_engagement_phase2_sendgrid_clicks
+    description: |
+      Daily clicks on links within Phase 2 sortition invite emails (subject line starting with
+      'Join a discussion about AI'), broken out by URL. Filter to the Zoom scheduler URL
+      to see clicks specifically on the registration link.
+    columns:
+      - name: click_date
+        description: Date of the click, in Pacific time.
+      - name: url
+        description: The URL that was clicked.
+      - name: clicks
+        description: Number of clicks on that URL on that date.

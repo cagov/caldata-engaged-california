@@ -123,6 +123,9 @@ models:
       social:
         +schema: social
         +tags: ["marketing"]
+      ai_engagement:
+        +schema: ai_engagement
+        +tags: ["ai_impact"]
       go_vocal:
         +schema: govocal
         +tags: ["ai_impact"]
