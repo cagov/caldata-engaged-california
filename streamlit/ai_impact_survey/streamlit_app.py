@@ -211,6 +211,14 @@ class GroupAnalysis:
     num_chunks: int = 1
 
 
+@dataclass
+class ThemeScore:
+    idea_id: str
+    score: float
+    reasonings: list[str]
+    tokens: int
+
+
 # ---------------------------------------------------------------------------
 # Data loading & analysis helpers
 # ---------------------------------------------------------------------------
@@ -538,6 +546,238 @@ def format_theme_counts_block(theme_citation_map: dict[str, set[int]], total_n: 
     return "\n".join(lines)
 
 
+
+
+JUDGE_SYSTEM_PROMPT = (
+    "You are a precise classification assistant performing natural language inference. "
+    "Follow the requested output format exactly. Do not add commentary outside that format."
+)
+
+
+def run_cortex_judge(prompt: str, model: str) -> dict:
+    """Lightweight Cortex call for NLI/classification tasks, without the survey-analysis system prompt."""
+    query = f"""
+    SELECT SNOWFLAKE.CORTEX.COMPLETE(
+        '{_esc(model)}',
+        ARRAY_CONSTRUCT(
+            OBJECT_CONSTRUCT('role', 'system', 'content', '{_esc(JUDGE_SYSTEM_PROMPT)}'),
+            OBJECT_CONSTRUCT('role', 'user', 'content', '{_esc(prompt)}')
+        ),
+        OBJECT_CONSTRUCT('temperature', 0)
+    ) AS result
+    """
+    row = session.sql(query).to_pandas().iloc[0]
+    return json.loads(row["RESULT"])
+
+
+def decompose_claims(theme_description: str, model: str) -> list[str]:
+    prompt = (
+        "Break the following theme description into a list of simple, standalone, checkable claims. "
+        "If the theme is already a single atomic claim, return a list with just that one claim. "
+        "Respond with ONLY a JSON array of strings, no other text.\n\n"
+        f"Theme: {theme_description}"
+    )
+    result = run_cortex_judge(prompt, model)
+    raw = result["choices"][0]["messages"]
+    match = re.search(r'\[.*\]', raw, re.DOTALL)
+    if match:
+        try:
+            claims = json.loads(match.group())
+            if isinstance(claims, list) and claims:
+                return [str(c) for c in claims]
+        except json.JSONDecodeError:
+            pass
+    return [theme_description]
+
+
+def check_entailment(claim: str, response_text: str, model: str) -> dict:
+    prompt = (
+        "Can the following claim be directly inferred from the survey response below? "
+        'Respond with ONLY a JSON object: {"verdict": "yes" or "no", "reasoning": "one short sentence"}\n\n'
+        f"Claim: {claim}\n\n"
+        f"Survey response: {response_text}"
+    )
+    result = run_cortex_judge(prompt, model)
+    raw = result["choices"][0]["messages"]
+    tokens = result["usage"]["total_tokens"]
+    match = re.search(r'\{.*\}', raw, re.DOTALL)
+    verdict, reasoning = False, ""
+    if match:
+        try:
+            parsed = json.loads(match.group())
+            verdict = str(parsed.get("verdict", "no")).strip().lower() == "yes"
+            reasoning = parsed.get("reasoning", "")
+        except json.JSONDecodeError:
+            pass
+    return {"verdict": verdict, "reasoning": reasoning, "tokens": tokens}
+
+
+def score_theme_prevalence(
+    theme: str,
+    responses_df: pd.DataFrame,
+    answer_col: str,
+    model: str,
+    max_workers: int = 12,
+) -> tuple[list[str], list[ThemeScore], int]:
+    rows = responses_df[responses_df[answer_col].notna() & (responses_df[answer_col].str.strip() != "")]
+    idea_ids    = rows["IDEA_ID"].tolist()
+    uuid_to_int = {uid: i + 1 for i, uid in enumerate(idea_ids)}
+    int_to_uuid = {v: k for k, v in uuid_to_int.items()}
+
+    indices = list(rows.index)
+    batches = [
+        rows.loc[indices[i:i + CLASSIFICATION_BATCH_SIZE]]
+        for i in range(0, len(indices), CLASSIFICATION_BATCH_SIZE)
+    ]
+
+    def _score_batch(batch_df: pd.DataFrame) -> tuple[dict[str, bool], int]:
+        parts = [
+            f"[cite:{uuid_to_int[row['IDEA_ID']]}] {str(row[answer_col]).strip()}"
+            for _, row in batch_df.iterrows()
+        ]
+        prompt = (
+            f"For each survey response below, judge whether it expresses or directly supports the following theme.\n\n"
+            f"Theme: {theme}\n\n"
+            f"Responses:\n" + "\n".join(parts) + "\n\n"
+            f"Output one line per response, exactly: [cite:N]: yes or no\n"
+            f"Output only those lines — no other text."
+        )
+        result = run_cortex_judge(prompt, model)
+        raw    = result["choices"][0]["messages"]
+        tokens = result["usage"]["total_tokens"]
+        verdicts: dict[str, bool] = {}
+        for m in re.finditer(r'\[cite:(\d+)\]:\s*(yes|no)', raw, re.IGNORECASE):
+            uid = int_to_uuid.get(int(m.group(1)))
+            if uid:
+                verdicts[str(uid)] = m.group(2).lower() == "yes"
+        return verdicts, tokens
+
+    all_verdicts: dict[str, bool] = {}
+    total_tokens = 0
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {executor.submit(_score_batch, batch): None for batch in batches}
+        for future in as_completed(futures):
+            try:
+                verdicts, tokens = future.result()
+                all_verdicts.update(verdicts)
+                total_tokens += tokens
+            except Exception:
+                pass
+
+    scores = [
+        ThemeScore(
+            idea_id=str(row["IDEA_ID"]),
+            score=1.0 if all_verdicts.get(str(row["IDEA_ID"]), False) else 0.0,
+            reasonings=[],
+            tokens=0,
+        )
+        for _, row in rows.iterrows()
+    ]
+
+    return [], scores, total_tokens
+
+
+def parse_themes_from_analysis(text: str) -> list[tuple[str, str]]:
+    results = []
+    sections = re.split(r'(?=####\s*\d+\.)', text)
+    for section in sections:
+        label_match = re.match(r'####\s*\d+\.\s*(.+)', section.strip())
+        if not label_match:
+            continue
+        label = label_match.group(1).strip()
+        desc_match = re.search(r'\*Description:\s*([^*]+?)\*', section, re.DOTALL)
+        if desc_match:
+            description = re.sub(r'\[cite:\d+\]', '', desc_match.group(1)).strip()
+        else:
+            description = label
+        results.append((label, description))
+    return results
+
+
+def parse_themes_with_quotes(text: str) -> list[tuple[str, str, list[str]]]:
+    """Extract (label, description, quotes) from a Thematic Analysis output."""
+    results = []
+    sections = re.split(r'(?=####\s*\d+\.)', text)
+    for section in sections:
+        label_match = re.match(r'####\s*\d+\.\s*(.+)', section.strip())
+        if not label_match:
+            continue
+        label = re.sub(r'\*+', '', label_match.group(1)).strip()
+        desc_match = re.search(r'\*Description:\s*([^*]+?)\*', section, re.DOTALL)
+        description = re.sub(r'\[cite:\d+\]', '', desc_match.group(1)).strip() if desc_match else label
+        quotes: list[str] = []
+        quotes_block = re.search(r'\*Representative quotes:\*\s*\n((?:- .+\n?)+)', section)
+        if quotes_block:
+            for line in quotes_block.group(1).splitlines():
+                line = re.sub(r'\[cite:\d+\]', '', line.strip().lstrip("- ")).strip()
+                if len(line) > 10:
+                    quotes.append(line)
+        results.append((label, description, quotes))
+    return results
+
+
+def score_quote_fidelity(description: str, quotes: list[str], model: str) -> float:
+    """Claims in theme description supported by its cited quotes. Returns 0.0–1.0."""
+    if not quotes:
+        return 0.0
+    claims = decompose_claims(description, model)
+    claims_text = "\n".join(f"- {c}" for c in claims)
+    quotes_text = "\n".join(f"[{i + 1}] {q}" for i, q in enumerate(quotes))
+    prompt = (
+        "For each claim below, determine whether it is directly supported by at least one "
+        "of the survey quotes provided.\n\n"
+        f"Claims:\n{claims_text}\n\n"
+        f"Quotes:\n{quotes_text}\n\n"
+        "Output one line per claim:\n"
+        "Claim N: yes or no\n"
+        "Output only those lines — no other text."
+    )
+    result = run_cortex_judge(prompt, model)
+    raw    = result["choices"][0]["messages"]
+    verdicts: list[bool] = []
+    for m in re.finditer(r'Claim\s+(\d+):\s*(yes|no)', raw, re.IGNORECASE):
+        idx = int(m.group(1)) - 1
+        if 0 <= idx < len(claims):
+            verdicts.append(m.group(2).lower() == "yes")
+    if not verdicts:
+        yes = len(re.findall(r'\byes\b', raw, re.IGNORECASE))
+        no  = len(re.findall(r'\bno\b',  raw, re.IGNORECASE))
+        total = yes + no
+        return yes / total if total else 0.0
+    return sum(1 for v in verdicts if v) / len(claims)
+
+
+def score_coverage(analysis_text: str, responses_df: pd.DataFrame, answer_col: str, model: str) -> tuple[int, str]:
+    """Did the analysis capture the major themes? Returns (0 or 1, reasoning)."""
+    sample = responses_df[answer_col].dropna().head(50).tolist()
+    sample_text = "\n".join(f"- {str(r).strip()}" for r in sample if str(r).strip())
+    prompt = (
+        "You are evaluating the quality of an AI-generated thematic analysis of survey responses.\n\n"
+        "GENERATED ANALYSIS:\n"
+        f"{analysis_text[:3000]}\n\n"
+        "SAMPLE OF ACTUAL SURVEY RESPONSES:\n"
+        f"{sample_text}\n\n"
+        "Does the analysis capture the most important recurring themes from the responses? "
+        "Are there clear patterns in the responses that the analysis completely missed?\n\n"
+        'Respond with ONLY a JSON object: {"verdict": 1 or 0, "reasoning": "one or two sentences"}\n'
+        "1 = comprehensive, 0 = important themes were missed."
+    )
+    result = run_cortex_judge(prompt, model)
+    raw    = result["choices"][0]["messages"]
+    tokens = result["usage"]["total_tokens"]
+    match  = re.search(r'\{.*\}', raw, re.DOTALL)
+    if match:
+        try:
+            parsed = json.loads(match.group())
+            return int(parsed.get("verdict", 0)), str(parsed.get("reasoning", "")), tokens
+        except (json.JSONDecodeError, ValueError):
+            pass
+    return 0, raw.strip(), tokens
+
+
+
+
 CHART_HEIGHT = 350
 PALETTE = px.colors.qualitative.Plotly
 
@@ -685,6 +925,7 @@ with st.sidebar:
         load_survey_data.clear()
         st.rerun()
 
+
 filtered_df = df.copy()
 for col, sel in selected_filters.items():
     if sel:
@@ -705,6 +946,8 @@ if active_filter_count:
 if "last_query_tokens" not in st.session_state:
     st.session_state.last_query_tokens = 0
     st.session_state.last_query_cost = 0.0
+    st.session_state.last_analysis = None
+    st.session_state.quality_cache = {}
 
 render_demographics_section(filtered_df)
 
@@ -714,6 +957,91 @@ render_demographics_section(filtered_df)
 # ---------------------------------------------------------------------------
 
 tab1, tab2, tab3 = st.tabs(["LLM analysis", "Browse responses", "Data export"])
+
+
+@st.fragment
+def render_quality_section() -> None:
+    la = st.session_state.get("last_analysis")
+    if not la:
+        return
+
+    is_thematic = la.get("prompt_label") == "Thematic Analysis"
+
+    st.divider()
+    col_quality, _ = st.columns([2, 2])
+
+    with col_quality:
+        run_quality = st.button(
+            "Theme quality analysis",
+            disabled=not is_thematic,
+            help=(
+                "Scores each theme on quote fidelity, grounding, and coverage using Cortex."
+                if is_thematic
+                else "Only available for Thematic Analysis outputs."
+            ),
+        )
+
+    if run_quality:
+        themes_data = parse_themes_with_quotes(la["text"])
+        if themes_data:
+            cache_key = (la["model"], hash(la["text"]), hash(frozenset(la["df"]["IDEA_ID"].tolist())))
+            if cache_key not in st.session_state.quality_cache:
+                quality_tokens = 0
+                quality_results = []
+
+                with st.status(f"Scoring {len(themes_data)} themes…", expanded=True) as q_status:
+                    for t_label, t_description, t_quotes in themes_data:
+                        st.write(f"Scoring **{t_label}**…")
+                        _, t_scores, t_tokens = score_theme_prevalence(
+                            t_description, la["df"], la["answer_col"], la["model"]
+                        )
+                        quality_tokens += t_tokens
+                        n_matched = sum(1 for s in t_scores if s.score >= 0.5)
+                        grounding = n_matched / len(t_scores) if t_scores else 0.0
+                        quality_results.append({
+                            "Theme":     t_label,
+                            "Grounding": round(grounding, 2),
+                            "n_matched": n_matched,
+                            "n_total":   len(t_scores),
+                        })
+                    q_status.update(label="Quality analysis complete", state="complete", expanded=False)
+
+                st.session_state.quality_cache[cache_key] = {
+                    "results": quality_results,
+                    "tokens":  quality_tokens,
+                }
+
+    cache_key = (la["model"], hash(la["text"]), hash(frozenset(la["df"]["IDEA_ID"].tolist())))
+    if cache_key in st.session_state.quality_cache:
+        qr = st.session_state.quality_cache[cache_key]
+        st.subheader("Theme quality analysis")
+        st.caption(
+            "Grounding measures what share of the filtered respondents actually expressed each theme "
+            "in their response — a low score means the LLM may have over-weighted a few outlier voices."
+        )
+
+        results_df = pd.DataFrame(qr["results"])[["Theme", "Grounding"]]
+        avg_row    = pd.DataFrame([{"Theme": "Average", "Grounding": round(results_df["Grounding"].mean(), 2)}])
+        st.dataframe(
+            pd.concat([results_df, avg_row], ignore_index=True),
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Grounding": st.column_config.ProgressColumn(
+                    "Grounding", min_value=0, max_value=1, format="%.2f"
+                ),
+            },
+        )
+
+        low_grounding = [
+            r["Theme"] for r in qr["results"]
+            if r["n_total"] and r["n_matched"] / r["n_total"] < 0.15
+        ]
+        if low_grounding:
+            st.warning(
+                f"Low grounding (< 15% of respondents): **{', '.join(low_grounding)}** — "
+                "the LLM may have surfaced these from a small number of outlier quotes."
+            )
 
 
 # ── Tab 1: LLM Analysis ──────────────────────────────────────────────────────
@@ -781,6 +1109,13 @@ with tab1:
     has_answer = filtered_df[answer_col].notna() & (filtered_df[answer_col].str.strip() != "")
     respondents_with_answers = filtered_df[has_answer]
 
+    if st.session_state.get("last_analysis"):
+        stored_ids  = set(st.session_state.last_analysis["df"]["IDEA_ID"].tolist())
+        current_ids = set(respondents_with_answers["IDEA_ID"].tolist())
+        if stored_ids != current_ids:
+            st.session_state.last_analysis = None
+            st.session_state.quality_cache = {}
+
     with col_count:
         st.metric("Responses to analyze", len(respondents_with_answers), delta_color="off")
         if selected_llm and MODEL_COSTS.get(selected_llm):
@@ -807,7 +1142,6 @@ with tab1:
             "additional cost. Only active when analysis requires multiple batches."
         ),
     )
-
     # Run button
     if st.button("Run analysis", type="primary"):
         if selected_prompt_label == "Custom…" and not user_prompt.strip():
@@ -1037,19 +1371,22 @@ with tab1:
 
                         status.update(label="Analysis complete", state="complete", expanded=False)
 
-            st.session_state.last_query_tokens = total_tokens
-            st.session_state.last_query_cost   = total_cost
-            st.info(f"Used {total_tokens:,} tokens total — cost ${total_cost:.4f}")
-
             if not sub_results:
+                st.session_state.last_query_tokens = total_tokens
+                st.session_state.last_query_cost   = total_cost
+                st.info(f"Used {total_tokens:,} tokens total — cost ${total_cost:.4f}")
                 st.warning("No analysis results returned.")
             else:  # Display results
                 n_groups = len(sub_results)
                 n_total  = sum(r.n for r in sub_results)
 
-                # Build global citation map from only the text that is displayed to the user
-                displayed_text  = synthesis_text if synthesis_text else sub_results[0].text
-                all_cited_ints  = collect_cited_ints([displayed_text])
+                displayed_text = synthesis_text if synthesis_text else sub_results[0].text
+                all_cited_ints = collect_cited_ints([displayed_text])
+
+                st.session_state.last_query_tokens = total_tokens
+                st.session_state.last_query_cost   = total_cost
+                st.info(f"Used {total_tokens:,} tokens total — cost ${total_cost:.4f}")
+
                 global_cite_map = {n: i + 1 for i, n in enumerate(all_cited_ints)}
                 total_citations = len(all_cited_ints)
 
@@ -1057,18 +1394,22 @@ with tab1:
                     f"Analysis of {n_total:,} responses"
                     + (f" across {n_groups} {selected_dimension_label} groups" if n_groups > 1 and selected_dimension_label else "")
                 )
+
                 if total_citations:
                     st.caption(
                         f"This analysis cites {total_citations} response{'s' if total_citations != 1 else ''}. "
                         "Click any [†n] marker to jump to the source, or scroll to **Cited Responses** below."
                     )
 
+                def _render(text: str) -> str:
+                    return apply_global_citations(text, global_cite_map)
+
                 if synthesis_text:
-                    st.markdown(apply_global_citations(synthesis_text, global_cite_map), unsafe_allow_html=True)
+                    st.markdown(_render(synthesis_text), unsafe_allow_html=True)
                 else:
                     if n_groups == 1 and selected_dimension_label and sub_results[0].group_value:
                         st.caption(f"Only one {selected_dimension_label} group found.")
-                    st.markdown(apply_global_citations(sub_results[0].text, global_cite_map), unsafe_allow_html=True)
+                    st.markdown(_render(sub_results[0].text), unsafe_allow_html=True)
 
                 if total_citations:  # Generate citation HTML
                     st.divider()
@@ -1101,6 +1442,18 @@ with tab1:
                                 ]
                                 if demo_parts:
                                     st.caption(" · ".join(demo_parts))
+
+                st.session_state.last_analysis = {
+                    "text":          displayed_text,
+                    "prompt_label":  selected_prompt_label,
+                    "question":      selected_question,
+                    "model":         selected_llm,
+                    "n_respondents": len(respondents_with_answers),
+                    "df":            respondents_with_answers,
+                    "answer_col":    answer_col,
+                }
+
+    render_quality_section()
 
 
 # ── Tab 2: Browse Responses ──────────────────────────────────────────────────
