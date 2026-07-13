@@ -44,3 +44,46 @@ models:
         description: The name of the file from which the data was sourced.
       - name: _fivetran_synced
         description: Timestamp of when the data has been synced with Fivetran.
+
+  - name: stg_chats_raw
+    description: |
+      This table contains the raw chat messages from Phase 2 events.
+      This data appends new rows each time a new .txt file is added
+      to the appropriate Stage in Snowflake, and is processed via
+      the Upload Transcripts notebook.
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+      - name: line_no
+        description: The line number of the chat message in the file.
+      - name: start_sec
+        description: The start time of the chat message in seconds.
+      - name: speaker
+        description: The display name of the sender of the chat message.
+      - name: text
+        description: The content of the chat message.
+
+  - name: stg_transcripts_raw
+    description: |
+      This table contains the raw transcripts from Phase 2 events.
+      This data appends new rows each time a new .vtt file is added
+      to the appropriate Stage in Snowflake, and is processed via
+      the Upload Transcripts notebook.
+
+      Each row is a 'cue' from the transcript, which is a block of text
+      spoken by a single speaker.
+    columns:
+      - name: filename
+        description: The name of the transcript file.
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+      - name: seq
+        description: The line number of the transcript cue in the file.
+      - name: start_sec
+        description: The start time of the transcript cue in seconds.
+      - name: end_sec
+        description: The end time of the transcript cue in seconds.
+      - name: speaker
+        description: The display name of the speaker in the transcript cue.
+      - name: text
+        description: The content of the transcript cue.
