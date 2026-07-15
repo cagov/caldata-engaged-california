@@ -40,13 +40,23 @@ session = get_session()
 # Config
 # ---------------------------------------------------------------------------
 
-RAW_TABLE = "raw_engca_dev.test_data.stg_events"
+# Themes and supporting quotes are pre-computed by the dbt tagging pipeline
+# (models phase2_transcript_session_summaries / phase2_transcript_turn_tags,
+# built on phase2_zoom_transcripts_and_chats). This app reads those tables
+# instead of calling Cortex to summarize/tag on load. Point these at your
+# environment via .env; defaults target the production analytics schema.
+DISCUSSIONS_DATABASE = os.environ.get("DISCUSSIONS_DATABASE", "analytics_engca_prd")
+DISCUSSIONS_SCHEMA = os.environ.get("DISCUSSIONS_SCHEMA", "ai_engagement")
+
+EVENTS_TABLE = f"{DISCUSSIONS_DATABASE}.{DISCUSSIONS_SCHEMA}.phase2_zoom_transcripts_and_chats"
+SUMMARIES_TABLE = f"{DISCUSSIONS_DATABASE}.{DISCUSSIONS_SCHEMA}.phase2_transcript_session_summaries"
 
 LLM_MODEL_LOW = os.environ.get("LLM_MODEL_LOW", "")
 LLM_MODEL_MED = os.environ.get("LLM_MODEL_MED", "")
 LLM_MODEL_HIGH = os.environ.get("LLM_MODEL_HIGH", "")
 
-# Chunking params validated in notebooks/ai_impact_survey/phase_2_analysis.ipynb
+# Chunking params validated in notebooks/ai_impact_survey/phase_2_analysis.ipynb.
+# Still used by the on-demand Quote search and Custom analysis tabs.
 MAX_CHARS_PER_CHUNK = int(os.environ.get("MAX_CHARS_PER_CHUNK", "30000"))
 OVERLAP_TURNS = 4
 TURN_PREFIX_OVERHEAD = 25  # index/timestamp/source prefix chars per rendered turn
@@ -72,6 +82,10 @@ LLM_TIERS = [
 
 # ---------------------------------------------------------------------------
 # Prompts (validated in notebooks/ai_impact_survey/phase_2_analysis.ipynb)
+#
+# The structured session summary is now produced by the dbt pipeline, so its
+# prompt lives in the model SQL. The prompts below drive only the on-demand
+# Quote search and Custom analysis tabs.
 # ---------------------------------------------------------------------------
 
 TRANSCRIPT_SYSTEM_PROMPT = (
@@ -140,38 +154,6 @@ DELIBERATIVE_PROMPT = (
     "not name), and what the outcome was. Cite the relevant turns like [turn:N]. If the "
     "discussion contains no substantive deliberation, say so and summarize what was discussed "
     "instead."
-)
-
-SESSION_SUMMARY_PROMPT = (
-    "Produce a structured analysis of this discussion. Respond ONLY with a JSON object with keys:\n"
-    '- "overview": 2-3 sentence summary of the session. If the recording contains a substantive '
-    "participant discussion, the overview must describe THAT discussion — mention any staff "
-    "setup/logistics segment in at most one clause, or not at all\n"
-    '- "protect_themes": each distinct thing participants want to protect regarding AI. Keep '
-    "distinct values separate (e.g. ethics/humanity is not the same theme as privacy if "
-    "participants treated them separately) and prefer participants' own words for theme labels. "
-    "Include themes voiced by only one participant\n"
-    '- "gov_action_themes": EVERY distinct government action or policy proposal participants '
-    "made, including narrowly scoped ones (e.g. rules for a specific sector, service, or "
-    "setting such as schools). Do not consolidate distinct proposals\n"
-    '- "general_themes": other prominent themes from the participant discussion\n'
-    '- "areas_of_tension": points where participants disagreed\n'
-    '- "areas_of_consensus": points of broad agreement\n'
-    '- "deliberative_moments": moments where a participant changed their view or was persuaded, '
-    "a proposal was refined or reworded through group input, a disagreement was resolved, or "
-    "participants discovered shared values through clarifying questions\n"
-    "Every key except overview is a list of objects: "
-    '{"theme": str, "description": str, "supporting_turn_idxs": [int, ...]}. '
-    "supporting_turn_idxs must be actual turn indices from the transcript, and every theme MUST "
-    "include at least one supporting turn index. "
-    "If a section was not substantively discussed, return an empty list for it — do NOT invent "
-    "themes to fill a section. "
-    "Do not include speaker names in any text — reference contributions via turn indices only."
-)
-
-JSON_SYSTEM_PROMPT = (
-    TRANSCRIPT_SYSTEM_PROMPT
-    + " When asked for JSON, respond with JSON only — no prose, no markdown fences."
 )
 
 QUOTE_SYSTEM_PROMPT = (
@@ -309,7 +291,7 @@ def parse_json_response(text: str, array_fallback: bool = False):
 
 
 # ---------------------------------------------------------------------------
-# LLM analysis pipeline (ported from phase_2_analysis.ipynb)
+# On-demand LLM helpers (Quote search + Custom analysis tabs)
 # ---------------------------------------------------------------------------
 
 def map_chunks(chunks: list[pd.DataFrame], model: str = None,
@@ -377,53 +359,6 @@ def analyze_session_prompt(session_df: pd.DataFrame, user_prompt: str, model: st
     return synthesis, map_tokens + tokens
 
 
-def summarize_session_dict(session_df: pd.DataFrame, model: str,
-                           progress=None) -> tuple[dict, int, list[str]]:
-    """Structured session summary. Returns (summary_dict, tokens, warnings).
-
-    Hallucinated turn indices are dropped; themes with no valid supporting turns are
-    removed as unverifiable. Both are reported in warnings.
-    """
-    chunks = chunk_turns(session_df)
-    tokens = 0
-    if len(chunks) == 1:
-        user_text = f"{SESSION_SUMMARY_PROMPT}\n\nTranscript:\n{render_turns(chunks[0])}"
-    else:
-        summaries, tokens = map_chunks(chunks, progress=progress)
-        if progress:
-            progress("Building structured summary…")
-        parts = "\n\n".join(f"Excerpt {i + 1} summary:\n{s}" for i, s in enumerate(summaries))
-        user_text = (
-            f"{SESSION_SUMMARY_PROMPT}\n\n"
-            "You are working from theme extractions of consecutive excerpts of the transcript. "
-            "Each cites turns as [turn:N] — use those N values for supporting_turn_idxs.\n\n"
-            f"{parts}"
-        )
-    text, t = run_cortex_complete(user_text, model, JSON_SYSTEM_PROMPT)
-    tokens += t
-    result = parse_json_response(text)
-
-    valid_idxs = set(session_df["turn_idx"])
-    warnings: list[str] = []
-    for section in SECTIONS:
-        kept = []
-        for item in result.get(section, []):
-            raw_idxs = item.get("supporting_turn_idxs", [])
-            idxs = [i for i in raw_idxs if i in valid_idxs]
-            if len(idxs) < len(raw_idxs):
-                warnings.append(
-                    f"{section}: dropped {len(raw_idxs) - len(idxs)} unverifiable turn "
-                    f"reference(s) from '{item.get('theme', '')}'"
-                )
-            if not idxs:
-                warnings.append(f"{section}: skipped unsupported theme '{item.get('theme', '')}'")
-                continue
-            item["supporting_turn_idxs"] = idxs
-            kept.append(item)
-        result[section] = kept
-    return result, tokens, warnings
-
-
 def find_quotes(session_df: pd.DataFrame, query: str,
                 model: str = None) -> tuple[pd.DataFrame, int]:
     """Index-based quote extraction: the LLM returns turn indices only; verbatim
@@ -463,23 +398,85 @@ def find_quotes(session_df: pd.DataFrame, query: str,
 
 
 # ---------------------------------------------------------------------------
-# Data loading
+# Data loading — pre-tagged dbt tables
 # ---------------------------------------------------------------------------
 
 @st.cache_data
 def load_events() -> pd.DataFrame:
+    """Combined speech + chat turns, with the per-session turn_idx computed upstream
+    in the dbt model (the citation backbone — no longer recomputed here)."""
     df = session.sql(f"""
-        SELECT session_id, source, src_ref, start_sec, end_sec, speaker, text
-        FROM {RAW_TABLE}
-        ORDER BY session_id, start_sec
+        SELECT session_id, source, src_ref, start_sec, end_sec, speaker, text, turn_idx
+        FROM {EVENTS_TABLE}
+        ORDER BY session_id, turn_idx
     """).to_pandas()
     df.columns = [c.lower() for c in df.columns]
-    df = df.sort_values(["session_id", "start_sec"]).reset_index(drop=True)
-    # turn_idx: chronological per-session index — the citation backbone
-    df["turn_idx"] = df.groupby("session_id").cumcount()
+    df = df.sort_values(["session_id", "turn_idx"]).reset_index(drop=True)
     df["duration_sec"] = df["end_sec"] - df["start_sec"]
     df["n_chars"] = df["text"].fillna("").str.len()
     return df
+
+
+@st.cache_data
+def load_summaries() -> pd.DataFrame:
+    """Pre-tagged structured summaries: one row per (session, section, theme), plus one
+    overview row per session. Produced by the phase2_transcript_session_summaries model."""
+    df = session.sql(f"""
+        SELECT session_id, section, theme_seq, theme_label, summary_text,
+               supporting_turn_idxs, n_supporting_turns, n_unverified_idxs_dropped,
+               summary_status, llm_input_kind, llm_total_tokens, llm_model, processed_at
+        FROM {SUMMARIES_TABLE}
+    """).to_pandas()
+    df.columns = [c.lower() for c in df.columns]
+    return df
+
+
+def parse_idx_array(value) -> list[int]:
+    """supporting_turn_idxs comes back from Snowflake as a JSON-formatted string (or a
+    list, depending on the connector). Normalize to a list of ints either way."""
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return []
+    if isinstance(value, (list, tuple)):
+        return [int(x) for x in value]
+    try:
+        return [int(x) for x in json.loads(value)]
+    except (json.JSONDecodeError, TypeError, ValueError):
+        return []
+
+
+def build_session_summaries(summ_df: pd.DataFrame) -> tuple[dict, dict]:
+    """Reshape the flat summary rows into the nested structure the UI renders:
+    {session_id: {"overview": str, "<section>": [{theme, description, supporting_turn_idxs}]}}
+    plus a parallel {session_id: {provenance metadata}} dict."""
+    by_session: dict[str, dict] = {}
+    meta: dict[str, dict] = {}
+    for sid, group in summ_df.groupby("session_id"):
+        summary: dict = {"overview": ""}
+        collected: dict[str, list] = {s: [] for s in SECTIONS}
+        for row in group.itertuples():
+            if row.section == "overview":
+                summary["overview"] = row.summary_text or ""
+                meta[sid] = {
+                    "model": row.llm_model,
+                    "processed_at": str(row.processed_at),
+                    "input_kind": row.llm_input_kind,
+                    "status": row.summary_status,
+                    "tokens": int(row.llm_total_tokens) if pd.notna(row.llm_total_tokens) else 0,
+                }
+            elif row.section in collected:
+                collected[row.section].append((
+                    int(row.theme_seq),
+                    {
+                        "theme": row.theme_label or "",
+                        "description": row.summary_text or "",
+                        "supporting_turn_idxs": parse_idx_array(row.supporting_turn_idxs),
+                        "n_unverified_idxs_dropped": int(row.n_unverified_idxs_dropped or 0),
+                    },
+                ))
+        for section, items in collected.items():
+            summary[section] = [item for _, item in sorted(items, key=lambda t: t[0])]
+        by_session[sid] = summary
+    return by_session, meta
 
 
 def compute_session_stats(events_df: pd.DataFrame) -> pd.DataFrame:
@@ -504,7 +501,7 @@ def rendered_chars(session_df: pd.DataFrame) -> int:
 
 
 # ---------------------------------------------------------------------------
-# Cost estimation (same philosophy as phase 1 app)
+# Cost estimation (on-demand analyses only; same philosophy as phase 1 app)
 # ---------------------------------------------------------------------------
 
 def estimate_cost(session_df: pd.DataFrame, model: str) -> tuple[float, int]:
@@ -629,7 +626,6 @@ def render_cited_turns(session_df: pd.DataFrame, cited_idxs: list[int],
 # ---------------------------------------------------------------------------
 
 for key, default in [
-    ("session_summaries", {}),   # session_id -> {summary, model, tokens, cost, generated_at}
     ("quote_results", {}),       # (session_id, query) -> (DataFrame, n_hallucinated)
     ("analysis_results", {}),    # session_id -> [ {prompt_label, model, html, cited, tokens, cost, ts} ]
     ("last_query_tokens", 0),
@@ -646,13 +642,20 @@ for key, default in [
 try:
     events_df = load_events()
 except Exception as e:
-    st.error(f"Failed to load transcript data from {RAW_TABLE}: {e}")
+    st.error(f"Failed to load transcript data from {EVENTS_TABLE}: {e}")
     st.stop()
 
 if events_df.empty:
-    st.warning(f"No transcript data found in {RAW_TABLE}.")
+    st.warning(f"No transcript data found in {EVENTS_TABLE}.")
     st.stop()
 
+try:
+    summaries_df = load_summaries()
+except Exception as e:
+    st.error(f"Failed to load pre-tagged summaries from {SUMMARIES_TABLE}: {e}")
+    st.stop()
+
+summaries_by_session, summaries_meta = build_session_summaries(summaries_df)
 session_stats = compute_session_stats(events_df)
 
 
@@ -675,30 +678,32 @@ with st.sidebar:
     st.divider()
     if st.button("Refresh data", type="primary", use_container_width=True):
         load_events.clear()
-        st.session_state.session_summaries = {}
+        load_summaries.clear()
         st.session_state.quote_results = {}
         st.rerun()
 
     if st.session_state.last_query_tokens:
         st.info(
-            f"Last analysis: {st.session_state.last_query_tokens:,} tokens "
+            f"Last on-demand analysis: {st.session_state.last_query_tokens:,} tokens "
             f"(~${st.session_state.last_query_cost:.4f})"
         )
 
 session_df = events_df[events_df["session_id"] == selected_sid]
 colors = speaker_colors(session_df)
 stats = session_stats.loc[selected_sid]
-cached = st.session_state.session_summaries.get(selected_sid)
+summary = summaries_by_session.get(selected_sid)
+meta = summaries_meta.get(selected_sid)
 
 
 # ---------------------------------------------------------------------------
-# Header & session stats (zero LLM cost)
+# Header & session stats
 # ---------------------------------------------------------------------------
 
 st.title("Engaged California — live discussion explorer")
 st.markdown(
-    "Explore phase 2 live-discussion transcripts. AI analyses cite turns by index and every "
-    "quote is resolved verbatim from the source data — never from the model's memory."
+    "Explore phase 2 live-discussion transcripts. Themes and supporting quotes are pre-computed "
+    "by the dbt tagging pipeline; every quote is resolved verbatim from the source data, never "
+    "from a model's memory."
 )
 
 m1, m2, m3, m4, m5 = st.columns(5)
@@ -708,55 +713,22 @@ m3.metric("Duration", f"{stats['duration_min']:.0f} min")
 m4.metric("Speech turns", f"{stats['n_speech']:,}")
 m5.metric("Chat messages", f"{stats['n_chat']:,}")
 
-# --- Analyze session control ------------------------------------------------
-an_col, info_col = st.columns([1, 3])
-with an_col:
-    analyze_clicked = st.button(
-        "Re-analyze session" if cached else "Analyze session",
-        type="primary",
-        use_container_width=True,
+# Tagging provenance (from the dbt table, not a live run)
+if meta is None:
+    st.info(
+        "This session hasn't been tagged yet. Run the `phase2_transcript_session_summaries` "
+        "dbt model to populate its themes."
     )
-with info_col:
-    est, n_chunks = estimate_cost(session_df, LLM_MODEL_MED)
-    if cached:
-        st.caption(
-            f"Analyzed with `{cached['model']}` at {cached['generated_at'][:16]} — "
-            f"{cached['tokens']:,} tokens (~${cached['cost']:.4f}). Cached; re-analyze to refresh."
-        )
-    else:
-        st.caption(
-            f"Runs the structured theme analysis with `{LLM_MODEL_MED}` "
-            f"(~${est:.4f} est., {n_chunks} chunk{'s' if n_chunks > 1 else ''}). "
-            "Results are cached for this browser session."
-        )
-
-if analyze_clicked:
-    if not LLM_MODEL_MED:
-        st.error("LLM_MODEL_MED is not configured — set it in .env.")
-    else:
-        with st.status("Analyzing session…", expanded=True) as status:
-            try:
-                summary, tokens, warnings = summarize_session_dict(
-                    session_df, LLM_MODEL_MED, progress=status.write
-                )
-                cost = tokens_to_cost(tokens, LLM_MODEL_MED)
-                st.session_state.session_summaries[selected_sid] = {
-                    "summary": summary,
-                    "model": LLM_MODEL_MED,
-                    "tokens": tokens,
-                    "cost": cost,
-                    "generated_at": datetime.now(timezone.utc).isoformat(),
-                    "warnings": warnings,
-                }
-                st.session_state.last_query_tokens = tokens
-                st.session_state.last_query_cost = cost
-                status.update(label="Analysis complete", state="complete", expanded=False)
-            except Exception as e:
-                status.update(label="Analysis failed", state="error")
-                st.error(f"Session analysis failed: {e}")
-        st.rerun()
-
-cached = st.session_state.session_summaries.get(selected_sid)
+elif meta["status"] != "SUCCESS":
+    st.warning(
+        f"Tagging for this session came back **{meta['status']}** — its summary may be missing "
+        "or incomplete. The dbt model retries failed sessions on its next run."
+    )
+else:
+    st.caption(
+        f"Tagged with `{meta['model']}` on {meta['processed_at'][:16]} · {meta['input_kind']} · "
+        f"{meta['tokens']:,} tokens. Served from the pre-tagged dbt table."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -771,15 +743,11 @@ tab_summary, tab_transcript, tab_quotes, tab_custom, tab_export = st.tabs(
 # --- Tab 1: Session summary ---------------------------------------------------
 
 with tab_summary:
-    if not cached:
-        st.info("Run **Analyze session** above to generate the structured summary.")
+    if summary is None:
+        st.info("No pre-tagged summary available for this session.")
     else:
-        summary = cached["summary"]
-        for w in cached.get("warnings", []):
-            st.caption(f"⚠️ {w}")
-
         st.markdown("#### Overview")
-        st.markdown(summary.get("overview", "_No overview returned._"))
+        st.markdown(summary.get("overview") or "_No overview available._")
 
         indexed = session_df.set_index("turn_idx")
         for section, (label, color) in SECTIONS.items():
@@ -817,9 +785,9 @@ with tab_summary:
 # --- Tab 2: Transcript --------------------------------------------------------
 
 with tab_transcript:
-    theme_map = build_theme_turn_map(cached["summary"]) if cached else {}
-    if not cached:
-        st.info("Run **Analyze session** to tag turns with themes. Showing plain transcript.")
+    theme_map = build_theme_turn_map(summary) if summary else {}
+    if not summary:
+        st.info("No themes tagged for this session yet. Showing the plain transcript.")
 
     # Legend
     legend = " ".join(
@@ -872,13 +840,13 @@ with tab_transcript:
         st.markdown("".join(cards), unsafe_allow_html=True)
 
 
-# --- Tab 3: Quote search --------------------------------------------------------
+# --- Tab 3: Quote search (on-demand) --------------------------------------------
 
 with tab_quotes:
     st.markdown(
         "Find verbatim quotes about a topic. The AI returns **turn indices only** — quote "
         "text, speaker, and timestamp are resolved from the source data, so quotes cannot "
-        "be fabricated."
+        "be fabricated. This runs a live Cortex query."
     )
     q_col, b_col = st.columns([4, 1])
     query = q_col.text_input(
@@ -921,9 +889,13 @@ with tab_quotes:
                 st.caption(f"↳ {row.why_relevant}")
 
 
-# --- Tab 4: Custom analysis ------------------------------------------------------
+# --- Tab 4: Custom analysis (on-demand) ------------------------------------------
 
 with tab_custom:
+    st.caption(
+        "Ad-hoc Cortex analysis over the full transcript. The pre-baked prompts overlap with "
+        "the pre-tagged Session summary tab, but here you can re-run them live or ask anything."
+    )
     c1, c2 = st.columns(2)
     prompt_label = c1.selectbox("Analysis prompt", list(PROMPTS.keys()))
     model_choice = c2.selectbox(
@@ -1011,13 +983,16 @@ with tab_export:
     )
 
     st.markdown("##### Structured session summary")
-    if cached:
+    if summary:
         summary_payload = {
             "session_id": selected_sid,
-            "model": cached["model"],
-            "generated_at": cached["generated_at"],
-            "total_tokens": cached["tokens"],
-            **cached["summary"],
+            **({} if meta is None else {
+                "model": meta["model"],
+                "generated_at": meta["processed_at"],
+                "total_tokens": meta["tokens"],
+                "status": meta["status"],
+            }),
+            **summary,
         }
         st.download_button(
             "Download summary JSON",
@@ -1031,7 +1006,7 @@ with tab_export:
         rows = []
         indexed = session_df.set_index("turn_idx")
         for section in SECTIONS:
-            for item in cached["summary"].get(section, []):
+            for item in summary.get(section, []):
                 for idx in item.get("supporting_turn_idxs", []):
                     if idx in indexed.index:
                         r = indexed.loc[idx]
@@ -1054,7 +1029,7 @@ with tab_export:
                 mime="text/csv",
             )
     else:
-        st.caption("Run **Analyze session** first to enable summary and theme-review downloads.")
+        st.caption("No pre-tagged summary available for this session.")
 
     st.markdown("##### Preview")
     st.dataframe(
