@@ -40,8 +40,6 @@ models:
     columns:
       - name: session_id
         description: The unique identifier for each Zoom session.
-      - name: filename
-        description: The name of the file from which the transcript data was sourced.
       - name: start_seq
         description: The sequence number of the first cue in the turn.
       - name: end_seq

@@ -56,6 +56,12 @@ models:
         description: The name of the chat file.
       - name: session_id
         description: The unique identifier for each Zoom session.
+      - name: message_id
+        description: The unique identifier for each chat message.
+      - name: is_reply
+        description: Indicates if the chat message is a reply to another message.
+      - name: reply_to_message_id
+        description: The message_id of the parent message if this message is a reply; null otherwise
       - name: line_no
         description: The line number of the chat message in the file.
       - name: start_sec

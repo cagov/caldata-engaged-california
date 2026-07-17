@@ -10,7 +10,7 @@ split AS (
     SELECT
         chats.filename,
         REGEXP_SUBSTR(chats.filename, 'GMT[0-9]{8}-[0-9]{6}') AS session_id,
-        l.index         AS line_no,
+        l.index AS line_no,
         l.value::string AS line
     FROM chats,
         LATERAL SPLIT_TO_TABLE(
@@ -21,7 +21,7 @@ split AS (
             ),
             CHAR(30)
         ) AS l
-    -- keep chunks that start with a timestamp. NOTE: Reply messages are structured 
+    -- keep chunks that start with a timestamp. NOTE: Reply messages are structured
     -- in such a way that we need [\s\S]* (not .*) to find them.
     WHERE l.value RLIKE '^[0-9]{2}:[0-9]{2}:[0-9]{2}' || CHAR(9) || '[\\s\\S]*'
 ),
@@ -77,22 +77,25 @@ SELECT
     r.is_reply,
     p.message_id AS reply_to_message_id,
     r.text
-FROM parsed r
+FROM parsed AS r
 -- For replies, find the parent by matching the quoted snippet against the start of
 -- another message's text (the quote is a prefix of the original, sometimes truncated
--- with "..."). 
-LEFT JOIN parsed p
-    ON r.is_reply
-    AND p.session_id = r.session_id
-    AND p.line_no <> r.line_no
-    AND LENGTH(RTRIM(REGEXP_REPLACE(r.quoted_snippet, '\\.\\.\\.\\s*$', ''))) > 0
-    AND STARTSWITH(p.text, RTRIM(REGEXP_REPLACE(r.quoted_snippet, '\\.\\.\\.\\s*$', '')))
+-- with "...").
+LEFT JOIN parsed AS p
+    ON
+        r.is_reply
+        AND r.session_id = p.session_id
+        AND r.line_no <> p.line_no
+        AND LENGTH(RTRIM(REGEXP_REPLACE(r.quoted_snippet, '\\.\\.\\.\\s*$', ''))) > 0
+        AND STARTSWITH(p.text, RTRIM(REGEXP_REPLACE(r.quoted_snippet, '\\.\\.\\.\\s*$', '')))
 -- If the prefix matches more than one message, prefer a parent that comes before the
 -- reply, then the closest one:
-QUALIFY ROW_NUMBER() OVER (
-    PARTITION BY r.message_id
-    ORDER BY IFF(p.line_no < r.line_no, 0, 1),
-             ABS(r.line_no - p.line_no)
-        
-) = 1
-order by session_id, line_no
+QUALIFY
+    ROW_NUMBER() OVER (
+        PARTITION BY r.message_id
+        ORDER BY
+            IFF(p.line_no < r.line_no, 0, 1),
+            ABS(r.line_no - p.line_no)
+
+    ) = 1
+ORDER BY r.session_id, r.line_no
