@@ -30,7 +30,7 @@ windowed AS (
         filename,
         line_no,
         line,
-        LAG(line)  OVER (PARTITION BY filename ORDER BY line_no) AS prev_line,
+        LAG(line) OVER (PARTITION BY filename ORDER BY line_no) AS prev_line,
         LEAD(line) OVER (PARTITION BY filename ORDER BY line_no) AS next_line
     FROM lines
 ),
@@ -50,12 +50,12 @@ cues AS (
 
         SPLIT_PART(line, ' --> ', 1) AS start_hms,
         SPLIT_PART(line, ' --> ', 2) AS end_hms,
-        next_line                    AS raw_text,
+        next_line AS raw_text,
 
         -- A speaker prefix exists only if there's a colon and the part before it
         -- looks name-like. Computed once here, reused below.
         POSITION(':' IN next_line) > 0
-            AND SPLIT_PART(next_line, ':', 1) RLIKE '[A-Za-z][A-Za-z0-9 .,''/()&-]{0,60}'
+        AND SPLIT_PART(next_line, ':', 1) RLIKE '[A-Za-z][A-Za-z0-9 .,''/()&-]{0,60}'
             AS has_speaker
     FROM windowed
     WHERE line RLIKE '^[0-9]{2}:[0-9]{2}:[0-9]{2}[.][0-9]{3} --> [0-9]{2}:[0-9]{2}:[0-9]{2}[.][0-9]{3}'
@@ -75,7 +75,9 @@ SELECT
     -- Split the speaker off the front: everything before the first colon if the
     -- prefix looked name-like, otherwise no speaker and the whole line is text.
     IFF(has_speaker, TRIM(SPLIT_PART(raw_text, ':', 1)), NULL) AS speaker,
-    IFF(has_speaker,
+    IFF(
+        has_speaker,
         TRIM(SUBSTR(raw_text, POSITION(':' IN raw_text) + 1)),
-        TRIM(raw_text)) AS text
+        TRIM(raw_text)
+    ) AS text
 FROM cues
