@@ -45,13 +45,15 @@ models:
       - name: _fivetran_synced
         description: Timestamp of when the data has been synced with Fivetran.
 
-  - name: stg_chats_raw
+  - name: stg_zoom_chat_messages
     description: |
       This table contains the raw chat messages from Phase 2 events.
       This data appends new rows each time a new .txt file is added
       to the appropriate Stage in Snowflake, and is processed via
       the Upload Transcripts notebook.
     columns:
+      - name: filename
+        description: The name of the chat file.
       - name: session_id
         description: The unique identifier for each Zoom session.
       - name: line_no
@@ -63,7 +65,7 @@ models:
       - name: text
         description: The content of the chat message.
 
-  - name: stg_transcripts_raw
+  - name: stg_zoom_transcript_cues
     description: |
       This table contains the raw transcripts from Phase 2 events.
       This data appends new rows each time a new .vtt file is added
