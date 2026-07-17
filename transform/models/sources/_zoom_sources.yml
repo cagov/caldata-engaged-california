@@ -1,0 +1,29 @@
+version: 2
+
+sources:
+  - name: ZOOM
+    database: RAW_ENGCA_PRD
+    schema: ZOOM
+    description: |
+      Manually downloaded files for the AI Engagement.
+    tables:
+      - name: CHATS_RAW
+        description: |
+          Manually-uploaded chat transcripts from Zoom meetings.
+          These chats are in a raw format, with the entire content
+          of the meeting's chat box stored in a single column.
+        columns:
+          - name: filename
+            description: The name of the file containing the chat transcript
+          - name: file_content
+            description: The entire content of the chat transcript file
+      - name: TRANSCRIPTS_RAW
+        description: |
+          Manually-uploaded speech-to-text transcripts from Zoom meetings.
+          These transcripts are in a raw format, with the entire content
+          of the transcript for each meetingstored in a single column.
+        columns:
+          - name: filename
+            description: The name of the file containing the chat transcript
+          - name: file_content
+            description: The entire content of the transcript file
