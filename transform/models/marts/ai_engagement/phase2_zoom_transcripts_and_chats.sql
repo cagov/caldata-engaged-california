@@ -2,7 +2,7 @@ WITH
 transcript_turns AS (SELECT * FROM {{ ref('int_phase2_transcript_turns') }}
 ),
 
-chats AS (SELECT * FROM {{ ref('stg_chats_raw') }}
+chats AS (SELECT * FROM {{ ref('stg_zoom_chat_messages') }}
 )
 
 --combine the transcript turns and the chat messages into one table of all Zoom engagement,
