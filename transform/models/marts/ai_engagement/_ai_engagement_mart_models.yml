@@ -30,3 +30,28 @@ models:
         description: The URL that was clicked.
       - name: clicks
         description: Number of clicks on that URL on that date.
+
+  - name: phase2_zoom_transcripts_and_chats
+    description: |
+      This table combines the Phase 2 Zoom transcript turns and chat messages into one table of all
+      Zoom engagement, with a common set of columns. Transcript turns are derived from the raw Phase 2
+      transcripts, and chat messages are derived from the raw Phase 2 chat logs.
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+      - name: source
+        description: |
+          The source of the engagement data
+          either 'speech' for transcript turns or 'chat' for chat messages.
+      - name: src_ref
+        description: |
+          The reference to the source data
+          either the start sequence number for transcript turns or the line number for chat messages.
+      - name: start_sec
+        description: The start time of the engagement data in seconds.
+      - name: end_sec
+        description: The end time of the engagement data in seconds.
+      - name: speaker
+        description: The display name of the speaker for the engagement data.
+      - name: text
+        description: The text of the engagement data.

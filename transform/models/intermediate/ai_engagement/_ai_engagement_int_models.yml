@@ -30,3 +30,25 @@ models:
           accepted the invitation. Null if the invitee has not accepted an invitation.
           'multiple events accepted' if an invitee is simultaneously registered for more than one event,
           which is expected only for moderators and staff and should therefore be filtered out.
+
+  - name: int_phase2_transcript_turns
+    description: |
+      This table takes the raw Phase 2 transcripts and groups them into "turns" of speech, where a turn is defined as
+      a continuous block of speech by a single speaker. Each turn is assigned a unique identifier (turn_grp) and the
+      start and end sequence numbers of the cues that make up the turn are recorded. The text of the turn is also
+      aggregated into a single block of text.
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+      - name: start_seq
+        description: The sequence number of the first cue in the turn.
+      - name: end_seq
+        description: The sequence number of the last cue in the turn.
+      - name: speaker
+        description: The display name of the speaker for the turn.
+      - name: start_sec
+        description: The start time of the turn in seconds.
+      - name: end_sec
+        description: The end time of the turn in seconds.
+      - name: text
+        description: The aggregated text of the turn, stitched together from the individual cues in the turn.
