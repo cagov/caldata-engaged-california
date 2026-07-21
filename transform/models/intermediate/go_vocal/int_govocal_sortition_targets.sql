@@ -14,8 +14,12 @@ cand_counts as (
         count_if(invitee_status = 'accepted') as accepted_count,
         count_if(invitee_status = 'declined' or invitee_status = 'invitation closed') as declined_count,
         count_if(invitee_status = 'invitation open') as invited_no_response_count,
-        accepted_count / invited_count as accept_rate,
-        accepted_count / (sum(accepted_count) over (partition by question)) as pct_of_total
+        count_if(attendee_status = 'Attended') as attended_count,
+        count_if(attendee_status = 'No Show') as no_show_count,
+        div0(accepted_count, invited_count) as accept_rate,
+        div0(accepted_count, sum(accepted_count) over (partition by question)) as invite_pct_of_total,
+        div0(attended_count, accepted_count) as attendance_rate,
+        div0(attended_count, sum(attended_count) over (partition by question)) as attended_pct_of_total
     from candidates
     unpivot (
         answer for question in (age, gender_category, race_ethnicity_category, region, field_of_work, ai_response_label)

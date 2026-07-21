@@ -95,6 +95,7 @@ add_invitee_status as (
     select
         a.*,
         coalesce(i.invitee_status, 'not yet invited') as invitee_status,
+        coalesce(i.attendee_status, 'not registered') as attendee_status,
         i.accepted_event_start_date_time
     from add_ai_labels as a
     left join invitee_status as i
