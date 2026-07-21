@@ -91,7 +91,9 @@ invitee_status as (
         em.accepted_event_start_date_time,
         case
             when a.actual_status is null and invitee_status = 'accepted' then 'session in the future'
-            when a.actual_status is null and invitee_status <> 'accepted' then 'not registered'
+            when
+                a.actual_status is null and invitee_status <> 'accepted' or invitee_status is null
+                then 'not registered'
             else a.actual_status
         end as attendee_status,
         em.staff_or_moderator
