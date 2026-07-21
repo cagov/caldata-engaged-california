@@ -16,9 +16,10 @@ cand_counts as (
         count_if(invitee_status = 'invitation open') as invited_no_response_count,
         count_if(attendee_status = 'attended') as attended_count,
         count_if(attendee_status = 'no show') as no_show_count,
+        count_if(attendee_status = 'session in the future') as future_event_registration_count,
         div0(accepted_count, invited_count) as accept_rate,
-        div0(accepted_count, sum(accepted_count) over (partition by question)) as invite_pct_of_total,
-        div0(attended_count, accepted_count) as attendance_rate,
+        div0(accepted_count, sum(accepted_count) over (partition by question)) as registered_pct_of_total,
+        div0(attended_count, accepted_count - future_event_registration_count) as attendance_rate,
         div0(attended_count, sum(attended_count) over (partition by question)) as attended_pct_of_total
     from candidates
     unpivot (

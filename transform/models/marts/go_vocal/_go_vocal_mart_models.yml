@@ -168,11 +168,11 @@ models:
       participants and monitor progress towards filling sortition segments.
     columns:
       - name: question
-        description: The AI Impact survey question and sortition category. (e.g., 'Age').
+        description: The AI Impact survey question, or sortition category. (e.g., 'Age').
       - name: answer
-        description: The response to the survey question, or sortition category group (e.g., '25-44').
+        description: The specific response to the survey question, or category group (e.g., '25-44').
       - name: candidate_count
-        description: Total count of sortition candidates for this question and answer category.
+        description: Total count of eligible candidates who provided this answer to this question.
       - name: invited_count
         description: Count of candidates who have been invited to participate in the sortition.
       - name: not_yet_invited_count
@@ -185,22 +185,24 @@ models:
         description: Count of invited candidates who have not yet provided a response.
       - name: accept_rate
         description: Ratio of accepted invitations to total invited candidates.
-      - name: invite_pct_of_total
-        description: Percentage of all accepting candidates who provided this answer.
+      - name: registered_pct_of_total
+        description: Percentage of all registered candidates who provided this answer.
       - name: target_pct
         description: Target percentage for this answer category based on sortition strategy (from source).
       - name: adjusted_target_pct
         description: Adjusted target percentage accounting for non-responses.
       - name: attended_count
-        description: Count of candidates who attended the sortition event.
+        description: Count of candidates who attended the event.
       - name: no_show_count
-        description: Count of candidates who were invited but did not attend.
-      - name: invite_pct_of_total
-        description: Percentage of all accepting candidates who provided this answer.
+        description: Count of candidates who did not attend the event after accepting the invitation.
       - name: attendance_rate
-        description: Ratio of candidates who attended to those who were invited.
+        description: |
+          Ratio of candidates who attended the event to those who accepted the invitation,
+          for events that have already occurred.
       - name: attended_pct_of_total
         description: Percentage of all attending candidates who provided this answer.
+      - name: future_event_registration_count
+        description: Count of candidates who accepted an invitation to an event that is scheduled for the future.
   - name: govocal_sortition_candidates
     description: |
       This model exposes the underlying int_govocal_sortition_candidates, which identifies the AI survey respondents
