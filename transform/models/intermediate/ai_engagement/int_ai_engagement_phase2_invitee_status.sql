@@ -54,6 +54,13 @@ manually_matched_participants as (
     from {{ source('ZOOM', 'UNMATCHED_PARTICIPANTS') }}
 ),
 
+attendance_status as (
+    select
+        invitee_email,
+        actual_status
+    from {{ source('ZOOM', 'ATTENDANCE_TRACKER') }}
+),
+
 --reconcile attendees with GV profiles:
 email_match as (
     select
@@ -82,10 +89,17 @@ invitee_status as (
             else em.invitee_status
         end as invitee_status,
         em.accepted_event_start_date_time,
+        case
+            when a.actual_status is null and invitee_status = 'accepted' then 'session in the future'
+            when a.actual_status is null and invitee_status <> 'accepted' then 'not registered'
+            else a.actual_status
+        end as attendee_status,
         em.staff_or_moderator
     from invitees as i
     full outer join email_match as em
         on i.survey_respondent_id = em.survey_respondent_id
+    left join attendance_status as a
+        on lower(trim(em.invitee_email)) = lower(trim(a.invitee_email))
 ),
 
 filter_staff as (
@@ -95,6 +109,7 @@ filter_staff as (
         invitee_email,
         email_match,
         invitee_status,
+        lower(attendee_status) as attendee_status,
         accepted_event_start_date_time
     from invitee_status
     where

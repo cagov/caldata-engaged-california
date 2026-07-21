@@ -30,6 +30,10 @@ models:
           accepted the invitation. Null if the invitee has not accepted an invitation.
           'multiple events accepted' if an invitee is simultaneously registered for more than one event,
           which is expected only for moderators and staff and should therefore be filtered out.
+      - name: attendee_status
+        description: |
+          The attendance status of the registrant, if an invitee has already been
+          invited in a sortition lottery and accepted the invitation.
 
   - name: int_phase2_transcript_turns
     description: |
