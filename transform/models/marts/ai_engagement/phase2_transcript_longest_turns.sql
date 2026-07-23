@@ -28,8 +28,9 @@ select
     regexp_count(trim(text), '\\s+') + 1 as word_count,
     text
 from participant_turns
-qualify row_number() over (
-    partition by session_id, speaker
-    order by end_sec - start_sec desc
-) <= 3
-order by session_id, speaker, duration_sec desc
+qualify
+    row_number() over (
+        partition by session_id, speaker
+        order by end_sec - start_sec desc
+    ) <= 3
+order by session_id asc, speaker asc, duration_sec desc
