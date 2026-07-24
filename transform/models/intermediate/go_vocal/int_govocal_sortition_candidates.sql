@@ -23,7 +23,7 @@ candidates as (
     where
         survey_respondent_id is not null
         and publication_status <> 'draft'
-        and email not like '%@innovation.ca.gov'  -- exclude internal ODI respondents
+        and trim(lower(email)) not like '%@innovation.ca.gov'  -- exclude internal ODI respondents
         and availability_for_discussion in ('Yes', 'Maybe')
         and region is not null  -- this will exclude county in ('I don''t want to say', 'I live outside of California')
         and age <> 'Under 18'
