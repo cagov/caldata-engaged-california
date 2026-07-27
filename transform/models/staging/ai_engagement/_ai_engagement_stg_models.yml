@@ -71,6 +71,23 @@ models:
       - name: text
         description: The content of the chat message.
 
+  - name: stg_transcript_times
+    description: Per-session discussion boundaries from the transcript_times seed, parsed into seconds.
+    columns:
+      - name: session_id
+        description: >
+          The date prefix of the Zoom session (e.g. "GMT20260709"), not the full filename-derived
+          session_id -- matched by prefix, not exact equality, in stg_zoom_transcript_cues.
+        data_tests:
+          - unique
+          - not_null
+      - name: session_date
+        description: Human-readable session date, for the curator only.
+      - name: discussion_start_sec
+        description: When the real discussion begins, in seconds from recording start.
+      - name: discussion_end_sec
+        description: When the real discussion ends, in seconds from recording start.
+
   - name: stg_zoom_transcript_cues
     description: |
       This table contains the raw transcripts from Phase 2 events.
@@ -80,6 +97,9 @@ models:
 
       Each row is a 'cue' from the transcript, which is a block of text
       spoken by a single speaker.
+
+      Cues outside a reviewed discussion window (see stg_transcript_times) are trimmed;
+      sessions with no reviewed window pass through unfiltered.
     columns:
       - name: filename
         description: The name of the transcript file.

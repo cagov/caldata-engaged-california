@@ -59,25 +59,49 @@ cues AS (
             AS has_speaker
     FROM windowed
     WHERE line RLIKE '^[0-9]{2}:[0-9]{2}:[0-9]{2}[.][0-9]{3} --> [0-9]{2}:[0-9]{2}:[0-9]{2}[.][0-9]{3}'
+),
+
+parsed_cues AS (
+    SELECT
+        session_id,
+        filename,
+        seq,
+
+        -- Convert "HH:MM:SS.mmm" to total seconds since the start of the session
+        SPLIT_PART(start_hms, ':', 1)::int * 3600 + SPLIT_PART(start_hms, ':', 2)::int * 60
+        + SPLIT_PART(start_hms, ':', 3)::float AS start_sec,
+        SPLIT_PART(end_hms, ':', 1)::int * 3600 + SPLIT_PART(end_hms, ':', 2)::int * 60
+        + SPLIT_PART(end_hms, ':', 3)::float AS end_sec,
+
+        -- Split the speaker off the front: everything before the first colon if the
+        -- prefix looked name-like, otherwise no speaker and the whole line is text.
+        IFF(has_speaker, TRIM(SPLIT_PART(raw_text, ':', 1)), NULL) AS speaker,
+        IFF(
+            has_speaker,
+            TRIM(SUBSTR(raw_text, POSITION(':' IN raw_text) + 1)),
+            TRIM(raw_text)
+        ) AS text
+    FROM cues
+),
+
+-- Manually-reviewed per-session discussion boundaries (seconds from recording start).
+transcript_times AS (
+    SELECT * FROM {{ ref('stg_transcript_times') }}
 )
 
 SELECT
-    session_id,
-    filename,
-    seq,
+    c.session_id,
+    c.filename,
+    c.seq,
+    c.start_sec,
+    c.end_sec,
+    c.speaker,
+    c.text
+FROM parsed_cues AS c
+-- transcript_times.session_id is just the date prefix (e.g. "GMT20260709"), not the full
+-- filename-derived session_id with the time suffix -- match on prefix, not exact equality.
+LEFT JOIN transcript_times AS w ON c.session_id LIKE w.session_id || '%'
 
-    -- Convert "HH:MM:SS.mmm" to total seconds since the start of the session
-    SPLIT_PART(start_hms, ':', 1)::int * 3600 + SPLIT_PART(start_hms, ':', 2)::int * 60
-    + SPLIT_PART(start_hms, ':', 3)::float AS start_sec,
-    SPLIT_PART(end_hms, ':', 1)::int * 3600 + SPLIT_PART(end_hms, ':', 2)::int * 60
-    + SPLIT_PART(end_hms, ':', 3)::float AS end_sec,
-
-    -- Split the speaker off the front: everything before the first colon if the
-    -- prefix looked name-like, otherwise no speaker and the whole line is text.
-    IFF(has_speaker, TRIM(SPLIT_PART(raw_text, ':', 1)), NULL) AS speaker,
-    IFF(
-        has_speaker,
-        TRIM(SUBSTR(raw_text, POSITION(':' IN raw_text) + 1)),
-        TRIM(raw_text)
-    ) AS text
-FROM cues
+WHERE
+    c.start_sec >= COALESCE(w.discussion_start_sec, c.start_sec)
+    AND c.start_sec <= COALESCE(w.discussion_end_sec, c.start_sec)
