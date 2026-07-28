@@ -44,7 +44,7 @@ top_moments as (
         d.n_turns,
         d.gap_sec as minute_gap_sec,
         a.avg_speakers_per_minute,
-        row_number() over (
+        rank() over (
             partition by d.session_id
             order by d.n_distinct_speakers desc, d.gap_sec asc, d.n_turns desc
         ) as moment_rank
@@ -59,9 +59,13 @@ select
     m.start_minute,
     m.n_distinct_speakers,
     round(m.avg_speakers_per_minute, 2) as avg_speakers_per_minute,
-    lpad(floor(t.start_sec / 60)::int, 2, '0') || ':' || lpad(floor(mod(t.start_sec, 60))::int, 2, '0')
+    lpad(floor(t.start_sec / 3600)::int, 2, '0') || ':'
+    || lpad(floor(mod(t.start_sec, 3600) / 60)::int, 2, '0') || ':'
+    || lpad(floor(mod(t.start_sec, 60))::int, 2, '0')
         as start_timestamp,
-    lpad(floor(t.end_sec / 60)::int, 2, '0') || ':' || lpad(floor(mod(t.end_sec, 60))::int, 2, '0')
+    lpad(floor(t.end_sec / 3600)::int, 2, '0') || ':'
+    || lpad(floor(mod(t.end_sec, 3600) / 60)::int, 2, '0') || ':'
+    || lpad(floor(mod(t.end_sec, 60))::int, 2, '0')
         as end_timestamp,
     t.start_sec,
     t.end_sec,

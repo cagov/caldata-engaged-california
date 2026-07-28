@@ -18,9 +18,13 @@ participant_turns as (
 select
     session_id,
     speaker,
-    lpad(floor(start_sec / 60)::int, 2, '0') || ':' || lpad(floor(mod(start_sec, 60))::int, 2, '0')
+    lpad(floor(start_sec / 3600)::int, 2, '0') || ':'
+    || lpad(floor(mod(start_sec, 3600) / 60)::int, 2, '0') || ':'
+    || lpad(floor(mod(start_sec, 60))::int, 2, '0')
         as start_timestamp,
-    lpad(floor(end_sec / 60)::int, 2, '0') || ':' || lpad(floor(mod(end_sec, 60))::int, 2, '0')
+    lpad(floor(end_sec / 3600)::int, 2, '0') || ':'
+    || lpad(floor(mod(end_sec, 3600) / 60)::int, 2, '0') || ':'
+    || lpad(floor(mod(end_sec, 60))::int, 2, '0')
         as end_timestamp,
     start_sec,
     end_sec,
@@ -29,7 +33,7 @@ select
     text
 from participant_turns
 qualify
-    row_number() over (
+    rank() over (
         partition by session_id, speaker
         order by end_sec - start_sec desc
     ) <= 3
