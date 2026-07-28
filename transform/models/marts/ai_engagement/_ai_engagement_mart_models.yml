@@ -206,9 +206,9 @@ models:
       - name: avg_speakers_per_minute
         description: The session's average number of distinct speakers per minute, for comparison.
       - name: start_timestamp
-        description: The start time of the turn, formatted as MM:SS from the start of the transcript.
+        description: The start time of the turn, formatted as HH:MM:SS from the start of the transcript.
       - name: end_timestamp
-        description: The end time of the turn, formatted as MM:SS from the start of the transcript.
+        description: The end time of the turn, formatted as HH:MM:SS from the start of the transcript.
       - name: start_sec
         description: The start time of the turn in seconds since the start of the transcript.
       - name: end_sec
@@ -236,9 +236,9 @@ models:
       - name: speaker
         description: The display name of the participant.
       - name: start_timestamp
-        description: The start time of the turn, formatted as MM:SS from the start of the transcript.
+        description: The start time of the turn, formatted as HH:MM:SS from the start of the transcript.
       - name: end_timestamp
-        description: The end time of the turn, formatted as MM:SS from the start of the transcript.
+        description: The end time of the turn, formatted as HH:MM:SS from the start of the transcript.
       - name: start_sec
         description: The start time of the turn in seconds since the start of the transcript.
       - name: end_sec
