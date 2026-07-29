@@ -119,11 +119,11 @@ Each cites turns as [turn:N] — use those N values for supporting_turn_idxs.$$
 -- The JSON schema for Cortex structured outputs must be a single-line string; the jinja
 -- set blocks below confuse the linter's indent rule.
 {% set theme_array_schema -%}
-{"type":"array","items":{"type":"object","properties":{"theme":{"type":"string"},"description":{"type":"string"},"supporting_turn_idxs":{"type":"array","items":{"type":"number"}}},"required":["theme","description","supporting_turn_idxs"]}}
+{"type":"array","items":{"type":"object","properties":{"theme":{"type":"string"},"description":{"type":"string"},"supporting_turn_idxs":{"type":"array","items":{"type":"number"}}},"required":["theme","description","supporting_turn_idxs"],"additionalProperties":false}}
 {%- endset %}
 
 {% set response_schema -%}
-{"type":"json","schema":{"type":"object","properties":{"overview":{"type":"string"},"protect_themes":{{ theme_array_schema }},"gov_action_themes":{{ theme_array_schema }},"general_themes":{{ theme_array_schema }},"areas_of_tension":{{ theme_array_schema }},"areas_of_consensus":{{ theme_array_schema }},"deliberative_moments":{{ theme_array_schema }}},"required":["overview","protect_themes","gov_action_themes","general_themes","areas_of_tension","areas_of_consensus","deliberative_moments"]}}
+{"type":"json","schema":{"type":"object","properties":{"overview":{"type":"string"},"protect_themes":{{ theme_array_schema }},"gov_action_themes":{{ theme_array_schema }},"general_themes":{{ theme_array_schema }},"areas_of_tension":{{ theme_array_schema }},"areas_of_consensus":{{ theme_array_schema }},"deliberative_moments":{{ theme_array_schema }}},"required":["overview","protect_themes","gov_action_themes","general_themes","areas_of_tension","areas_of_consensus","deliberative_moments"],"additionalProperties":false}}
 {%- endset %}
 -- noqa: enable=LT02
 
