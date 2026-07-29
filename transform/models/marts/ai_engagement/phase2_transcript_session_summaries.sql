@@ -2,7 +2,7 @@
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',
-    unique_key=['session_id'],
+    unique_key=['session_id', 'section'],
     on_schema_change='sync_all_columns'
 ) }}
 
@@ -10,24 +10,40 @@
 -- (session, section, theme). Sections: overview, protect_themes, gov_action_themes,
 -- general_themes, areas_of_tension, areas_of_consensus, deliberative_moments.
 --
--- Flow: render each session's transcript as one text block -> one structured Cortex call
--- per session -> flatten the returned JSON into theme rows -> keep only turn citations
--- that verifiably exist in the session (hallucination guardrail: the LLM cites turns by
--- index and never reproduces quote text, so quotes can be mis-targeted but not invented;
--- unverifiable indices are dropped and themes with none left are removed).
+-- Flow: render each session's transcript as one text block -> ONE structured Cortex call
+-- PER (session, section) -> flatten each section's JSON into theme rows -> keep only turn
+-- citations that verifiably exist in the session (hallucination guardrail: the LLM cites
+-- turns by index and never reproduces quote text, so quotes can be mis-targeted but not
+-- invented; unverifiable indices are dropped and themes with none left are removed).
 --
--- Sessions too long for a single call (none expected: real sessions are ~12k-106k chars
+-- WHY per-section calls: Cortex COMPLETE calls fail transiently in proportion to how long
+-- they run, and call duration is dominated by output length. A whole-session call writes
+-- ~7k tokens of JSON over 60-90s and failed ~37% of the time (opus, 2026-07-29); a
+-- single-section call writes a fraction of that and finishes far below the timeout zone.
+-- The trade-off is input cost: every section call re-reads the transcript (Cortex has no
+-- prompt caching), so a session costs ~7x the input tokens of the old single-call design.
+-- Each call also gets up to 3 attempts in-query (CASE-gated so retries only execute
+-- — and only bill — when the prior attempt returned NULL; Snowflake evaluates CASE
+-- branches lazily for Cortex calls, verified empirically).
+--
+-- Sessions too long for a single call (none expected: real sessions are ~12k-200k chars
 -- vs the ~500k context limit) take a map-reduce detour: the transcript is cut into
 -- contiguous ~400k-char chunks with a small turn overlap, each chunk gets its own theme
--- extraction call (MAP), and the structured summary call synthesizes from those
--- extractions instead of the raw transcript (llm_input_kind = 'map_reduce').
+-- extraction call (MAP), and the section calls synthesize from those extractions instead
+-- of the raw transcript (llm_input_kind = 'map_reduce').
 --
--- EVERY session appears in this table: check summary_status. FAILED sessions (LLM call
--- failed, unparseable JSON, or a failed MAP chunk) are retried automatically on the next
--- run, and a warning-severity dbt test flags any non-SUCCESS row so failures are loud.
+-- EVERY (session, section) pair appears in this table via a status row (theme_seq = 0):
+-- check summary_status. FAILED pairs (LLM call failed all attempts, or unparseable JSON)
+-- are retried automatically on the next run — only the failed sections re-bill — and an
+-- error-severity dbt test fails the run so failures are loud, never silent.
 --
--- Incremental at the SESSION grain: transcripts are immutable once uploaded, so each
--- session is tagged exactly once (LLM cost is only ever incurred for new sessions).
+-- Run conventions: use `dbt build` (not bare `run`) so the tests actually gate; a red
+-- build is recovered by re-running the same plain build; reserve --full-refresh for
+-- prompt/logic changes — it re-bills every session.
+--
+-- Incremental at the (session, section) grain: transcripts are immutable once uploaded,
+-- so each section is tagged exactly once (LLM cost is only ever incurred for new sessions
+-- or retried failures).
 --
 -- Methodology validated in notebooks/ai_impact_survey/phase_2_analysis.ipynb.
 
@@ -37,7 +53,7 @@
 --
 -- NOTE: this model is incremental, so a prompt edit does NOT re-tag sessions that were
 -- already processed. To re-tag everything with new prompts, run:
---   dbt run --full-refresh --select phase2_transcript_session_summaries+
+--   dbt build --full-refresh --select phase2_transcript_session_summaries+
 -- =========================================================================================
 
 with prompts as (
@@ -62,31 +78,15 @@ NEVER fabricate or reproduce quotes from memory — always refer to turns by the
 When asked for JSON, respond with JSON only — no prose, no markdown fences.$$
             as system_prompt,
 
-        $$Produce a structured analysis of this discussion. Respond ONLY with a JSON object with keys:
-- "overview": 2-3 sentence summary of the session. If the recording contains a substantive
-participant discussion, the overview must describe THAT discussion — mention any staff
-setup/logistics segment in at most one clause, or not at all
-- "protect_themes": each distinct thing participants want to protect regarding AI. Keep
-distinct values separate (e.g. ethics/humanity is not the same theme as privacy if
-participants treated them separately) and prefer participants' own words for theme labels.
-Include themes voiced by only one participant
-- "gov_action_themes": EVERY distinct government action or policy proposal participants
-made, including narrowly scoped ones (e.g. rules for a specific sector, service, or
-setting such as schools). Do not consolidate distinct proposals
-- "general_themes": other prominent themes from the participant discussion
-- "areas_of_tension": points where participants disagreed
-- "areas_of_consensus": points of broad agreement
-- "deliberative_moments": moments where a participant changed their view or was persuaded,
-a proposal was refined or reworded through group input, a disagreement was resolved, or
-participants discovered shared values through clarifying questions
-Every key except overview is a list of objects:
-{"theme": str, "description": str, "supporting_turn_idxs": [int, ...]}.
-supporting_turn_idxs must be actual turn indices from the transcript, and every theme MUST
-include at least one supporting turn index.
-If a section was not substantively discussed, return an empty list for it — do NOT invent
-themes to fill a section.
+        -- Appended to every theme-section prompt below (not the overview).
+        $$Respond ONLY with a JSON object of the form:
+{"themes": [{"theme": str, "description": str, "supporting_turn_idxs": [int, ...]}]}.
+Prefer participants' own words for theme labels. supporting_turn_idxs must be actual turn
+indices from the transcript, and every theme MUST include at least one supporting turn index.
+If this aspect was not substantively discussed in the session, return an empty list — do
+NOT invent themes to fill it.
 Do not include speaker names in any text — reference contributions via turn indices only.$$
-            as summary_prompt,
+            as theme_output_rules,
 
         $$From this transcript excerpt, extract the following. Cite representative turns like
 [turn:N] throughout, and be concise — this summary feeds a larger synthesis.
@@ -104,6 +104,52 @@ Each cites turns as [turn:N] — use those N values for supporting_turn_idxs.$$
             as map_reduce_instructions
 ),
 
+-- One row per summary section; each section is its own Cortex call. If you add or remove
+-- a section here, update the section count in the incremental filter below and the
+-- accepted_values test in _ai_engagement_mart_models.yml.
+sections as (
+    select
+        'overview' as section,
+        $$Write a 2-3 sentence summary of the session. If the recording contains a substantive
+participant discussion, the summary must describe THAT discussion — mention any staff
+setup/logistics segment in at most one clause, or not at all.
+Respond ONLY with a JSON object of the form: {"overview": str}.
+Do not include speaker names — reference contributions via turn indices only.$$
+            as section_prompt
+    union all
+    select
+        'protect_themes',
+        $$Identify each distinct thing participants want to PROTECT with regard to AI. Keep
+distinct values separate (e.g. ethics/humanity is not the same theme as privacy if
+participants treated them separately). Include themes voiced by only one participant.$$
+    union all
+    select
+        'gov_action_themes',
+        $$Identify EVERY distinct government action or policy proposal participants made,
+including narrowly scoped ones (e.g. rules for a specific sector, service, or setting
+such as schools). Do not consolidate distinct proposals into one theme.$$
+    union all
+    select
+        'general_themes',
+        $$Identify the other prominent themes of the participant discussion — themes that are
+not primarily something participants want protected and not a specific proposed
+government action (those are captured separately).$$
+    union all
+    select
+        'areas_of_tension',
+        $$Identify the points where participants disagreed with each other.$$
+    union all
+    select
+        'areas_of_consensus',
+        $$Identify the points of broad agreement among participants.$$
+    union all
+    select
+        'deliberative_moments',
+        $$Identify the deliberative moments of the discussion: a participant changed their view
+or was persuaded, a proposal was refined or reworded through group input, a disagreement
+was resolved, or participants discovered shared values through clarifying questions.$$
+),
+
 -- =========================================================================================
 -- Pipeline
 -- =========================================================================================
@@ -114,6 +160,7 @@ Each cites turns as [turn:N] — use those N values for supporting_turn_idxs.$$
 {% set max_single_call_chars = 500000 %}
 {% set chunk_target_chars = 400000 %}
 {% set chunk_overlap_turns = 4 %}
+{% set llm_max_tokens = 16000 %}
 
 -- noqa: disable=LT02
 -- The JSON schema for Cortex structured outputs must be a single-line string; the jinja
@@ -122,8 +169,40 @@ Each cites turns as [turn:N] — use those N values for supporting_turn_idxs.$$
 {"type":"array","items":{"type":"object","properties":{"theme":{"type":"string"},"description":{"type":"string"},"supporting_turn_idxs":{"type":"array","items":{"type":"number"}}},"required":["theme","description","supporting_turn_idxs"],"additionalProperties":false}}
 {%- endset %}
 
-{% set response_schema -%}
-{"type":"json","schema":{"type":"object","properties":{"overview":{"type":"string"},"protect_themes":{{ theme_array_schema }},"gov_action_themes":{{ theme_array_schema }},"general_themes":{{ theme_array_schema }},"areas_of_tension":{{ theme_array_schema }},"areas_of_consensus":{{ theme_array_schema }},"deliberative_moments":{{ theme_array_schema }}},"required":["overview","protect_themes","gov_action_themes","general_themes","areas_of_tension","areas_of_consensus","deliberative_moments"],"additionalProperties":false}}
+{% set themes_response_schema -%}
+{"type":"json","schema":{"type":"object","properties":{"themes":{{ theme_array_schema }}},"required":["themes"],"additionalProperties":false}}
+{%- endset %}
+
+{% set overview_response_schema -%}
+{"type":"json","schema":{"type":"object","properties":{"overview":{"type":"string"}},"required":["overview"],"additionalProperties":false}}
+{%- endset %}
+
+-- The per-section Cortex call, shared by all three attempt CTEs below. Column references
+-- (system_prompt, user_prompt, response_schema) resolve in each attempt CTE's scope.
+{% set section_llm_call -%}
+snowflake.cortex.try_complete(
+    '{{ var("llm_model") }}',
+    [
+        {'role': 'system', 'content': system_prompt},
+        {'role': 'user', 'content': user_prompt}
+    ],
+    object_construct(
+        'temperature', 0,
+        'max_tokens', {{ llm_max_tokens }},
+        'response_format', parse_json(response_schema)
+    )
+)
+{%- endset %}
+
+{% set map_llm_call -%}
+snowflake.cortex.try_complete(
+    '{{ var("llm_model") }}',
+    [
+        {'role': 'system', 'content': system_prompt},
+        {'role': 'user', 'content': chunk_map_prompt || '\n\nTranscript excerpt:\n' || chunk_text}
+    ],
+    object_construct('temperature', 0, 'max_tokens', 4000)
+)
 {%- endset %}
 -- noqa: enable=LT02
 
@@ -173,10 +252,14 @@ sessions_to_process as (
     from transcripts
 
     {% if is_incremental() %}
-        -- Reprocess anything that isn't SUCCESS yet, so failures retry automatically.
+        -- A session needs work unless ALL 7 sections already have a SUCCESS row (7 = the
+        -- number of rows in the `sections` CTE). Failed or missing sections retry
+        -- automatically; which sections actually get called is filtered per-section below.
         where session_id not in (
             select t.session_id from {{ this }} as t
             where t.summary_status = 'SUCCESS'
+            group by t.session_id
+            having count(distinct t.section) >= 7
         )
     {% endif %}
 ),
@@ -247,38 +330,43 @@ with_overlap as (
 
 chunks as (
     select
-        session_id,
-        chunk_no,
-        listagg(turn_line, '\n') within group (order by turn_idx) as chunk_text
-    from with_overlap
-    group by session_id, chunk_no
+        c.session_id,
+        c.chunk_no,
+        p.system_prompt,
+        p.chunk_map_prompt,
+        listagg(c.turn_line, '\n') within group (order by c.turn_idx) as chunk_text
+    from with_overlap as c
+    cross join prompts as p
+    group by c.session_id, c.chunk_no, p.system_prompt, p.chunk_map_prompt
+),
+
+-- MAP calls get the same bounded retry as section calls (2 attempts): the CASE gate means
+-- the retry only executes — and only bills — for chunks whose first attempt returned NULL.
+map_attempt_1 as (
+    select
+        *,
+        {{ map_llm_call }} as map_raw_1
+    from chunks
+),
+
+map_attempt_2 as (
+    select
+        *,
+        case when map_raw_1 is null then {{ map_llm_call }} end as map_raw_2
+    from map_attempt_1
 ),
 
 mapped as (
     select
-        c.session_id,
-        c.chunk_no,
-        snowflake.cortex.try_complete(
-            '{{ var("llm_model") }}',
-            [
-                {
-                    'role': 'system',
-                    'content': p.system_prompt
-                },
-                {
-                    'role': 'user',
-                    'content': p.chunk_map_prompt || '\n\nTranscript excerpt:\n' || c.chunk_text
-                }
-            ],
-            object_construct('temperature', 0, 'max_tokens', 4000)
-        ) as map_response
-    from chunks as c
-    cross join prompts as p
+        session_id,
+        chunk_no,
+        coalesce(map_raw_1, map_raw_2) as map_response
+    from map_attempt_2
 ),
 
 -- Stitch the chunk extractions into one synthesis input. A session with ANY failed MAP
 -- chunk is excluded here (a partial map would silently skew the synthesis) and surfaces
--- below as a FAILED row instead.
+-- below as FAILED section rows instead.
 reduce_inputs as (
     select
         session_id,
@@ -291,10 +379,6 @@ reduce_inputs as (
     group by session_id
     having count_if(map_response:choices[0]:messages is null) = 0
 ),
-
--- ------------------------------------------------------------------------------------
--- The structured summary call, fed either the raw transcript or the MAP extractions.
--- ------------------------------------------------------------------------------------
 
 session_inputs as (
     select
@@ -315,56 +399,98 @@ session_inputs as (
         on s.session_id = r.session_id
 ),
 
--- model is determined by the LLM_MODEL environment variable. See docs/llm-cost-control.md
--- TRY_COMPLETE + structured output (response_format): the JSON shape is enforced by Cortex;
--- TRY_COMPLETE returns NULL instead of erroring if the model still produces malformed output.
-summarized as (
+-- ------------------------------------------------------------------------------------
+-- One structured Cortex call per (session, section), fed either the raw transcript or
+-- the MAP extractions, with up to 3 CASE-gated attempts per call. The model is
+-- determined by the LLM_MODEL environment variable — see docs/llm-cost-control.md.
+-- TRY_COMPLETE + structured output (response_format): the JSON shape is enforced by
+-- Cortex; TRY_COMPLETE returns NULL instead of erroring when a call fails, and the
+-- attempt chain turns those NULLs into retries.
+-- ------------------------------------------------------------------------------------
+
+-- noqa: disable=LT02
+section_calls as (
     select
         i.session_id,
         i.n_transcript_chars,
         i.llm_input_kind,
         i.map_tokens,
-        case
-            when i.llm_input_text is not null
-                then snowflake.cortex.try_complete(
-                    '{{ var("llm_model") }}',
-                    [
-                        {
-                            'role': 'system',
-                            'content': p.system_prompt
-                        },
-                        {
-                            'role': 'user',
-                            'content': p.summary_prompt
-                            || case
-                                when i.llm_input_kind = 'map_reduce'
-                                    then '\n\n' || p.map_reduce_instructions
-                                else ''
-                            end
-                            || '\n\n' || i.llm_input_text
-                        }
-                    ],
-                    object_construct(
-                        'temperature', 0,
-                        -- 16000 leaves headroom for verbose models: opus-4-8 was observed
-                        -- emitting >7000 tokens on content-rich sessions, and a response
-                        -- truncated at max_tokens is unparseable -> the session FAILs
-                        'max_tokens', 16000,
-                        'response_format', parse_json('{{ response_schema }}')
-                    )
-                )
-        end as raw_response
+        s.section,
+        p.system_prompt,
+        case when i.llm_input_text is not null
+            then
+                s.section_prompt
+                || case when s.section != 'overview' then '\n' || p.theme_output_rules else '' end
+                || case when i.llm_input_kind = 'map_reduce' then '\n\n' || p.map_reduce_instructions else '' end
+                || '\n\n' || i.llm_input_text
+        end as user_prompt,
+        case when s.section = 'overview'
+            then '{{ overview_response_schema }}'
+            else '{{ themes_response_schema }}'
+        end as response_schema
     from session_inputs as i
+    cross join sections as s
     cross join prompts as p
+    {% if is_incremental() %}
+        -- Per-section retry filter: only sections without a SUCCESS row get (re)called.
+        where not exists (
+            select 1 from {{ this }} as t
+            where
+                t.session_id = i.session_id
+                and t.section = s.section
+                and t.summary_status = 'SUCCESS'
+        )
+    {% endif %}
+),
+-- noqa: enable=LT02
+
+attempt_1 as (
+    select
+        *,
+        case when user_prompt is not null then {{ section_llm_call }} end as raw_1
+    from section_calls
+),
+
+attempt_2 as (
+    select
+        *,
+        case when user_prompt is not null and raw_1 is null then {{ section_llm_call }} end as raw_2
+    from attempt_1
+),
+
+attempt_3 as (
+    select
+        *,
+        case
+            when user_prompt is not null and raw_1 is null and raw_2 is null
+                then {{ section_llm_call }}
+        end as raw_3
+    from attempt_2
+),
+
+summarized as (
+    select
+        *,
+        coalesce(raw_1, raw_2, raw_3) as raw_response,
+        case
+            when user_prompt is null then 0
+            when raw_1 is not null then 1
+            when raw_2 is not null then 2
+            else 3
+        end as n_llm_attempts
+    from attempt_3
 ),
 
 parsed as (
     select
         session_id,
+        section,
         n_transcript_chars,
         llm_input_kind,
-        map_tokens + coalesce(raw_response:usage:total_tokens::int, 0) as llm_total_tokens,
-        try_parse_json(to_json(raw_response:structured_output[0]:raw_message)) as summary_json,
+        map_tokens,
+        n_llm_attempts,
+        coalesce(raw_response:usage:total_tokens::int, 0) as section_tokens,
+        try_parse_json(to_json(raw_response:structured_output[0]:raw_message)) as section_json,
         case
             when try_parse_json(to_json(raw_response:structured_output[0]:raw_message)) is null
                 then 'FAILED'
@@ -373,41 +499,75 @@ parsed as (
     from summarized
 ),
 
--- One overview row per session, whatever its status
+-- Session-level token total (all section calls + any MAP calls), stamped on every row of
+-- the session for dashboard compatibility. map_tokens is constant per session, so it is
+-- added once rather than summed across rows.
+with_session_tokens as (
+    select
+        *,
+        map_tokens + sum(section_tokens) over (partition by session_id) as llm_total_tokens
+    from parsed
+),
+
+-- One overview row per session, whatever its status.
 overview_rows as (
     select
         session_id,
-        'overview' as section,
+        section,
         0 as theme_seq,
         null::varchar as theme_label,
-        summary_json:overview::string as summary_text,
+        section_json:overview::string as summary_text,
         [] as supporting_turn_idxs,
         0 as n_supporting_turns,
         0 as n_unverified_idxs_dropped,
         summary_status,
         llm_input_kind,
         n_transcript_chars,
-        llm_total_tokens
-    from parsed
+        llm_total_tokens,
+        n_llm_attempts
+    from with_session_tokens
+    where section = 'overview'
+),
+
+-- One status row (theme_seq = 0) per (session, theme section), whatever its status. This
+-- is what distinguishes "section succeeded but found no themes" from "section call
+-- failed", and what the incremental filter reads to decide which sections to retry.
+section_status_rows as (
+    select
+        session_id,
+        section,
+        0 as theme_seq,
+        null::varchar as theme_label,
+        null::varchar as summary_text,
+        [] as supporting_turn_idxs,
+        0 as n_supporting_turns,
+        0 as n_unverified_idxs_dropped,
+        summary_status,
+        llm_input_kind,
+        n_transcript_chars,
+        llm_total_tokens,
+        n_llm_attempts
+    from with_session_tokens
+    where section != 'overview'
 ),
 
 -- One row per (section, theme, cited turn index), straight from the LLM's JSON.
 exploded_idxs as (
     select
         p.session_id,
+        p.section,
         p.llm_input_kind,
         p.n_transcript_chars,
         p.llm_total_tokens,
-        sections.key::string as section,
+        p.n_llm_attempts,
         items.index + 1 as theme_seq,
         items.value:theme::string as theme_label,
         items.value:description::string as summary_text,
         idx.value::int as raw_turn_idx
-    from parsed as p,
-        lateral flatten(input => p.summary_json) as sections,
-        lateral flatten(input => sections.value) as items,
+    from with_session_tokens as p,
+        lateral flatten(input => p.section_json:themes) as items,
         lateral flatten(input => items.value:supporting_turn_idxs) as idx
-    where p.summary_status = 'SUCCESS' and sections.key != 'overview'
+    where p.summary_status = 'SUCCESS' and p.section != 'overview'
 ),
 
 -- Hallucination guardrail: keep only turn indices that actually exist in the session.
@@ -426,7 +586,8 @@ theme_rows as (
         'SUCCESS' as summary_status,
         e.llm_input_kind,
         e.n_transcript_chars,
-        e.llm_total_tokens
+        e.llm_total_tokens,
+        e.n_llm_attempts
     from exploded_idxs as e
     left join turns as t
         on
@@ -440,12 +601,15 @@ theme_rows as (
         e.summary_text,
         e.llm_input_kind,
         e.n_transcript_chars,
-        e.llm_total_tokens
+        e.llm_total_tokens,
+        e.n_llm_attempts
     having count(t.turn_idx) > 0
 ),
 
 combined as (
     select * from overview_rows
+    union all
+    select * from section_status_rows
     union all
     select * from theme_rows
 )
