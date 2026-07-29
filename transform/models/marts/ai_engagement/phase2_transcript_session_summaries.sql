@@ -346,7 +346,10 @@ summarized as (
                     ],
                     object_construct(
                         'temperature', 0,
-                        'max_tokens', 8000,
+                        -- 16000 leaves headroom for verbose models: opus-4-8 was observed
+                        -- emitting >7000 tokens on content-rich sessions, and a response
+                        -- truncated at max_tokens is unparseable -> the session FAILs
+                        'max_tokens', 16000,
                         'response_format', parse_json('{{ response_schema }}')
                     )
                 )
