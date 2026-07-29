@@ -549,9 +549,12 @@ def render_turn_html(turn_idx: int, source: str, speaker: str, start_sec, text: 
     # Low-alpha tint stays readable on both light and dark Streamlit themes
     background = "background:rgba(128,160,200,0.18);" if is_chat else ""
     icon = "💬 chat" if is_chat else "🎙 speech"
+    # scroll-margin-top keeps the card top visible below Streamlit's sticky header
+    # when a citation anchor link scrolls to it
     return (
         f'<div id="{anchor_prefix}-{turn_idx}" style="border-left:4px solid {color}; '
-        f'padding:6px 10px; margin:4px 0; border-radius:4px; {background}">'
+        f'padding:6px 10px; margin:4px 0; border-radius:4px; scroll-margin-top:4.5rem; '
+        f"{background}\">"
         f'<span style="color:{color}; font-weight:600;">{html.escape(str(speaker))}</span> '
         f'<span style="color:#888; font-size:0.85em;">[{turn_idx}] · '
         f'{fmt_ts(start_sec)} · {icon}</span>'
@@ -571,41 +574,61 @@ def build_theme_turn_map(summary: dict) -> dict[int, list[tuple[str, str]]]:
     return turn_map
 
 
-def gap_divider(n_skipped: int) -> str:
-    """Visual separator between non-contiguous turns in a card list."""
-    label = f"⋯ {n_skipped} turn{'s' if n_skipped > 1 else ''} skipped ⋯"
+def gap_divider(n_skipped: int | None = None) -> str:
+    """Visual separator between non-contiguous turns in a card list; the skipped-turn
+    count is only shown when provided."""
+    label = f"⋯ {n_skipped} turn{'s' if n_skipped > 1 else ''} skipped ⋯" if n_skipped else "⋯"
     return (
         f'<div style="border-top:1px dashed rgba(136,136,136,0.6); margin:10px 24px 2px; '
         f'text-align:center; color:#888; font-size:0.75em; line-height:1.6;">{label}</div>'
     )
 
 
-TURN_CITE_RE = re.compile(r"\[turn:\s*(\d+)\]")
+# Despite the [turn:N] prompt instruction, models (especially higher tiers) also emit
+# ranges ([turn:12-15]) and colon-less variants ([turns 44-45]) — accept them all,
+# with -, – or — as the range dash.
+TURN_CITE_RE = re.compile(r"\[turns?[\s:]+(\d+)(?:\s*[-–—]\s*(\d+))?\]")
 
 
 def apply_turn_citations(text: str, anchor_prefix: str) -> tuple[str, list[int]]:
-    """Convert [turn:N] tags to anchored links; return (html_text, ordered cited idxs)."""
+    """Convert [turn:N] / [turn:N-M] tags to anchored links; return (html_text, cited idxs).
+
+    A range links to its first turn and every turn in the range is added to the cited
+    list, so the cited-turns section below renders the whole exchange.
+    """
     cited: list[int] = []
 
     def replacer(m):
-        n = int(m.group(1))
-        if n not in cited:
-            cited.append(n)
-        return f'<a href="#{anchor_prefix}-{n}" style="text-decoration:none;">[†turn {n}]</a>'
+        start = int(m.group(1))
+        end = int(m.group(2)) if m.group(2) else start
+        if end < start:
+            start, end = end, start
+        for n in range(start, end + 1):
+            if n not in cited:
+                cited.append(n)
+        label = f"turn {start}" if start == end else f"turns {start}–{end}"
+        return f'<a href="#{anchor_prefix}-{start}" style="text-decoration:none;">[†{label}]</a>'
 
     return TURN_CITE_RE.sub(replacer, text), cited
 
 
 def render_cited_turns(session_df: pd.DataFrame, cited_idxs: list[int],
                        colors: dict[str, str], anchor_prefix: str):
-    """Render anchored verbatim turn cards for cited indices; ⚠️ for invalid ones."""
+    """Render anchored verbatim turn cards for cited indices; ⚠️ for invalid ones.
+
+    Turns render in transcript order with a divider at each gap, so contiguous
+    stretches read as conversation and isolated turns as standalone quotes."""
     if not cited_idxs:
         return
     st.markdown("---")
     st.markdown("##### Cited turns (verbatim from source data)")
     indexed = session_df.set_index("turn_idx")
     cards = []
-    for idx in cited_idxs:
+    prev_idx = None
+    for idx in sorted(set(cited_idxs)):
+        if prev_idx is not None and idx - prev_idx > 1:
+            cards.append(gap_divider())
+        prev_idx = idx
         if idx in indexed.index:
             row = indexed.loc[idx]
             cards.append(render_turn_html(
@@ -615,7 +638,8 @@ def render_cited_turns(session_df: pd.DataFrame, cited_idxs: list[int],
         else:
             cards.append(
                 f'<div id="{anchor_prefix}-{idx}" style="border-left:4px solid #d32f2f; '
-                f'padding:6px 10px; margin:4px 0;">⚠️ Turn [{idx}] not found in this session — '
+                f'padding:6px 10px; margin:4px 0; scroll-margin-top:4.5rem;">'
+                f"⚠️ Turn [{idx}] not found in this session — "
                 f"citation could not be verified.</div>"
             )
     st.markdown("".join(cards), unsafe_allow_html=True)
@@ -627,7 +651,7 @@ def render_cited_turns(session_df: pd.DataFrame, cited_idxs: list[int],
 
 for key, default in [
     ("quote_results", {}),       # (session_id, query) -> (DataFrame, n_hallucinated)
-    ("analysis_results", {}),    # session_id -> [ {prompt_label, model, html, cited, tokens, cost, ts} ]
+    ("analysis_results", {}),    # session_id -> {prompt_label, model, html, cited, tokens, cost, ts}
     ("last_query_tokens", 0),
     ("last_query_cost", 0.0),
 ]:
@@ -735,8 +759,10 @@ else:
 # Tabs
 # ---------------------------------------------------------------------------
 
-tab_summary, tab_transcript, tab_quotes, tab_custom, tab_export = st.tabs(
-    ["Session summary", "Transcript", "Quote search", "Custom analysis", "Data export"]
+# Quote search is temporarily disabled — restore it here and un-comment its tab
+# block below to bring it back.
+tab_summary, tab_transcript, tab_custom, tab_export = st.tabs(
+    ["Session summary", "Transcript", "Custom analysis", "Data export"]
 )
 
 
@@ -841,52 +867,54 @@ with tab_transcript:
 
 
 # --- Tab 3: Quote search (on-demand) --------------------------------------------
+# Temporarily disabled — the search quality isn't good enough yet. To re-add,
+# un-comment this block and restore the tab in the st.tabs() call above.
 
-with tab_quotes:
-    st.markdown(
-        "Find verbatim quotes about a topic. The AI returns **turn indices only** — quote "
-        "text, speaker, and timestamp are resolved from the source data, so quotes cannot "
-        "be fabricated. This runs a live Cortex query."
-    )
-    q_col, b_col = st.columns([4, 1])
-    query = q_col.text_input(
-        "Search for quotes about…",
-        placeholder="e.g. privacy and personal data, job displacement, AI in schools",
-        label_visibility="collapsed",
-    )
-    search_clicked = b_col.button("Search", use_container_width=True)
-
-    cache_key = (selected_sid, query.strip().lower())
-    if search_clicked and query.strip():
-        if not LLM_MODEL_LOW:
-            st.error("LLM_MODEL_LOW is not configured — set it in .env.")
-        else:
-            with st.status("Searching transcript…") as status:
-                try:
-                    result = find_quotes(session_df, query.strip())
-                    st.session_state.quote_results[cache_key] = result
-                    status.update(label="Search complete", state="complete")
-                except Exception as e:
-                    status.update(label="Search failed", state="error")
-                    st.error(f"Quote search failed: {e}")
-
-    if query.strip() and cache_key in st.session_state.quote_results:
-        quotes_df, n_hallucinated = st.session_state.quote_results[cache_key]
-        if n_hallucinated:
-            st.warning(f"{n_hallucinated} unverifiable turn reference(s) were discarded.")
-        if quotes_df.empty:
-            st.info("No relevant turns found in this session.")
-        else:
-            st.caption(f"{len(quotes_df)} verified quote(s), in conversation order:")
-            for row in quotes_df.itertuples():
-                st.markdown(
-                    render_turn_html(
-                        row.turn_idx, row.source, row.speaker, row.start_sec, row.text,
-                        color=colors.get(row.speaker, "#888"), anchor_prefix="quote",
-                    ),
-                    unsafe_allow_html=True,
-                )
-                st.caption(f"↳ {row.why_relevant}")
+# with tab_quotes:
+#     st.markdown(
+#         "Find verbatim quotes about a topic. The AI returns **turn indices only** — quote "
+#         "text, speaker, and timestamp are resolved from the source data, so quotes cannot "
+#         "be fabricated. This runs a live Cortex query."
+#     )
+#     q_col, b_col = st.columns([4, 1])
+#     query = q_col.text_input(
+#         "Search for quotes about…",
+#         placeholder="e.g. privacy and personal data, job displacement, AI in schools",
+#         label_visibility="collapsed",
+#     )
+#     search_clicked = b_col.button("Search", use_container_width=True)
+#
+#     cache_key = (selected_sid, query.strip().lower())
+#     if search_clicked and query.strip():
+#         if not LLM_MODEL_LOW:
+#             st.error("LLM_MODEL_LOW is not configured — set it in .env.")
+#         else:
+#             with st.status("Searching transcript…") as status:
+#                 try:
+#                     result = find_quotes(session_df, query.strip())
+#                     st.session_state.quote_results[cache_key] = result
+#                     status.update(label="Search complete", state="complete")
+#                 except Exception as e:
+#                     status.update(label="Search failed", state="error")
+#                     st.error(f"Quote search failed: {e}")
+#
+#     if query.strip() and cache_key in st.session_state.quote_results:
+#         quotes_df, n_hallucinated = st.session_state.quote_results[cache_key]
+#         if n_hallucinated:
+#             st.warning(f"{n_hallucinated} unverifiable turn reference(s) were discarded.")
+#         if quotes_df.empty:
+#             st.info("No relevant turns found in this session.")
+#         else:
+#             st.caption(f"{len(quotes_df)} verified quote(s), in conversation order:")
+#             for row in quotes_df.itertuples():
+#                 st.markdown(
+#                     render_turn_html(
+#                         row.turn_idx, row.source, row.speaker, row.start_sec, row.text,
+#                         color=colors.get(row.speaker, "#888"), anchor_prefix="quote",
+#                     ),
+#                     unsafe_allow_html=True,
+#                 )
+#                 st.caption(f"↳ {row.why_relevant}")
 
 
 # --- Tab 4: Custom analysis (on-demand) ------------------------------------------
@@ -939,7 +967,7 @@ with tab_custom:
                     )
                     cost = tokens_to_cost(tokens, model_choice)
                     html_text, cited = apply_turn_citations(text, anchor_prefix="ca")
-                    st.session_state.analysis_results.setdefault(selected_sid, []).insert(0, {
+                    st.session_state.analysis_results[selected_sid] = {
                         "prompt_label": prompt_label,
                         "model": model_choice,
                         "html": html_text,
@@ -947,7 +975,7 @@ with tab_custom:
                         "tokens": tokens,
                         "cost": cost,
                         "ts": datetime.now(timezone.utc).isoformat(),
-                    })
+                    }
                     st.session_state.last_query_tokens = tokens
                     st.session_state.last_query_cost = cost
                     status.update(label="Analysis complete", state="complete", expanded=False)
@@ -955,15 +983,15 @@ with tab_custom:
                     status.update(label="Analysis failed", state="error")
                     st.error(f"Analysis failed: {e}")
 
-    for i, run in enumerate(st.session_state.analysis_results.get(selected_sid, [])):
+    run = st.session_state.analysis_results.get(selected_sid)
+    if run:
         st.markdown("---")
         st.caption(
             f"**{run['prompt_label']}** · {run['model']} · {run['ts'][:16]} · "
             f"{run['tokens']:,} tokens (~${run['cost']:.4f})"
         )
         st.markdown(run["html"], unsafe_allow_html=True)
-        if i == 0:  # render cited turn cards for the most recent run only (anchors are unique)
-            render_cited_turns(session_df, run["cited"], colors, anchor_prefix="ca")
+        render_cited_turns(session_df, run["cited"], colors, anchor_prefix="ca")
 
 
 # --- Tab 5: Data export ----------------------------------------------------------
