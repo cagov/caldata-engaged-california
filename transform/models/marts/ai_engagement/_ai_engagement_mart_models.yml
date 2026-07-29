@@ -65,22 +65,23 @@ models:
   - name: phase2_transcript_session_summaries
     description: |
       Structured AI analysis of each phase 2 discussion session, flattened to one row per
-      (session, section, theme). Each session's full transcript gets one structured Cortex
-      call; the returned themes cite turns by index only, and every cited index is validated
-      against the session's real turns — unverifiable indices are dropped and themes with no
-      valid supporting turn are removed (hallucination guardrail). Summary text excludes
-      speaker names (PII) by design.
+      (session, section, theme). Each section is its own structured Cortex call over the full
+      transcript (short per-section outputs avoid the transient timeouts that plagued
+      whole-session calls), with up to 3 in-query attempts per call. The returned themes cite
+      turns by index only, and every cited index is validated against the session's real
+      turns — unverifiable indices are dropped and themes with no valid supporting turn are
+      removed (hallucination guardrail). Summary text excludes speaker names (PII) by design.
 
-      Sessions that fit the ~500k-char context get one whole-transcript call
+      Sessions that fit the ~500k-char context feed each section call the whole transcript
       (llm_input_kind = 'whole_transcript'); longer sessions are map-reduced — each ~400k-char
-      chunk gets its own theme-extraction call and the summary call synthesizes from those
+      chunk gets its own theme-extraction call and the section calls synthesize from those
       extractions (llm_input_kind = 'map_reduce').
 
-      Every session appears in this table — check summary_status. FAILED sessions (LLM call
-      failed, unparseable JSON, or a failed map chunk) are retried automatically on the next
-      run. Incremental at the session grain, so LLM cost is only incurred for new sessions.
-      Prompts live at the top of the model SQL; editing them requires a --full-refresh to
-      re-tag existing sessions.
+      Every (session, section) pair appears in this table via a status row (theme_seq = 0) —
+      check summary_status. FAILED pairs are retried automatically on the next run, and only
+      failed sections re-bill. Incremental at the (session, section) grain, so LLM cost is
+      only incurred for new sessions or retried failures. Prompts live at the top of the
+      model SQL; editing them requires a --full-refresh to re-tag existing sessions.
     columns:
       - name: session_id
         description: The unique identifier for each Zoom session.
@@ -88,8 +89,9 @@ models:
           - not_null
       - name: section
         description: |
-          The summary section this row belongs to. 'overview' rows (one per session) have no
-          theme label or supporting turns.
+          The summary section this row belongs to. 'overview' rows (one per session) carry the
+          session summary text; every other section has one status row (theme_seq = 0) plus one
+          row per extracted theme.
         data_tests:
           - accepted_values:
               values:
@@ -101,13 +103,17 @@ models:
                 - areas_of_consensus
                 - deliberative_moments
       - name: theme_seq
-        description: 1-based position of the theme within its section (0 for overview rows).
+        description: |
+          1-based position of the theme within its section. 0 marks a section status row (and
+          the overview row) rather than a theme.
       - name: theme_label
-        description: Short theme label, preferring participants' own words. Null for overview rows.
+        description: |
+          Short theme label, preferring participants' own words. Null for overview and section
+          status rows.
       - name: summary_text
         description: |
           The overview text (overview rows) or the theme description. Contains no speaker names.
-          Null when summary_status is not SUCCESS.
+          Null on section status rows and when summary_status is not SUCCESS.
       - name: supporting_turn_idxs
         description: |
           Array of validated turn indices supporting this theme. Resolve against
@@ -120,14 +126,20 @@ models:
           dropped (hallucination guardrail).
       - name: summary_status
         description: |
-          SUCCESS or FAILED (the summary call failed, returned unparseable JSON, or a map chunk
-          failed for an oversize session; retried next run). Non-SUCCESS rows fail the run
-          outright — Cortex COMPLETE failures on large sessions are usually transient, so the
-          recovery path is simply re-running the model, which retries every non-SUCCESS session.
+          SUCCESS or FAILED, per (session, section) call (the call failed all 3 in-query
+          attempts, returned unparseable JSON, or a map chunk failed for an oversize session).
+          Non-SUCCESS rows fail the run outright — Cortex COMPLETE failures are transient, so
+          the recovery path is simply re-running the model, which retries only the failed
+          sections.
         data_tests:
           - dbt_utils.not_accepted_values:
               values: ["FAILED"]
               severity: error
+      - name: n_llm_attempts
+        description: |
+          How many Cortex attempts the section call used (1-3; 0 when the call never ran
+          because the session's map pass failed). Values above 1 measure Cortex transient-
+          failure frequency at this call size.
       - name: llm_input_kind
         description: |
           'whole_transcript' when the session fit a single Cortex call, or 'map_reduce' when the
