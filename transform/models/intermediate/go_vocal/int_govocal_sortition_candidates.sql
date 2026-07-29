@@ -23,7 +23,7 @@ candidates as (
     where
         survey_respondent_id is not null
         and publication_status <> 'draft'
-        and email not like '%@innovation.ca.gov'  -- exclude internal ODI respondents
+        and trim(lower(email)) not like '%@innovation.ca.gov'  -- exclude internal ODI respondents
         and availability_for_discussion in ('Yes', 'Maybe')
         and region is not null  -- this will exclude county in ('I don''t want to say', 'I live outside of California')
         and age <> 'Under 18'
@@ -95,6 +95,7 @@ add_invitee_status as (
     select
         a.*,
         coalesce(i.invitee_status, 'not yet invited') as invitee_status,
+        coalesce(i.attendee_status, 'not registered') as attendee_status,
         i.accepted_event_start_date_time
     from add_ai_labels as a
     left join invitee_status as i

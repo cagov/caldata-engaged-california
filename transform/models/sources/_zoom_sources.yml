@@ -7,6 +7,26 @@ sources:
     description: |
       Manually downloaded files for the AI Engagement.
     tables:
+      - name: ATTENDANCE_TRACKER
+        description: |
+          Manually-uploaded participant lists from Zoom meetings.
+          This tells us which registrants attended and which were no-shows.
+        columns:
+          - name: invitee_first_name
+            description: The user-input first name of the invitee
+          - name: invitee_last_name
+            description: The user-input last name of the invitee
+          - name: invitee_email
+            description: The email address of the invitee
+          - name: start_date_time
+            description: The start date and time of the Zoom meeting
+          - name: end_date_time
+            description: The end date and time of the Zoom meeting
+          - name: actual_status
+            description: |
+              The actual attendance status of the invitee
+              (Staff, Attended, No Show)
+
       - name: CHATS_RAW
         description: |
           Manually-uploaded chat transcripts from Zoom meetings.
@@ -17,6 +37,7 @@ sources:
             description: The name of the file containing the chat transcript
           - name: file_content
             description: The entire content of the chat transcript file
+
       - name: TRANSCRIPTS_RAW
         description: |
           Manually-uploaded speech-to-text transcripts from Zoom meetings.

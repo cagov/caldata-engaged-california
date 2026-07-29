@@ -62,33 +62,6 @@ models:
           AI tagging models: LLMs cite turns by this index, and verbatim quotes are always
           resolved from this table rather than trusted from model output.
 
-  - name: phase2_zoom_transcripts_and_chats_chunks
-    description: |
-      This table creates non-overlapping ~400-word windows over the combined Phase 2 Zoom transcript
-      turns and chat messages. This is done to provide relevant context for ideas that span multiple
-      speakers and to create 500-ish token units to feed to Cortex Search / embeddings (500 tokens = ~350 words).
-    columns:
-      - name: session_id
-        description: The unique identifier for each Zoom session.
-      - name: chunk_no
-        description: The chunk number for the non-overlapping ~400-word window.
-      - name: chunk_id
-        description: A unique identifier for the chunk, combining the session_id and chunk_no.
-      - name: start_sec
-        description: The start time of the chunk in seconds.
-      - name: end_sec
-        description: The end time of the chunk in seconds.
-      - name: speakers
-        description: A comma-separated list of distinct speakers in the chunk.
-      - name: has_chat
-        description: A boolean indicating whether the chunk contains any chat messages.
-      - name: text
-        description: |
-          The aggregated text of the chunk, stitched together from the individual transcript
-          turns and chat messages in the chunk.
-      - name: word_count
-        description: The total word count of the chunk.
-
   - name: phase2_transcript_session_summaries
     description: |
       Structured AI analysis of each phase 2 discussion session, flattened to one row per
