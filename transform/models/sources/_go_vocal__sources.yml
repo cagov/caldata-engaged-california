@@ -205,6 +205,9 @@ sources:
             description: Date the row was loaded into Snowflake.
           - name: _LOADED_AT
             description: Timestamp when the row was loaded into Snowflake.
+          - name: START_AT
+          - name: END_AT
+          - name: PLACEMENT_TYPE
       # - name: PROJECT_FOLDERS
       #   description: Project folders used to organize projects into groups.
       #   columns:

@@ -3,7 +3,7 @@
 
 with cues as (
     select *
-    from {{ ref('stg_transcripts_raw') }}
+    from {{ ref('stg_zoom_transcript_cues') }}
 ),
 
 -- Mark where the speaker changes: 1 = new turn starts here, 0 = same speaker as previous row.
@@ -11,7 +11,7 @@ flagged as (
     select
         *,
         case
-            when EQUAL_NULL(speaker, LAG(speaker) over (partition by filename order by seq))
+            when EQUAL_NULL(speaker, LAG(speaker) over (partition by session_id order by seq))
                 then 0
             else 1
         end as is_new_turn
@@ -23,13 +23,12 @@ flagged as (
 grouped as (
     select
         *,
-        SUM(is_new_turn) over (partition by filename order by seq) as turn_grp
+        SUM(is_new_turn) over (partition by session_id order by seq) as turn_grp
     from flagged
 )
 
 select
     session_id,
-    filename,
     MIN(seq) as start_seq,
     MAX(seq) as end_seq,
     ANY_VALUE(speaker) as speaker,
@@ -38,5 +37,5 @@ select
     -- Stitch the turn's cues back into one block of text, in cue order:
     LISTAGG(text, ' ') within group (order by seq) as text
 from grouped
-group by session_id, filename, turn_grp
-order by session_id, filename, start_seq
+group by session_id, turn_grp
+order by session_id, start_seq

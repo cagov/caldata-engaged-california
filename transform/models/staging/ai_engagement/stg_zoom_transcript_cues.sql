@@ -42,20 +42,24 @@ cues AS (
         filename,
 
         -- The cue number lives on prev_line.
-        -- If it IS NULL (e.g. a malformed cue), COALESCE falls back to ROW_NUMBER
-        -- so seq is never empty.
+        -- If it's non-numeric, fall back to ROW_NUMBER so seq is never empty.
         COALESCE(
             TRY_TO_NUMBER(TRIM(prev_line)),
             ROW_NUMBER() OVER (PARTITION BY filename ORDER BY line_no)
         ) AS seq,
+
         SPLIT_PART(line, ' --> ', 1) AS start_hms,
         SPLIT_PART(line, ' --> ', 2) AS end_hms,
-        next_line AS raw_text
+        next_line AS raw_text,
+
+        -- A speaker prefix exists only if there's a colon and the part before it
+        -- looks name-like. Computed once here, reused below.
+        POSITION(':' IN next_line) > 0
+        AND SPLIT_PART(next_line, ':', 1) RLIKE '[A-Za-z][A-Za-z0-9 .,''/()&-]{0,60}'
+            AS has_speaker
     FROM windowed
-    -- This filter isolates timestamp lines:
     WHERE line RLIKE '^[0-9]{2}:[0-9]{2}:[0-9]{2}[.][0-9]{3} --> [0-9]{2}:[0-9]{2}:[0-9]{2}[.][0-9]{3}'
 )
-
 
 SELECT
     session_id,
@@ -68,18 +72,12 @@ SELECT
     SPLIT_PART(end_hms, ':', 1)::int * 3600 + SPLIT_PART(end_hms, ':', 2)::int * 60
     + SPLIT_PART(end_hms, ':', 3)::float AS end_sec,
 
-    -- Split the speaker off the front of the text. In VTT the text usually reads
-    -- "Speaker Name: the words they said". If the prefix doesn't look name-like, speaker is left NULL.
-    CASE
-        WHEN SPLIT_PART(raw_text, ':', 1) RLIKE '[A-Za-z][A-Za-z0-9 .,''/()&-]{0,60}'
-            THEN TRIM(SPLIT_PART(raw_text, ':', 1))
-    END AS speaker,
-
-    -- The text itself. If the prefix looked like a speaker, take everything AFTER
-    -- the first colon. If there was no speaker prefix, keep the whole line as-is.
-    CASE
-        WHEN SPLIT_PART(raw_text, ':', 1) RLIKE '[A-Za-z][A-Za-z0-9 .,''/()&-]{0,60}'
-            THEN TRIM(SUBSTR(raw_text, POSITION(':' IN raw_text) + 1))
-        ELSE TRIM(raw_text)
-    END AS text
+    -- Split the speaker off the front: everything before the first colon if the
+    -- prefix looked name-like, otherwise no speaker and the whole line is text.
+    IFF(has_speaker, TRIM(SPLIT_PART(raw_text, ':', 1)), NULL) AS speaker,
+    IFF(
+        has_speaker,
+        TRIM(SUBSTR(raw_text, POSITION(':' IN raw_text) + 1)),
+        TRIM(raw_text)
+    ) AS text
 FROM cues
