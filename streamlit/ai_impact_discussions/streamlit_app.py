@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 # ---------------------------------------------------------------------------
 
 def get_session():
-    load_dotenv()  # LLM model names are stored here, optionally local Snowflake creds too
+    load_dotenv(override=True)  # LLM model names are stored here, optionally local Snowflake creds too
     try:
         # If running inside Snowflake
         from snowflake.snowpark.context import get_active_session
@@ -74,9 +74,9 @@ MODEL_CREDIT_COSTS = {
 MODEL_COSTS = {m: c * COST_PER_SNOWFLAKE_CREDIT for m, c in MODEL_CREDIT_COSTS.items() if m}
 
 LLM_TIERS = [
+    (LLM_MODEL_LOW,  "Low",    "Fast & economical"),
     (LLM_MODEL_MED,  "Medium", "Balanced (recommended)"),
     (LLM_MODEL_HIGH, "High",   "Most capable & costly"),
-    (LLM_MODEL_LOW,  "Low",    "Fast & economical"),
 ]
 
 
@@ -731,11 +731,12 @@ st.markdown(
 )
 
 m1, m2, m3, m4, m5 = st.columns(5)
-m1.metric("Turns", f"{stats['n_turns']:,}")
-m2.metric("Speakers", stats["n_speakers"])
+# int() casts: selecting a row from the mixed-dtype stats frame upcasts counts to float
+m1.metric("Turns", f"{int(stats['n_turns']):,}")
+m2.metric("Speakers", int(stats["n_speakers"]))
 m3.metric("Duration", f"{stats['duration_min']:.0f} min")
-m4.metric("Speech turns", f"{stats['n_speech']:,}")
-m5.metric("Chat messages", f"{stats['n_chat']:,}")
+m4.metric("Speech turns", f"{int(stats['n_speech']):,}")
+m5.metric("Chat messages", f"{int(stats['n_chat']):,}")
 
 # Tagging provenance (from the dbt table, not a live run)
 if meta is None:
