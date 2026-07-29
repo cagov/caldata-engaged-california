@@ -121,12 +121,13 @@ models:
       - name: summary_status
         description: |
           SUCCESS or FAILED (the summary call failed, returned unparseable JSON, or a map chunk
-          failed for an oversize session; retried next run). Non-SUCCESS rows trigger a
-          warning-severity test so they never go unnoticed.
+          failed for an oversize session; retried next run). Non-SUCCESS rows fail the run
+          outright — Cortex COMPLETE failures on large sessions are usually transient, so the
+          recovery path is simply re-running the model, which retries every non-SUCCESS session.
         data_tests:
           - dbt_utils.not_accepted_values:
               values: ["FAILED"]
-              severity: warn
+              severity: error
       - name: llm_input_kind
         description: |
           'whole_transcript' when the session fit a single Cortex call, or 'map_reduce' when the
