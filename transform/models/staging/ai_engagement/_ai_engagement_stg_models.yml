@@ -76,8 +76,8 @@ models:
     columns:
       - name: session_id
         description: >
-          The date prefix of the Zoom session (e.g. "GMT20260709"), not the full filename-derived
-          session_id -- matched by prefix, not exact equality, in stg_zoom_transcript_cues.
+          The full filename-derived session_id (e.g. "GMT20260709-194459"), matched by exact
+          equality in stg_zoom_transcript_cues.
         data_tests:
           - unique
           - not_null

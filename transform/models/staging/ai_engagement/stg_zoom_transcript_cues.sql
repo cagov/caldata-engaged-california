@@ -98,9 +98,7 @@ SELECT
     c.speaker,
     c.text
 FROM parsed_cues AS c
--- transcript_times.session_id is just the date prefix (e.g. "GMT20260709"), not the full
--- filename-derived session_id with the time suffix -- match on prefix, not exact equality.
-LEFT JOIN transcript_times AS w ON c.session_id LIKE w.session_id || '%'
+LEFT JOIN transcript_times AS w ON c.session_id = w.session_id
 
 WHERE
     c.start_sec >= COALESCE(w.discussion_start_sec, c.start_sec)
