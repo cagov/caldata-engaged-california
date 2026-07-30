@@ -59,14 +59,8 @@ select
     m.start_minute,
     m.n_distinct_speakers,
     round(m.avg_speakers_per_minute, 2) as avg_speakers_per_minute,
-    lpad(floor(t.start_sec / 3600)::int, 2, '0') || ':'
-    || lpad(floor(mod(t.start_sec, 3600) / 60)::int, 2, '0') || ':'
-    || lpad(floor(mod(t.start_sec, 60))::int, 2, '0')
-        as start_timestamp,
-    lpad(floor(t.end_sec / 3600)::int, 2, '0') || ':'
-    || lpad(floor(mod(t.end_sec, 3600) / 60)::int, 2, '0') || ':'
-    || lpad(floor(mod(t.end_sec, 60))::int, 2, '0')
-        as end_timestamp,
+    {{ format_hms('t.start_sec') }} as start_timestamp,
+    {{ format_hms('t.end_sec') }} as end_timestamp,
     t.start_sec,
     t.end_sec,
     t.speaker,
