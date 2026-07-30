@@ -39,6 +39,10 @@ seeds:
       +enabled: true
       +schema: govocal
       +tags: ["ai_impact"]
+    zoom:
+      +enabled: true
+      +schema: ai_engagement
+      +tags: ["ai_impact"]
 
 models:
   caldata_engaged_california:
