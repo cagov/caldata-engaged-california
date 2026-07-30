@@ -18,14 +18,8 @@ participant_turns as (
 select
     session_id,
     speaker,
-    lpad(floor(start_sec / 3600)::int, 2, '0') || ':'
-    || lpad(floor(mod(start_sec, 3600) / 60)::int, 2, '0') || ':'
-    || lpad(floor(mod(start_sec, 60))::int, 2, '0')
-        as start_timestamp,
-    lpad(floor(end_sec / 3600)::int, 2, '0') || ':'
-    || lpad(floor(mod(end_sec, 3600) / 60)::int, 2, '0') || ':'
-    || lpad(floor(mod(end_sec, 60))::int, 2, '0')
-        as end_timestamp,
+    {{ format_hms('start_sec') }} as start_timestamp,
+    {{ format_hms('end_sec') }} as end_timestamp,
     start_sec,
     end_sec,
     end_sec - start_sec as duration_sec,
