@@ -446,16 +446,23 @@ def parse_idx_array(value) -> list[int]:
 
 def build_session_summaries(summ_df: pd.DataFrame) -> tuple[dict, dict]:
     """Reshape the flat summary rows into the nested structure the UI renders:
-    {session_id: {"overview": str, "<section>": [{theme, description, supporting_turn_idxs}]}}
-    plus a parallel {session_id: {provenance metadata}} dict."""
+    {session_id: {"overview": str, "failed_sections": [...],
+                  "<section>": [{theme, description, supporting_turn_idxs}]}}
+    plus a parallel {session_id: {provenance metadata}} dict.
+
+    The dbt model makes one Cortex call per (session, section) and emits a status row
+    (theme_seq == 0) for every section — that's how "section call failed" is
+    distinguished from "section succeeded but found no themes"."""
     by_session: dict[str, dict] = {}
     meta: dict[str, dict] = {}
     for sid, group in summ_df.groupby("session_id"):
-        summary: dict = {"overview": ""}
+        summary: dict = {"overview": "", "failed_sections": []}
         collected: dict[str, list] = {s: [] for s in SECTIONS}
         for row in group.itertuples():
             if row.section == "overview":
                 summary["overview"] = row.summary_text or ""
+                if row.summary_status != "SUCCESS":
+                    summary["failed_sections"].append("overview")
                 meta[sid] = {
                     "model": row.llm_model,
                     "processed_at": str(row.processed_at),
@@ -464,6 +471,11 @@ def build_session_summaries(summ_df: pd.DataFrame) -> tuple[dict, dict]:
                     "tokens": int(row.llm_total_tokens) if pd.notna(row.llm_total_tokens) else 0,
                 }
             elif row.section in collected:
+                if int(row.theme_seq) == 0:
+                    # Per-section status row, not a theme
+                    if row.summary_status != "SUCCESS":
+                        summary["failed_sections"].append(row.section)
+                    continue
                 collected[row.section].append((
                     int(row.theme_seq),
                     {
@@ -475,6 +487,9 @@ def build_session_summaries(summ_df: pd.DataFrame) -> tuple[dict, dict]:
                 ))
         for section, items in collected.items():
             summary[section] = [item for _, item in sorted(items, key=lambda t: t[0])]
+        summary["failed_sections"].sort()
+        if sid in meta:
+            meta[sid]["n_failed_sections"] = len(summary["failed_sections"])
         by_session[sid] = summary
     return by_session, meta
 
@@ -744,10 +759,12 @@ if meta is None:
         "This session hasn't been tagged yet. Run the `phase2_transcript_session_summaries` "
         "dbt model to populate its themes."
     )
-elif meta["status"] != "SUCCESS":
+elif meta.get("n_failed_sections", 0):
+    failed = summary.get("failed_sections", []) if summary else []
     st.warning(
-        f"Tagging for this session came back **{meta['status']}** — its summary may be missing "
-        "or incomplete. The dbt model retries failed sessions on its next run."
+        f"Tagging **FAILED** for {len(failed)} section(s) of this session "
+        f"({', '.join(failed)}). Failed sections are retried automatically on the "
+        "next dbt run; the sections shown below are complete."
     )
 else:
     st.caption(
@@ -784,6 +801,12 @@ with tab_summary:
                 f'<span style="color:#888; font-size:0.7em;">({len(items)})</span>',
                 unsafe_allow_html=True,
             )
+            if section in summary.get("failed_sections", []):
+                st.warning(
+                    "The tagging call for this section failed — it will be retried "
+                    "on the next pipeline run."
+                )
+                continue
             if not items:
                 st.caption("Not substantively discussed in this session.")
                 continue
