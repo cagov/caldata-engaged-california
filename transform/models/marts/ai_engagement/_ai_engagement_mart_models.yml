@@ -55,3 +55,129 @@ models:
         description: The display name of the speaker for the engagement data.
       - name: text
         description: The text of the engagement data.
+      - name: turn_idx
+        description: |
+          Per-session chronological index (0-based) over all events, ordered by start_sec with
+          deterministic tie-breaking on source and src_ref. This is the citation backbone of the
+          AI tagging models: LLMs cite turns by this index, and verbatim quotes are always
+          resolved from this table rather than trusted from model output.
+
+  - name: phase2_transcript_session_summaries
+    description: |
+      Structured AI analysis of each phase 2 discussion session, flattened to one row per
+      (session, section, theme). Each section is its own structured Cortex call over the full
+      transcript (short per-section outputs avoid the transient timeouts that plagued
+      whole-session calls); a failed call is not retried in-query. The returned themes cite
+      turns by index only, and every cited index is validated against the session's real
+      turns — unverifiable indices are dropped and themes with no valid supporting turn are
+      removed (hallucination guardrail). Summary text excludes speaker names (PII) by design.
+
+      Sessions that fit the ~500k-char context feed each section call the whole transcript
+      (llm_input_kind = 'whole_transcript'); longer sessions are map-reduced — each ~400k-char
+      chunk gets its own theme-extraction call and the section calls synthesize from those
+      extractions (llm_input_kind = 'map_reduce').
+
+      Every (session, section) pair appears in this table via a status row (theme_seq = 0) —
+      check summary_status. FAILED pairs are retried automatically on the next run, and only
+      failed sections re-bill. Incremental at the (session, section) grain, so LLM cost is
+      only incurred for new sessions or retried failures. Prompts live at the top of the
+      model SQL; editing them requires a --full-refresh to re-tag existing sessions.
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+        data_tests:
+          - not_null
+      - name: section
+        description: |
+          The summary section this row belongs to. 'overview' rows (one per session) carry the
+          session summary text; every other section has one status row (theme_seq = 0) plus one
+          row per extracted theme.
+        data_tests:
+          - accepted_values:
+              values:
+                - overview
+                - protect_themes
+                - gov_action_themes
+                - general_themes
+                - areas_of_tension
+                - areas_of_consensus
+                - deliberative_moments
+      - name: theme_seq
+        description: |
+          1-based position of the theme within its section. 0 marks a section status row (and
+          the overview row) rather than a theme.
+      - name: theme_label
+        description: |
+          Short theme label, preferring participants' own words. Null for overview and section
+          status rows.
+      - name: summary_text
+        description: |
+          The overview text (overview rows) or the theme description. Contains no speaker names.
+          Null on section status rows and when summary_status is not SUCCESS.
+      - name: supporting_turn_idxs
+        description: |
+          Array of validated turn indices supporting this theme. Resolve against
+          phase2_zoom_transcripts_and_chats (or use phase2_transcript_turn_tags) for verbatim quotes.
+      - name: n_supporting_turns
+        description: Number of validated supporting turn indices.
+      - name: n_unverified_idxs_dropped
+        description: |
+          Number of turn indices the LLM returned that do not exist in the session and were
+          dropped (hallucination guardrail).
+      - name: summary_status
+        description: |
+          SUCCESS or FAILED, per (session, section) call (the Cortex call returned NULL,
+          returned unparseable JSON, or a map chunk failed for an oversize session).
+          Non-SUCCESS rows fail the run outright — Cortex COMPLETE failures are usually
+          transient, so the recovery path is simply re-running the model, which retries only
+          the failed sections.
+        data_tests:
+          - dbt_utils.not_accepted_values:
+              values: ["FAILED"]
+              severity: error
+      - name: llm_input_kind
+        description: |
+          'whole_transcript' when the session fit a single Cortex call, or 'map_reduce' when the
+          summary was synthesized from per-chunk theme extractions.
+      - name: n_transcript_chars
+        description: Rendered character length of the session transcript.
+      - name: llm_total_tokens
+        description: Total tokens used for this session, including any map-pass calls.
+      - name: llm_model
+        description: The LLM model used, per the LLM_MODEL environment variable (see docs/llm-cost-control.md).
+      - name: processed_at
+        description: Timestamp of when the session was tagged.
+
+  - name: phase2_transcript_turn_tags
+    description: |
+      The pre-tagged transcript: one row per (tagged turn, theme), with verbatim turn text,
+      speaker, and timestamps joined back from the source events. Because the AI only returns
+      turn indices — validated upstream in phase2_transcript_session_summaries — quotes in this
+      table cannot be hallucinated. Intended for dashboards to display theme-tagged turns
+      without joins at read time. Speaker display names are PII; confirm display policy before
+      exposing them publicly.
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+      - name: turn_idx
+        description: The per-session chronological turn index (matches phase2_zoom_transcripts_and_chats).
+      - name: section
+        description: |
+          The summary section the tag belongs to (protect_themes, gov_action_themes,
+          general_themes, areas_of_tension, areas_of_consensus, or deliberative_moments).
+      - name: theme_seq
+        description: 1-based position of the theme within its section.
+      - name: theme_label
+        description: Short theme label, preferring participants' own words.
+      - name: theme_description
+        description: The theme description from the session summary.
+      - name: start_sec
+        description: The start time of the turn in seconds since the start of the session.
+      - name: end_sec
+        description: The end time of the turn in seconds since the start of the session.
+      - name: source
+        description: Either 'speech' for transcript turns or 'chat' for chat messages.
+      - name: speaker
+        description: The display name of the speaker (verbatim from the source data).
+      - name: text
+        description: The verbatim text of the turn.
