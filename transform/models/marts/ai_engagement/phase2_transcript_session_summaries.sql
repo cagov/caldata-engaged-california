@@ -22,9 +22,10 @@
 -- single-section call writes a fraction of that and finishes far below the timeout zone.
 -- The trade-off is input cost: every section call re-reads the transcript (Cortex has no
 -- prompt caching), so a session costs ~7x the input tokens of the old single-call design.
--- Each call also gets up to 3 attempts in-query (CASE-gated so retries only execute
--- — and only bill — when the prior attempt returned NULL; Snowflake evaluates CASE
--- branches lazily for Cortex calls, verified empirically).
+-- There is deliberately NO in-query retry: a failed call surfaces as a FAILED status row
+-- and is retried on the next run instead. In-query retries only mask transient failures
+-- (rare at this call size) but multiply the runtime and cost of systematic ones — a
+-- misconfigured model would fail every call N times inside one multi-hour statement.
 --
 -- Sessions too long for a single call (none expected: real sessions are ~12k-200k chars
 -- vs the ~500k context limit) take a map-reduce detour: the transcript is cut into
@@ -33,7 +34,7 @@
 -- of the raw transcript (llm_input_kind = 'map_reduce').
 --
 -- EVERY (session, section) pair appears in this table via a status row (theme_seq = 0):
--- check summary_status. FAILED pairs (LLM call failed all attempts, or unparseable JSON)
+-- check summary_status. FAILED pairs (LLM call returned NULL, or unparseable JSON)
 -- are retried automatically on the next run — only the failed sections re-bill — and an
 -- error-severity dbt test fails the run so failures are loud, never silent.
 --
@@ -177,8 +178,8 @@ was resolved, or participants discovered shared values through clarifying questi
 {"type":"json","schema":{"type":"object","properties":{"overview":{"type":"string"}},"required":["overview"],"additionalProperties":false}}
 {%- endset %}
 
--- The per-section Cortex call, shared by all three attempt CTEs below. Column references
--- (system_prompt, user_prompt, response_schema) resolve in each attempt CTE's scope.
+-- The per-section Cortex call. Column references (system_prompt, user_prompt,
+-- response_schema) resolve in the calling CTE's scope.
 {% set section_llm_call -%}
 snowflake.cortex.try_complete(
     '{{ var("llm_model") }}',
@@ -340,28 +341,14 @@ chunks as (
     group by c.session_id, c.chunk_no, p.system_prompt, p.chunk_map_prompt
 ),
 
--- MAP calls get the same bounded retry as section calls (2 attempts): the CASE gate means
--- the retry only executes — and only bills — for chunks whose first attempt returned NULL.
-map_attempt_1 as (
-    select
-        *,
-        {{ map_llm_call }} as map_raw_1
-    from chunks
-),
-
-map_attempt_2 as (
-    select
-        *,
-        case when map_raw_1 is null then {{ map_llm_call }} end as map_raw_2
-    from map_attempt_1
-),
-
+-- A failed MAP call (NULL response) is not retried in-query: it fails the session's
+-- sections below, and the next run re-runs the whole map pass for that session.
 mapped as (
     select
         session_id,
         chunk_no,
-        coalesce(map_raw_1, map_raw_2) as map_response
-    from map_attempt_2
+        {{ map_llm_call }} as map_response
+    from chunks
 ),
 
 -- Stitch the chunk extractions into one synthesis input. A session with ANY failed MAP
@@ -401,11 +388,11 @@ session_inputs as (
 
 -- ------------------------------------------------------------------------------------
 -- One structured Cortex call per (session, section), fed either the raw transcript or
--- the MAP extractions, with up to 3 CASE-gated attempts per call. The model is
--- determined by the LLM_MODEL environment variable — see docs/llm-cost-control.md.
+-- the MAP extractions. The model is determined by the LLM_MODEL environment variable —
+-- see docs/llm-cost-control.md.
 -- TRY_COMPLETE + structured output (response_format): the JSON shape is enforced by
--- Cortex; TRY_COMPLETE returns NULL instead of erroring when a call fails, and the
--- attempt chain turns those NULLs into retries.
+-- Cortex; TRY_COMPLETE returns NULL instead of erroring when a call fails, and a NULL
+-- becomes a FAILED status row that the next run retries.
 -- ------------------------------------------------------------------------------------
 
 -- noqa: disable=LT02
@@ -444,41 +431,11 @@ section_calls as (
 ),
 -- noqa: enable=LT02
 
-attempt_1 as (
-    select
-        *,
-        case when user_prompt is not null then {{ section_llm_call }} end as raw_1
-    from section_calls
-),
-
-attempt_2 as (
-    select
-        *,
-        case when user_prompt is not null and raw_1 is null then {{ section_llm_call }} end as raw_2
-    from attempt_1
-),
-
-attempt_3 as (
-    select
-        *,
-        case
-            when user_prompt is not null and raw_1 is null and raw_2 is null
-                then {{ section_llm_call }}
-        end as raw_3
-    from attempt_2
-),
-
 summarized as (
     select
         *,
-        coalesce(raw_1, raw_2, raw_3) as raw_response,
-        case
-            when user_prompt is null then 0
-            when raw_1 is not null then 1
-            when raw_2 is not null then 2
-            else 3
-        end as n_llm_attempts
-    from attempt_3
+        case when user_prompt is not null then {{ section_llm_call }} end as raw_response
+    from section_calls
 ),
 
 parsed as (
@@ -488,7 +445,6 @@ parsed as (
         n_transcript_chars,
         llm_input_kind,
         map_tokens,
-        n_llm_attempts,
         coalesce(raw_response:usage:total_tokens::int, 0) as section_tokens,
         try_parse_json(to_json(raw_response:structured_output[0]:raw_message)) as section_json,
         case
@@ -523,8 +479,7 @@ overview_rows as (
         summary_status,
         llm_input_kind,
         n_transcript_chars,
-        llm_total_tokens,
-        n_llm_attempts
+        llm_total_tokens
     from with_session_tokens
     where section = 'overview'
 ),
@@ -545,8 +500,7 @@ section_status_rows as (
         summary_status,
         llm_input_kind,
         n_transcript_chars,
-        llm_total_tokens,
-        n_llm_attempts
+        llm_total_tokens
     from with_session_tokens
     where section != 'overview'
 ),
@@ -559,7 +513,6 @@ exploded_idxs as (
         p.llm_input_kind,
         p.n_transcript_chars,
         p.llm_total_tokens,
-        p.n_llm_attempts,
         items.index + 1 as theme_seq,
         items.value:theme::string as theme_label,
         items.value:description::string as summary_text,
@@ -586,8 +539,7 @@ theme_rows as (
         'SUCCESS' as summary_status,
         e.llm_input_kind,
         e.n_transcript_chars,
-        e.llm_total_tokens,
-        e.n_llm_attempts
+        e.llm_total_tokens
     from exploded_idxs as e
     left join turns as t
         on
@@ -601,8 +553,7 @@ theme_rows as (
         e.summary_text,
         e.llm_input_kind,
         e.n_transcript_chars,
-        e.llm_total_tokens,
-        e.n_llm_attempts
+        e.llm_total_tokens
     having count(t.turn_idx) > 0
 ),
 
