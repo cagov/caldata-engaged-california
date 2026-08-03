@@ -67,7 +67,7 @@ models:
       Structured AI analysis of each phase 2 discussion session, flattened to one row per
       (session, section, theme). Each section is its own structured Cortex call over the full
       transcript (short per-section outputs avoid the transient timeouts that plagued
-      whole-session calls), with up to 3 in-query attempts per call. The returned themes cite
+      whole-session calls); a failed call is not retried in-query. The returned themes cite
       turns by index only, and every cited index is validated against the session's real
       turns — unverifiable indices are dropped and themes with no valid supporting turn are
       removed (hallucination guardrail). Summary text excludes speaker names (PII) by design.
@@ -126,20 +126,15 @@ models:
           dropped (hallucination guardrail).
       - name: summary_status
         description: |
-          SUCCESS or FAILED, per (session, section) call (the call failed all 3 in-query
-          attempts, returned unparseable JSON, or a map chunk failed for an oversize session).
-          Non-SUCCESS rows fail the run outright — Cortex COMPLETE failures are transient, so
-          the recovery path is simply re-running the model, which retries only the failed
-          sections.
+          SUCCESS or FAILED, per (session, section) call (the Cortex call returned NULL,
+          returned unparseable JSON, or a map chunk failed for an oversize session).
+          Non-SUCCESS rows fail the run outright — Cortex COMPLETE failures are usually
+          transient, so the recovery path is simply re-running the model, which retries only
+          the failed sections.
         data_tests:
           - dbt_utils.not_accepted_values:
               values: ["FAILED"]
               severity: error
-      - name: n_llm_attempts
-        description: |
-          How many Cortex attempts the section call used (1-3; 0 when the call never ran
-          because the session's map pass failed). Values above 1 measure Cortex transient-
-          failure frequency at this call size.
       - name: llm_input_kind
         description: |
           'whole_transcript' when the session fit a single Cortex call, or 'map_reduce' when the
