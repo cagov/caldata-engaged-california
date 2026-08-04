@@ -59,7 +59,7 @@ uv run --group streamlit streamlit run streamlit/ai_impact_discussions/streamlit
 Required env vars: `SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_USER`, `SNOWFLAKE_ROLE`,
 `SNOWFLAKE_WAREHOUSE`, `DISCUSSIONS_DATABASE`, `DISCUSSIONS_SCHEMA`. The `LLM_MODEL_*` vars are
 only needed for the Quote search and Custom analysis tabs (validated:
-`LLM_MODEL_LOW=openai-gpt-5-mini`, `LLM_MODEL_MED=claude-4-sonnet`).
+`LLM_MODEL_LOW=[check EngagedCA Developer Page]`, `LLM_MODEL_MED=[check EngagedCA Developer Page]`).
 
 Optional: `MAX_CHARS_PER_CHUNK` (default 30000) tunes chunking for the on-demand analysis tabs.
 
