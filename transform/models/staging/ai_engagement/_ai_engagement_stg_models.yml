@@ -1,5 +1,43 @@
 version: 2
 models:
+  - name: stg_phase2_polls
+    description: |
+      Cleaned Zoom poll responses for the AI Engagement, one row per respondent submission.
+      Combines the pre-meeting and post-meeting poll reports (distinguished by poll_stage),
+      discards the raw export's History header sections, keeping only
+      the most recent upload of each file, and filtering to submissions on or after 2026-07-09.
+    columns:
+      - name: poll_stage
+        description: Either 'pre' or 'post', derived from which report file the row came from.
+      - name: response_seq
+        description: The response's position within the raw Poll Details listing. Not a stable business key.
+      - name: submitted_at
+        description: When the respondent submitted the poll.
+      - name: collected_from
+        description: Where the response was collected from.
+      - name: topic_name
+        description: The Zoom meeting topic/name this poll was launched in.
+      - name: meeting_id
+        description: |
+          The Zoom Meeting/Webinar ID this poll was launched in. Shared between the pre and
+          post poll for the same session.
+      - name: question_1_response
+        description: The respondent's answer to the poll's 1st question.
+      - name: question_1_text
+        description: The poll's 1st question.
+      - name: question_2_response
+        description: The respondent's answer to the poll's 2nd question.
+      - name: question_2_text
+        description: The poll's 2nd question.
+      - name: question_3_response
+        description: The respondent's answer to the poll's 3rd question.
+      - name: question_3_text
+        description: The poll's 3rd question.
+      - name: _file
+        description: The name of the file.
+      - name: _fivetran_synced
+        description: Timestamp of when the data has been synced with Fivetran.
+
   - name: stg_zoom_unmatched_participants
     description: |
       Manually-maintained list of Zoom participants who were not automatically matched to a

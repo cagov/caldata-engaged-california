@@ -4,7 +4,9 @@ polls_raw as (select * from {{ source('GOOGLE_DRIVE_AI_POLLS', 'ZOOM_POLL_RESULT
 
 
 latest_snapshot as (
-    select _file, max(_modified) as max_modified
+    select
+        _file,
+        max(_modified) as max_modified
     from polls_raw
     group by _file
 ),
@@ -16,26 +18,24 @@ current_snapshot as (
         on
             polls_raw._file = latest_snapshot._file
             and polls_raw._modified = latest_snapshot.max_modified
-    -- guard against the same snapshot getting synced more than once (e.g. a backfill
-    -- re-run), which would otherwise duplicate every row at that _line
+    -- guard against the same snapshot getting synced more than once ( a backfill
+    -- re-run), which would otherwise duplicate every row at that line
     qualify row_number() over (
         partition by polls_raw._file, polls_raw._line
         order by polls_raw._fivetran_synced desc
     ) = 1
 ),
 
--- Locate the "Poll Details" section header row for each file. That row is followed by
--- its own column-header row and then the real per-respondent answer data.
+
 poll_details_marker as (
-    select _file, _line as marker_line
+    select
+        _file,
+        _line as marker_line
     from current_snapshot
     where column_0 = 'Poll Details'
 ),
 
--- The column-header row right after the marker holds the actual question wording
--- (e.g. "Californians with different views can talk about important topics in good
--- faith."), which isn't repeated on every response row. Grab it once per file so it
--- can be joined onto every response below.
+
 question_labels as (
     select
         current_snapshot._file,
@@ -52,8 +52,6 @@ question_labels as (
 select
     iff(current_snapshot._file ilike '%_post%', 'post', 'pre') as poll_stage,
     try_cast(current_snapshot.column_0 as int) as response_seq,
-    current_snapshot.column_1 as respondent_name,
-    current_snapshot.column_2 as respondent_email,
     try_to_timestamp(current_snapshot.column_3) as submitted_at,
     current_snapshot.column_4 as collected_from,
     current_snapshot.column_5 as topic_name,
