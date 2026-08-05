@@ -52,6 +52,10 @@ manually_matched_participants as (
         email_match,
         sortition_round
     from {{ source('ZOOM', 'UNMATCHED_PARTICIPANTS') }}
+    where
+        -- remove all staff and moderators who have signed up for time slots
+        staff_or_moderator is null
+        or staff_or_moderator = false
 ),
 
 attendance_status as (
@@ -69,12 +73,20 @@ email_match as (
         aa.accepted_event_start_date_time,
         coalesce(u.user_id, um.survey_respondent_id_match) as survey_respondent_id,
         um.email_match,
-        um.staff_or_moderator
+        case
+            when a.actual_status is null and aa.invitee_status = 'accepted' then 'session in the future'
+            when
+                a.actual_status is null and (aa.invitee_status <> 'accepted' or aa.invitee_status is null)
+                then 'not registered'
+            else lower(a.actual_status)
+        end as attendee_status
     from any_acceptance as aa
     left join users as u
         on lower(trim(aa.invitee_email)) = lower(trim(u.email)) -- exact matches
     left join manually_matched_participants as um
         on lower(trim(aa.invitee_email)) = lower(trim(um.invitee_email)) -- manually matched emails
+    left join attendance_status as a
+        on lower(trim(aa.invitee_email)) = lower(trim(a.invitee_email))
 ),
 
 invitee_status as (
@@ -89,35 +101,33 @@ invitee_status as (
             else em.invitee_status
         end as invitee_status,
         em.accepted_event_start_date_time,
-        case
-            when a.actual_status is null and invitee_status = 'accepted' then 'session in the future'
-            when
-                a.actual_status is null and (invitee_status <> 'accepted' or invitee_status is null)
-                then 'not registered'
-            else a.actual_status
-        end as attendee_status,
-        em.staff_or_moderator
+        em.attendee_status
     from invitees as i
     full outer join email_match as em
         on i.survey_respondent_id = em.survey_respondent_id
-    left join attendance_status as a
-        on lower(trim(em.invitee_email)) = lower(trim(a.invitee_email))
 ),
 
-filter_staff as (
+single_status as (
     select
-        sortition_round,
         survey_respondent_id,
         invitee_email,
-        email_match,
-        invitee_status,
-        lower(attendee_status) as attendee_status,
-        accepted_event_start_date_time
+        count(distinct sortition_round) as invite_count,
+        listagg(sortition_round, ', ') as list_sortition_rounds,
+        any_value(distinct email_match) as email_match,
+        min_by(
+            invitee_status,
+            case invitee_status
+                when 'accepted' then 1
+                when 'invitation open' then 2
+                when 'declined' then 3
+                when 'invitation closed' then 4
+                else 9
+            end
+        ) as invitee_status,
+        any_value(accepted_event_start_date_time) as accepted_event_start_date_time,
+        any_value(attendee_status) as attendee_status
     from invitee_status
-    where
-        -- remove all staff and moderators who have signed up for time slots
-        staff_or_moderator is null
-        or staff_or_moderator = false
+    group by survey_respondent_id, invitee_email
 )
 
-select * from filter_staff
+select * from single_status
