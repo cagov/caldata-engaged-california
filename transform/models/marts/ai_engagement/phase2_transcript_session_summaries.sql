@@ -73,7 +73,9 @@ Ground every claim in the transcript itself. If the transcript does not contain 
 relevant to the question you are asked, say so explicitly and briefly describe what was
 actually discussed — NEVER invent themes to fit the question.
 The transcript combines transcribed speech and text chat, interleaved chronologically.
-Each turn is formatted as: [index] (timestamp, source) speaker: text.
+Each turn is formatted as: [index] (timestamp, source) Participant N: text. Speaker labels
+are anonymized pseudonyms, consistent within a session; participants may refer to one
+another by real name within the turn text.
 When you reference what someone said, cite the turn index like [turn:42].
 NEVER fabricate or reproduce quotes from memory — always refer to turns by their index.
 When asked for JSON, respond with JSON only — no prose, no markdown fences.$$
@@ -211,12 +213,27 @@ turns as (
     select * from {{ ref('phase2_zoom_transcripts_and_chats') }}
 ),
 
--- Render each turn in the canonical format the prompts describe:
---   [42] (12:34, chat) Jane D.: I think we need guardrails on...
-rendered_turns as (
+-- Speaker display names are PII and must not reach the LLM. Each speaker gets a
+-- per-session pseudonym ('Participant N', by order of first appearance) — deterministic,
+-- so consistent across map-reduce chunks and incremental reruns.
+speaker_aliases as (
     select
         session_id,
-        turn_idx,
+        speaker,
+        'Participant ' || dense_rank() over (
+            partition by session_id order by min(turn_idx)
+        ) as speaker_alias
+    from turns
+    where speaker is not null
+    group by session_id, speaker
+),
+
+-- Render each turn in the canonical format the prompts describe:
+--   [42] (12:34, chat) Participant 2: I think we need guardrails on...
+rendered_turns as (
+    select
+        turns.session_id,
+        turns.turn_idx,
         '[' || turn_idx || '] ('
         || coalesce(
             case
@@ -232,9 +249,13 @@ rendered_turns as (
             '??:??'
         )
         || ', ' || source || ') '
-        || coalesce(speaker || ': ', '')
+        || coalesce(a.speaker_alias || ': ', '')
         || coalesce(text, '') as turn_line
     from turns
+    left join speaker_aliases as a
+        on
+            turns.session_id = a.session_id
+            and turns.speaker = a.speaker
 ),
 
 transcripts as (

@@ -44,8 +44,9 @@ lives in the dbt models:
 - **Data export tab** — transcript CSV, structured summary JSON, and a theme-review CSV
   (themes + verbatim quotes) for human verification.
 
-Summary text contains no speaker names by design (turn-index references only); speaker names
-do appear in transcript/quote views for internal review.
+Summary text contains no speaker names by design (turn-index references only), and transcripts
+sent to Cortex replace speaker display names with per-session pseudonyms ("Participant N");
+speaker names do appear in transcript/quote views for internal review.
 
 ## Local dev
 
