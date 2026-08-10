@@ -181,3 +181,71 @@ models:
         description: The display name of the speaker (verbatim from the source data).
       - name: text
         description: The verbatim text of the turn.
+
+  - name: phase2_transcript_cross_talk_moments
+    description: |
+      The top 5 minutes of heaviest cross-talk per Phase 2 transcript, i.e. the minutes with the
+      most distinct speakers active, plus every turn spoken during those minutes. Minutes are
+      ranked by density regardless of whether they clear the session's own average. Use to
+      review moments where several people were talking over each other. Computed over the full
+      transcript; not yet trimmed to exclude pre-session or post-session chatter.
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+        data_tests:
+          - not_null
+      - name: moment_rank
+        description: |
+          This session's cross-talk moments ranked 1 (heaviest) to 5, by distinct speakers
+          then gap_sec then turn count. Distinguishes rows belonging to different moments
+          within the same session.
+      - name: start_minute
+        description: The minute of the session (0-indexed, floor(start_sec / 60)) this cross-talk moment falls in.
+      - name: n_distinct_speakers
+        description: The number of distinct speakers who spoke during this minute.
+      - name: avg_speakers_per_minute
+        description: The session's average number of distinct speakers per minute, for comparison.
+      - name: start_timestamp
+        description: The start time of the turn, formatted as HH:MM:SS from the start of the transcript.
+      - name: end_timestamp
+        description: The end time of the turn, formatted as HH:MM:SS from the start of the transcript.
+      - name: start_sec
+        description: The start time of the turn in seconds since the start of the transcript.
+      - name: end_sec
+        description: The end time of the turn in seconds since the start of the transcript.
+      - name: speaker
+        description: The display name of the speaker for the turn.
+      - name: text
+        description: The text of the turn.
+      - name: gap_sec
+        description: |
+          Seconds between this turn's end and the next turn's start, when the next turn is a
+          different speaker (negative means the next speaker started before this turn ended,
+          i.e. overlap; null if this is the last turn in the session).
+
+  - name: phase2_transcript_longest_turns
+    description: |
+      The 1-3 longest speaking turns per participant in each Phase 2 transcript, with
+      timestamps. Facilitators/staff are excluded via a display-name heuristic (not a verified
+      staff list).
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+        data_tests:
+          - not_null
+      - name: speaker
+        description: The display name of the participant.
+      - name: start_timestamp
+        description: The start time of the turn, formatted as HH:MM:SS from the start of the transcript.
+      - name: end_timestamp
+        description: The end time of the turn, formatted as HH:MM:SS from the start of the transcript.
+      - name: start_sec
+        description: The start time of the turn in seconds since the start of the transcript.
+      - name: end_sec
+        description: The end time of the turn in seconds since the start of the transcript.
+      - name: duration_sec
+        description: The duration of the turn in seconds (end_sec - start_sec).
+      - name: word_count
+        description: The approximate word count of the turn, counted by whitespace-separated tokens.
+      - name: text
+        description: The text of the turn.
