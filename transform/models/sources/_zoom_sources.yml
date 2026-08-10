@@ -26,6 +26,8 @@ sources:
             description: |
               The actual attendance status of the invitee
               (Staff, Attended, No Show)
+          - name: session_number
+            description: The session number (1-15) of the engagement session
 
       - name: CHATS_RAW
         description: |
