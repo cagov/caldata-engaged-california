@@ -73,7 +73,7 @@ joined AS (
         r.session_id,
         r.line_no,
         r.message_id,
-        {{ format_hms('r.start_sec') }} AS chat_timestamp,
+        r.start_sec,
         r.speaker,
         r.is_reply,
         p.message_id AS reply_to_message_id,
@@ -105,15 +105,15 @@ joined AS (
 SELECT
     r.filename,
     r.session_id,
-    r.line_no,
-    r.message_id,
-    r.chat_timestamp,
-    r.speaker,
     r.is_reply,
     r.reply_to_message_id,
+    r.line_no,
+    r.message_id,
+    r.start_sec,
+    r.speaker,
     r.text
 FROM joined AS r
-LEFT JOIN {{ ref('transcript_times') }} AS w ON r.session_id = w.session_id
+LEFT JOIN {{ ref('stg_transcript_times') }} AS w ON r.session_id = w.session_id
 WHERE
-    TO_TIME(r.chat_timestamp) >= TO_TIME(w.discussion_start_hms)
-    AND TO_TIME(r.chat_timestamp) <= TO_TIME(w.discussion_end_hms)
+    r.start_sec >= COALESCE(w.discussion_start_sec, r.start_sec)
+    AND r.start_sec <= COALESCE(w.discussion_end_sec, r.start_sec)
