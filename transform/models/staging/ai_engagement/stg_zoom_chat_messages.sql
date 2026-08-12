@@ -65,6 +65,41 @@ parsed AS (
             body
         ) AS text
     FROM fields
+),
+
+joined AS (
+    SELECT
+        r.filename,
+        r.session_id,
+        r.line_no,
+        r.message_id,
+        {{ format_hms('r.start_sec') }} AS chat_timestamp,
+        r.speaker,
+        r.is_reply,
+        p.message_id AS reply_to_message_id,
+        r.text
+    FROM parsed AS r
+    -- For replies, find the parent by matching the quoted snippet against the start of
+    -- another message's text (the quote is a prefix of the original, sometimes truncated
+    -- with "...").
+    LEFT JOIN parsed AS p
+        ON
+            r.is_reply
+            AND r.session_id = p.session_id
+            AND r.line_no <> p.line_no
+            AND LENGTH(RTRIM(REGEXP_REPLACE(r.quoted_snippet, '\\.\\.\\.\\s*$', ''))) > 0
+            AND STARTSWITH(p.text, RTRIM(REGEXP_REPLACE(r.quoted_snippet, '\\.\\.\\.\\s*$', '')))
+    -- If the prefix matches more than one message, prefer a parent that comes before the
+    -- reply, then the closest one:
+    QUALIFY
+        ROW_NUMBER() OVER (
+            PARTITION BY r.message_id
+            ORDER BY
+                IFF(p.line_no < r.line_no, 0, 1),
+                ABS(r.line_no - p.line_no)
+
+        ) = 1
+    ORDER BY r.session_id, r.line_no
 )
 
 SELECT
@@ -72,30 +107,13 @@ SELECT
     r.session_id,
     r.line_no,
     r.message_id,
-    r.start_sec,
+    r.chat_timestamp,
     r.speaker,
     r.is_reply,
-    p.message_id AS reply_to_message_id,
+    r.reply_to_message_id,
     r.text
-FROM parsed AS r
--- For replies, find the parent by matching the quoted snippet against the start of
--- another message's text (the quote is a prefix of the original, sometimes truncated
--- with "...").
-LEFT JOIN parsed AS p
-    ON
-        r.is_reply
-        AND r.session_id = p.session_id
-        AND r.line_no <> p.line_no
-        AND LENGTH(RTRIM(REGEXP_REPLACE(r.quoted_snippet, '\\.\\.\\.\\s*$', ''))) > 0
-        AND STARTSWITH(p.text, RTRIM(REGEXP_REPLACE(r.quoted_snippet, '\\.\\.\\.\\s*$', '')))
--- If the prefix matches more than one message, prefer a parent that comes before the
--- reply, then the closest one:
-QUALIFY
-    ROW_NUMBER() OVER (
-        PARTITION BY r.message_id
-        ORDER BY
-            IFF(p.line_no < r.line_no, 0, 1),
-            ABS(r.line_no - p.line_no)
-
-    ) = 1
-ORDER BY r.session_id, r.line_no
+FROM joined AS r
+LEFT JOIN {{ ref('transcript_times') }} AS w ON r.session_id = w.session_id
+WHERE
+    TO_TIME(r.chat_timestamp) >= TO_TIME(w.discussion_start_hms)
+    AND TO_TIME(r.chat_timestamp) <= TO_TIME(w.discussion_end_hms)
