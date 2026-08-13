@@ -50,6 +50,7 @@ DISCUSSIONS_SCHEMA = os.environ.get("DISCUSSIONS_SCHEMA", "ai_engagement")
 
 EVENTS_TABLE = f"{DISCUSSIONS_DATABASE}.{DISCUSSIONS_SCHEMA}.phase2_zoom_transcripts_and_chats"
 SUMMARIES_TABLE = f"{DISCUSSIONS_DATABASE}.{DISCUSSIONS_SCHEMA}.phase2_transcript_session_summaries"
+SESSIONS_TABLE = f"{DISCUSSIONS_DATABASE}.{DISCUSSIONS_SCHEMA}.phase2_sessions"
 
 LLM_MODEL_LOW = os.environ.get("LLM_MODEL_LOW", "")
 LLM_MODEL_MED = os.environ.get("LLM_MODEL_MED", "")
@@ -431,6 +432,19 @@ def load_summaries() -> pd.DataFrame:
     return df
 
 
+@st.cache_data
+def load_sessions() -> pd.DataFrame:
+    """Session-level data with chronological numbering: session_id, session_date, session_number.
+    Used to format the session selector dropdown in the sidebar."""
+    df = session.sql(f"""
+        SELECT session_id, session_date, session_number
+        FROM {SESSIONS_TABLE}
+        ORDER BY session_number
+    """).to_pandas()
+    df.columns = [c.lower() for c in df.columns]
+    return df
+
+
 def parse_idx_array(value) -> list[int]:
     """supporting_turn_idxs comes back from Snowflake as a JSON-formatted string (or a
     list, depending on the connector). Normalize to a list of ints either way."""
@@ -704,14 +718,33 @@ session_stats = compute_session_stats(events_df)
 
 with st.sidebar:
     st.header("Session")
-    session_ids = session_stats.sort_index(ascending=False).index.tolist()
+    # Load sessions data with session_number and session_date for better UX
+    try:
+        sessions_df = load_sessions()
+        sessions_dict = dict(zip(sessions_df["session_id"], zip(sessions_df["session_number"], sessions_df["session_date"])))
+    except Exception:
+        sessions_dict = {}
+
+    # Build session list: matched sessions first (sorted by session_number), then unmatched as fallback
+    matched_sids = [sid for sid in session_stats.index if sid in sessions_dict]
+    matched_sids_sorted = sorted(matched_sids, key=lambda sid: sessions_dict[sid][0])
+    unmatched_sids = [sid for sid in session_stats.index if sid not in sessions_dict]
+    session_ids = matched_sids_sorted + unmatched_sids
+
+    def format_session_label(sid: str) -> str:
+        if sid in sessions_dict:
+            session_num, session_date = sessions_dict[sid]
+            # Format date as M/DD (e.g., "1/5" or "12/25")
+            date_str = session_date.strftime("%-m/%-d") if hasattr(session_date, "strftime") else str(session_date)
+            return f"Session {session_num} ({date_str})"
+        else:
+            # Fallback for sessions not in phase2_sessions table
+            return f"{sid} (missing session data)"
+
     selected_sid = st.selectbox(
         "Discussion session",
         session_ids,
-        format_func=lambda sid: (
-            f"{sid} — {session_stats.loc[sid, 'n_turns']} turns, "
-            f"{session_stats.loc[sid, 'duration_min']:.0f} min"
-        ),
+        format_func=format_session_label,
     )
 
     st.divider()
