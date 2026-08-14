@@ -124,6 +124,30 @@ models:
           and workplace?"
       - name: fields_completed_count
         description: Count of how many survey questions and demographic questions the respondent answered.
+      - name: gender_string
+        description: |
+          All responses from gender array formatted as a string, and joined with ' and '. Null responses
+          formatted as 'None specified'. Staff speakers are null.
+      - name: race_ethnicity_string
+        description: |
+          All responses from race ethnicity array formatted as a string, and joined with ' and '. Null responses
+          formatted as 'None specified'. Staff speakers are null.
+      - name: ai_response_string
+        description: |
+          Respondent's overall sentiment about the impact of AI on work formatted as a string.
+          Null responses formatted as 'None specified'. Staff speakers are null.
+      - name: region_string
+        description: |
+          Region corresponding to the California county formatted as a string.
+          Null responses formatted as 'None specified'. Staff speakers are null.
+      - name: field_of_work_string
+        description: |
+          Response to the question "Which best describes your field of work?" formatted as a string.
+          Null responses formatted as 'None specified'. Staff speakers are null.
+      - name: age_string
+        description: |
+          Response to the question "What is your age?" formatted as a string with "y.o." appended.
+          Null responses formatted as 'None specified'. Staff speakers are null.
 
   - name: phase2_sessions
     description: |
