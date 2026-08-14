@@ -55,7 +55,7 @@ cues AS (
         -- A speaker prefix exists only if there's a colon and the part before it
         -- looks name-like. Computed once here, reused below.
         POSITION(':' IN next_line) > 0
-        AND SPLIT_PART(next_line, ':', 1) RLIKE '[A-Za-z][A-Za-z0-9 .,''/()&-]{0,60}'
+        AND SPLIT_PART(next_line, ':', 1) RLIKE '^[A-Za-z0-9][A-Za-z0-9 .,''/()&_-]{0,60}'
             AS has_speaker
     FROM windowed
     WHERE line RLIKE '^[0-9]{2}:[0-9]{2}:[0-9]{2}[.][0-9]{3} --> [0-9]{2}:[0-9]{2}:[0-9]{2}[.][0-9]{3}'
