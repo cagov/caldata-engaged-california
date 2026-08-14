@@ -34,6 +34,7 @@ select
     sr.economic_impact_expectation,
     sr.government_action_suggestion,
     sr.personal_ai_impact,
+    sr.fields_completed_count,
     iff(
         s.survey_respondent_id = 'staff',
         null,
