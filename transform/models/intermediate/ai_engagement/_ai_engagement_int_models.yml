@@ -46,7 +46,7 @@ models:
     description: |
       This model matches each Phase 2 Zoom speaker to a Go Vocal participant using a date-scoped fuzzy-name
       join between attendee records and transcript speakers. It preserves the session-level speaker key,
-      assigns a stable speaker_id, and resolves staff speakers to 'staff' while returning a survey respondent
+      and resolves staff speakers to 'staff' while returning a survey respondent
       ID for matched invitees when available.
     columns:
       - name: session_date

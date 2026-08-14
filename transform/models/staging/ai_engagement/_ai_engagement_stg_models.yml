@@ -115,3 +115,15 @@ models:
         description: The display name of the speaker in the transcript cue.
       - name: text
         description: The content of the transcript cue.
+
+  - name: stg_zoom_transcript_speakers
+    description: |
+      This model provides a unique list of each Phase 2 Zoom speaker appearing in the transcript or
+      chat records and assigns a stable speaker_id per speaker-session. One row per speaker_id.
+    columns:
+      - name: speaker
+        description: The display name of the speaker as it appeared in the Zoom transcript.
+      - name: speaker_id
+        description: Stable surrogate key for the transcript speaker within a single session.
+      - name: session_id
+        description: The unique identifier for each Zoom session.

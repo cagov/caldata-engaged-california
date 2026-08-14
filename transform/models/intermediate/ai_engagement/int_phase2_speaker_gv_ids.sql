@@ -23,8 +23,9 @@ attendees AS (
 speakers AS (
     SELECT DISTINCT
         speaker,
+        speaker_id,
         session_id
-    FROM {{ ref('phase2_zoom_transcripts_and_chats') }}
+    FROM {{ ref('stg_zoom_transcript_speakers') }}
     WHERE speaker IS NOT null
     --where session_id = 'GMT20260805-164429' and speaker is null
 ), --135 not null
@@ -45,8 +46,8 @@ invitee_gv_ids AS (
 cleaned_speakers AS (
     SELECT
         s.speaker,
+        s.speaker_id,
         s.session_id,
-        md5(s.speaker || '|' || s.session_id) AS speaker_id,
         to_date(td.session_date) AS session_date,
         lower(
             trim(
