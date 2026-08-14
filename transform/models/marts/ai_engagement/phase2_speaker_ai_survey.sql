@@ -34,7 +34,34 @@ select
     sr.economic_impact_expectation,
     sr.government_action_suggestion,
     sr.personal_ai_impact,
-    sr.fields_completed_count
+    iff(
+        s.survey_respondent_id = 'staff',
+        null,
+        coalesce(trim(regexp_replace(array_to_string(sr.gender_array, ' and '), '\\([^)]*\\)', '')), 'None specified')
+    )
+        as gender_string,
+    iff(
+        s.survey_respondent_id = 'staff',
+        null,
+        coalesce(array_to_string(sr.race_ethnicity_array, ' and '), 'None specified')
+    ) as race_ethnicity_string,
+    iff(
+        s.survey_respondent_id = 'staff',
+        null,
+        coalesce(
+            case sc.ai_response_label when 'mix' then 'Mixed' when 'pos' then 'Positive' when 'neg' then 'Negative' end
+            || ' sentiment towards AI',
+            'None specified'
+        )
+    ) as ai_response_string,
+    iff(s.survey_respondent_id = 'staff', null, coalesce(sr.region, 'None specified')) as region_string,
+    iff(s.survey_respondent_id = 'staff', null, coalesce(sr.field_of_work, 'None specified')) as field_of_work_string,
+    iff(
+        s.survey_respondent_id = 'staff',
+        null,
+        coalesce(case when sr.age = 'I don''t want to say' then sr.age else sr.age || ' y.o.' end, 'None specified')
+    )
+        as age_string
 from speaker_gv_ids as s
 left join sortition_candidates as sc
     on s.survey_respondent_id = sc.survey_respondent_id
