@@ -438,7 +438,12 @@ def load_speakers() -> pd.DataFrame:
     Keyed by speaker_id (md5 hash of speaker || '|' || session_id)."""
     try:
         df = session.sql(f"""
-            SELECT speaker_id, gender_category, age, race_ethnicity_category, region, field_of_work, ai_response_label
+            SELECT
+            speaker_id, age_string, gender_string, race_ethnicity_string, region_string, field_of_work_string, ai_response_string,
+            '🎂 ' || age_string || '   |   ⚧️ ' || gender_string || '   |   🧑🏽‍🤝‍🧑🏿 ' ||
+            race_ethnicity_string || '   |   📍 ' || region_string || '   |   💼 ' ||
+            field_of_work_string || '   |   ✨ ' || ai_response_string
+            as all_attributes_string
             FROM {SPEAKERS_TABLE}
         """).to_pandas()
         df.columns = [c.lower() for c in df.columns]
@@ -463,19 +468,9 @@ def get_speaker_demographics(speaker: str, session_id: str, speakers_df: pd.Data
     row = speakers_df[speakers_df["speaker_id"] == speaker_id]
     if row.empty:
         return None
-    # Format as: gender_category, age, race_ethnicity_category, region, field_of_work, ai_response_label
     r = row.iloc[0]
-    demographics = [
-        str(r["gender_category"]) if pd.notna(r["gender_category"]) else None,
-        str(r["age"]) if pd.notna(r["age"]) else None,
-        str(r["race_ethnicity_category"]) if pd.notna(r["race_ethnicity_category"]) else None,
-        str(r["region"]) if pd.notna(r["region"]) else None,
-        str(r["field_of_work"]) if pd.notna(r["field_of_work"]) else None,
-        str(r["ai_response_label"]) if pd.notna(r["ai_response_label"]) else None,
-    ]
-    # Filter out None/empty values and join with commas
-    demographics = [d for d in demographics if d and d != "None"]
-    return ", ".join(demographics) if demographics else None
+    demographics = str(r["all_attributes_string"]) if pd.notna(r["all_attributes_string"]) else None
+    return demographics if demographics else None
 
 
 def parse_idx_array(value) -> list[int]:
@@ -624,7 +619,7 @@ def render_turn_html(turn_idx: int, source: str, speaker: str, start_sec, text: 
         f'padding:6px 10px; margin:4px 0; border-radius:4px; scroll-margin-top:4.5rem; '
         f"{background}\">"
         f'<span style="color:{color}; font-weight:600;">{html.escape(str(speaker))}</span>'
-        + (f' <span style="color:{color}; font-size:0.95em;">{html.escape(speaker_demographics)}</span>' if speaker_demographics else "")
+        + (f' <span style="color:#333; font-size:0.80em; padding-left: 16px;">{html.escape(speaker_demographics)}</span>' if speaker_demographics else "")
         + f'<div style="color:#999; font-size:0.80em; margin-top:2px; margin-bottom:6px;">[{turn_idx}] · {fmt_ts(start_sec)} · {icon}</div>'
         f"{badges}"
         f'<div style="margin-top:2px;">{html.escape(str(text))}</div>'
