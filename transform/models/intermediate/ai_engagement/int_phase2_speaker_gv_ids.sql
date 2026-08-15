@@ -109,7 +109,7 @@ speaker_matches AS (
         ON (s.session_date = a.attendee_date)
     QUALIFY row_number() OVER (
         PARTITION BY s.speaker_id
-        ORDER BY match_score DESC
+        ORDER BY match_score DESC, a.invitee_match_name ASC
     ) = 1
 ),
 
@@ -117,8 +117,13 @@ speaker_gv_ids AS (
     SELECT
         s.session_date,
         s.speaker,
+        s.speaker_match_name,
+        s.invitee_match_name,
+        s.match_score AS name_match_score,
         CASE
-            WHEN i.attendee_status = 'staff' OR i.attendee_status IS null THEN 'staff'
+            WHEN i.attendee_status = 'staff' THEN 'staff'
+            WHEN i.survey_respondent_id = 'Unknown email' THEN 'Unknown email'
+            WHEN i.invitee_email IS null THEN 'staff'
             ELSE i.survey_respondent_id
         END AS survey_respondent_id,
         i.attendee_status,
