@@ -53,6 +53,18 @@ models:
         description: The date on which the Zoom session occurred.
       - name: speaker
         description: The display name of the speaker as it appeared in the Zoom transcript.
+      - name: speaker_match_name
+        description: The cleaned name of the speaker used as a helper column for matching.
+      - name: invitee_match_name
+        description: |
+          The cleaned name of the invitee as it appears in the Zoom attendance tracker records,
+          used as a helper column for matching.
+      - name: name_match_score
+        description: |
+          The fuzzy match score between the speaker name and the matched invitee name.
+          The score is based on exact matches of full name, first name, and last name, and attempted fuzzy matches
+          full name, first name, and last name based on jarowinkler similarity.
+          A higher score indicates a better match.
       - name: survey_respondent_id
         description: |
           The matched Go Vocal survey respondent ID for the speaker, or 'staff' when the speaker is staff,
