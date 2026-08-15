@@ -922,10 +922,10 @@ with tab_transcript:
         page = min(page, n_pages - 1)
 
         p1, p2, p3 = st.columns([1, 3, 1])
-        if p1.button("← Prev", disabled=page <= 0, use_container_width=True):
+        if p1.button("← Prev", disabled=page <= 0, width='stretch'):
             st.session_state[page_key] = page - 1
             st.rerun()
-        if p3.button("Next →", disabled=page >= n_pages - 1, use_container_width=True):
+        if p3.button("Next →", disabled=page >= n_pages - 1, width='stretch'):
             st.session_state[page_key] = page + 1
             st.rerun()
         start, end = page * PAGE_SIZE, min((page + 1) * PAGE_SIZE, len(view_df))
@@ -1034,7 +1034,7 @@ with tab_custom:
 
     est, n_chunks = estimate_cost(session_df, model_choice)
     run_col, est_col = st.columns([1, 3])
-    run_clicked = run_col.button("Run analysis", type="primary", use_container_width=True)
+    run_clicked = run_col.button("Run analysis", type="primary", width='stretch')
     est_col.caption(
         f"~${est:.4f} estimated · {n_chunks} chunk{'s' if n_chunks > 1 else ''}"
         + (" · MAP pass uses the Low tier" if n_chunks > 1 else " · single whole-session call")
@@ -1146,6 +1146,6 @@ with tab_export:
     st.markdown("##### Preview")
     st.dataframe(
         session_df[["turn_idx", "start_sec", "source", "speaker", "text"]].head(10),
-        use_container_width=True,
+        width='stretch',
         hide_index=True,
     )
