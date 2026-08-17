@@ -45,6 +45,20 @@ unpivoted as (
         question_3_response as response
     from polls
     where question_3_response is not null
+
+    union all 
+
+        select
+        meeting_id,
+        topic_name,
+        poll_stage,
+        submitted_at,
+        response_seq,
+        4 as question_num,
+        question_4_text as question_text,
+        question_4_response as response
+    from polls
+    where question_4_response is not null
 )
 
 select * from unpivoted
