@@ -107,8 +107,7 @@ sections as (
     select
         'overview' as section,
         $$Write a 2-3 sentence summary of the session. If the recording contains a substantive
-participant discussion, the summary must describe THAT discussion — mention any staff
-setup/logistics segment in at most one clause, or not at all.
+participant discussion, the summary must describe THAT discussion.
 Respond ONLY with a JSON object of the form: {"overview": str}.
 Do not include speaker names — reference contributions via turn indices only.$$
             as section_prompt
