@@ -94,8 +94,6 @@ TRANSCRIPT_SYSTEM_PROMPT = (
     "Innovation. Engaged California uses deliberative democracy practices to give Californians a "
     "direct voice in state policymaking. The discussion program concerns how AI may impact "
     "Californians' work and lives and what actions government should take in response. "
-    "IMPORTANT: Some recordings may be pilot tests, staff work sessions, or interviews that do "
-    "not substantively discuss AI policy."
     "Ground every claim in the transcript itself. If the transcript does not contain content "
     "relevant to the question you are asked, say so explicitly and briefly describe what was "
     "actually discussed — NEVER invent themes to fit the question. "
