@@ -62,6 +62,24 @@ models:
           AI tagging models: LLMs cite turns by this index, and verbatim quotes are always
           resolved from this table rather than trusted from model output.
 
+  - name: phase2_sessions
+    description: |
+      Foundational sessions table with core session identifiers and timing information.
+      Includes all session-level attributes from the transcript times seed.
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+      - name: session_date
+        description: The date on which the session occurred.
+      - name: discussion_start_sec
+        description: When the real discussion begins, in seconds from recording start.
+      - name: discussion_end_sec
+        description: When the real discussion ends, in seconds from recording start.
+      - name: session_number
+        description: |
+          1-based chronological numbering of sessions, ordered by session_date then session_id.
+          The first session to occur receives session_number = 1.
+
   - name: phase2_transcript_session_summaries
     description: |
       Structured AI analysis of each phase 2 discussion session, flattened to one row per
