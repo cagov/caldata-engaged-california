@@ -41,37 +41,44 @@ question_labels as (
         current_snapshot._file,
         current_snapshot.column_7 as question_1_text,
         current_snapshot.column_8 as question_2_text,
-        current_snapshot.column_9 as question_3_text
+        current_snapshot.column_9 as question_3_text,
+        current_snapshot.column_10 as question_4_text
     from current_snapshot
     inner join poll_details_marker
         on
             current_snapshot._file = poll_details_marker._file
             and current_snapshot._line = poll_details_marker.marker_line + 1
+),
+
+joined as (
+    select
+        iff(current_snapshot._file ilike '%_post%', 'post', 'pre') as poll_stage,
+        try_cast(current_snapshot.column_0 as int) as response_seq,
+        try_to_timestamp(current_snapshot.column_3) as submitted_at,
+        current_snapshot.column_4 as collected_from,
+        current_snapshot.column_5 as topic_name,
+        current_snapshot.column_6 as meeting_id,
+        question_labels.question_1_text,
+        current_snapshot.column_7 as question_1_response,
+        question_labels.question_2_text,
+        current_snapshot.column_8 as question_2_response,
+        question_labels.question_3_text,
+        current_snapshot.column_9 as question_3_response,
+        question_labels.question_4_text,
+        current_snapshot.column_10 as question_4_response,
+        current_snapshot._file,
+        current_snapshot._fivetran_synced
+    from current_snapshot
+    inner join poll_details_marker
+        on current_snapshot._file = poll_details_marker._file
+    inner join question_labels
+        on current_snapshot._file = question_labels._file
+    where
+        current_snapshot._line > poll_details_marker.marker_line + 1
+        and try_to_timestamp(current_snapshot.column_3) >= '2026-07-09'
+        -- exclude test polls that do not follow expected formar
+        and current_snapshot.column_5 ilike '%Impact of AI%'
+        and current_snapshot.column_5 not ilike '%test%'
 )
 
-select
-    iff(current_snapshot._file ilike '%_post%', 'post', 'pre') as poll_stage,
-    try_cast(current_snapshot.column_0 as int) as response_seq,
-    try_to_timestamp(current_snapshot.column_3) as submitted_at,
-    current_snapshot.column_4 as collected_from,
-    current_snapshot.column_5 as topic_name,
-    current_snapshot.column_6 as meeting_id,
-    current_snapshot.column_7 as question_1_response,
-    question_labels.question_1_text,
-    current_snapshot.column_8 as question_2_response,
-    question_labels.question_2_text,
-    current_snapshot.column_9 as question_3_response,
-    question_labels.question_3_text,
-    current_snapshot._file,
-    current_snapshot._fivetran_synced
-from current_snapshot
-inner join poll_details_marker
-    on current_snapshot._file = poll_details_marker._file
-inner join question_labels
-    on current_snapshot._file = question_labels._file
-where
-    current_snapshot._line > poll_details_marker.marker_line + 1
-    and try_to_timestamp(current_snapshot.column_3) >= '2026-07-09'
-    -- exclude test polls that do not follow expected formar
-    and current_snapshot.column_5 ilike '%Impact of AI%'
-    and current_snapshot.column_5 not ilike '%test%'
+select * from joined

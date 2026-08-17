@@ -31,6 +31,40 @@ models:
       - name: clicks
         description: Number of clicks on that URL on that date.
 
+  - name: phase2_poll_pre_and_post_counts
+    description: |
+      Respondent counts per (poll_stage, question, response) for poll questions 1-3, the
+      questions asked on both the pre- and post-meeting polls. Excludes sessions where only one
+      of the pre/post polls was launched, so pre vs. post counts reflect the same set of
+      sessions. Question 4 (post-only) is out of scope here; see phase2_polls_question4.
+    columns:
+      - name: poll_stage
+        description: Whether the poll was administered 'pre' or 'post' the session.
+      - name: question_text
+        description: Entire question as it appeared on the post-meeting poll.
+      - name: question_num
+        description: Poll question the response answers. Always 1, 2, or 3.
+      - name: response
+        description: Answer to the question on a likert scale.
+      - name: responses
+        description: Number of respondents who gave this response, for this question, by poll stage.
+
+  - name: phase2_polls_question4
+    description: |
+      Respondent counts per (question, response) for poll question 4, which only exists on the
+      post-meeting poll. Unlike phase2_poll_pre_and_post_counts, this mart does not exclude
+      sessions where the pre-meeting poll wasn't launched, since question 4 has no pre-side to
+      compare against and excluding those sessions would just discard valid post-poll responses.
+    columns:
+      - name: question_num
+        description: Question number, always 4.
+      - name: question_text
+        description: Entire question as it appeared on the post-meeting poll.
+      - name: response
+        description: Response on a likert scale.
+      - name: respondent_count
+        description: Number of respondents who gave a certain response to a question.
+
   - name: phase2_zoom_transcripts_and_chats
     description: |
       This table combines the Phase 2 Zoom transcript turns and chat messages into one table of all
@@ -267,25 +301,3 @@ models:
         description: The approximate word count of the turn, counted by whitespace-separated tokens.
       - name: text
         description: The text of the turn.
-  - name: phase2_poll_responses
-    description: |
-      Pre- and post-meeting Zoom poll responses, unpivoted to one row per (respondent, question)
-      so the two polls can be compared question-by-question. Comparison is at the
-      meeting/question level (response distribution per meeting_id + question_num + poll_stage).
-    columns:
-      - name: meeting_id
-        description: The Zoom Meeting/Webinar ID this poll was launched in. One pre and post poll for each session.
-      - name: topic_name
-        description: The Zoom meeting topic/name the poll was launched in
-      - name: poll_stage
-        description: When the poll was administered, 'pre' or 'post'.
-      - name: submitted_at
-        description: When the respondent submitted the poll.
-      - name: response_seq
-        description: The response's position within the raw Poll Details listing. Not a stable business key.
-      - name: question_num
-        description: Poll question the response answers.
-      - name: question_text
-        description: The wording of the question, as it appeared on that poll.
-      - name: response
-        description: The respondent's answer to respective question.
