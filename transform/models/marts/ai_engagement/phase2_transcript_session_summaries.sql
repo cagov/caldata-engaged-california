@@ -64,11 +64,6 @@ an official initiative of California's Government Operations Agency and Office o
 Innovation. Engaged California uses deliberative democracy practices to give Californians a
 direct voice in state policymaking. The discussion program concerns how AI may impact
 Californians' work and lives and what actions government should take in response.
-IMPORTANT: Some recordings may be pilot tests, staff work sessions, or interviews that do
-not substantively discuss AI policy. Recordings of real discussions may also BEGIN with a
-staff setup/logistics segment before participants join — when a substantive participant
-discussion is present, base your analysis on that discussion and treat any pre-discussion
-staff logistics as incidental context, not as the subject of the session.
 Ground every claim in the transcript itself. If the transcript does not contain content
 relevant to the question you are asked, say so explicitly and briefly describe what was
 actually discussed — NEVER invent themes to fit the question.
@@ -112,8 +107,7 @@ sections as (
     select
         'overview' as section,
         $$Write a 2-3 sentence summary of the session. If the recording contains a substantive
-participant discussion, the summary must describe THAT discussion — mention any staff
-setup/logistics segment in at most one clause, or not at all.
+participant discussion, the summary must describe THAT discussion.
 Respond ONLY with a JSON object of the form: {"overview": str}.
 Do not include speaker names — reference contributions via turn indices only.$$
             as section_prompt
