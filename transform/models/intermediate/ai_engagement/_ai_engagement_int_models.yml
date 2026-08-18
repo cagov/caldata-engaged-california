@@ -100,3 +100,27 @@ models:
         description: The end time of the turn in seconds.
       - name: text
         description: The aggregated text of the turn, stitched together from the individual cues in the turn.
+  - name: int_ai_engagement_zoom_poll
+    description: |
+      Pre- and post-meeting Zoom poll responses, unpivoted to one row per (respondent, question).
+      Question 4 only exists on the post-meeting poll. This model applies no filtering of its
+      own (e.g. it does not exclude sessions where only one of the pre/post polls was launched);
+      that's left to downstream marts to apply as appropriate for their own use case, since not
+      every use case (e.g. question 4, which has no pre-side to compare against) needs it.
+    columns:
+      - name: meeting_id
+        description: The Zoom Meeting/Webinar ID this poll was launched in. One pre and post poll for each session.
+      - name: topic_name
+        description: The Zoom meeting topic/name the poll was launched in
+      - name: poll_stage
+        description: When the poll was administered, 'pre' or 'post'.
+      - name: submitted_at
+        description: When the respondent submitted the poll.
+      - name: response_seq
+        description: The response's position within the raw Poll Details listing. Not a stable business key.
+      - name: question_num
+        description: Poll question the response answers.
+      - name: question_text
+        description: The wording of the question, as it appeared on that poll.
+      - name: response
+        description: The respondent's answer to respective question.
