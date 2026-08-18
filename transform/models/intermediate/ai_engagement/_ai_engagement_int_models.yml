@@ -68,7 +68,7 @@ models:
       - name: survey_respondent_id
         description: |
           The matched Go Vocal survey respondent ID for the speaker, or 'staff' when the speaker is staff,
-          a moderator, or otherwise not mapped to a survey respondent. This may also show 'Unknown email' if
+          a moderator, or otherwise not mapped to a survey respondent. This may also show 'No GV account' if
           the speaker was matched to an attendee, but the attendee did not have a Go Vocal account.
       - name: attendee_status
         description: |
