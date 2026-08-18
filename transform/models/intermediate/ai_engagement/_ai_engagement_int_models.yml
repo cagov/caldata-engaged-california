@@ -5,7 +5,8 @@ models:
       This table joins the sortition selections with the statuses of Phase 2 invitees. If a Phase 2 invitee email is
       not found in the Go Vocal user emails, and is not manually matched, the invitee status will be
       'could not match'. The join used is a full outer join in order to preserve any invitee emails that are not
-      matched in the output. Staff and moderators are removed from the final output.
+      matched in the output. The final result is a single row per survey respondent, with the invitee status and
+      attendee status determined by the status that is the farthest along in the Phase 2 process.
     columns:
       - name: survey_respondent_id
         description: User ID of the invitee.
@@ -38,7 +39,45 @@ models:
       - name: attendee_status
         description: |
           The attendance status of the registrant, if an invitee has already been
-          invited in a sortition lottery and accepted the invitation.
+          invited in a sortition lottery and accepted the invitation. Possible values: 'staff', 'attended',
+          'session in the future', 'no show', 'not registered'.
+
+  - name: int_phase2_speaker_gv_ids
+    description: |
+      This model matches each Phase 2 Zoom speaker to a Go Vocal participant using a date-scoped fuzzy-name
+      join between attendee records and transcript speakers. It preserves the session-level speaker key,
+      and resolves staff speakers to 'staff' while returning a survey respondent
+      ID for matched invitees when available.
+    columns:
+      - name: session_date
+        description: The date on which the Zoom session occurred.
+      - name: speaker
+        description: The display name of the speaker as it appeared in the Zoom transcript.
+      - name: speaker_match_name
+        description: The cleaned name of the speaker used as a helper column for matching.
+      - name: invitee_match_name
+        description: |
+          The cleaned name of the invitee as it appears in the Zoom attendance tracker records,
+          used as a helper column for matching.
+      - name: name_match_score
+        description: |
+          The fuzzy match score between the speaker name and the matched invitee name.
+          The score is based on exact matches of full name, first name, and last name, and attempted fuzzy matches
+          full name, first name, and last name based on jarowinkler similarity.
+          A higher score indicates a better match.
+      - name: survey_respondent_id
+        description: |
+          The matched Go Vocal survey respondent ID for the speaker, or 'staff' when the speaker is staff,
+          a moderator, or otherwise not mapped to a survey respondent. This may also show 'Unknown email' if
+          the speaker was matched to an attendee, but the attendee did not have a Go Vocal account.
+      - name: attendee_status
+        description: |
+          The attendance status of the matched Phase 2 invitee, such as 'staff', 'attended'.
+          Other attendee_statuses such as 'session in the future', 'no show', or 'not registered' are unexpected.
+      - name: speaker_id
+        description: Stable surrogate key for the transcript speaker within a single session.
+      - name: session_id
+        description: The unique identifier for each Zoom session.
 
   - name: int_phase2_transcript_turns
     description: |
