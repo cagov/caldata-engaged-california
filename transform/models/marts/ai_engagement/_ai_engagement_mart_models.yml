@@ -62,6 +62,8 @@ models:
         description: Entire question as it appeared on the post-meeting poll.
       - name: response
         description: Response on a likert scale.
+      - name: poll_stage
+        description: Always 'post', since question 4 only exists on the post-meeting poll.
       - name: respondent_count
         description: Number of respondents who gave a certain response to a question.
 

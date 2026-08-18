@@ -46,9 +46,9 @@ unpivoted as (
     from polls
     where question_3_response is not null
 
-    union all 
+    union all
 
-        select
+    select
         meeting_id,
         topic_name,
         poll_stage,
