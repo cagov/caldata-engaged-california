@@ -110,7 +110,17 @@ invitee_status as (
 single_status as (
     select
         survey_respondent_id,
-        invitee_email,
+        min_by(
+            invitee_email,
+            case attendee_status
+                when 'staff' then 1
+                when 'attended' then 2
+                when 'session in the future' then 3
+                when 'no show' then 4
+                when 'not registered' then 5
+                else 9
+            end
+        ) as invitee_email,
         count(distinct sortition_round) as invite_count,
         listagg(sortition_round, ', ') as list_sortition_rounds,
         any_value(distinct email_match) as email_match,
@@ -125,9 +135,19 @@ single_status as (
             end
         ) as invitee_status,
         any_value(accepted_event_start_date_time) as accepted_event_start_date_time,
-        any_value(attendee_status) as attendee_status
+        min_by(
+            attendee_status,
+            case attendee_status
+                when 'staff' then 1
+                when 'attended' then 2
+                when 'session in the future' then 3
+                when 'no show' then 4
+                when 'not registered' then 5
+                else 9
+            end
+        ) as attendee_status
     from invitee_status
-    group by survey_respondent_id, invitee_email
+    group by survey_respondent_id
 )
 
 select * from single_status
