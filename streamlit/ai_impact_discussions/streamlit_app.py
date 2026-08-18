@@ -50,6 +50,8 @@ DISCUSSIONS_SCHEMA = os.environ.get("DISCUSSIONS_SCHEMA", "ai_engagement")
 
 EVENTS_TABLE = f"{DISCUSSIONS_DATABASE}.{DISCUSSIONS_SCHEMA}.phase2_zoom_transcripts_and_chats"
 SUMMARIES_TABLE = f"{DISCUSSIONS_DATABASE}.{DISCUSSIONS_SCHEMA}.phase2_transcript_session_summaries"
+SPEAKERS_TABLE = f"{DISCUSSIONS_DATABASE}.{DISCUSSIONS_SCHEMA}.phase2_speaker_ai_survey"
+SESSIONS_TABLE = f"{DISCUSSIONS_DATABASE}.{DISCUSSIONS_SCHEMA}.phase2_sessions"
 
 LLM_MODEL_LOW = os.environ.get("LLM_MODEL_LOW", "")
 LLM_MODEL_MED = os.environ.get("LLM_MODEL_MED", "")
@@ -94,11 +96,6 @@ TRANSCRIPT_SYSTEM_PROMPT = (
     "Innovation. Engaged California uses deliberative democracy practices to give Californians a "
     "direct voice in state policymaking. The discussion program concerns how AI may impact "
     "Californians' work and lives and what actions government should take in response. "
-    "IMPORTANT: Some recordings may be pilot tests, staff work sessions, or interviews that do "
-    "not substantively discuss AI policy. Recordings of real discussions may also BEGIN with a "
-    "staff setup/logistics segment before participants join — when a substantive participant "
-    "discussion is present, base your analysis on that discussion and treat any pre-discussion "
-    "staff logistics as incidental context, not as the subject of the session. "
     "Ground every claim in the transcript itself. If the transcript does not contain content "
     "relevant to the question you are asked, say so explicitly and briefly describe what was "
     "actually discussed — NEVER invent themes to fit the question. "
@@ -431,6 +428,57 @@ def load_summaries() -> pd.DataFrame:
     return df
 
 
+@st.cache_data
+def load_speakers() -> pd.DataFrame:
+    """Speaker demographic information: gender, age, race/ethnicity, region, field of work, AI response.
+    Keyed by speaker_id (md5 hash of speaker || '|' || session_id)."""
+    try:
+        df = session.sql(f"""
+            SELECT
+            speaker_id, age_string, gender_string, race_ethnicity_string, region_string, field_of_work_string, ai_response_string,
+            '🎂 ' || age_string || '   |   ⚧️ ' || gender_string || '   |   🧑🏽‍🤝‍🧑🏿 ' ||
+            race_ethnicity_string || '   |   📍 ' || region_string || '   |   💼 ' ||
+            field_of_work_string || '   |   ✨ ' || ai_response_string
+            as all_attributes_string
+            FROM {SPEAKERS_TABLE}
+        """).to_pandas()
+        df.columns = [c.lower() for c in df.columns]
+        return df
+    except Exception:
+        # Table may not exist or user lacks permissions; return empty dataframe
+        return pd.DataFrame()
+
+
+def build_speaker_id(speaker: str, session_id: str) -> str:
+    """Build the speaker_id: md5(speaker || '|' || session_id)."""
+    import hashlib
+    combined = f"{speaker}|{session_id}"
+    return hashlib.md5(combined.encode()).hexdigest()
+
+
+def get_speaker_demographics(speaker: str, session_id: str, speakers_df: pd.DataFrame) -> str | None:
+    """Look up speaker demographics by speaker_id. Returns formatted string or None if not found."""
+    if speakers_df.empty:
+        return None
+    speaker_id = build_speaker_id(speaker, session_id)
+    row = speakers_df[speakers_df["speaker_id"] == speaker_id]
+    if row.empty:
+        return None
+    r = row.iloc[0]
+    demographics = str(r["all_attributes_string"]) if pd.notna(r["all_attributes_string"]) else None
+    return demographics if demographics else None
+def load_sessions() -> pd.DataFrame:
+    """Session-level data with chronological numbering: session_id, session_date, session_number.
+    Used to format the session selector dropdown in the sidebar."""
+    df = session.sql(f"""
+        SELECT session_id, session_date, session_number
+        FROM {SESSIONS_TABLE}
+        ORDER BY session_number
+    """).to_pandas()
+    df.columns = [c.lower() for c in df.columns]
+    return df
+
+
 def parse_idx_array(value) -> list[int]:
     """supporting_turn_idxs comes back from Snowflake as a JSON-formatted string (or a
     list, depending on the connector). Normalize to a list of ints either way."""
@@ -557,8 +605,14 @@ def theme_badge(section: str, label: str) -> str:
 
 def render_turn_html(turn_idx: int, source: str, speaker: str, start_sec, text: str,
                      theme_tags: list[tuple[str, str]] | None = None,
-                     color: str = "#888", anchor_prefix: str = "turn") -> str:
-    """One turn as an HTML card with speaker color, meta line, and theme badges."""
+                     color: str = "#888", anchor_prefix: str = "turn",
+                     speaker_demographics: str | None = None) -> str:
+    """One turn as an HTML card with speaker color, demographics, meta line, and theme badges.
+
+    Layout:
+    - Line 1: Speaker name + demographics (if available)
+    - Line 2: [turn_idx] · timestamp · icon (muted)
+    """
     is_chat = source == "chat"
     badges = "".join(theme_badge(sec, lbl) for sec, lbl in (theme_tags or []))
     # Low-alpha tint stays readable on both light and dark Streamlit themes
@@ -570,9 +624,9 @@ def render_turn_html(turn_idx: int, source: str, speaker: str, start_sec, text: 
         f'<div id="{anchor_prefix}-{turn_idx}" style="border-left:4px solid {color}; '
         f'padding:6px 10px; margin:4px 0; border-radius:4px; scroll-margin-top:4.5rem; '
         f"{background}\">"
-        f'<span style="color:{color}; font-weight:600;">{html.escape(str(speaker))}</span> '
-        f'<span style="color:#888; font-size:0.85em;">[{turn_idx}] · '
-        f'{fmt_ts(start_sec)} · {icon}</span>'
+        f'<span style="color:{color}; font-weight:600;">{html.escape(str(speaker))}</span>'
+        + (f' <span style="color:#333; font-size:0.80em; padding-left: 16px;">{html.escape(speaker_demographics)}</span>' if speaker_demographics else "")
+        + f'<div style="color:#999; font-size:0.80em; margin-top:2px; margin-bottom:6px;">[{turn_idx}] · {fmt_ts(start_sec)} · {icon}</div>'
         f"{badges}"
         f'<div style="margin-top:2px;">{html.escape(str(text))}</div>'
         f"</div>"
@@ -628,13 +682,15 @@ def apply_turn_citations(text: str, anchor_prefix: str) -> tuple[str, list[int]]
 
 
 def render_cited_turns(session_df: pd.DataFrame, cited_idxs: list[int],
-                       colors: dict[str, str], anchor_prefix: str):
+                       colors: dict[str, str], anchor_prefix: str, speakers_df: pd.DataFrame = None):
     """Render anchored verbatim turn cards for cited indices; ⚠️ for invalid ones.
 
     Turns render in transcript order with a divider at each gap, so contiguous
     stretches read as conversation and isolated turns as standalone quotes."""
     if not cited_idxs:
         return
+    if speakers_df is None:
+        speakers_df = pd.DataFrame()
     st.markdown("---")
     st.markdown("##### Cited turns (verbatim from source data)")
     indexed = session_df.set_index("turn_idx")
@@ -646,9 +702,14 @@ def render_cited_turns(session_df: pd.DataFrame, cited_idxs: list[int],
         prev_idx = idx
         if idx in indexed.index:
             row = indexed.loc[idx]
+            session_id = session_df.iloc[0]["session_id"] if "session_id" in session_df.columns else None
+            speaker_demographics = None
+            if session_id:
+                speaker_demographics = get_speaker_demographics(row["speaker"], session_id, speakers_df)
             cards.append(render_turn_html(
                 idx, row["source"], row["speaker"], row["start_sec"], row["text"],
                 color=colors.get(row["speaker"], "#888"), anchor_prefix=anchor_prefix,
+                speaker_demographics=speaker_demographics,
             ))
         else:
             cards.append(
@@ -696,6 +757,7 @@ except Exception as e:
 
 summaries_by_session, summaries_meta = build_session_summaries(summaries_df)
 session_stats = compute_session_stats(events_df)
+speakers_df = load_speakers()
 
 
 # ---------------------------------------------------------------------------
@@ -704,20 +766,40 @@ session_stats = compute_session_stats(events_df)
 
 with st.sidebar:
     st.header("Session")
-    session_ids = session_stats.sort_index(ascending=False).index.tolist()
+    # Load sessions data with session_number and session_date for better UX
+    try:
+        sessions_df = load_sessions()
+        sessions_dict = dict(zip(sessions_df["session_id"], zip(sessions_df["session_number"], sessions_df["session_date"])))
+    except Exception:
+        sessions_dict = {}
+
+    # Build session list: matched sessions first (sorted by session_number), then unmatched as fallback
+    matched_sids = [sid for sid in session_stats.index if sid in sessions_dict]
+    matched_sids_sorted = sorted(matched_sids, key=lambda sid: sessions_dict[sid][0])
+    unmatched_sids = [sid for sid in session_stats.index if sid not in sessions_dict]
+    session_ids = matched_sids_sorted + unmatched_sids
+
+    def format_session_label(sid: str) -> str:
+        if sid in sessions_dict:
+            session_num, session_date = sessions_dict[sid]
+            # Format date as M/DD (e.g., "1/5" or "12/25")
+            date_str = session_date.strftime("%-m/%-d") if hasattr(session_date, "strftime") else str(session_date)
+            return f"Session {session_num} ({date_str})"
+        else:
+            # Fallback for sessions not in phase2_sessions table
+            return f"{sid} (missing session data)"
+
     selected_sid = st.selectbox(
         "Discussion session",
         session_ids,
-        format_func=lambda sid: (
-            f"{sid} — {session_stats.loc[sid, 'n_turns']} turns, "
-            f"{session_stats.loc[sid, 'duration_min']:.0f} min"
-        ),
+        format_func=format_session_label,
     )
 
     st.divider()
-    if st.button("Refresh data", type="primary", use_container_width=True):
+    if st.button("Refresh data", type="primary", width="stretch"):
         load_events.clear()
         load_summaries.clear()
+        load_speakers.clear()
         st.session_state.quote_results = {}
         st.rerun()
 
@@ -823,10 +905,11 @@ with tab_summary:
                         if prev_idx is not None and idx - prev_idx > 1:
                             cards.append(gap_divider(idx - prev_idx - 1))
                         row = indexed.loc[idx]
+                        speaker_demographics = get_speaker_demographics(row["speaker"], selected_sid, speakers_df)
                         cards.append(render_turn_html(
                             idx, row["source"], row["speaker"], row["start_sec"],
                             row["text"], color=colors.get(row["speaker"], "#888"),
-                            anchor_prefix=f"sum-{section}",
+                            anchor_prefix=f"sum-{section}", speaker_demographics=speaker_demographics,
                         ))
                         prev_idx = idx
                     st.markdown("".join(cards), unsafe_allow_html=True)
@@ -864,10 +947,10 @@ with tab_transcript:
         page = min(page, n_pages - 1)
 
         p1, p2, p3 = st.columns([1, 3, 1])
-        if p1.button("← Prev", disabled=page <= 0, use_container_width=True):
+        if p1.button("← Prev", disabled=page <= 0, width='stretch'):
             st.session_state[page_key] = page - 1
             st.rerun()
-        if p3.button("Next →", disabled=page >= n_pages - 1, use_container_width=True):
+        if p3.button("Next →", disabled=page >= n_pages - 1, width='stretch'):
             st.session_state[page_key] = page + 1
             st.rerun()
         start, end = page * PAGE_SIZE, min((page + 1) * PAGE_SIZE, len(view_df))
@@ -884,6 +967,7 @@ with tab_transcript:
                 theme_tags=theme_map.get(row.turn_idx),
                 color=colors.get(row.speaker, "#888"),
                 anchor_prefix="turn",
+                speaker_demographics=get_speaker_demographics(row.speaker, selected_sid, speakers_df),
             )
             for row in page_df.itertuples()
         ]
@@ -935,6 +1019,7 @@ with tab_transcript:
 #                     render_turn_html(
 #                         row.turn_idx, row.source, row.speaker, row.start_sec, row.text,
 #                         color=colors.get(row.speaker, "#888"), anchor_prefix="quote",
+#                         speaker_demographics=get_speaker_demographics(row.speaker, selected_sid, speakers_df),
 #                     ),
 #                     unsafe_allow_html=True,
 #                 )
@@ -974,7 +1059,7 @@ with tab_custom:
 
     est, n_chunks = estimate_cost(session_df, model_choice)
     run_col, est_col = st.columns([1, 3])
-    run_clicked = run_col.button("Run analysis", type="primary", use_container_width=True)
+    run_clicked = run_col.button("Run analysis", type="primary", width='stretch')
     est_col.caption(
         f"~${est:.4f} estimated · {n_chunks} chunk{'s' if n_chunks > 1 else ''}"
         + (" · MAP pass uses the Low tier" if n_chunks > 1 else " · single whole-session call")
@@ -1015,7 +1100,7 @@ with tab_custom:
             f"{run['tokens']:,} tokens (~${run['cost']:.4f})"
         )
         st.markdown(run["html"], unsafe_allow_html=True)
-        render_cited_turns(session_df, run["cited"], colors, anchor_prefix="ca")
+        render_cited_turns(session_df, run["cited"], colors, anchor_prefix="ca", speakers_df=speakers_df)
 
 
 # --- Tab 5: Data export ----------------------------------------------------------
@@ -1086,6 +1171,6 @@ with tab_export:
     st.markdown("##### Preview")
     st.dataframe(
         session_df[["turn_idx", "start_sec", "source", "speaker", "text"]].head(10),
-        use_container_width=True,
+        width='stretch',
         hide_index=True,
     )

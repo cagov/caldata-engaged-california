@@ -293,7 +293,7 @@ models:
       most distinct speakers active, plus every turn spoken during those minutes. Minutes are
       ranked by density regardless of whether they clear the session's own average. Use to
       review moments where several people were talking over each other. Computed over the full
-      transcript; not yet trimmed to exclude pre-session or post-session chatter.
+      transcript.
     columns:
       - name: session_id
         description: The unique identifier for each Zoom session.
