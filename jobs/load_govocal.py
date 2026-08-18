@@ -1,3 +1,5 @@
+# Use this job to load data from the Go Vocal API into Snowflake.
+
 import json
 import logging
 import os
