@@ -33,6 +33,10 @@ models:
         description: The respondent's answer to the poll's 3rd question.
       - name: question_3_text
         description: The poll's 3rd question.
+      - name: question_4_response
+        description: The respondent's answer to the poll's 4th question. Only present on the post-meeting poll.
+      - name: question_4_text
+        description: The poll's 4th question. Only present on the post-meeting poll.
       - name: _file
         description: The name of the file.
       - name: _fivetran_synced
