@@ -1,6 +1,6 @@
 with
 
-phase_2_attendees as (select * from {{ source('FILE_DOWNLOADS', 'PH_2_ATTENDEES') }})
+phase_2_registrants as (select * from {{ source('FILE_DOWNLOADS', 'PH_2_ATTENDEES') }})
 
 select
     event_type_name as event_name,
@@ -14,6 +14,6 @@ select
     event_created_date_time,
     _file,
     _fivetran_synced
-from phase_2_attendees
+from phase_2_registrants
 where
     lower(event_name) not like '%test%'

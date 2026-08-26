@@ -9,8 +9,8 @@ sources:
     tables:
       - name: ATTENDANCE_TRACKER
         description: |
-          Manually-uploaded participant lists from Zoom meetings.
-          This tells us which registrants attended and which were no-shows.
+          Manually uploaded participant lists recorded manually by staff and facilitators during the phase 2 live
+          discussion events. This tells us which registrants attended and which were no-shows.
         columns:
           - name: invitee_first_name
             description: The user-input first name of the invitee

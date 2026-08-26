@@ -4,19 +4,14 @@ WITH
 
 attendees AS (
     SELECT
-        trim(lower(invitee_first_name)) AS invitee_first_name,
-        trim(lower(invitee_last_name)) AS invitee_last_name,
-        trim(
-            lower(
-                coalesce(invitee_first_name, '') || ' '
-                || coalesce(invitee_last_name, '')
-            )
-        ) AS invitee_match_name,
+        invitee_first_name,
+        invitee_last_name,
+        coalesce(invitee_first_name, '') || ' ' || coalesce(invitee_last_name, '') AS invitee_match_name,
         invitee_email,
         start_date_time,
         actual_status,
-        try_to_date(start_date_time, 'MM/DD/YY') AS attendee_date
-    FROM {{ source('ZOOM', 'ATTENDANCE_TRACKER') }}
+        attendee_date
+    FROM {{ ref('stg_attendance_tracker') }}
     WHERE actual_status = 'Attended' OR actual_status = 'Staff'
 ),
 
