@@ -17,10 +17,11 @@ models:
       - name: sortition_round
         description: The sortition round this invitee likely belongs to.
 
-  - name: stg_phase2_attendees
+  - name: stg_phase2_registrants
     description: |
-      This table contains information about attendees of Phase 2 events.
-      This data appends new rows each time a file with matching column names is added to a Google Drive folder.
+      This table contains information about registrations for Phase 2 live discussion events, reflecting
+      Zoom event registrations. This source appends new rows each time a file with matching
+      column names is added to a Google Drive folder.
     columns:
       - name: event_name
         description: The name of the event.
@@ -127,3 +128,25 @@ models:
         description: Stable surrogate key for the transcript speaker within a single session.
       - name: session_id
         description: The unique identifier for each Zoom session.
+
+  - name: stg_attendance_tracker
+    description: |
+      Manually uploaded participant lists recorded manually by staff and facilitators during the phase 2 live
+      discussion events. This tells us which registrants attended and which were no-shows.
+    columns:
+      - name: invitee_first_name
+        description: The user-input first name of the invitee
+      - name: invitee_last_name
+        description: The user-input last name of the invitee
+      - name: invitee_email
+        description: The email address of the invitee
+      - name: start_date_time
+        description: The start date and time of the Zoom meeting
+      - name: end_date_time
+        description: The end date and time of the Zoom meeting
+      - name: actual_status
+        description: |
+          The actual attendance status of the invitee
+          (Staff, Attended, No Show)
+      - name: session_number
+        description: The session number (1-15) of the engagement session
