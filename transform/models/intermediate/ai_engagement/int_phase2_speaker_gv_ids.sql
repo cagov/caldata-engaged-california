@@ -8,9 +8,8 @@ attendees AS (
         invitee_last_name,
         coalesce(invitee_first_name, '') || ' ' || coalesce(invitee_last_name, '') AS invitee_match_name,
         invitee_email,
-        start_date_time,
-        actual_status,
-        attendee_date
+        try_to_date(start_date_time, 'MM/DD/YY') AS attendee_date,
+        actual_status
     FROM {{ ref('stg_attendance_tracker') }}
     WHERE actual_status = 'Attended' OR actual_status = 'Staff'
 ),
