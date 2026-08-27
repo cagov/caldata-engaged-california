@@ -105,7 +105,10 @@ models:
       to analyze how speakers' survey responses and demographics relate to their speech in the Phase 2 discussions.
     columns:
       - name: survey_respondent_id
-        description: User ID of the survey respondent.
+        description: |
+          The matched Go Vocal survey respondent ID for the speaker, or 'staff' when the speaker is staff,
+          a moderator, or otherwise not mapped to a survey respondent. This may also show 'No GV account' if
+          the speaker was matched to an attendee, but the attendee did not have a Go Vocal account.
       - name: session_date
         description: The date on which the Zoom session occurred.
       - name: speaker

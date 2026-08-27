@@ -4,21 +4,15 @@ WITH
 
 attendees AS (
     SELECT
-        trim(lower(invitee_first_name)) AS invitee_first_name,
-        trim(lower(invitee_last_name)) AS invitee_last_name,
-        trim(
-            lower(
-                coalesce(invitee_first_name, '') || ' '
-                || coalesce(invitee_last_name, '')
-            )
-        ) AS invitee_match_name,
+        invitee_first_name,
+        invitee_last_name,
+        coalesce(invitee_first_name, '') || ' ' || coalesce(invitee_last_name, '') AS invitee_match_name,
         invitee_email,
-        start_date_time,
-        actual_status,
-        try_to_date(start_date_time, 'MM/DD/YY') AS attendee_date
-    FROM {{ source('ZOOM', 'ATTENDANCE_TRACKER') }}
+        try_to_date(start_date_time, 'MM/DD/YY') AS attendee_date,
+        actual_status
+    FROM {{ ref('stg_attendance_tracker') }}
     WHERE actual_status = 'Attended' OR actual_status = 'Staff'
-), --137
+),
 
 speakers AS (
     SELECT DISTINCT
@@ -27,8 +21,7 @@ speakers AS (
         session_id
     FROM {{ ref('stg_zoom_transcript_speakers') }}
     WHERE speaker IS NOT null
-    --where session_id = 'GMT20260805-164429' and speaker is null
-), --135 not null
+),
 
 transcript_dates AS (
     SELECT *
@@ -115,23 +108,26 @@ speaker_matches AS (
 
 speaker_gv_ids AS (
     SELECT
-        s.session_date,
-        s.speaker,
-        s.speaker_match_name,
-        s.invitee_match_name,
-        s.match_score AS name_match_score,
+        a.attendee_date AS session_date,
+        a.invitee_match_name,
         CASE
-            WHEN i.attendee_status = 'staff' THEN 'staff'
-            WHEN i.survey_respondent_id = 'Unknown email' THEN 'Unknown email'
-            WHEN i.invitee_email IS null THEN 'staff'
+            WHEN sm.speaker_id = '47f97458a9cbf2a285a628b26dd97824' THEN 'No GV account'
+            WHEN i.attendee_status = 'staff' OR i.invitee_email IS null THEN 'staff'
             ELSE i.survey_respondent_id
         END AS survey_respondent_id,
+        sm.speaker,
+        sm.speaker_match_name,
+        sm.match_score AS name_match_score,
         i.attendee_status,
-        s.speaker_id,
-        s.session_id
-    FROM speaker_matches AS s
+        sm.speaker_id,
+        sm.session_id
+    FROM attendees AS a
+    LEFT JOIN speaker_matches AS sm
+        ON
+            a.invitee_match_name = sm.invitee_match_name
+            AND a.attendee_date = sm.session_date
     LEFT JOIN invitee_gv_ids AS i
-        ON s.invitee_email = i.invitee_email
+        ON a.invitee_email = i.invitee_email
 )
 
 SELECT *
