@@ -7,6 +7,7 @@ attendees AS (
         invitee_email,
         actual_status,
         start_date_time,
+        end_date_time,
         session_number
     FROM {{ source('ZOOM', 'ATTENDANCE_TRACKER') }}
 )
