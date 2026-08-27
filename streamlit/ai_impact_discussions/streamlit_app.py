@@ -185,10 +185,30 @@ SECTIONS = {
 
 
 # ---------------------------------------------------------------------------
-# Page config
+# Page config and PII acknowledgment gate
 # ---------------------------------------------------------------------------
 
 st.set_page_config(page_title="Engaged California — live discussion explorer", layout="wide")
+
+PII_ACKNOWLEDGED_KEY = "pii_acknowledged"
+
+if not st.session_state.get(PII_ACKNOWLEDGED_KEY, False):
+    st.title("Personal Information (PII) Notice")
+    st.markdown(
+        "> This dashboard contains personal information (PII) and is intended for authorized use only. Please use and handle this information responsibly and in accordance with privacy and security policies.\n"
+        ">\n"
+        "> Do not copy, download, export, or share PII unless you are authorized to do so and there is a legitimate business need. Take care to protect this information from unauthorized access or disclosure. \n"
+        ">\n"
+        "> Do not submit any data downloaded from this dashboard that may contain PII – including names, demographic information, or transcript excerpts that may identify or contain information about a speaker – to external LLMs or other AI tools."
+    )
+    if st.button("I Understand and Agree", type="primary"):
+        st.session_state[PII_ACKNOWLEDGED_KEY] = True
+        st.rerun()
+    st.stop()
+
+st.warning(
+    "⚠️ **Contains Personal Information (PII)** – Do not download, copy, share, or disclose PII except as authorized by existing policy. Do not provide dashboard outputs containing PII to external LLMs or AI tools."
+)
 
 
 # ---------------------------------------------------------------------------
