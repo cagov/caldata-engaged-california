@@ -1,7 +1,7 @@
 with
 
 source as (
-    select * from {{ ref('stg_phase2_attendees') }}
+    select * from {{ ref('stg_phase2_registrants') }}
 ),
 
 unmatched_participants as (

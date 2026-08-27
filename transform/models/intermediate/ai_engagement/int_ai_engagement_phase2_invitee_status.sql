@@ -27,7 +27,7 @@ phase2_responses as (
         invitee_email,
         invitee_status,
         start_date_time
-    from {{ ref('stg_phase2_attendees') }}
+    from {{ ref('stg_phase2_registrants') }}
     qualify _fivetran_synced::DATE = max(_fivetran_synced::DATE) over (partition by start_date_time)
 ),
 
@@ -62,7 +62,7 @@ attendance_status as (
     select
         invitee_email,
         actual_status
-    from {{ source('ZOOM', 'ATTENDANCE_TRACKER') }}
+    from {{ ref('stg_attendance_tracker') }}
 ),
 
 --reconcile attendees with GV profiles:
