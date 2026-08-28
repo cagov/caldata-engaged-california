@@ -21,4 +21,4 @@ FROM (
     WHERE survey_join_date IS NOT NULL
     UNION DISTINCT
     SELECT MAX(last_sign_in) AS latest_date FROM participants
-)
+) AS latest_dates
