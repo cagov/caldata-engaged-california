@@ -100,7 +100,9 @@ TRANSCRIPT_SYSTEM_PROMPT = (
     "relevant to the question you are asked, say so explicitly and briefly describe what was "
     "actually discussed — NEVER invent themes to fit the question. "
     "The transcript combines transcribed speech and text chat, interleaved chronologically. "
-    "Each turn is formatted as: [index] (timestamp, source) speaker: text. "
+    "Each turn is formatted as: [index] (timestamp, source) Participant N: text. Speaker "
+    "labels are anonymized pseudonyms, consistent within a session; participants may refer "
+    "to one another by real name within the turn text. "
     "When you reference what someone said, cite the turn index like [turn:42]. "
     "NEVER fabricate or reproduce quotes from memory — always refer to turns by their index. "
     "Format your response in Markdown with headers, bullet points, and bold text."
@@ -249,12 +251,15 @@ def fmt_ts(sec) -> str:
 
 
 def render_turns(df_slice: pd.DataFrame) -> str:
-    """Render turns in the canonical LLM input format:
+    """Render turns in the canonical LLM input format, with anonymized speaker labels
+    (speaker display names are PII and must not reach the LLM):
 
-    [42] (12:34, chat) Jane D.: I think we need guardrails on...
+    [42] (12:34, chat) Participant 2: I think we need guardrails on...
     """
     return "\n".join(
-        f"[{r.turn_idx}] ({fmt_ts(r.start_sec)}, {r.source}) {r.speaker}: {r.text}"
+        f"[{r.turn_idx}] ({fmt_ts(r.start_sec)}, {r.source}) "
+        + (f"{r.speaker_alias}: " if pd.notna(r.speaker_alias) else "")
+        + f"{r.text}"
         for r in df_slice.itertuples()
     )
 
@@ -266,7 +271,7 @@ def chunk_turns(session_df: pd.DataFrame, max_chars: int = MAX_CHARS_PER_CHUNK,
     df = session_df.sort_values("turn_idx").reset_index(drop=True)
     line_lens = (
         df["text"].fillna("").str.len()
-        + df["speaker"].fillna("").str.len()
+        + df["speaker_alias"].fillna("").str.len()
         + TURN_PREFIX_OVERHEAD
     )
     chunks: list[pd.DataFrame] = []
@@ -431,6 +436,12 @@ def load_events() -> pd.DataFrame:
     df = df.sort_values(["session_id", "turn_idx"]).reset_index(drop=True)
     df["duration_sec"] = df["end_sec"] - df["start_sec"]
     df["n_chars"] = df["text"].fillna("").str.len()
+    # Per-session speaker pseudonyms ('Participant N' by order of first appearance) for
+    # LLM input — display names are PII and must not reach Cortex. Mirrors the aliasing
+    # in the phase2_transcript_session_summaries dbt model. Display code keeps `speaker`.
+    first_seen = df.groupby(["session_id", "speaker"])["turn_idx"].transform("min")
+    rank = first_seen.groupby(df["session_id"]).rank(method="dense")
+    df["speaker_alias"] = ("Participant " + rank.astype("Int64").astype(str)).where(rank.notna())
     return df
 
 

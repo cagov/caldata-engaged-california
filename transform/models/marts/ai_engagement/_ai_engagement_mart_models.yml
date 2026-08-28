@@ -214,7 +214,10 @@ models:
       whole-session calls); a failed call is not retried in-query. The returned themes cite
       turns by index only, and every cited index is validated against the session's real
       turns — unverifiable indices are dropped and themes with no valid supporting turn are
-      removed (hallucination guardrail). Summary text excludes speaker names (PII) by design.
+      removed (hallucination guardrail). Summary text excludes speaker names (PII) by design,
+      and the transcript sent to Cortex replaces speaker display names with per-session
+      pseudonyms ('Participant N' by order of first appearance) — real names never reach the
+      LLM except where participants say them within a turn.
 
       Sessions that fit the ~500k-char context feed each section call the whole transcript
       (llm_input_kind = 'whole_transcript'); longer sessions are map-reduced — each ~400k-char
