@@ -43,8 +43,10 @@ session = get_session()
 # Themes and supporting quotes are pre-computed by the dbt tagging pipeline
 # (models phase2_transcript_session_summaries / phase2_transcript_turn_tags,
 # built on phase2_zoom_transcripts_and_chats). This app reads those tables
-# instead of calling Cortex to summarize/tag on load. Point these at your
-# environment via .env; defaults target the production analytics schema.
+# instead of calling Cortex to summarize/tag on load. Summaries reference turns
+# by stable turn_hash; the app resolves those to the current transcript on load.
+# Point these at your environment via .env; defaults target the production
+# analytics schema.
 DISCUSSIONS_DATABASE = os.environ.get("DISCUSSIONS_DATABASE", "analytics_engca_prd")
 DISCUSSIONS_SCHEMA = os.environ.get("DISCUSSIONS_SCHEMA", "ai_engagement")
 
@@ -423,7 +425,7 @@ def load_events() -> pd.DataFrame:
     """Combined speech + chat turns, with the per-session turn_idx computed upstream
     in the dbt model (the citation backbone — no longer recomputed here)."""
     df = session.sql(f"""
-        SELECT session_id, source, src_ref, start_sec, end_sec, speaker, text, turn_idx
+        SELECT session_id, source, src_ref, start_sec, end_sec, speaker, text, turn_hash, turn_idx
         FROM {EVENTS_TABLE}
         ORDER BY session_id, turn_idx
     """).to_pandas()
@@ -440,12 +442,27 @@ def load_summaries() -> pd.DataFrame:
     overview row per session. Produced by the phase2_transcript_session_summaries model."""
     df = session.sql(f"""
         SELECT session_id, section, theme_seq, theme_label, summary_text,
-               supporting_turn_idxs, n_supporting_turns, n_unverified_idxs_dropped,
-               summary_status, llm_input_kind, llm_total_tokens, llm_model, processed_at
+               supporting_turn_hashes, n_supporting_turns, n_unverified_idxs_dropped,
+               transcript_fingerprint, summary_status, llm_input_kind, llm_total_tokens,
+               llm_model, processed_at
         FROM {SUMMARIES_TABLE}
     """).to_pandas()
     df.columns = [c.lower() for c in df.columns]
     return df
+
+
+@st.cache_data
+def load_transcript_fingerprints() -> dict[str, int]:
+    """Current per-session transcript fingerprint — the same HASH_AGG(turn_hash) the dbt
+    model stamps on summary rows at tagging time. A summary whose stored fingerprint
+    differs was tagged against an earlier version of the transcript (the pipeline
+    re-tags it on its next run); the app flags it as stale in the meantime."""
+    df = session.sql(f"""
+        SELECT session_id, HASH_AGG(turn_hash) AS fingerprint
+        FROM {EVENTS_TABLE}
+        GROUP BY session_id
+    """).to_pandas()
+    return {r.SESSION_ID: int(r.FINGERPRINT) for r in df.itertuples()}
 
 
 @st.cache_data
@@ -499,44 +516,59 @@ def load_sessions() -> pd.DataFrame:
     return df
 
 
-def parse_idx_array(value) -> list[int]:
-    """supporting_turn_idxs comes back from Snowflake as a JSON-formatted string (or a
-    list, depending on the connector). Normalize to a list of ints either way."""
+def parse_hash_array(value) -> list[str]:
+    """supporting_turn_hashes comes back from Snowflake as a JSON-formatted string (or a
+    list, depending on the connector). Normalize to a list of strings either way."""
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return []
     if isinstance(value, (list, tuple)):
-        return [int(x) for x in value]
+        return [str(x) for x in value]
     try:
-        return [int(x) for x in json.loads(value)]
+        return [str(x) for x in json.loads(value)]
     except (json.JSONDecodeError, TypeError, ValueError):
         return []
 
 
-def build_session_summaries(summ_df: pd.DataFrame) -> tuple[dict, dict]:
+def build_session_summaries(summ_df: pd.DataFrame, events_df: pd.DataFrame,
+                            current_fingerprints: dict[str, int]) -> tuple[dict, dict]:
     """Reshape the flat summary rows into the nested structure the UI renders:
     {session_id: {"overview": str, "failed_sections": [...],
-                  "<section>": [{theme, description, supporting_turn_idxs}]}}
+                  "<section>": [{theme, description, supporting_turn_idxs, n_unresolved}]}}
     plus a parallel {session_id: {provenance metadata}} dict.
+
+    Summaries store stable turn_hashes; here they are resolved to the CURRENT turn_idx of
+    each turn so the rest of the UI can index the transcript positionally. A turn_hash that
+    no longer exists is counted in n_unresolved rather than silently dropped, and a
+    session whose stored transcript_fingerprint differs from the current one is marked
+    stale (it was tagged against an earlier version of the transcript).
 
     The dbt model makes one Cortex call per (session, section) and emits a status row
     (theme_seq == 0) for every section — that's how "section call failed" is
     distinguished from "section succeeded but found no themes"."""
+    idx_by_hash = {
+        sid: dict(zip(g["turn_hash"], g["turn_idx"].astype(int)))
+        for sid, g in events_df.groupby("session_id")
+    }
     by_session: dict[str, dict] = {}
     meta: dict[str, dict] = {}
     for sid, group in summ_df.groupby("session_id"):
         summary: dict = {"overview": "", "failed_sections": []}
         collected: dict[str, list] = {s: [] for s in SECTIONS}
+        hash_map = idx_by_hash.get(sid, {})
+        n_cited = n_unresolved = 0
         for row in group.itertuples():
             if row.section == "overview":
                 summary["overview"] = row.summary_text or ""
                 if row.summary_status != "SUCCESS":
                     summary["failed_sections"].append("overview")
+                stored_fp = int(row.transcript_fingerprint) if pd.notna(row.transcript_fingerprint) else None
                 meta[sid] = {
                     "model": row.llm_model,
                     "processed_at": str(row.processed_at),
                     "input_kind": row.llm_input_kind,
                     "status": row.summary_status,
                     "tokens": int(row.llm_total_tokens) if pd.notna(row.llm_total_tokens) else 0,
+                    "stale": stored_fp != current_fingerprints.get(sid),
                 }
             elif row.section in collected:
                 if int(row.theme_seq) == 0:
@@ -544,12 +576,17 @@ def build_session_summaries(summ_df: pd.DataFrame) -> tuple[dict, dict]:
                     if row.summary_status != "SUCCESS":
                         summary["failed_sections"].append(row.section)
                     continue
+                hashes = parse_hash_array(row.supporting_turn_hashes)
+                idxs = sorted(hash_map[th] for th in hashes if th in hash_map)
+                n_cited += len(hashes)
+                n_unresolved += len(hashes) - len(idxs)
                 collected[row.section].append((
                     int(row.theme_seq),
                     {
                         "theme": row.theme_label or "",
                         "description": row.summary_text or "",
-                        "supporting_turn_idxs": parse_idx_array(row.supporting_turn_idxs),
+                        "supporting_turn_idxs": idxs,
+                        "n_unresolved": len(hashes) - len(idxs),
                         "n_unverified_idxs_dropped": int(row.n_unverified_idxs_dropped or 0),
                     },
                 ))
@@ -558,6 +595,8 @@ def build_session_summaries(summ_df: pd.DataFrame) -> tuple[dict, dict]:
         summary["failed_sections"].sort()
         if sid in meta:
             meta[sid]["n_failed_sections"] = len(summary["failed_sections"])
+            meta[sid]["n_cited"] = n_cited
+            meta[sid]["n_unresolved"] = n_unresolved
         by_session[sid] = summary
     return by_session, meta
 
@@ -775,7 +814,14 @@ except Exception as e:
     st.error(f"Failed to load pre-tagged summaries from {SUMMARIES_TABLE}: {e}")
     st.stop()
 
-summaries_by_session, summaries_meta = build_session_summaries(summaries_df)
+try:
+    transcript_fingerprints = load_transcript_fingerprints()
+except Exception:
+    transcript_fingerprints = {}  # every summary then reads as stale — fail visible, not silent
+
+summaries_by_session, summaries_meta = build_session_summaries(
+    summaries_df, events_df, transcript_fingerprints
+)
 session_stats = compute_session_stats(events_df)
 speakers_df = load_speakers()
 
@@ -819,6 +865,7 @@ with st.sidebar:
     if st.button("Refresh data", type="primary", width="stretch"):
         load_events.clear()
         load_summaries.clear()
+        load_transcript_fingerprints.clear()
         load_speakers.clear()
         st.session_state.quote_results = {}
         st.rerun()
@@ -868,6 +915,13 @@ elif meta.get("n_failed_sections", 0):
         f"({', '.join(failed)}). Failed sections are retried automatically on the "
         "next dbt run; the sections shown below are complete."
     )
+elif meta.get("stale"):
+    st.warning(
+        f"This summary is **stale**: it was tagged on {meta['processed_at'][:10]} against an "
+        f"earlier version of the transcript, and {meta.get('n_unresolved', 0)} of "
+        f"{meta.get('n_cited', 0)} supporting turns no longer resolve. The pipeline re-tags "
+        "the session automatically on its next run; until then treat these themes as provisional."
+    )
 else:
     st.caption(
         f"Tagged with `{meta['model']}` on {meta['processed_at'][:16]} · {meta['input_kind']} · "
@@ -914,13 +968,15 @@ with tab_summary:
                 continue
             for item in items:
                 st.markdown(f"**{item.get('theme', '')}** — {item.get('description', '')}")
-                idxs = item.get("supporting_turn_idxs", [])
-                with st.expander(f"Supporting turns ({len(idxs)})"):
+                idxs = item.get("supporting_turn_idxs", [])  # already resolved to current turns
+                n_unresolved = item.get("n_unresolved", 0)
+                label = f"Supporting turns ({len(idxs)})"
+                if n_unresolved:
+                    label += f" · ⚠️ {n_unresolved} unresolved"
+                with st.expander(label):
                     cards = []
                     prev_idx = None
-                    for idx in sorted(idxs):
-                        if idx not in indexed.index:
-                            continue
+                    for idx in idxs:
                         # Divider between non-contiguous stretches of conversation
                         if prev_idx is not None and idx - prev_idx > 1:
                             cards.append(gap_divider(idx - prev_idx - 1))
@@ -932,6 +988,14 @@ with tab_summary:
                             anchor_prefix=f"sum-{section}", speaker_demographics=speaker_demographics,
                         ))
                         prev_idx = idx
+                    if n_unresolved:
+                        cards.append(
+                            '<div style="border-left:4px solid #d32f2f; padding:6px 10px; '
+                            f'margin:4px 0;">⚠️ {n_unresolved} supporting turn'
+                            f"{'s' if n_unresolved > 1 else ''} cited by this theme no longer "
+                            "exist in the current transcript (tagged against an earlier "
+                            "version). Not shown rather than shown wrong.</div>"
+                        )
                     st.markdown("".join(cards), unsafe_allow_html=True)
 
 
