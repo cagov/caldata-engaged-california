@@ -33,7 +33,10 @@ Point the app at these via `DISCUSSIONS_DATABASE` / `DISCUSSIONS_SCHEMA` (see
   render dimmed so the tagged turn stays visually primary.
 - **Anti-hallucination by construction** — the tagging model only ever returns turn
   indices; verbatim text, speakers, and timestamps are resolved from the source data
-  in dbt. Facilitator/staff turns are excluded upstream.
+  in dbt, and each tag is stored against the turn's stable `turn_hash`. The app resolves
+  hashes to the current transcript on load, flags sessions whose transcript changed
+  since tagging, and hides (with a warning) any tag that no longer resolves.
+  Facilitator/staff turns are excluded upstream.
 - **PII gate** — the dashboard shows speaker names and demographics; users must
   acknowledge the PII notice before anything renders.
 
