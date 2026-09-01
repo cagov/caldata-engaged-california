@@ -357,11 +357,13 @@ models:
       hallucinated. Facilitator/staff turns are excluded deterministically (display-name
       heuristic plus the verified staff roster).
 
-      Incremental at the (session, theme) grain via delete+insert; FAILED pairs retry on the
-      next run and fail the build via an error-severity test, never silently. Prompt edits,
-      theme seed edits (theme_id is stable, but stored label/description text and tags stay
-      frozen), and transcript_times seed changes (turn_idx shifts) all require a
-      --full-refresh — the model cannot detect them.
+      Incremental at the (session, theme) grain via delete+insert: a pair is (re)called when
+      no SUCCESS row exists for it at the session's current transcript_fingerprint, so new
+      sessions, new themes, failed pairs, and sessions whose turns changed upstream are all
+      handled by a plain build (which also refreshes the stored verbatim turn columns).
+      FAILED pairs fail the build via an error-severity test, never silently. Prompt edits
+      and theme seed rewording (theme_id is stable, but stored label/description text and
+      tags stay frozen) still require a --full-refresh — the fingerprint cannot detect them.
 
       Speaker display names are PII, carried intentionally for verified quote display in the
       pull quote explorer dashboard; confirm the display policy before exposing them publicly.
@@ -383,10 +385,16 @@ models:
           1-based chronological position of the tagged turn within its (session, theme) pair.
           0 marks the pair's status row (no turn columns); dashboards should filter on
           turn_seq > 0 for quotes and read turn_seq = 0 rows for tag_status.
+      - name: turn_hash
+        description: |
+          The tagged turn's stable, content-addressed identity (joins to
+          phase2_zoom_transcripts_and_chats.turn_hash) — the durable reference to use for
+          resolving quotes against the current transcript. Null on status rows.
       - name: turn_idx
         description: |
-          The per-session chronological turn index (matches phase2_zoom_transcripts_and_chats);
-          null on status rows.
+          The turn's per-session chronological index as of tagging time. Positional, so it can
+          go stale between a transcript change and the pipeline's next run — resolve via
+          turn_hash when currency matters. Null on status rows.
       - name: source
         description: Either 'speech' for transcript turns or 'chat' for chat messages; null on status rows.
       - name: src_ref
@@ -419,6 +427,12 @@ models:
           - dbt_utils.not_accepted_values:
               values: ["FAILED"]
               severity: error
+      - name: transcript_fingerprint
+        description: |
+          HASH_AGG of the session's turn_hashes at tagging time. The incremental filter compares
+          it to the current transcript: a mismatch means the turns changed since tagging, and
+          every theme of the session is re-called on the next run. Dashboards can compare it
+          against HASH_AGG(turn_hash) over phase2_zoom_transcripts_and_chats to flag stale tags.
       - name: llm_tokens
         description: >
           Total tokens billed for this pair's Cortex call (0 when the call was skipped or

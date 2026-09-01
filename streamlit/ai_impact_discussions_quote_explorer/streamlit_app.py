@@ -39,8 +39,10 @@ session = get_session()
 # Theme tags are pre-computed by the dbt tagging pipeline (model
 # phase2_transcript_curated_theme_tags, built on phase2_zoom_transcripts_and_chats
 # against the curated_discussion_themes seed). This app only reads tables — it makes
-# zero live Cortex calls. Point it at your environment via .env; defaults target the
-# production analytics schema.
+# zero live Cortex calls. Tags reference turns by stable turn_hash; the app resolves
+# those to the current transcript on load and hides (with a warning) any that no longer
+# resolve. Point it at your environment via .env; defaults target the production
+# analytics schema.
 DISCUSSIONS_DATABASE = os.environ.get("DISCUSSIONS_DATABASE", "analytics_engca_prd")
 DISCUSSIONS_SCHEMA = os.environ.get("DISCUSSIONS_SCHEMA", "ai_engagement")
 
@@ -95,9 +97,9 @@ def load_quotes() -> pd.DataFrame:
     plus one status row (turn_seq = 0) per (session, theme) pair — that's how "call
     failed" is distinguished from "no turns matched"."""
     df = session.sql(f"""
-        SELECT session_id, theme_id, theme_label, theme_description, turn_seq, turn_idx,
-               source, start_sec, end_sec, speaker, text,
-               n_matched_turns, tag_status, llm_model, processed_at
+        SELECT session_id, theme_id, theme_label, theme_description, turn_seq, turn_hash,
+               turn_idx, source, start_sec, end_sec, speaker, text,
+               n_matched_turns, tag_status, transcript_fingerprint, llm_model, processed_at
         FROM {QUOTES_TABLE}
         ORDER BY theme_id, session_id, turn_idx
     """).to_pandas()
@@ -110,12 +112,26 @@ def load_events() -> pd.DataFrame:
     """Combined speech + chat turns with the per-session turn_idx computed upstream in
     the dbt model. Used for the click-to-expand context around each quote."""
     df = session.sql(f"""
-        SELECT session_id, source, src_ref, start_sec, end_sec, speaker, text, turn_idx
+        SELECT session_id, source, src_ref, start_sec, end_sec, speaker, text, turn_hash, turn_idx
         FROM {EVENTS_TABLE}
         ORDER BY session_id, turn_idx
     """).to_pandas()
     df.columns = [c.lower() for c in df.columns]
     return df.sort_values(["session_id", "turn_idx"]).reset_index(drop=True)
+
+
+@st.cache_data
+def load_transcript_fingerprints() -> dict[str, int]:
+    """Current per-session transcript fingerprint — the same HASH_AGG(turn_hash) the dbt
+    model stamps on tag rows at tagging time. A tag whose stored fingerprint differs was
+    made against an earlier version of the transcript (the pipeline re-tags it on its
+    next run); the app flags the session as stale in the meantime."""
+    df = session.sql(f"""
+        SELECT session_id, HASH_AGG(turn_hash) AS fingerprint
+        FROM {EVENTS_TABLE}
+        GROUP BY session_id
+    """).to_pandas()
+    return {r.SESSION_ID: int(r.FINGERPRINT) for r in df.itertuples()}
 
 
 @st.cache_data
@@ -270,7 +286,34 @@ speakers_df = load_speakers()
 # (turn_seq > 0) are the tagged turns themselves.
 status_df = tags_df[tags_df["turn_seq"] == 0]
 quotes_df = tags_df[tags_df["turn_seq"] > 0].copy()
-quotes_df["turn_idx"] = quotes_df["turn_idx"].astype(int)
+
+# Tags cite turns by stable turn_hash; resolve each to its CURRENT positional turn_idx so
+# the UI (ordering, context expansion) can index the transcript. A hash that no longer
+# exists means the turn changed since tagging — hide the quote (not shown rather than
+# shown wrong) and surface a count; the pipeline re-tags the session on its next run.
+idx_by_hash = {
+    sid: dict(zip(g["turn_hash"], g["turn_idx"].astype(int)))
+    for sid, g in events_df.groupby("session_id")
+}
+quotes_df["current_idx"] = [
+    idx_by_hash.get(sid, {}).get(th)
+    for sid, th in zip(quotes_df["session_id"], quotes_df["turn_hash"])
+]
+n_unresolved = int(quotes_df["current_idx"].isna().sum())
+quotes_df = quotes_df[quotes_df["current_idx"].notna()].copy()
+quotes_df["current_idx"] = quotes_df["current_idx"].astype(int)
+
+# Sessions whose transcript changed since tagging (any stored fingerprint differs from the
+# current one). Their surviving quotes still resolve correctly via turn_hash.
+try:
+    current_fingerprints = load_transcript_fingerprints()
+except Exception:
+    current_fingerprints = {}  # every session then reads as stale — fail visible, not silent
+stale_sids = sorted({
+    sid
+    for sid, fp in zip(tags_df["session_id"], tags_df["transcript_fingerprint"])
+    if (int(fp) if pd.notna(fp) else None) != current_fingerprints.get(sid)
+})
 
 # Session labels & chronological order from phase2_sessions, with a fallback for
 # sessions missing from that table.
@@ -307,9 +350,9 @@ for sid, group in events_df.groupby("session_id"):
     idx_bounds[sid] = (int(indexed.index.min()), int(indexed.index.max()))
     colors_by_session[sid] = speaker_colors(group)
 
-# (session, turn) -> every theme label tagged on that turn, for "also tagged" pills.
-turn_themes: dict[tuple[str, int], list[str]] = (
-    quotes_df.groupby(["session_id", "turn_idx"])["theme_label"]
+# (session, turn_hash) -> every theme label tagged on that turn, for "also tagged" pills.
+turn_themes: dict[tuple[str, str], list[str]] = (
+    quotes_df.groupby(["session_id", "turn_hash"])["theme_label"]
     .agg(lambda s: sorted(s.unique()))
     .to_dict()
 )
@@ -333,6 +376,7 @@ with st.sidebar:
     if st.button("Refresh data", type="primary", width="stretch"):
         load_quotes.clear()
         load_events.clear()
+        load_transcript_fingerprints.clear()
         load_sessions.clear()
         load_speakers.clear()
         st.rerun()
@@ -371,6 +415,15 @@ if not failed_pairs.empty:
     st.warning(
         f"⚠️ {len(failed_pairs)} (session, theme) tagging call(s) FAILED — their quotes are "
         "missing below. Failed pairs are retried automatically on the next dbt pipeline run."
+    )
+
+if stale_sids or n_unresolved:
+    stale_labels = ", ".join(format_session_label(sid) for sid in stale_sids)
+    st.warning(
+        f"⚠️ {len(stale_sids)} session(s) have **stale tags** — the transcript changed since "
+        f"tagging ({stale_labels}). {n_unresolved} tagged quote(s) no longer resolve to a "
+        "current turn and are hidden rather than shown wrong. The pipeline re-tags affected "
+        "sessions automatically on its next run; until then treat their tags as provisional."
     )
 
 if not status_df.empty:
@@ -427,10 +480,10 @@ with st.expander("View as table"):
 
 st.download_button(
     "Download filtered quotes CSV",
-    filtered_df[[
-        "theme_id", "theme_label", "session_id", "turn_idx", "start_sec",
+    filtered_df.sort_values(["theme_label", "session_rank", "current_idx"])[[
+        "theme_id", "theme_label", "session_id", "turn_hash", "current_idx", "start_sec",
         "source", "speaker", "text",
-    ]].sort_values(["theme_label", "session_rank", "turn_idx"]).to_csv(index=False),
+    ]].rename(columns={"current_idx": "turn_idx"}).to_csv(index=False),
     file_name="engca_pull_quotes.csv",
     mime="text/csv",
 )
@@ -453,12 +506,16 @@ def render_quote_block(theme_id: int, row) -> None:
     """One tagged turn plus its expandable context: a "show earlier/later" button above
     and below reveals CONTEXT_STEP more transcript turns per click (state survives
     reruns via st.session_state). Context turns render dimmed and unbadged so the
-    tagged turn stays visually primary."""
+    tagged turn stays visually primary.
+
+    The tagged turn is addressed by its stable turn_hash, resolved upstream to its
+    CURRENT turn_idx — everything here (content, timestamps, context) renders from the
+    current transcript, so it can never drift from the source data."""
     sid = row.session_id
-    idx = int(row.turn_idx)
+    idx = int(row.current_idx)
     indexed = events_by_session.get(sid)
     lo_bound, hi_bound = idx_bounds.get(sid, (idx, idx))
-    base = f"{theme_id}_{sid}_{idx}"
+    base = f"{theme_id}_{sid}_{row.turn_hash}"
     up_key, dn_key = f"ctx_up_{base}", f"ctx_dn_{base}"
     lo = max(lo_bound, idx - st.session_state.get(up_key, 0))
     hi = min(hi_bound, idx + st.session_state.get(dn_key, 0))
@@ -473,19 +530,21 @@ def render_quote_block(theme_id: int, row) -> None:
     anchor = f"q-{base}"
     cards = []
     for i in range(lo, hi + 1):
+        if indexed is None or i not in indexed.index:
+            continue
+        r = indexed.loc[i]
         if i == idx:
             cards.append(render_turn_html(
-                idx, row.source, row.speaker, row.start_sec, row.text,
-                color=colors.get(row.speaker, "#888"), anchor_prefix=anchor,
-                speaker_demographics=get_speaker_demographics(row.speaker, sid, speakers_df),
+                idx, r["source"], r["speaker"], r["start_sec"], r["text"],
+                color=colors.get(r["speaker"], "#888"), anchor_prefix=anchor,
+                speaker_demographics=get_speaker_demographics(r["speaker"], sid, speakers_df),
             ))
-        elif indexed is not None and i in indexed.index:
-            r = indexed.loc[i]
+        else:
             cards.append(render_turn_html(
                 i, r["source"], r["speaker"], r["start_sec"], r["text"],
                 anchor_prefix=anchor, dimmed=True,
             ))
-    also_tagged = [lbl for lbl in turn_themes.get((sid, idx), []) if lbl != row.theme_label]
+    also_tagged = [lbl for lbl in turn_themes.get((sid, row.turn_hash), []) if lbl != row.theme_label]
     cards.append(quote_footer_html(format_session_label(sid), also_tagged))
     st.markdown("".join(cards), unsafe_allow_html=True)
 
@@ -533,7 +592,7 @@ theme_descriptions = filtered_df.drop_duplicates("theme_label").set_index("theme
 for theme_label in theme_order:
     theme_df = (
         filtered_df[filtered_df["theme_label"] == theme_label]
-        .sort_values(["session_rank", "turn_idx"])
+        .sort_values(["session_rank", "current_idx"])
     )
     with st.expander(f"**{theme_label}** ({len(theme_df)} quote{'s' if len(theme_df) != 1 else ''})"):
         description = theme_descriptions.get(theme_label)

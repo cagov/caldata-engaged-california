@@ -21,7 +21,15 @@
 -- exist in the session (hallucination guardrail: the LLM cites turns by index and never
 -- reproduces quote text, so tags can be mis-targeted but quotes cannot be invented) -> drop
 -- facilitator/staff turns deterministically (display-name heuristic + verified staff roster;
--- the LLM is also instructed to skip them, but the filter here is what's binding).
+-- the LLM is also instructed to skip them, but the filter here is what's binding) ->
+-- store each surviving turn's stable turn_hash alongside its positional index.
+--
+-- WHY turn_hashes: turn_idx is positional, so it renumbers whenever an upstream filter or
+-- parsing rule changes the set of turns. Every row therefore carries the content-addressed
+-- turn_hash of its tagged turn plus a fingerprint of the session's turn_hashes as of
+-- tagging. A session is (re)tagged whenever its current fingerprint differs — i.e.
+-- whenever any turn was added, removed, regrouped, or edited — which also refreshes the
+-- verbatim turn columns stored here (same pattern as phase2_transcript_session_summaries).
 --
 -- EVERY (session, theme) pair appears in this table via a status row (turn_seq = 0): check
 -- tag_status. A SUCCESS status row with n_matched_turns = 0 means the call worked and no
@@ -30,15 +38,15 @@
 -- pairs are retried automatically on the next run — only those pairs re-bill — and an
 -- error-severity dbt test fails the build so failures are loud, never silent.
 --
--- Incremental at the (session, theme) grain: transcripts are immutable once uploaded, so
--- each pair is tagged exactly once. Reserve --full-refresh for changes that invalidate
--- existing rows, all of which this model can NOT detect on its own:
+-- Incremental at the (session, theme) grain. A pair is called when this table has no
+-- SUCCESS row for it built from the session's CURRENT transcript fingerprint: new
+-- sessions, new themes in the seed, failed pairs, and every theme of a session whose
+-- turns changed upstream (which re-bills that whole session). Reserve --full-refresh for
+-- changes the fingerprint can NOT detect:
 --   * prompt edits in this file;
---   * theme seed edits — a reworded label or description does not re-tag processed pairs
---     (theme_id is manually assigned and stable, so rewording never orphans rows, but the
---     label/description text stored here stays frozen until a --full-refresh);
---   * transcript_times seed changes — re-windowing a session shifts every turn_idx in it,
---     silently mis-pointing this table's existing citations.
+--   * theme seed rewording — theme_id is manually assigned and stable, so rewording a
+--     label or description never orphans rows, but it does not re-tag processed pairs and
+--     the label/description text stored here stays frozen until a --full-refresh.
 --
 -- Sessions above ~500k chars (none exist; real sessions are ~12k-200k) are NOT map-reduced
 -- here: their calls are skipped entirely and surface as persistent FAILED status rows.
@@ -137,6 +145,7 @@ rendered_turns as (
     select
         session_id,
         turn_idx,
+        turn_hash,
         '[' || turn_idx || '] ('
         || coalesce(
             case
@@ -161,39 +170,54 @@ transcripts as (
     select
         session_id,
         listagg(turn_line, '\n') within group (order by turn_idx) as transcript_text,
-        sum(length(turn_line)) as n_transcript_chars
+        sum(length(turn_line)) as n_transcript_chars,
+        -- Order-independent hash of the session's turn_hashes: changes iff the set of turns
+        -- (or any turn's content) changes. Stamped on every row this session produces.
+        hash_agg(turn_hash) as transcript_fingerprint
     from rendered_turns
     group by session_id
 ),
 
 -- noqa: disable=LT02
 -- the `is_incremental()` block is causing issues with the linter. Disabling indentation QA for this CTE only.
-sessions_to_process as (
-    select *
-    from transcripts
-
+-- Which (session, theme) calls to make: a pair is pending unless this table already holds
+-- a SUCCESS row for it built from the session's current transcript fingerprint. The cross
+-- join against the CURRENT seed makes this seed-aware too: new sessions, new themes,
+-- failed-pair retries, and full re-tags of sessions whose turns changed are all covered.
+pending_pairs as (
+    select
+        t.session_id,
+        th.theme_id
+    from transcripts as t
+    cross join themes as th
     {% if is_incremental() %}
-        -- A session needs work unless every theme in the CURRENT seed already has a
-        -- SUCCESS row for it. The join to `themes` makes this seed-aware: SUCCESS rows for
-        -- ids no longer in the seed (removed/renumbered themes) don't count toward the
-        -- total, so adding a theme re-opens every session for that id only (the per-pair
-        -- filter below narrows the actual calls).
-        where session_id not in (
-            select t.session_id
-            from {{ this }} as t
-            inner join themes as th on t.theme_id = th.theme_id
-            where t.tag_status = 'SUCCESS'
-            group by t.session_id
-            having count(distinct t.theme_id) >= (select count(*) from themes)
+        {#- Migration guard: a table built before transcript_fingerprint existed can't be
+            queried for the column, so everything is pending and the plain build re-tags it
+            all (no --full-refresh needed). Harmless once every environment carries it. -#}
+        {%- set existing_cols = adapter.get_columns_in_relation(this) | map(attribute='name') | map('upper') | list -%}
+        {% if 'TRANSCRIPT_FINGERPRINT' in existing_cols %}
+        where not exists (
+            select 1 from {{ this }} as done
+            where
+                done.session_id = t.session_id
+                and done.theme_id = th.theme_id
+                and done.tag_status = 'SUCCESS'
+                and done.transcript_fingerprint = t.transcript_fingerprint
         )
+        {% endif %}
     {% endif %}
 ),
--- noqa: enable=LT02
 
--- noqa: disable=LT02
+sessions_to_process as (
+    select t.*
+    from transcripts as t
+    where t.session_id in (select pp.session_id from pending_pairs as pp)
+),
+
 theme_calls as (
     select
         s.session_id,
+        s.transcript_fingerprint,
         th.theme_id,
         th.theme_label,
         th.theme_description,
@@ -208,19 +232,11 @@ theme_calls as (
                 || '\n\nTranscript:\n' || s.transcript_text
         end as user_prompt
     from sessions_to_process as s
-    cross join themes as th
+    inner join pending_pairs as pp
+        on s.session_id = pp.session_id
+    inner join themes as th
+        on pp.theme_id = th.theme_id
     cross join prompts as p
-    {% if is_incremental() %}
-        -- Per-pair retry filter: only (session, theme) pairs without a SUCCESS row get
-        -- (re)called.
-        where not exists (
-            select 1 from {{ this }} as t
-            where
-                t.session_id = s.session_id
-                and t.theme_id = th.theme_id
-                and t.tag_status = 'SUCCESS'
-        )
-    {% endif %}
 ),
 -- noqa: enable=LT02
 
@@ -237,6 +253,7 @@ parsed as (
         theme_id,
         theme_label,
         theme_description,
+        transcript_fingerprint,
         coalesce(raw_response:usage:total_tokens::int, 0) as llm_tokens,
         try_parse_json(to_json(raw_response:structured_output[0]:raw_message)) as tag_json,
         case
@@ -279,6 +296,7 @@ classified as (
     select
         e.session_id,
         e.theme_id,
+        t.turn_hash,
         t.turn_idx,
         t.source,
         t.src_ref,
@@ -329,6 +347,7 @@ turn_rows as (
             partition by c.session_id, c.theme_id
             order by c.turn_idx
         ) as turn_seq,
+        c.turn_hash,
         c.turn_idx,
         c.source,
         c.src_ref,
@@ -340,6 +359,7 @@ turn_rows as (
         pc.n_unverified_idxs_dropped,
         pc.n_facilitator_turns_dropped,
         p.tag_status,
+        p.transcript_fingerprint,
         p.llm_tokens
     from classified as c
     inner join parsed as p
@@ -363,6 +383,7 @@ status_rows as (
         p.theme_label,
         p.theme_description,
         0 as turn_seq,
+        null::varchar as turn_hash,
         null::int as turn_idx,
         null::varchar as source,
         null::int as src_ref,
@@ -374,6 +395,7 @@ status_rows as (
         coalesce(pc.n_unverified_idxs_dropped, 0) as n_unverified_idxs_dropped,
         coalesce(pc.n_facilitator_turns_dropped, 0) as n_facilitator_turns_dropped,
         p.tag_status,
+        p.transcript_fingerprint,
         p.llm_tokens
     from parsed as p
     left join pair_counts as pc
