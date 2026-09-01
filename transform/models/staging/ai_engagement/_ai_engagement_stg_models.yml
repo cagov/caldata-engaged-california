@@ -131,6 +131,28 @@ models:
       - name: discussion_end_sec
         description: When the real discussion ends, in seconds from recording start.
 
+  - name: stg_curated_discussion_themes
+    description: >
+      The manually-curated discussion themes from the curated_discussion_themes seed.
+      theme_id is the manually-assigned stable integer key and the incremental grain key of
+      phase2_transcript_curated_theme_tags — never renumber existing themes.
+    columns:
+      - name: theme_id
+        description: >
+          Manually-assigned stable integer identifier from the seed. Uniqueness is enforced
+          so two themes can never silently share an id.
+        data_tests:
+          - unique
+          - not_null
+      - name: theme_label
+        description: The theme's human-readable display name, verbatim from the seed.
+        data_tests:
+          - not_null
+      - name: theme_description
+        description: >
+          A brief curator-written description of what the theme encompasses; included in the
+          tagging prompt verbatim.
+
   - name: stg_zoom_transcript_cues
     description: |
       This table contains the raw transcripts from Phase 2 events.
