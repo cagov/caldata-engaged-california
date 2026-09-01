@@ -91,12 +91,19 @@ models:
         description: The display name of the speaker for the engagement data.
       - name: text
         description: The text of the engagement data.
+      - name: turn_hash
+        description: |
+          Stable, content-addressed turn identity: md5 of session_id, source, src_ref, speaker,
+          and text. Unlike turn_idx it does not depend on which other turns survive upstream
+          filters. It changes if the turn's content changes.
+        data_tests:
+          - not_null
+          - unique
       - name: turn_idx
         description: |
           Per-session chronological index (0-based) over all events, ordered by start_sec with
-          deterministic tie-breaking on source and src_ref. This is the citation backbone of the
-          AI tagging models: LLMs cite turns by this index, and verbatim quotes are always
-          resolved from this table rather than trusted from model output.
+          deterministic tie-breaking on source and src_ref. Positional, so it renumbers whenever
+          upstream filters change — never store it as a durable reference.
 
   - name: phase2_speaker_ai_survey
     description: |
@@ -223,9 +230,11 @@ models:
 
       Every (session, section) pair appears in this table via a status row (theme_seq = 0) —
       check summary_status. FAILED pairs are retried automatically on the next run, and only
-      failed sections re-bill. Incremental at the (session, section) grain, so LLM cost is
-      only incurred for new sessions or retried failures. Prompts live at the top of the
-      model SQL; editing them requires a --full-refresh to re-tag existing sessions.
+      failed sections re-bill. Incremental at the (session, section) grain: a pair is
+      (re)called when no SUCCESS row exists for it at the session's current
+      transcript_fingerprint, so new sessions, failed sections, and sessions whose turns
+      changed upstream are all handled by a plain build. Prompts live at the top of the model
+      SQL; editing them requires a --full-refresh to re-tag existing sessions.
     columns:
       - name: session_id
         description: The unique identifier for each Zoom session.
@@ -258,12 +267,14 @@ models:
         description: |
           The overview text (overview rows) or the theme description. Contains no speaker names.
           Null on section status rows and when summary_status is not SUCCESS.
-      - name: supporting_turn_idxs
+      - name: supporting_turn_hashes
         description: |
-          Array of validated turn indices supporting this theme. Resolve against
-          phase2_zoom_transcripts_and_chats (or use phase2_transcript_turn_tags) for verbatim quotes.
+          Array of stable turn_hashes supporting this theme, in transcript order. The LLM cited
+          positional turn indices; each was verified against the session's turns and translated
+          to its turn_hash at build time. Resolve against phase2_zoom_transcripts_and_chats.turn_hash
+          (or use phase2_transcript_turn_tags) for verbatim quotes.
       - name: n_supporting_turns
-        description: Number of validated supporting turn indices.
+        description: Number of validated supporting turns.
       - name: n_unverified_idxs_dropped
         description: |
           Number of turn indices the LLM returned that do not exist in the session and were
@@ -285,6 +296,12 @@ models:
           summary was synthesized from per-chunk theme extractions.
       - name: n_transcript_chars
         description: Rendered character length of the session transcript.
+      - name: transcript_fingerprint
+        description: |
+          HASH_AGG of the session's turn_hashes at tagging time. The incremental filter compares it
+          to the current transcript: a mismatch means the turns changed since tagging, and every
+          section of the session is re-called on the next run. Dashboards can compare it against
+          HASH_AGG(turn_hash) over phase2_zoom_transcripts_and_chats to flag stale summaries.
       - name: llm_total_tokens
         description: Total tokens used for this session, including any map-pass calls.
       - name: llm_model
@@ -303,8 +320,10 @@ models:
     columns:
       - name: session_id
         description: The unique identifier for each Zoom session.
+      - name: turn_hash
+        description: The stable turn identity the summary cites (joins to phase2_zoom_transcripts_and_chats.turn_hash).
       - name: turn_idx
-        description: The per-session chronological turn index (matches phase2_zoom_transcripts_and_chats).
+        description: The turn's current per-session chronological index, from phase2_zoom_transcripts_and_chats.
       - name: section
         description: |
           The summary section the tag belongs to (protect_themes, gov_action_themes,
