@@ -1,0 +1,2 @@
+theme_id,theme_label,theme_description
+1,PLACEHOLDER - replace with the curated themes before merge,Placeholder row so the pipeline can be scaffolded and built in dev. Replace this file's contents with the 29 manually-curated themes (id + label + description) before merging to main.
