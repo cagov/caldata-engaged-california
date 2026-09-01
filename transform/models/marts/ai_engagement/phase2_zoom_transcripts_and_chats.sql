@@ -31,10 +31,16 @@ combined AS (
 
 SELECT
     *,
+    -- turn_hash: stable, content-addressed identity for a turn. It depends only on the turn's
+    -- own source record and content, never on which other turns survive upstream filters.
+    -- It changes if the turn's speaker or text changes,
+    -- which is exactly when a summary citing it needs to be redone.
+    MD5(
+        session_id || '|' || source || '|' || src_ref || '|'
+        || COALESCE(speaker, '') || '|' || COALESCE(text, '')
+    ) AS turn_hash,
     -- turn_idx: per-session chronological index over all events (speech and chat
-    -- interleaved). The AI tagging models cite turns by this index and resolve verbatim
-    -- text from this table, so the ordering ties are broken deterministically (source,
-    -- then src_ref) to keep turn_idx stable across rebuilds.
+    -- interleaved). It is positional, so it renumbers whenever upstream filters change.
     ROW_NUMBER() OVER (
         PARTITION BY session_id
         ORDER BY start_sec ASC, source ASC, src_ref ASC

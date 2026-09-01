@@ -9,9 +9,11 @@ Cortex live for ad-hoc questions.
 **Data source (all built by dbt):**
 
 - `phase2_zoom_transcripts_and_chats` — one row per conversation turn (session_id, source
-  speech/chat, start_sec, end_sec, speaker, text, and the per-session `turn_idx`).
+  speech/chat, start_sec, end_sec, speaker, text, the stable `turn_hash`, and the positional
+  per-session `turn_idx`).
 - `phase2_transcript_session_summaries` — the pre-tagged themes: one row per (session, section,
-  theme), plus an overview row per session, with validated `supporting_turn_idxs`.
+  theme), plus an overview row per session, with validated `supporting_turn_hashes` and the
+  `transcript_fingerprint` the session was tagged against.
 
 Point the app at these via `DISCUSSIONS_DATABASE` / `DISCUSSIONS_SCHEMA` (see `.env.example`).
 
@@ -20,10 +22,15 @@ Point the app at these via `DISCUSSIONS_DATABASE` / `DISCUSSIONS_SCHEMA` (see `.
 The methodology was validated in `notebooks/ai_impact_survey/phase_2_analysis.ipynb` and now
 lives in the dbt models:
 
-- Every turn has a per-session chronological integer `turn_idx` — the citation backbone.
+- Every turn has a per-session chronological integer `turn_idx` (what the AI cites in-prompt)
+  and a stable, content-addressed `turn_hash` (what the pipeline stores and the app resolves).
 - The AI cites turns by index (`[turn:N]`); **verbatim quote text, speakers, and timestamps are
   always resolved from the source data, never from the model's output**. The dbt model drops
-  unverifiable indices before the app ever sees them.
+  unverifiable indices and translates the rest to `turn_hash`s before the app ever sees them.
+- `turn_idx` is positional and renumbers whenever upstream transcript filters change. The
+  pipeline fingerprints each session's `turn_hash`s and re-tags any session whose fingerprint
+  changed; the app compares the same fingerprint on load and labels a summary **stale** (with
+  per-theme unresolved-turn counts) if the pipeline hasn't caught up yet.
 - System prompts instruct the model to say so — rather than invent themes — when a session
   doesn't substantively discuss AI (some recordings are pilots/staff sessions, and real
   recordings may open with a staff-prep segment).
