@@ -1,7 +1,7 @@
 -- The pre-tagged transcript: one row per (tagged turn, theme), with the verbatim turn
 -- text, speaker, and timestamps joined back from the source data. Because the AI only
--- ever returns turn indices — validated upstream in phase2_transcript_session_summaries —
--- quotes in this table cannot be hallucinated.
+-- ever returns turn indices — validated and translated to stable turn_hashes upstream in
+-- phase2_transcript_session_summaries — quotes in this table cannot be hallucinated.
 --
 -- Use this to display theme-tagged turns in dashboards (e.g. badge turns in a transcript
 -- view, or list supporting quotes under each theme) without any joins at read time.
@@ -18,13 +18,13 @@ with theme_tags as (
 exploded as (
     select
         tt.session_id,
-        idx.value::int as turn_idx,
+        th.value::string as turn_hash,
         tt.section,
         tt.theme_seq,
         tt.theme_label,
         tt.summary_text as theme_description
     from theme_tags as tt,
-        lateral flatten(input => tt.supporting_turn_idxs) as idx
+        lateral flatten(input => tt.supporting_turn_hashes) as th
 ),
 
 turns as (
@@ -33,7 +33,8 @@ turns as (
 
 select
     e.session_id,
-    e.turn_idx,
+    e.turn_hash,
+    t.turn_idx,
     e.section,
     e.theme_seq,
     e.theme_label,
@@ -47,5 +48,5 @@ from exploded as e
 inner join turns as t
     on
         e.session_id = t.session_id
-        and e.turn_idx = t.turn_idx
-order by e.session_id, e.turn_idx, e.section, e.theme_seq
+        and e.turn_hash = t.turn_hash
+order by e.session_id, t.turn_idx, e.section, e.theme_seq

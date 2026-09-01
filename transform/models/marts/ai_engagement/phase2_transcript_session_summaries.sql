@@ -14,7 +14,14 @@
 -- PER (session, section) -> flatten each section's JSON into theme rows -> keep only turn
 -- citations that verifiably exist in the session (hallucination guardrail: the LLM cites
 -- turns by index and never reproduces quote text, so quotes can be mis-targeted but not
--- invented; unverifiable indices are dropped and themes with none left are removed).
+-- invented; unverifiable indices are dropped and themes with none left are removed) ->
+-- translate the surviving positional indices into stable turn_hashes for storage.
+--
+-- WHY turn_hashes: turn_idx is positional, so it renumbers whenever an upstream filter or
+-- parsing rule changes the set of turns. Summaries therefore store the content-addressed
+-- turn_hash of each supporting turn, and every row is stamped with a fingerprint of the
+-- session's turn_hashes as of tagging. A session is (re)tagged whenever its current
+-- fingerprint differs — i.e. whenever any turn was added, removed, regrouped, or edited.
 --
 -- WHY per-section calls: Cortex COMPLETE calls fail transiently in proportion to how long
 -- they run, and call duration is dominated by output length. A whole-session call writes
@@ -40,11 +47,13 @@
 --
 -- Run conventions: use `dbt build` (not bare `run`) so the tests actually gate; a red
 -- build is recovered by re-running the same plain build; reserve --full-refresh for
--- prompt/logic changes — it re-bills every session.
+-- prompt/logic changes — it re-bills every session. (Upstream transcript changes do NOT
+-- need one: the fingerprint check below re-tags affected sessions automatically.)
 --
--- Incremental at the (session, section) grain: transcripts are immutable once uploaded,
--- so each section is tagged exactly once (LLM cost is only ever incurred for new sessions
--- or retried failures).
+-- Incremental at the (session, section) grain. A (session, section) is called when this
+-- table has no SUCCESS row for it built from the session's CURRENT transcript fingerprint:
+-- new sessions, failed sections, and every section of a session whose turns changed since
+-- it was tagged (which re-bills that whole session).
 --
 -- Methodology validated in notebooks/ai_impact_survey/phase_2_analysis.ipynb.
 
@@ -101,8 +110,8 @@ Each cites turns as [turn:N] — use those N values for supporting_turn_idxs.$$
 ),
 
 -- One row per summary section; each section is its own Cortex call. If you add or remove
--- a section here, update the section count in the incremental filter below and the
--- accepted_values test in _ai_engagement_mart_models.yml.
+-- a section here, update the accepted_values test in _ai_engagement_mart_models.yml (a new
+-- section is simply pending for every session on the next run).
 sections as (
     select
         'overview' as section,
@@ -211,6 +220,7 @@ rendered_turns as (
     select
         session_id,
         turn_idx,
+        turn_hash,
         '[' || turn_idx || '] ('
         || coalesce(
             case
@@ -235,30 +245,49 @@ transcripts as (
     select
         session_id,
         listagg(turn_line, '\n') within group (order by turn_idx) as transcript_text,
-        sum(length(turn_line)) as n_transcript_chars
+        sum(length(turn_line)) as n_transcript_chars,
+        -- Order-independent hash of the session's turn_hashes: changes iff the set of turns
+        -- (or any turn's content) changes. Stamped on every row this session produces.
+        hash_agg(turn_hash) as transcript_fingerprint
     from rendered_turns
     group by session_id
 ),
 
 -- noqa: disable=LT02
 -- the `is_incremental()` block is causing issues with the linter. Disabling indentation QA for this CTE only.
-sessions_to_process as (
-    select *
-    from transcripts
-
+-- Which (session, section) calls to make: a pair is pending unless this table already holds
+-- a SUCCESS row for it built from the session's current transcript fingerprint. That covers
+-- new sessions, failed-section retries, and full re-tags of sessions whose turns changed.
+pending_sections as (
+    select
+        t.session_id,
+        s.section
+    from transcripts as t
+    cross join sections as s
     {% if is_incremental() %}
-        -- A session needs work unless ALL 7 sections already have a SUCCESS row (7 = the
-        -- number of rows in the `sections` CTE). Failed or missing sections retry
-        -- automatically; which sections actually get called is filtered per-section below.
-        where session_id not in (
-            select t.session_id from {{ this }} as t
-            where t.summary_status = 'SUCCESS'
-            group by t.session_id
-            having count(distinct t.section) >= 7
+        {#- Migration guard: a table built before transcript_fingerprint existed has no way to
+            prove any row is current, so everything is pending and the plain build re-tags it
+            all (no --full-refresh needed). Harmless once every environment carries the column. -#}
+        {%- set existing_cols = adapter.get_columns_in_relation(this) | map(attribute='name') | map('upper') | list -%}
+        {% if 'TRANSCRIPT_FINGERPRINT' in existing_cols %}
+        where not exists (
+            select 1 from {{ this }} as done
+            where
+                done.session_id = t.session_id
+                and done.section = s.section
+                and done.summary_status = 'SUCCESS'
+                and done.transcript_fingerprint = t.transcript_fingerprint
         )
+        {% endif %}
     {% endif %}
 ),
 -- noqa: enable=LT02
+
+sessions_to_process as (
+    select t.*
+    from transcripts as t
+    where t.session_id in (select ps.session_id from pending_sections as ps)
+),
 
 -- ------------------------------------------------------------------------------------
 -- MAP path, for sessions too long for a single call. Chunk assignment: running character
@@ -365,6 +394,7 @@ session_inputs as (
     select
         s.session_id,
         s.n_transcript_chars,
+        s.transcript_fingerprint,
         case
             when s.n_transcript_chars <= {{ max_single_call_chars }} then 'whole_transcript'
             else 'map_reduce'
@@ -394,6 +424,7 @@ section_calls as (
     select
         i.session_id,
         i.n_transcript_chars,
+        i.transcript_fingerprint,
         i.llm_input_kind,
         i.map_tokens,
         s.section,
@@ -410,18 +441,11 @@ section_calls as (
             else '{{ themes_response_schema }}'
         end as response_schema
     from session_inputs as i
-    cross join sections as s
+    inner join pending_sections as ps
+        on i.session_id = ps.session_id
+    inner join sections as s
+        on ps.section = s.section
     cross join prompts as p
-    {% if is_incremental() %}
-        -- Per-section retry filter: only sections without a SUCCESS row get (re)called.
-        where not exists (
-            select 1 from {{ this }} as t
-            where
-                t.session_id = i.session_id
-                and t.section = s.section
-                and t.summary_status = 'SUCCESS'
-        )
-    {% endif %}
 ),
 -- noqa: enable=LT02
 
@@ -437,6 +461,7 @@ parsed as (
         session_id,
         section,
         n_transcript_chars,
+        transcript_fingerprint,
         llm_input_kind,
         map_tokens,
         coalesce(raw_response:usage:total_tokens::int, 0) as section_tokens,
@@ -467,12 +492,13 @@ overview_rows as (
         0 as theme_seq,
         null::varchar as theme_label,
         section_json:overview::string as summary_text,
-        [] as supporting_turn_idxs,
+        [] as supporting_turn_hashes,
         0 as n_supporting_turns,
         0 as n_unverified_idxs_dropped,
         summary_status,
         llm_input_kind,
         n_transcript_chars,
+        transcript_fingerprint,
         llm_total_tokens
     from with_session_tokens
     where section = 'overview'
@@ -488,12 +514,13 @@ section_status_rows as (
         0 as theme_seq,
         null::varchar as theme_label,
         null::varchar as summary_text,
-        [] as supporting_turn_idxs,
+        [] as supporting_turn_hashes,
         0 as n_supporting_turns,
         0 as n_unverified_idxs_dropped,
         summary_status,
         llm_input_kind,
         n_transcript_chars,
+        transcript_fingerprint,
         llm_total_tokens
     from with_session_tokens
     where section != 'overview'
@@ -506,6 +533,7 @@ exploded_idxs as (
         p.section,
         p.llm_input_kind,
         p.n_transcript_chars,
+        p.transcript_fingerprint,
         p.llm_total_tokens,
         items.index + 1 as theme_seq,
         items.value:theme::string as theme_label,
@@ -517,9 +545,10 @@ exploded_idxs as (
     where p.summary_status = 'SUCCESS' and p.section != 'overview'
 ),
 
--- Hallucination guardrail: keep only turn indices that actually exist in the session.
--- Themes with no verifiable supporting turn (including any the LLM returned with an empty
--- index list) are dropped entirely by the HAVING clause.
+-- Hallucination guardrail: keep only turn indices that actually exist in the session, and
+-- store them as stable turn_hashes rather than positional indices. Themes with no verifiable
+-- supporting turn (including any the LLM returned with an empty index list) are dropped
+-- entirely by the HAVING clause.
 theme_rows as (
     select
         e.session_id,
@@ -527,12 +556,13 @@ theme_rows as (
         e.theme_seq,
         e.theme_label,
         e.summary_text,
-        array_agg(t.turn_idx) within group (order by t.turn_idx) as supporting_turn_idxs,
+        array_agg(t.turn_hash) within group (order by t.turn_idx) as supporting_turn_hashes,
         count(t.turn_idx) as n_supporting_turns,
         count(*) - count(t.turn_idx) as n_unverified_idxs_dropped,
         'SUCCESS' as summary_status,
         e.llm_input_kind,
         e.n_transcript_chars,
+        e.transcript_fingerprint,
         e.llm_total_tokens
     from exploded_idxs as e
     left join turns as t
@@ -547,6 +577,7 @@ theme_rows as (
         e.summary_text,
         e.llm_input_kind,
         e.n_transcript_chars,
+        e.transcript_fingerprint,
         e.llm_total_tokens
     having count(t.turn_idx) > 0
 ),
