@@ -34,6 +34,10 @@ clean-targets: # directories to be removed by `dbt clean`
 seeds:
   caldata_engaged_california:
     # resource-paths
+    ai_engagement_discussions:
+      +enabled: true
+      +schema: ai_engagement
+      +tags: ["ai_impact"]
     ethelo_la_agenda_setting:
     govocal_ai:
       +enabled: true
