@@ -10,7 +10,8 @@ pipeline — the app reads tables only and makes **zero live Cortex calls**.
 
 - `phase2_transcript_curated_theme_tags` — the tagged quotes: one row per (session,
   policy concept, tagged turn) with verbatim text/speaker/timestamps, plus a status row
-  per (session, policy concept) pair. Built from the `curated_discussion_themes` seed.
+  per (session, policy concept) pair. Built against the `stg_phase2_policy_concepts_and_themes`
+  taxonomy (sourced from the manually affinity-mapped `AI_POLICY_CONCEPTS_AND_THEMES` table).
 - `phase2_zoom_transcripts_and_chats` — the full transcripts, used for the
   click-to-expand context around each quote.
 - `phase2_sessions` — session numbering/dates for labels.

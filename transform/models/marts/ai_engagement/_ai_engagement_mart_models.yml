@@ -348,8 +348,8 @@ models:
   - name: phase2_transcript_curated_theme_tags
     description: |
       Every non-facilitator turn that substantively expresses one of the manually-curated
-      policy concepts (seeds/ai_engagement_discussions/curated_discussion_themes.csv, one
-      tagging unit per row, grouped theme > subtheme > policy_concept), tagged by AI: one
+      policy concepts (stg_phase2_policy_concepts_and_themes, one tagging unit per row,
+      grouped theme > subtheme > policy_concept), tagged by AI: one
       row per (session, policy concept, tagged turn) with verbatim turn text, speaker, and
       timestamps joined back from the source events, plus one status row (turn_seq = 0) per
       (session, policy concept) pair whatever its outcome. Unlike
@@ -359,13 +359,14 @@ models:
       Facilitator/staff turns are excluded deterministically (display-name heuristic plus
       the verified staff roster).
 
-      Incremental at the (session, theme) grain via delete+insert: a pair is (re)called when
-      no SUCCESS row exists for it at the session's current transcript_fingerprint, so new
-      sessions, new themes, failed pairs, and sessions whose turns changed upstream are all
-      handled by a plain build (which also refreshes the stored verbatim turn columns).
-      FAILED pairs fail the build via an error-severity test, never silently. Prompt edits
-      and theme seed rewording (theme_id is stable, but stored label/description text and
-      tags stay frozen) still require a --full-refresh — the fingerprint cannot detect them.
+      Incremental at the (session, policy concept) grain via delete+insert: a pair is
+      (re)called when no SUCCESS row exists for it at the session's current
+      transcript_fingerprint, so new sessions, new policy concepts, failed pairs, and
+      sessions whose turns changed upstream are all handled by a plain build (which also
+      refreshes the stored verbatim turn columns). FAILED pairs fail the build via an
+      error-severity test, never silently. Prompt edits and taxonomy rewording still
+      require a --full-refresh — and because policy_concept_id is md5(policy_concept),
+      renaming a concept changes its id, orphaning the old id's rows until a --full-refresh.
 
       Speaker display names are PII, carried intentionally for verified quote display in the
       pull quote explorer dashboard; confirm the display policy before exposing them publicly.
@@ -374,20 +375,22 @@ models:
         description: The unique identifier for each Zoom session.
         data_tests:
           - not_null
-      - name: theme_id
-        description: Manually-assigned stable integer identifier of the policy concept; the incremental grain key.
+      - name: policy_concept_id
+        description: >
+          The policy concept's identifier from stg_phase2_policy_concepts_and_themes
+          (md5 of the label); the incremental grain key. Renaming a concept changes it.
         data_tests:
           - not_null
       - name: policy_concept
         description: >
           The policy concept's human-readable display name (the tagging unit), verbatim from
-          the curated seed.
+          the curated taxonomy.
       - name: policy_concept_description
         description: The curator-written description of what the policy concept encompasses.
       - name: subtheme
-        description: The mid-level grouping the policy concept belongs to, verbatim from the curated seed.
+        description: The mid-level grouping the policy concept belongs to, verbatim from the curated taxonomy.
       - name: theme
-        description: The top-level grouping the policy concept belongs to, verbatim from the curated seed.
+        description: The top-level grouping the policy concept belongs to, verbatim from the curated taxonomy.
       - name: turn_seq
         description: |
           1-based chronological position of the tagged turn within its (session, theme) pair.
