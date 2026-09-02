@@ -185,6 +185,17 @@ SECTIONS = {
     "deliberative_moments": ("Deliberative moments", "#6a1b9a"),
 }
 
+# What one item in each section is called, for the collapsed-section labels on the
+# Session summary tab ("Show 12 themes", "Show 3 moments").
+SECTION_ITEM_NOUNS = {
+    "protect_themes":       ("theme", "themes"),
+    "gov_action_themes":    ("action", "actions"),
+    "general_themes":       ("theme", "themes"),
+    "areas_of_tension":     ("area", "areas"),
+    "areas_of_consensus":   ("area", "areas"),
+    "deliberative_moments": ("moment", "moments"),
+}
+
 
 # ---------------------------------------------------------------------------
 # Page config and PII acknowledgment gate
@@ -966,37 +977,42 @@ with tab_summary:
             if not items:
                 st.caption("Not substantively discussed in this session.")
                 continue
-            for item in items:
-                st.markdown(f"**{item.get('theme', '')}** — {item.get('description', '')}")
-                idxs = item.get("supporting_turn_idxs", [])  # already resolved to current turns
-                n_unresolved = item.get("n_unresolved", 0)
-                label = f"Supporting turns ({len(idxs)})"
-                if n_unresolved:
-                    label += f" · ⚠️ {n_unresolved} unresolved"
-                with st.expander(label):
-                    cards = []
-                    prev_idx = None
-                    for idx in idxs:
-                        # Divider between non-contiguous stretches of conversation
-                        if prev_idx is not None and idx - prev_idx > 1:
-                            cards.append(gap_divider(idx - prev_idx - 1))
-                        row = indexed.loc[idx]
-                        speaker_demographics = get_speaker_demographics(row["speaker"], selected_sid, speakers_df)
-                        cards.append(render_turn_html(
-                            idx, row["source"], row["speaker"], row["start_sec"],
-                            row["text"], color=colors.get(row["speaker"], "#888"),
-                            anchor_prefix=f"sum-{section}", speaker_demographics=speaker_demographics,
-                        ))
-                        prev_idx = idx
+            # Each section's content is folded under a collapsed expander (the colored
+            # header above stays put) so the tab is scannable; the per-theme "Supporting
+            # turns" expanders nest inside it.
+            singular, plural = SECTION_ITEM_NOUNS[section]
+            with st.expander(f"Show {len(items)} {plural if len(items) != 1 else singular}", expanded=False):
+                for item in items:
+                    st.markdown(f"**{item.get('theme', '')}** — {item.get('description', '')}")
+                    idxs = item.get("supporting_turn_idxs", [])  # already resolved to current turns
+                    n_unresolved = item.get("n_unresolved", 0)
+                    label = f"Supporting turns ({len(idxs)})"
                     if n_unresolved:
-                        cards.append(
-                            '<div style="border-left:4px solid #d32f2f; padding:6px 10px; '
-                            f'margin:4px 0;">⚠️ {n_unresolved} supporting turn'
-                            f"{'s' if n_unresolved > 1 else ''} cited by this theme no longer "
-                            "exist in the current transcript (tagged against an earlier "
-                            "version). Not shown rather than shown wrong.</div>"
-                        )
-                    st.markdown("".join(cards), unsafe_allow_html=True)
+                        label += f" · ⚠️ {n_unresolved} unresolved"
+                    with st.expander(label):
+                        cards = []
+                        prev_idx = None
+                        for idx in idxs:
+                            # Divider between non-contiguous stretches of conversation
+                            if prev_idx is not None and idx - prev_idx > 1:
+                                cards.append(gap_divider(idx - prev_idx - 1))
+                            row = indexed.loc[idx]
+                            speaker_demographics = get_speaker_demographics(row["speaker"], selected_sid, speakers_df)
+                            cards.append(render_turn_html(
+                                idx, row["source"], row["speaker"], row["start_sec"],
+                                row["text"], color=colors.get(row["speaker"], "#888"),
+                                anchor_prefix=f"sum-{section}", speaker_demographics=speaker_demographics,
+                            ))
+                            prev_idx = idx
+                        if n_unresolved:
+                            cards.append(
+                                '<div style="border-left:4px solid #d32f2f; padding:6px 10px; '
+                                f'margin:4px 0;">⚠️ {n_unresolved} supporting turn'
+                                f"{'s' if n_unresolved > 1 else ''} cited by this theme no longer "
+                                "exist in the current transcript (tagged against an earlier "
+                                "version). Not shown rather than shown wrong.</div>"
+                            )
+                        st.markdown("".join(cards), unsafe_allow_html=True)
 
 
 # --- Tab 2: Transcript --------------------------------------------------------
