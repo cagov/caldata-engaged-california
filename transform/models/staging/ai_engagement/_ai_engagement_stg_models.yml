@@ -201,6 +201,8 @@ models:
       polling) have been included in this table. Participants were asked to vote on specific policy statements,
       and these were then mapped to broader policy concepts, which were then grouped into subthemes and themes.
     columns:
+      - name: policy_concept_id
+        description: Identifier for the policy concept.
       - name: policy_concept
         description: The policy concept discussed during the event.
       - name: policy_concept_description
