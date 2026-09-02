@@ -16,7 +16,7 @@ with theme_tags as (
 ),
 
 exploded as (
-    select
+    select distinct
         tt.session_id,
         th.value::string as turn_hash,
         tt.section,
