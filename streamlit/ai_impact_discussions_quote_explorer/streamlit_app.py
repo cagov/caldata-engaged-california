@@ -100,7 +100,10 @@ def load_quotes() -> pd.DataFrame:
         SELECT session_id, policy_concept_id, policy_concept, policy_concept_description,
                subtheme, theme, turn_seq, turn_hash, turn_idx, source, start_sec, end_sec,
                speaker, text, n_matched_turns, tag_status, transcript_fingerprint,
-               llm_model, processed_at
+               llm_model, processed_at,
+               -- speaker_id computed here, matching the dbt definition
+               -- (stg_zoom_transcript_speakers), so the app never hashes PII itself
+               MD5(speaker || '|' || session_id) AS speaker_id
         FROM {QUOTES_TABLE}
         ORDER BY policy_concept_id, session_id, turn_idx
     """).to_pandas()
@@ -113,7 +116,8 @@ def load_events() -> pd.DataFrame:
     """Combined speech + chat turns with the per-session turn_idx computed upstream in
     the dbt model. Used for the click-to-expand context around each quote."""
     df = session.sql(f"""
-        SELECT session_id, source, src_ref, start_sec, end_sec, speaker, text, turn_hash, turn_idx
+        SELECT session_id, source, src_ref, start_sec, end_sec, speaker, text, turn_hash, turn_idx,
+               MD5(speaker || '|' || session_id) AS speaker_id
         FROM {EVENTS_TABLE}
         ORDER BY session_id, turn_idx
     """).to_pandas()
@@ -172,18 +176,11 @@ def load_speakers() -> pd.DataFrame:
         return pd.DataFrame()
 
 
-def build_speaker_id(speaker: str, session_id: str) -> str:
-    """Build the speaker_id: md5(speaker || '|' || session_id)."""
-    import hashlib
-    combined = f"{speaker}|{session_id}"
-    return hashlib.md5(combined.encode()).hexdigest()
-
-
-def get_speaker_demographics(speaker: str, session_id: str, speakers_df: pd.DataFrame) -> str | None:
-    """Look up speaker demographics by speaker_id. Returns formatted string or None if not found."""
-    if speakers_df.empty:
+def get_speaker_demographics(speaker_id: str | None, speakers_df: pd.DataFrame) -> str | None:
+    """Look up speaker demographics by speaker_id (computed in SQL at load time, matching
+    the dbt definition). Returns formatted string or None if not found."""
+    if speakers_df.empty or speaker_id is None or pd.isna(speaker_id):
         return None
-    speaker_id = build_speaker_id(speaker, session_id)
     row = speakers_df[speakers_df["speaker_id"] == speaker_id]
     if row.empty:
         return None
@@ -413,9 +410,6 @@ def _parse_array(value) -> list[str]:
     return []
 
 
-quotes_df["speaker_id"] = [
-    build_speaker_id(sp, sid) for sp, sid in zip(quotes_df["speaker"], quotes_df["session_id"])
-]
 if not speakers_df.empty:
     demo = speakers_df.drop_duplicates("speaker_id").set_index("speaker_id")
     quotes_df = quotes_df.join(
@@ -673,7 +667,7 @@ def render_quote_block(concept_id: str, row, show_separator: bool = False) -> No
         if indexed is None or i not in indexed.index:
             continue
         r = indexed.loc[i]
-        demographics = get_speaker_demographics(r["speaker"], sid, speakers_df)
+        demographics = get_speaker_demographics(r["speaker_id"], speakers_df)
         if i == idx:
             quote_copy_text = turn_copy_text(
                 r["speaker"], demographics, session_label, r["start_sec"], r["source"],
