@@ -39,7 +39,7 @@ session = get_session()
 
 # Theme tags are pre-computed by the dbt tagging pipeline (model
 # phase2_transcript_curated_theme_tags, built on phase2_zoom_transcripts_and_chats
-# against the curated_discussion_themes seed). This app only reads tables — it makes
+# against the stg_phase2_policy_concepts_and_themes taxonomy). This app only reads tables — it makes
 # zero live Cortex calls. Tags reference turns by stable turn_hash; the app resolves
 # those to the current transcript on load and hides (with a warning) any that no longer
 # resolve. Point it at your environment via .env; defaults target the production
@@ -97,11 +97,12 @@ def load_quotes() -> pd.DataFrame:
     plus one status row (turn_seq = 0) per (session, theme) pair — that's how "call
     failed" is distinguished from "no turns matched"."""
     df = session.sql(f"""
-        SELECT session_id, theme_id, policy_concept, policy_concept_description, subtheme,
-               theme, turn_seq, turn_hash, turn_idx, source, start_sec, end_sec, speaker,
-               text, n_matched_turns, tag_status, transcript_fingerprint, llm_model, processed_at
+        SELECT session_id, policy_concept_id, policy_concept, policy_concept_description,
+               subtheme, theme, turn_seq, turn_hash, turn_idx, source, start_sec, end_sec,
+               speaker, text, n_matched_turns, tag_status, transcript_fingerprint,
+               llm_model, processed_at
         FROM {QUOTES_TABLE}
-        ORDER BY theme_id, session_id, turn_idx
+        ORDER BY policy_concept_id, session_id, turn_idx
     """).to_pandas()
     df.columns = [c.lower() for c in df.columns]
     return df
@@ -604,7 +605,7 @@ with st.expander("📊 Policy concept frequency by session", expanded=False):
 st.download_button(
     "Download filtered quotes CSV",
     filtered_df.sort_values(["policy_concept", "session_rank", "current_idx"])[[
-        "theme_id", "policy_concept", "subtheme", "theme", "session_id", "turn_hash",
+        "policy_concept_id", "policy_concept", "subtheme", "theme", "session_id", "turn_hash",
         "current_idx", "start_sec", "source", "speaker", "text",
     ]].rename(columns={"current_idx": "turn_idx"}).to_csv(index=False),
     file_name="engca_pull_quotes.csv",
@@ -629,7 +630,7 @@ def _shift_page(page_key: str, delta: int, n_pages: int) -> None:
     st.session_state[page_key] = max(0, min(n_pages - 1, page))
 
 
-def render_quote_block(theme_id: int, row, show_separator: bool = False) -> None:
+def render_quote_block(concept_id: str, row, show_separator: bool = False) -> None:
     """One tagged turn plus its expandable context: a "show earlier/later" button above
     and below reveals CONTEXT_STEP more transcript turns per click, and a "hide" button
     collapses that side again (state survives reruns via st.session_state). Context
@@ -642,7 +643,7 @@ def render_quote_block(theme_id: int, row, show_separator: bool = False) -> None
     idx = int(row.current_idx)
     indexed = events_by_session.get(sid)
     lo_bound, hi_bound = idx_bounds.get(sid, (idx, idx))
-    base = f"{theme_id}_{sid}_{row.turn_hash}"
+    base = f"{concept_id}_{sid}_{row.turn_hash}"
     up_key, dn_key = f"ctx_up_{base}", f"ctx_dn_{base}"
     lo = max(lo_bound, idx - st.session_state.get(up_key, 0))
     hi = min(hi_bound, idx + st.session_state.get(dn_key, 0))
@@ -716,20 +717,20 @@ def render_quote_block(theme_id: int, row, show_separator: bool = False) -> None
 
 
 @st.fragment
-def render_theme_group(theme_id: int, theme_df: pd.DataFrame) -> None:
+def render_theme_group(concept_id: str, theme_df: pd.DataFrame) -> None:
     """Everything inside one theme's expander. As a fragment, button clicks in here
     (pagination, context expansion) rerun only this group — the rest of the page,
     including the other expanders' open state, is untouched."""
-    page_key = f"qpage_{theme_id}"
+    page_key = f"qpage_{concept_id}"
     n_pages = max(1, -(-len(theme_df) // PAGE_SIZE_QUOTES))
     page = min(st.session_state.get(page_key, 0), n_pages - 1)
     st.session_state[page_key] = page
 
     if n_pages > 1:
         p1, p2, p3 = st.columns([1, 3, 1])
-        p1.button("← Prev", key=f"prev_{theme_id}", disabled=page <= 0,
+        p1.button("← Prev", key=f"prev_{concept_id}", disabled=page <= 0,
                   on_click=_shift_page, args=(page_key, -1, n_pages), width="stretch")
-        p3.button("Next →", key=f"next_{theme_id}", disabled=page >= n_pages - 1,
+        p3.button("Next →", key=f"next_{concept_id}", disabled=page >= n_pages - 1,
                   on_click=_shift_page, args=(page_key, 1, n_pages), width="stretch")
         start, end = page * PAGE_SIZE_QUOTES, min((page + 1) * PAGE_SIZE_QUOTES, len(theme_df))
         p2.markdown(
@@ -741,7 +742,7 @@ def render_theme_group(theme_id: int, theme_df: pd.DataFrame) -> None:
         start, end = 0, len(theme_df)
 
     for j, quote_row in enumerate(theme_df.iloc[start:end].itertuples()):
-        render_quote_block(theme_id, quote_row, show_separator=j > 0)
+        render_quote_block(concept_id, quote_row, show_separator=j > 0)
 
 
 st.markdown("### Quotes by policy concept")
@@ -762,7 +763,7 @@ for policy_concept in concept_order:
     meta = concept_meta.loc[policy_concept]
     exp = st.expander(
         f"**{policy_concept}** ({len(theme_df)} quote{'s' if len(theme_df) != 1 else ''})",
-        key=f"exp_{int(meta['theme_id'])}",
+        key=f"exp_{meta['policy_concept_id']}",
         on_change="rerun",
     )
     if not exp.open:
@@ -773,4 +774,4 @@ for policy_concept in concept_order:
         caption = " — ".join(p for p in [crumb, description if isinstance(description, str) else ""] if p)
         if caption:
             st.caption(caption)
-        render_theme_group(int(meta["theme_id"]), theme_df)
+        render_theme_group(meta["policy_concept_id"], theme_df)

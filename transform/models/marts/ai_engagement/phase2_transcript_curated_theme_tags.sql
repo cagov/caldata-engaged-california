@@ -2,15 +2,15 @@
 {{ config(
     materialized='incremental',
     incremental_strategy='delete+insert',
-    unique_key=['session_id', 'theme_id'],
+    unique_key=['session_id', 'policy_concept_id'],
     on_schema_change='sync_all_columns'
 ) }}
 
 -- Every non-facilitator turn that substantively expresses one of the manually-curated
--- discussion themes (seeds/ai_engagement_discussions/curated_discussion_themes.csv), tagged
--- by AI: one row per
--- (session, theme, tagged turn), with the verbatim turn text, speaker, and timestamps
--- joined back from the source data so dashboards need no joins at read time.
+-- policy concepts (stg_phase2_policy_concepts_and_themes, sourced from the manually
+-- affinity-mapped AI_POLICY_CONCEPTS_AND_THEMES Google Drive table): one row per
+-- (session, policy concept, tagged turn), with the verbatim turn text, speaker, and
+-- timestamps joined back from the source data so dashboards need no joins at read time.
 --
 -- This differs from phase2_transcript_turn_tags, which explodes the per-session AI-derived
 -- themes of phase2_transcript_session_summaries. Here the taxonomy is FIXED and curated by
@@ -41,13 +41,15 @@
 --
 -- Incremental at the (session, theme) grain. A pair is called when this table has no
 -- SUCCESS row for it built from the session's CURRENT transcript fingerprint: new
--- sessions, new themes in the seed, failed pairs, and every theme of a session whose
--- turns changed upstream (which re-bills that whole session). Reserve --full-refresh for
--- changes the fingerprint can NOT detect:
+-- sessions, new policy concepts in the taxonomy, failed pairs, and every concept of a
+-- session whose turns changed upstream (which re-bills that whole session). Reserve
+-- --full-refresh for changes the fingerprint can NOT detect:
 --   * prompt edits in this file;
---   * theme seed rewording — theme_id is manually assigned and stable, so rewording a
---     label or description never orphans rows, but it does not re-tag processed pairs and
---     the label/description text stored here stays frozen until a --full-refresh.
+--   * taxonomy rewording — policy_concept_id is md5(policy_concept), so RENAMING a concept
+--     changes its id: the new id auto-tags as a "new" concept on the next plain build, but
+--     the old id's rows linger until a --full-refresh clears them. Rewording only the
+--     DESCRIPTION keeps the id and does not re-tag; the stored text stays frozen until a
+--     --full-refresh.
 --
 -- Sessions above ~500k chars (none exist; real sessions are ~12k-200k) are NOT map-reduced
 -- here: their calls are skipped entirely and surface as persistent FAILED status rows.
@@ -90,16 +92,16 @@ pad the list with tangential matches.$$
 ),
 
 -- The curated taxonomy: this CTE is the fan-out axis (one Cortex call per session per
--- policy concept). theme_id is the manually-assigned stable grain key from the seed;
--- subtheme and theme are the concept's grouping levels, carried through for display.
+-- policy concept). policy_concept_id (md5 of the label, derived upstream) is the grain
+-- key; subtheme and theme are the concept's grouping levels, carried through for display.
 themes as (
     select
-        theme_id,
+        policy_concept_id,
         policy_concept,
         policy_concept_description,
         subtheme,
         theme
-    from {{ ref('stg_curated_discussion_themes') }}
+    from {{ ref('stg_phase2_policy_concepts_and_themes') }}
 ),
 
 -- =========================================================================================
@@ -191,20 +193,21 @@ transcripts as (
 pending_pairs as (
     select
         t.session_id,
-        th.theme_id
+        th.policy_concept_id
     from transcripts as t
     cross join themes as th
     {% if is_incremental() %}
-        {#- Migration guard: a table built before transcript_fingerprint existed can't be
-            queried for the column, so everything is pending and the plain build re-tags it
-            all (no --full-refresh needed). Harmless once every environment carries it. -#}
+        {#- Migration guard: a table built before transcript_fingerprint/policy_concept_id
+            existed can't be queried for those columns, so everything is pending and the
+            plain build re-tags it all. Note a plain build on a pre-policy_concept_id table
+            leaves the old id scheme's rows behind — use --full-refresh for that migration. -#}
         {%- set existing_cols = adapter.get_columns_in_relation(this) | map(attribute='name') | map('upper') | list -%}
-        {% if 'TRANSCRIPT_FINGERPRINT' in existing_cols %}
+        {% if 'TRANSCRIPT_FINGERPRINT' in existing_cols and 'POLICY_CONCEPT_ID' in existing_cols %}
         where not exists (
             select 1 from {{ this }} as done
             where
                 done.session_id = t.session_id
-                and done.theme_id = th.theme_id
+                and done.policy_concept_id = th.policy_concept_id
                 and done.tag_status = 'SUCCESS'
                 and done.transcript_fingerprint = t.transcript_fingerprint
         )
@@ -222,7 +225,7 @@ theme_calls as (
     select
         s.session_id,
         s.transcript_fingerprint,
-        th.theme_id,
+        th.policy_concept_id,
         th.policy_concept,
         th.policy_concept_description,
         th.subtheme,
@@ -241,7 +244,7 @@ theme_calls as (
     inner join pending_pairs as pp
         on s.session_id = pp.session_id
     inner join themes as th
-        on pp.theme_id = th.theme_id
+        on pp.policy_concept_id = th.policy_concept_id
     cross join prompts as p
 ),
 -- noqa: enable=LT02
@@ -256,7 +259,7 @@ tagged as (
 parsed as (
     select
         session_id,
-        theme_id,
+        policy_concept_id,
         policy_concept,
         policy_concept_description,
         subtheme,
@@ -277,7 +280,7 @@ parsed as (
 exploded_idxs as (
     select distinct
         p.session_id,
-        p.theme_id,
+        p.policy_concept_id,
         idx.value::int as raw_turn_idx
     from parsed as p,
         lateral flatten(input => p.tag_json:matching_turn_idxs) as idx
@@ -303,7 +306,7 @@ staff_speakers as (
 classified as (
     select
         e.session_id,
-        e.theme_id,
+        e.policy_concept_id,
         t.turn_hash,
         t.turn_idx,
         t.source,
@@ -336,25 +339,25 @@ classified as (
 pair_counts as (
     select
         session_id,
-        theme_id,
+        policy_concept_id,
         count_if(not is_unverified and not is_facilitator) as n_matched_turns,
         count_if(is_unverified) as n_unverified_idxs_dropped,
         count_if(not is_unverified and is_facilitator) as n_facilitator_turns_dropped
     from classified
-    group by session_id, theme_id
+    group by session_id, policy_concept_id
 ),
 
 -- One row per surviving tagged turn, with the verbatim source columns.
 turn_rows as (
     select
         p.session_id,
-        p.theme_id,
+        p.policy_concept_id,
         p.policy_concept,
         p.policy_concept_description,
         p.subtheme,
         p.theme,
         row_number() over (
-            partition by c.session_id, c.theme_id
+            partition by c.session_id, c.policy_concept_id
             order by c.turn_idx
         ) as turn_seq,
         c.turn_hash,
@@ -375,11 +378,11 @@ turn_rows as (
     inner join parsed as p
         on
             c.session_id = p.session_id
-            and c.theme_id = p.theme_id
+            and c.policy_concept_id = p.policy_concept_id
     inner join pair_counts as pc
         on
             c.session_id = pc.session_id
-            and c.theme_id = pc.theme_id
+            and c.policy_concept_id = pc.policy_concept_id
     where not c.is_unverified and not c.is_facilitator
 ),
 
@@ -389,7 +392,7 @@ turn_rows as (
 status_rows as (
     select
         p.session_id,
-        p.theme_id,
+        p.policy_concept_id,
         p.policy_concept,
         p.policy_concept_description,
         p.subtheme,
@@ -413,7 +416,7 @@ status_rows as (
     left join pair_counts as pc
         on
             p.session_id = pc.session_id
-            and p.theme_id = pc.theme_id
+            and p.policy_concept_id = pc.policy_concept_id
 ),
 
 combined as (
