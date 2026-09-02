@@ -32,6 +32,11 @@ Point the app at these via `DISCUSSIONS_DATABASE` / `DISCUSSIONS_SCHEMA` (see
 - **Quotes grouped by policy concept** — one expandable section per concept (with its
   theme › subtheme breadcrumb), quotes in chronological order, paginated. A turn tagged
   with multiple concepts appears under each of them, with "also tagged" pills.
+- **Copy quote** — a "⧉ Copy quote" popover under each tagged turn holds the quote with
+  attribution, demographics, and policy concepts as plain text, with a one-click copy
+  button. Deliberately JavaScript-free: concept groups render lazily (only opened
+  expanders are built) because an eagerly rendered page of this size drops the browser
+  session on Streamlit 1.62 and silently disables every button.
 - **Click-to-expand context** — "⋯ show 3 earlier/later turn(s)" buttons above and
   below each quote reveal the surrounding transcript 3 turns at a time. Context turns
   render dimmed so the tagged turn stays visually primary.
