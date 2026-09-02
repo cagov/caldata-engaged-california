@@ -218,7 +218,7 @@ sources:
     database: RAW_ENGCA_PRD
     schema: ENGAGEDCA_GOOGLE_DRIVE_AI
     description: |
-      Manually downloaded files for the AI Engagement.
+      Manually downloaded files for the AI Impact on the Workplace 2026 Engagement.
     tables:
       - name: PH_2_ATTENDEES
         description: |
@@ -261,8 +261,9 @@ sources:
           - name: QUESTION_1
       - name: AI_POLICY_CONCEPTS_AND_THEMES
         description: |
-          This table contains the policy concepts that were discussed during the Phase 2 live discussions and provides
-          the mapping between policy concepts, subthemes, and themes that was defined through manual affinity mapping.
+          This table contains the policy concepts that were discussed during the AI Impact on the Workplace 2026
+          Phase 2 live discussions and provides the mapping between policy concepts, subthemes, and themes that
+          was defined through manual affinity mapping.
           Only policy concepts that received at least some support from participants (as demonstrated by end of session
           polling) have been included in this table. Participants were asked to vote on specific policy statements,
           and these were then mapped to broader policy concepts, which were then grouped into subthemes and themes.
