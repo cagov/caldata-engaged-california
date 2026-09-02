@@ -1,4 +1,5 @@
 import html
+import json
 import os
 
 import pandas as pd
@@ -54,9 +55,9 @@ SESSIONS_TABLE = f"{DISCUSSIONS_DATABASE}.{DISCUSSIONS_SCHEMA}.phase2_sessions"
 PAGE_SIZE_QUOTES = 10  # quotes per page within a theme group
 CONTEXT_STEP = 3       # transcript turns revealed per "show earlier/later" click
 
-# One neutral pill color for all theme badges: with 29 themes the label text carries
-# identity, so per-theme hues would only add noise (and 29 distinguishable colors
-# don't exist anyway).
+# One neutral pill color for all policy-concept badges: with ~27 concepts the label text
+# carries identity, so per-concept hues would only add noise (and that many
+# distinguishable colors don't exist anyway).
 THEME_PILL_COLOR = "#1565c0"
 
 
@@ -86,7 +87,6 @@ st.warning(
     "⚠️ **Contains Personal Information (PII)** – Do not download, copy, share, or disclose PII except as authorized by existing policy. Do not provide dashboard outputs containing PII to external LLMs or AI tools."
 )
 
-
 # ---------------------------------------------------------------------------
 # Data loading — pre-tagged dbt tables
 # ---------------------------------------------------------------------------
@@ -97,9 +97,9 @@ def load_quotes() -> pd.DataFrame:
     plus one status row (turn_seq = 0) per (session, theme) pair — that's how "call
     failed" is distinguished from "no turns matched"."""
     df = session.sql(f"""
-        SELECT session_id, theme_id, theme_label, theme_description, turn_seq, turn_hash,
-               turn_idx, source, start_sec, end_sec, speaker, text,
-               n_matched_turns, tag_status, transcript_fingerprint, llm_model, processed_at
+        SELECT session_id, theme_id, policy_concept, policy_concept_description, subtheme,
+               theme, turn_seq, turn_hash, turn_idx, source, start_sec, end_sec, speaker,
+               text, n_matched_turns, tag_status, transcript_fingerprint, llm_model, processed_at
         FROM {QUOTES_TABLE}
         ORDER BY theme_id, session_id, turn_idx
     """).to_pandas()
@@ -149,11 +149,15 @@ def load_sessions() -> pd.DataFrame:
 
 @st.cache_data
 def load_speakers() -> pd.DataFrame:
-    """Speaker demographic information, keyed by speaker_id (md5 of speaker || '|' || session_id)."""
+    """Speaker demographic information, keyed by speaker_id (md5 of speaker || '|' || session_id).
+    The *_string columns feed the per-card demographics line; the raw columns feed the
+    sidebar demographic filters (race_ethnicity_array keeps multi-response answers
+    separate so a speaker matches any ethnicity they selected)."""
     try:
         df = session.sql(f"""
             SELECT
-            speaker_id, age_string, gender_string, race_ethnicity_string, region_string, field_of_work_string, ai_response_string,
+            speaker_id, age, gender_string, race_ethnicity_array, region_string,
+            field_of_work_string, field_of_work_sortition_grouping, ai_response_string,
             '🎂 ' || age_string || '   |   ⚧️ ' || gender_string || '   |   🧑🏽‍🤝‍🧑🏿 ' ||
             race_ethnicity_string || '   |   📍 ' || region_string || '   |   💼 ' ||
             field_of_work_string || '   |   ✨ ' || ai_response_string
@@ -209,9 +213,11 @@ def speaker_colors(session_df: pd.DataFrame) -> dict[str, str]:
 
 
 def theme_badge(label: str) -> str:
+    # rem (not em) so the pill doesn't shrink further when nested in small-text
+    # containers like the quote footer.
     return (
         f'<span style="background:{THEME_PILL_COLOR}; color:white; '
-        f'border-radius:10px; padding:1px 8px; font-size:0.75em; margin-left:4px; '
+        f'border-radius:10px; padding:1px 8px; font-size:0.8rem; margin-left:4px; '
         f'white-space:nowrap;">{html.escape(label)}</span>'
     )
 
@@ -233,16 +239,28 @@ def render_turn_html(turn_idx: int, source: str, speaker: str, start_sec, text: 
     speaker_color = "#888" if dimmed else color
     # scroll-margin-top keeps the card top visible below Streamlit's sticky header
     return (
-        f'<div id="{anchor_prefix}-{turn_idx}" style="border-left:{border}; {opacity}'
+        f'<div id="{anchor_prefix}-{turn_idx}" class="ecq-card" style="'
+        f'border-left:{border}; {opacity}'
         f'padding:6px 10px; margin:4px 0; border-radius:4px; scroll-margin-top:4.5rem; '
         f"{background}\">"
         f'<span style="color:{speaker_color}; font-weight:600;">{html.escape(str(speaker))}</span>'
-        + (f' <span style="color:#333; font-size:0.80em; padding-left: 16px;">{html.escape(speaker_demographics)}</span>' if speaker_demographics else "")
+        # #888 (not the upstream app's #333) so the demographics line stays legible on the
+        # dark Streamlit theme too
+        + (f' <span style="color:#888; font-size:0.80em; padding-left: 16px;">{html.escape(speaker_demographics)}</span>' if speaker_demographics else "")
         + f'<div style="color:#999; font-size:0.80em; margin-top:2px; margin-bottom:6px;">[{turn_idx}] · {fmt_ts(start_sec)} · {icon}</div>'
         f"{badges}"
         f'<div style="margin-top:2px;">{html.escape(str(text))}</div>'
         f"</div>"
     )
+
+
+# Solid full-width rule between quote blocks (deliberately distinct from the dashed
+# gap_divider used inside transcript context). When one quote's expanded context grows
+# to overlap the next quote's turns, the blocks still render independently — the
+# separator marks block boundaries, not transcript continuity.
+QUOTE_SEPARATOR = (
+    '<div style="border-top:1px solid rgba(136,136,136,0.4); margin:4px 0 16px;"></div>'
+)
 
 
 def quote_footer_html(session_label: str, also_tagged: list[str]) -> str:
@@ -252,7 +270,7 @@ def quote_footer_html(session_label: str, also_tagged: list[str]) -> str:
     if also_tagged:
         also = ' · also tagged: ' + "".join(theme_badge(lbl) for lbl in also_tagged)
     return (
-        f'<div style="color:#888; font-size:0.8em; margin:2px 0 14px 4px;">'
+        f'<div style="color:#888; font-size:0.9rem; margin:4px 0 14px 4px;">'
         f"{html.escape(session_label)}{also}</div>"
     )
 
@@ -350,9 +368,73 @@ for sid, group in events_df.groupby("session_id"):
     idx_bounds[sid] = (int(indexed.index.min()), int(indexed.index.max()))
     colors_by_session[sid] = speaker_colors(group)
 
-# (session, turn_hash) -> every theme label tagged on that turn, for "also tagged" pills.
-turn_themes: dict[tuple[str, str], list[str]] = (
-    quotes_df.groupby(["session_id", "turn_hash"])["theme_label"]
+# Participant demographics per quote, for the sidebar filters. Quotes join to the survey
+# table on speaker_id; anyone without a survey match (or who skipped a question) lands in
+# "None specified" so the bucket can be included or excluded explicitly.
+NONE_SPECIFIED = "None specified"
+AGE_ORDER = ["18-24", "25-44", "45-64", "Over 65"]
+DEMOGRAPHIC_FILTERS = [  # (quotes_df column, sidebar label)
+    ("age_group", "Age range"),
+    ("gender", "Gender"),
+    ("ethnicity", "Race / ethnicity"),
+    ("field_broad", "Industry (broad)"),
+    ("field_detail", "Industry (detailed)"),
+    ("region", "Region"),
+]
+
+
+def _parse_array(value) -> list[str]:
+    """Snowflake ARRAY columns arrive as JSON strings (or lists); normalize to a list."""
+    if isinstance(value, (list, tuple)):
+        return [str(v) for v in value]
+    if isinstance(value, str) and value.strip().startswith("["):
+        try:
+            return [str(v) for v in json.loads(value)]
+        except json.JSONDecodeError:
+            return []
+    return []
+
+
+quotes_df["speaker_id"] = [
+    build_speaker_id(sp, sid) for sp, sid in zip(quotes_df["speaker"], quotes_df["session_id"])
+]
+if not speakers_df.empty:
+    demo = speakers_df.drop_duplicates("speaker_id").set_index("speaker_id")
+    quotes_df = quotes_df.join(
+        demo[["age", "gender_string", "race_ethnicity_array", "region_string",
+              "field_of_work_string", "field_of_work_sortition_grouping"]],
+        on="speaker_id",
+    )
+else:
+    for c in ["age", "gender_string", "race_ethnicity_array", "region_string",
+              "field_of_work_string", "field_of_work_sortition_grouping"]:
+        quotes_df[c] = None
+quotes_df["age_group"] = quotes_df["age"].fillna(NONE_SPECIFIED)
+quotes_df["gender"] = quotes_df["gender_string"].fillna(NONE_SPECIFIED)
+quotes_df["ethnicity"] = [
+    arr or [NONE_SPECIFIED] for arr in quotes_df["race_ethnicity_array"].map(_parse_array)
+]
+quotes_df["field_broad"] = quotes_df["field_of_work_sortition_grouping"].fillna(NONE_SPECIFIED)
+quotes_df["field_detail"] = quotes_df["field_of_work_string"].fillna(NONE_SPECIFIED)
+quotes_df["region"] = quotes_df["region_string"].fillna(NONE_SPECIFIED)
+
+
+def demographic_options(col: str) -> list[str]:
+    """Filter choices for one demographic column: age in life order, everything else by
+    quote count, with the non-answer buckets last."""
+    values = quotes_df[col].explode() if col == "ethnicity" else quotes_df[col]
+    counts = values.value_counts()
+    tail = [v for v in (NONE_SPECIFIED, "I don't want to say") if v in counts.index]
+    if col == "age_group":
+        head = [v for v in AGE_ORDER if v in counts.index]
+    else:
+        head = [v for v in counts.index if v not in tail]
+    return head + tail
+
+
+# (session, turn_hash) -> every policy concept tagged on that turn, for "also tagged" pills.
+turn_concepts: dict[tuple[str, str], list[str]] = (
+    quotes_df.groupby(["session_id", "turn_hash"])["policy_concept"]
     .agg(lambda s: sorted(s.unique()))
     .to_dict()
 )
@@ -366,11 +448,21 @@ with st.sidebar:
     st.header("Filters")
     st.caption("Empty filters mean “show everything”. The chart and quote list react to all of them.")
 
-    theme_totals = quotes_df.groupby("theme_label").size().sort_values(ascending=False)
-    theme_filter = st.multiselect("Themes", list(theme_totals.index))
+    theme_filter = st.multiselect("Themes", sorted(quotes_df["theme"].unique()))
+    concept_totals = quotes_df.groupby("policy_concept").size().sort_values(ascending=False)
+    concept_filter = st.multiselect("Policy concepts", list(concept_totals.index))
     session_filter = st.multiselect("Sessions", all_sids, format_func=format_session_label)
     speaker_filter = st.multiselect("Speakers", sorted(quotes_df["speaker"].dropna().unique()))
     source_filter = st.multiselect("Source", ["speech", "chat"])
+
+    st.subheader("Participant demographics")
+    st.caption(
+        "From the participant survey. Speakers without a survey match, or who skipped a "
+        "question, are under “None specified”."
+    )
+    demographic_filters = {
+        col: st.multiselect(label, demographic_options(col)) for col, label in DEMOGRAPHIC_FILTERS
+    }
 
     st.divider()
     if st.button("Refresh data", type="primary", width="stretch"):
@@ -383,13 +475,23 @@ with st.sidebar:
 
 filtered_df = quotes_df
 if theme_filter:
-    filtered_df = filtered_df[filtered_df["theme_label"].isin(theme_filter)]
+    filtered_df = filtered_df[filtered_df["theme"].isin(theme_filter)]
+if concept_filter:
+    filtered_df = filtered_df[filtered_df["policy_concept"].isin(concept_filter)]
 if session_filter:
     filtered_df = filtered_df[filtered_df["session_id"].isin(session_filter)]
 if speaker_filter:
     filtered_df = filtered_df[filtered_df["speaker"].isin(speaker_filter)]
 if source_filter:
     filtered_df = filtered_df[filtered_df["source"].isin(source_filter)]
+for col, selected in demographic_filters.items():
+    if not selected:
+        continue
+    if col == "ethnicity":  # list-valued: match if the speaker selected ANY chosen ethnicity
+        chosen = set(selected)
+        filtered_df = filtered_df[filtered_df[col].map(lambda arr: bool(chosen & set(arr)))]
+    else:
+        filtered_df = filtered_df[filtered_df[col].isin(selected)]
 
 
 # ---------------------------------------------------------------------------
@@ -399,14 +501,15 @@ if source_filter:
 st.title("Engaged California — pull quote explorer")
 st.markdown(
     "Browse representative participant quotes from the phase 2 discussion sessions, organized "
-    "by the manually-curated themes. Tags are pre-computed by the dbt pipeline; every quote is "
+    "by the manually-curated policy concepts (grouped theme › subtheme › policy concept). "
+    "Tags are pre-computed by the dbt pipeline; every quote is "
     "resolved verbatim from the source transcript, never from a model's memory. Facilitator and "
     "staff turns are excluded."
 )
 
 m1, m2, m3, m4 = st.columns(4)
 m1.metric("Tagged quotes", f"{len(filtered_df):,}")
-m2.metric("Themes", filtered_df["theme_label"].nunique())
+m2.metric("Policy concepts", filtered_df["policy_concept"].nunique())
 m3.metric("Sessions", filtered_df["session_id"].nunique())
 m4.metric("Speakers", filtered_df["speaker"].nunique())
 
@@ -442,47 +545,50 @@ if filtered_df.empty:
     st.info("No quotes match the current filters.")
     st.stop()
 
-st.markdown("### Theme frequency by session")
-
-# Themes ordered by filtered quote count (desc) — this order also drives the quote
-# groups below, so the chart doubles as a table of contents.
-theme_order = list(filtered_df.groupby("theme_label").size().sort_values(ascending=False).index)
+# Policy concepts ordered by filtered quote count (desc) — this order also drives the
+# quote groups below, so the chart doubles as a table of contents.
+concept_order = list(filtered_df.groupby("policy_concept").size().sort_values(ascending=False).index)
 chart_sids = [sid for sid in all_sids if sid in set(filtered_df["session_id"])]
 
 heat = (
-    filtered_df.groupby(["theme_label", "session_id"]).size().rename("n").reset_index()
-    .pivot(index="theme_label", columns="session_id", values="n")
-    .reindex(index=theme_order, columns=chart_sids)
+    filtered_df.groupby(["policy_concept", "session_id"]).size().rename("n").reset_index()
+    .pivot(index="policy_concept", columns="session_id", values="n")
+    .reindex(index=concept_order, columns=chart_sids)
     .fillna(0)
     .astype(int)
 )
-fig = px.imshow(
-    heat.values,
-    x=[format_session_label(sid) for sid in chart_sids],
-    y=theme_order,
-    color_continuous_scale="Blues",  # magnitude = one hue, light -> dark
-    aspect="auto",
-)
-fig.update_traces(hovertemplate="%{y}<br>%{x}<br>%{z} quote(s)<extra></extra>")
-fig.update_xaxes(side="top", tickangle=-40)
-fig.update_layout(
-    height=max(280, 120 + 24 * len(theme_order)),
-    margin=dict(l=0, r=0, t=10, b=10),
-    coloraxis_colorbar=dict(title="Quotes"),
-    xaxis_title=None,
-    yaxis_title=None,
-)
-st.plotly_chart(fig, use_container_width=True)
 
-with st.expander("View as table"):
-    table = heat.rename(columns={sid: format_session_label(sid) for sid in chart_sids})
-    st.dataframe(table, width="stretch")
+# Nested expanders aren't allowed in Streamlit, so the table lives in a tab here
+# rather than its own expander.
+with st.expander("📊 Policy concept frequency by session", expanded=False):
+    chart_tab, table_tab = st.tabs(["Chart", "Table"])
+    with chart_tab:
+        fig = px.imshow(
+            heat.values,
+            x=[format_session_label(sid) for sid in chart_sids],
+            y=concept_order,
+            color_continuous_scale="Blues",  # magnitude = one hue, light -> dark
+            aspect="auto",
+        )
+        fig.update_traces(hovertemplate="%{y}<br>%{x}<br>%{z} quote(s)<extra></extra>")
+        fig.update_xaxes(side="top", tickangle=-40)
+        fig.update_layout(
+            height=max(280, 120 + 24 * len(concept_order)),
+            margin=dict(l=0, r=0, t=10, b=10),
+            coloraxis_colorbar=dict(title="Quotes"),
+            xaxis_title=None,
+            yaxis_title=None,
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    with table_tab:
+        table = heat.rename(columns={sid: format_session_label(sid) for sid in chart_sids})
+        st.dataframe(table, width="stretch")
 
 st.download_button(
     "Download filtered quotes CSV",
-    filtered_df.sort_values(["theme_label", "session_rank", "current_idx"])[[
-        "theme_id", "theme_label", "session_id", "turn_hash", "current_idx", "start_sec",
-        "source", "speaker", "text",
+    filtered_df.sort_values(["policy_concept", "session_rank", "current_idx"])[[
+        "theme_id", "policy_concept", "subtheme", "theme", "session_id", "turn_hash",
+        "current_idx", "start_sec", "source", "speaker", "text",
     ]].rename(columns={"current_idx": "turn_idx"}).to_csv(index=False),
     file_name="engca_pull_quotes.csv",
     mime="text/csv",
@@ -497,16 +603,20 @@ def _bump(state_key: str) -> None:
     st.session_state[state_key] = st.session_state.get(state_key, 0) + CONTEXT_STEP
 
 
+def _reset(state_key: str) -> None:
+    st.session_state[state_key] = 0
+
+
 def _shift_page(page_key: str, delta: int, n_pages: int) -> None:
     page = st.session_state.get(page_key, 0) + delta
     st.session_state[page_key] = max(0, min(n_pages - 1, page))
 
 
-def render_quote_block(theme_id: int, row) -> None:
+def render_quote_block(theme_id: int, row, show_separator: bool = False) -> None:
     """One tagged turn plus its expandable context: a "show earlier/later" button above
-    and below reveals CONTEXT_STEP more transcript turns per click (state survives
-    reruns via st.session_state). Context turns render dimmed and unbadged so the
-    tagged turn stays visually primary.
+    and below reveals CONTEXT_STEP more transcript turns per click, and a "hide" button
+    collapses that side again (state survives reruns via st.session_state). Context
+    turns render dimmed and unbadged so the tagged turn stays visually primary.
 
     The tagged turn is addressed by its stable turn_hash, resolved upstream to its
     CURRENT turn_idx — everything here (content, timestamps, context) renders from the
@@ -520,11 +630,21 @@ def render_quote_block(theme_id: int, row) -> None:
     lo = max(lo_bound, idx - st.session_state.get(up_key, 0))
     hi = min(hi_bound, idx + st.session_state.get(dn_key, 0))
 
-    if lo > lo_bound:
-        st.button(
-            f"⋯ show {min(CONTEXT_STEP, lo - lo_bound)} earlier turn(s)",
-            key=f"btn_{up_key}", on_click=_bump, args=(up_key,),
-        )
+    if show_separator:
+        st.markdown(QUOTE_SEPARATOR, unsafe_allow_html=True)
+
+    if lo > lo_bound or lo < idx:
+        b1, b2, _ = st.columns([1, 1, 2])
+        if lo > lo_bound:
+            b1.button(
+                f"⋯ show {min(CONTEXT_STEP, lo - lo_bound)} earlier turn(s)",
+                key=f"btn_{up_key}", on_click=_bump, args=(up_key,),
+            )
+        if lo < idx:
+            b2.button(
+                "hide earlier turns",
+                key=f"btnhide_{up_key}", on_click=_reset, args=(up_key,),
+            )
 
     colors = colors_by_session.get(sid, {})
     anchor = f"q-{base}"
@@ -533,26 +653,34 @@ def render_quote_block(theme_id: int, row) -> None:
         if indexed is None or i not in indexed.index:
             continue
         r = indexed.loc[i]
+        demographics = get_speaker_demographics(r["speaker"], sid, speakers_df)
         if i == idx:
             cards.append(render_turn_html(
                 idx, r["source"], r["speaker"], r["start_sec"], r["text"],
                 color=colors.get(r["speaker"], "#888"), anchor_prefix=anchor,
-                speaker_demographics=get_speaker_demographics(r["speaker"], sid, speakers_df),
+                speaker_demographics=demographics,
             ))
         else:
             cards.append(render_turn_html(
                 i, r["source"], r["speaker"], r["start_sec"], r["text"],
                 anchor_prefix=anchor, dimmed=True,
             ))
-    also_tagged = [lbl for lbl in turn_themes.get((sid, row.turn_hash), []) if lbl != row.theme_label]
+    also_tagged = [lbl for lbl in turn_concepts.get((sid, row.turn_hash), []) if lbl != row.policy_concept]
     cards.append(quote_footer_html(format_session_label(sid), also_tagged))
     st.markdown("".join(cards), unsafe_allow_html=True)
 
-    if hi < hi_bound:
-        st.button(
-            f"⋯ show {min(CONTEXT_STEP, hi_bound - hi)} later turn(s)",
-            key=f"btn_{dn_key}", on_click=_bump, args=(dn_key,),
-        )
+    if hi < hi_bound or hi > idx:
+        b1, b2, _ = st.columns([1, 1, 2])
+        if hi < hi_bound:
+            b1.button(
+                f"⋯ show {min(CONTEXT_STEP, hi_bound - hi)} later turn(s)",
+                key=f"btn_{dn_key}", on_click=_bump, args=(dn_key,),
+            )
+        if hi > idx:
+            b2.button(
+                "hide later turns",
+                key=f"btnhide_{dn_key}", on_click=_reset, args=(dn_key,),
+            )
 
 
 @st.fragment
@@ -580,22 +708,24 @@ def render_theme_group(theme_id: int, theme_df: pd.DataFrame) -> None:
     else:
         start, end = 0, len(theme_df)
 
-    for quote_row in theme_df.iloc[start:end].itertuples():
-        render_quote_block(theme_id, quote_row)
+    for j, quote_row in enumerate(theme_df.iloc[start:end].itertuples()):
+        render_quote_block(theme_id, quote_row, show_separator=j > 0)
 
 
-st.markdown("### Quotes by theme")
+st.markdown("### Quotes by policy concept")
 
-theme_ids = filtered_df.drop_duplicates("theme_label").set_index("theme_label")["theme_id"]
-theme_descriptions = filtered_df.drop_duplicates("theme_label").set_index("theme_label")["theme_description"]
+concept_meta = filtered_df.drop_duplicates("policy_concept").set_index("policy_concept")
 
-for theme_label in theme_order:
+for policy_concept in concept_order:
     theme_df = (
-        filtered_df[filtered_df["theme_label"] == theme_label]
+        filtered_df[filtered_df["policy_concept"] == policy_concept]
         .sort_values(["session_rank", "current_idx"])
     )
-    with st.expander(f"**{theme_label}** ({len(theme_df)} quote{'s' if len(theme_df) != 1 else ''})"):
-        description = theme_descriptions.get(theme_label)
-        if isinstance(description, str) and description:
-            st.caption(description)
-        render_theme_group(theme_ids[theme_label], theme_df)
+    with st.expander(f"**{policy_concept}** ({len(theme_df)} quote{'s' if len(theme_df) != 1 else ''})"):
+        meta = concept_meta.loc[policy_concept]
+        crumb = " › ".join(str(v) for v in [meta["theme"], meta["subtheme"]] if pd.notna(v) and v)
+        description = meta["policy_concept_description"]
+        caption = " — ".join(p for p in [crumb, description if isinstance(description, str) else ""] if p)
+        if caption:
+            st.caption(caption)
+        render_theme_group(int(meta["theme_id"]), theme_df)
