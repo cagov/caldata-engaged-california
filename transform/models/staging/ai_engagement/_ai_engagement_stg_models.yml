@@ -192,3 +192,23 @@ models:
           (Staff, Attended, No Show)
       - name: session_number
         description: The session number (1-15) of the engagement session
+
+  - name: stg_phase2_policy_concepts_and_themes
+    description: |
+      This table contains the policy concepts that were discussed during the AI Impact on the Workplace 2026
+      Phase 2 live discussions and provides the mapping between policy concepts, subthemes, and themes that
+      was defined through manual affinity mapping.
+      Only policy concepts that received at least some support from participants (as demonstrated by end of session
+      polling) have been included in this table. Participants were asked to vote on specific policy statements,
+      and these were then mapped to broader policy concepts, which were then grouped into subthemes and themes.
+    columns:
+      - name: policy_concept_id
+        description: Identifier for the policy concept.
+      - name: policy_concept
+        description: The policy concept discussed during the event.
+      - name: policy_concept_description
+        description: A brief description of the policy concept.
+      - name: subtheme
+        description: The subtheme under which the policy concept falls.
+      - name: theme
+        description: The overarching theme under which the subtheme and policy concept fall.
