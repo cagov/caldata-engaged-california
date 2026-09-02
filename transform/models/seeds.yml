@@ -27,18 +27,23 @@ seeds:
 
   - name: curated_discussion_themes
     description: >
-      The manually-curated themes identified by ODI staff across the phase 2 discussion
-      sessions, used by phase2_transcript_curated_theme_tags to tag transcript turns.
-      theme_id is a manually-assigned stable integer and the tagging model's incremental
-      grain key — never renumber existing themes. Labels and descriptions can be reworded
-      without orphaning rows, but doing so requires a --full-refresh of
-      phase2_transcript_curated_theme_tags to re-tag and refresh the stored text.
-      theme_description is included in the tagging prompt verbatim.
+      The manually-curated policy concepts identified by ODI staff across the phase 2
+      discussion sessions, used by phase2_transcript_curated_theme_tags to tag transcript
+      turns. Each row is one policy concept (the tagging unit), grouped into a two-level
+      hierarchy: theme > subtheme > policy_concept. theme_id is a manually-assigned stable
+      integer and the tagging model's incremental grain key — never renumber existing rows.
+      Text columns can be reworded without orphaning rows, but doing so requires a
+      --full-refresh of phase2_transcript_curated_theme_tags to re-tag and refresh the
+      stored text. policy_concept and policy_concept_description are included in the
+      tagging prompt verbatim. Keep the file plain ASCII/UTF-8 — Excel-on-Mac exports Mac
+      Roman with curly apostrophes; replace them before committing.
     config:
       column_types:
         theme_id: integer
-        theme_label: varchar
-        theme_description: varchar
+        policy_concept: varchar
+        policy_concept_description: varchar
+        subtheme: varchar
+        theme: varchar
 
   - name: transcript_times
     description: >

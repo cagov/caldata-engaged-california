@@ -7,7 +7,8 @@
 ) }}
 
 -- Every non-facilitator turn that substantively expresses one of the manually-curated
--- discussion themes (seeds/zoom/curated_discussion_themes.csv), tagged by AI: one row per
+-- discussion themes (seeds/ai_engagement_discussions/curated_discussion_themes.csv), tagged
+-- by AI: one row per
 -- (session, theme, tagged turn), with the verbatim turn text, speaker, and timestamps
 -- joined back from the source data so dashboards need no joins at read time.
 --
@@ -89,12 +90,15 @@ pad the list with tangential matches.$$
 ),
 
 -- The curated taxonomy: this CTE is the fan-out axis (one Cortex call per session per
--- theme). theme_id is the manually-assigned stable grain key from the seed.
+-- policy concept). theme_id is the manually-assigned stable grain key from the seed;
+-- subtheme and theme are the concept's grouping levels, carried through for display.
 themes as (
     select
         theme_id,
-        theme_label,
-        theme_description
+        policy_concept,
+        policy_concept_description,
+        subtheme,
+        theme
     from {{ ref('stg_curated_discussion_themes') }}
 ),
 
@@ -219,16 +223,18 @@ theme_calls as (
         s.session_id,
         s.transcript_fingerprint,
         th.theme_id,
-        th.theme_label,
-        th.theme_description,
+        th.policy_concept,
+        th.policy_concept_description,
+        th.subtheme,
+        th.theme,
         p.system_prompt,
         -- NULL when the session is too big for one call: the CASE short-circuits the
         -- Cortex call below, and the pair lands as a FAILED status row.
         case when s.n_transcript_chars <= {{ max_single_call_chars }}
             then
                 p.theme_task_prompt
-                || '\n\nTheme: ' || th.theme_label
-                || '\nTheme description: ' || th.theme_description
+                || '\n\nTheme: ' || th.policy_concept
+                || '\nTheme description: ' || th.policy_concept_description
                 || '\n\nTranscript:\n' || s.transcript_text
         end as user_prompt
     from sessions_to_process as s
@@ -251,8 +257,10 @@ parsed as (
     select
         session_id,
         theme_id,
-        theme_label,
-        theme_description,
+        policy_concept,
+        policy_concept_description,
+        subtheme,
+        theme,
         transcript_fingerprint,
         coalesce(raw_response:usage:total_tokens::int, 0) as llm_tokens,
         try_parse_json(to_json(raw_response:structured_output[0]:raw_message)) as tag_json,
@@ -341,8 +349,10 @@ turn_rows as (
     select
         p.session_id,
         p.theme_id,
-        p.theme_label,
-        p.theme_description,
+        p.policy_concept,
+        p.policy_concept_description,
+        p.subtheme,
+        p.theme,
         row_number() over (
             partition by c.session_id, c.theme_id
             order by c.turn_idx
@@ -380,8 +390,10 @@ status_rows as (
     select
         p.session_id,
         p.theme_id,
-        p.theme_label,
-        p.theme_description,
+        p.policy_concept,
+        p.policy_concept_description,
+        p.subtheme,
+        p.theme,
         0 as turn_seq,
         null::varchar as turn_hash,
         null::int as turn_idx,

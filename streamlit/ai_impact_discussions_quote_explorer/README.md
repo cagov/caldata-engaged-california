@@ -1,15 +1,16 @@
 # Engaged California — pull quote explorer
 
 Streamlit dashboard for ODI staff to find representative participant quotes from the
-Engaged California phase 2 discussion sessions, organized by the 29 manually-curated
-themes that emerged across the 14 sessions. All theme tags are pre-computed by the dbt
+Engaged California phase 2 discussion sessions, organized by the manually-curated
+policy concepts (grouped theme › subtheme › policy concept) that emerged across the
+14 sessions. All theme tags are pre-computed by the dbt
 pipeline — the app reads tables only and makes **zero live Cortex calls**.
 
 **Data sources (all built by dbt):**
 
 - `phase2_transcript_curated_theme_tags` — the tagged quotes: one row per (session,
-  theme, tagged turn) with verbatim text/speaker/timestamps, plus a status row per
-  (session, theme) pair. Built from the `curated_discussion_themes` seed.
+  policy concept, tagged turn) with verbatim text/speaker/timestamps, plus a status row
+  per (session, policy concept) pair. Built from the `curated_discussion_themes` seed.
 - `phase2_zoom_transcripts_and_chats` — the full transcripts, used for the
   click-to-expand context around each quote.
 - `phase2_sessions` — session numbering/dates for labels.
@@ -21,13 +22,16 @@ Point the app at these via `DISCUSSIONS_DATABASE` / `DISCUSSIONS_SCHEMA` (see
 
 ## Features
 
-- **All themes × all sessions by default**, with sidebar filters for theme, session,
-  speaker, and source (speech vs chat). Empty filters mean "show everything".
-- **Theme-frequency heatmap** (themes × sessions) at the top that reacts to every
-  filter, with a table view and a filtered-quotes CSV download.
-- **Quotes grouped by theme** — one expandable section per theme, quotes in
-  chronological order, paginated. A turn tagged with multiple themes appears under
-  each of them, with "also tagged" pills.
+- **All policy concepts × all sessions by default**, with sidebar filters for theme,
+  policy concept, session, speaker, source (speech vs chat), and participant demographics
+  from the survey (age range, gender, race/ethnicity, broad and detailed industry, region;
+  unmatched speakers fall under "None specified"). Empty filters mean
+  "show everything".
+- **Policy-concept-frequency heatmap** (concepts × sessions) at the top that reacts to
+  every filter, with a table view and a filtered-quotes CSV download.
+- **Quotes grouped by policy concept** — one expandable section per concept (with its
+  theme › subtheme breadcrumb), quotes in chronological order, paginated. A turn tagged
+  with multiple concepts appears under each of them, with "also tagged" pills.
 - **Click-to-expand context** — "⋯ show 3 earlier/later turn(s)" buttons above and
   below each quote reveal the surrounding transcript 3 turns at a time. Context turns
   render dimmed so the tagged turn stays visually primary.

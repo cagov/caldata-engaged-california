@@ -348,14 +348,16 @@ models:
   - name: phase2_transcript_curated_theme_tags
     description: |
       Every non-facilitator turn that substantively expresses one of the manually-curated
-      discussion themes (seeds/zoom/curated_discussion_themes.csv), tagged by AI: one row per
-      (session, theme, tagged turn) with verbatim turn text, speaker, and timestamps joined
-      back from the source events, plus one status row (turn_seq = 0) per (session, theme)
-      pair whatever its outcome. Unlike phase2_transcript_turn_tags (per-session AI-derived
-      themes), the taxonomy here is fixed and human-curated across all sessions; the AI only
-      decides which turns express each theme, citing them by index so quotes cannot be
-      hallucinated. Facilitator/staff turns are excluded deterministically (display-name
-      heuristic plus the verified staff roster).
+      policy concepts (seeds/ai_engagement_discussions/curated_discussion_themes.csv, one
+      tagging unit per row, grouped theme > subtheme > policy_concept), tagged by AI: one
+      row per (session, policy concept, tagged turn) with verbatim turn text, speaker, and
+      timestamps joined back from the source events, plus one status row (turn_seq = 0) per
+      (session, policy concept) pair whatever its outcome. Unlike
+      phase2_transcript_turn_tags (per-session AI-derived themes), the taxonomy here is
+      fixed and human-curated across all sessions; the AI only decides which turns express
+      each policy concept, citing them by index so quotes cannot be hallucinated.
+      Facilitator/staff turns are excluded deterministically (display-name heuristic plus
+      the verified staff roster).
 
       Incremental at the (session, theme) grain via delete+insert: a pair is (re)called when
       no SUCCESS row exists for it at the session's current transcript_fingerprint, so new
@@ -373,13 +375,19 @@ models:
         data_tests:
           - not_null
       - name: theme_id
-        description: Manually-assigned stable integer theme identifier from the curated seed; the incremental grain key.
+        description: Manually-assigned stable integer identifier of the policy concept; the incremental grain key.
         data_tests:
           - not_null
-      - name: theme_label
-        description: The theme's human-readable display name, verbatim from the curated seed.
-      - name: theme_description
-        description: The curator-written description of what the theme encompasses.
+      - name: policy_concept
+        description: >
+          The policy concept's human-readable display name (the tagging unit), verbatim from
+          the curated seed.
+      - name: policy_concept_description
+        description: The curator-written description of what the policy concept encompasses.
+      - name: subtheme
+        description: The mid-level grouping the policy concept belongs to, verbatim from the curated seed.
+      - name: theme
+        description: The top-level grouping the policy concept belongs to, verbatim from the curated seed.
       - name: turn_seq
         description: |
           1-based chronological position of the tagged turn within its (session, theme) pair.
