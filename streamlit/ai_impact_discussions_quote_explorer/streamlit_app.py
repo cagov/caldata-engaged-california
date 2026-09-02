@@ -222,6 +222,23 @@ def theme_badge(label: str) -> str:
     )
 
 
+def turn_copy_text(speaker, demographics, session_label: str, start_sec, source,
+                   text, concepts: list[str]) -> str:
+    """Plain-text rendering of a turn for copying: quote, attribution line,
+    demographics, and any policy concepts tagged on the turn."""
+    clean = " ".join(str("" if text is None or (isinstance(text, float) and pd.isna(text)) else text).split())
+    name = "(unknown)" if speaker is None or (isinstance(speaker, float) and pd.isna(speaker)) else str(speaker)
+    lines = [
+        f'"{clean}"',
+        f"— {name} · {session_label} · {fmt_ts(start_sec)} · {source}",
+    ]
+    if demographics:
+        lines.append(f"Demographics: {demographics}")
+    if concepts:
+        lines.append("Policy concept(s): " + "; ".join(concepts))
+    return "\n".join(lines)
+
+
 def render_turn_html(turn_idx: int, source: str, speaker: str, start_sec, text: str,
                      theme_tags: list[str] | None = None,
                      color: str = "#888", anchor_prefix: str = "turn",
@@ -648,13 +665,19 @@ def render_quote_block(theme_id: int, row, show_separator: bool = False) -> None
 
     colors = colors_by_session.get(sid, {})
     anchor = f"q-{base}"
+    session_label = format_session_label(sid)
     cards = []
+    quote_copy_text = None
     for i in range(lo, hi + 1):
         if indexed is None or i not in indexed.index:
             continue
         r = indexed.loc[i]
         demographics = get_speaker_demographics(r["speaker"], sid, speakers_df)
         if i == idx:
+            quote_copy_text = turn_copy_text(
+                r["speaker"], demographics, session_label, r["start_sec"], r["source"],
+                r["text"], turn_concepts.get((sid, r["turn_hash"]), []),
+            )
             cards.append(render_turn_html(
                 idx, r["source"], r["speaker"], r["start_sec"], r["text"],
                 color=colors.get(r["speaker"], "#888"), anchor_prefix=anchor,
@@ -668,6 +691,15 @@ def render_quote_block(theme_id: int, row, show_separator: bool = False) -> None
     also_tagged = [lbl for lbl in turn_concepts.get((sid, row.turn_hash), []) if lbl != row.policy_concept]
     cards.append(quote_footer_html(format_session_label(sid), also_tagged))
     st.markdown("".join(cards), unsafe_allow_html=True)
+
+    # Copy affordance with NO JavaScript: a code block gets Streamlit's native copy button.
+    # (Any script or iframe on this page — st.components.v1.html, or st.html with
+    # unsafe_allow_javascript — drops the websocket session right after the initial render
+    # on Streamlit 1.62 and silently kills every button; verified headless 2026-09-02.)
+    if quote_copy_text:
+        c1, _ = st.columns([1, 3])
+        with c1.popover("⧉ Copy quote", help="Quote with attribution and demographics, ready to paste"):
+            st.code(quote_copy_text, language=None, wrap_lines=True)
 
     if hi < hi_bound or hi > idx:
         b1, b2, _ = st.columns([1, 1, 2])
@@ -716,13 +748,26 @@ st.markdown("### Quotes by policy concept")
 
 concept_meta = filtered_df.drop_duplicates("policy_concept").set_index("policy_concept")
 
+# Expanders render LAZILY: only an open concept's quotes are built and sent to the browser.
+# Rendering all ~27 groups eagerly (hundreds of cards, buttons, and popovers) pushed the
+# initial page past the point where the browser session survived — the websocket dropped
+# right after the first render and every button silently died (verified headless,
+# 2026-09-02; adding any element type, even an empty iframe, tipped it over). Lazy
+# expanders keep the page small no matter how many concepts or quotes exist.
 for policy_concept in concept_order:
     theme_df = (
         filtered_df[filtered_df["policy_concept"] == policy_concept]
         .sort_values(["session_rank", "current_idx"])
     )
-    with st.expander(f"**{policy_concept}** ({len(theme_df)} quote{'s' if len(theme_df) != 1 else ''})"):
-        meta = concept_meta.loc[policy_concept]
+    meta = concept_meta.loc[policy_concept]
+    exp = st.expander(
+        f"**{policy_concept}** ({len(theme_df)} quote{'s' if len(theme_df) != 1 else ''})",
+        key=f"exp_{int(meta['theme_id'])}",
+        on_change="rerun",
+    )
+    if not exp.open:
+        continue
+    with exp:
         crumb = " › ".join(str(v) for v in [meta["theme"], meta["subtheme"]] if pd.notna(v) and v)
         description = meta["policy_concept_description"]
         caption = " — ".join(p for p in [crumb, description if isinstance(description, str) else ""] if p)
