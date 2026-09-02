@@ -195,8 +195,9 @@ models:
 
   - name: stg_phase2_policy_concepts_and_themes
     description: |
-      This table contains the policy concepts that were discussed during the Phase 2 live discussions and provides
-      the mapping between policy concepts, subthemes, and themes that was defined through manual affinity mapping.
+      This table contains the policy concepts that were discussed during the AI Impact on the Workplace 2026
+      Phase 2 live discussions and provides the mapping between policy concepts, subthemes, and themes that
+      was defined through manual affinity mapping.
       Only policy concepts that received at least some support from participants (as demonstrated by end of session
       polling) have been included in this table. Participants were asked to vote on specific policy statements,
       and these were then mapped to broader policy concepts, which were then grouped into subthemes and themes.

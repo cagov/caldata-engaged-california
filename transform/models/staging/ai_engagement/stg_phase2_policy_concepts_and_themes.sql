@@ -5,7 +5,7 @@ source as (
 )
 
 select
-    row_number() over (order by theme, subtheme, policy_concept) as policy_concept_id,
+    md5(policy_concept) as policy_concept_id,
     policy_concept,
     policy_concept_description,
     subtheme,
