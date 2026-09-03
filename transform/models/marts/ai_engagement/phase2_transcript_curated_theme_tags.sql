@@ -25,13 +25,6 @@
 -- the LLM is also instructed to skip them, but the filter here is what's binding) ->
 -- store each surviving turn's stable turn_hash alongside its positional index.
 --
--- WHY turn_hashes: turn_idx is positional, so it renumbers whenever an upstream filter or
--- parsing rule changes the set of turns. Every row therefore carries the content-addressed
--- turn_hash of its tagged turn plus a fingerprint of the session's turn_hashes as of
--- tagging. A session is (re)tagged whenever its current fingerprint differs — i.e.
--- whenever any turn was added, removed, regrouped, or edited — which also refreshes the
--- verbatim turn columns stored here (same pattern as phase2_transcript_session_summaries).
---
 -- EVERY (session, theme) pair appears in this table via a status row (turn_seq = 0): check
 -- tag_status. A SUCCESS status row with n_matched_turns = 0 means the call worked and no
 -- turns matched; FAILED means the Cortex call returned NULL or unparseable JSON. There is
@@ -53,12 +46,6 @@
 --
 -- Sessions above ~500k chars (none exist; real sessions are ~12k-200k) are NOT map-reduced
 -- here: their calls are skipped entirely and surface as persistent FAILED status rows.
---
--- Run conventions: use `dbt build` (not bare `run`) so the tests gate; a red build is
--- recovered by re-running the same plain build.
---
--- Methodology (index-based citation, guardrails) validated in
--- notebooks/ai_impact_survey/phase_2_analysis.ipynb.
 -- =========================================================================================
 
 with prompts as (
@@ -91,9 +78,6 @@ pad the list with tangential matches.$$
             as theme_task_prompt
 ),
 
--- The curated taxonomy: this CTE is the fan-out axis (one Cortex call per session per
--- policy concept). policy_concept_id (md5 of the label, derived upstream) is the grain
--- key; subtheme and theme are the concept's grouping levels, carried through for display.
 themes as (
     select
         policy_concept_id,
@@ -108,38 +92,10 @@ themes as (
 -- Pipeline
 -- =========================================================================================
 
--- Sessions above max_single_call_chars would blow the Cortex context limit; they are
--- skipped (surfacing as FAILED status rows) rather than map-reduced — no such session
--- exists in the phase 2 corpus.
+-- No session in the current corpus exceeds the max_single_call_chars, but
+-- we keep it for consistency with other similar models.
 {% set max_single_call_chars = 500000 %}
 {% set llm_max_tokens = 4000 %}
-
--- noqa: disable=LT02
--- The JSON schema for Cortex structured outputs must be a single-line string; the jinja
--- set blocks below confuse the linter's indent rule. additionalProperties:false and
--- required are mandatory on every object: OpenAI-family models (the CI LOW tier) reject
--- the schema without them, returning NULL from every call.
-{% set tag_response_schema -%}
-{"type":"json","schema":{"type":"object","properties":{"matching_turn_idxs":{"type":"array","items":{"type":"number"}}},"required":["matching_turn_idxs"],"additionalProperties":false}}
-{%- endset %}
-
--- The per-(session, theme) Cortex call. Column references (system_prompt, user_prompt)
--- resolve in the calling CTE's scope.
-{% set theme_llm_call -%}
-snowflake.cortex.try_complete(
-    '{{ var("llm_model") }}',
-    [
-        {'role': 'system', 'content': system_prompt},
-        {'role': 'user', 'content': user_prompt}
-    ],
-    object_construct(
-        'temperature', 0,
-        'max_tokens', {{ llm_max_tokens }},
-        'response_format', parse_json('{{ tag_response_schema }}')
-    )
-)
-{%- endset %}
--- noqa: enable=LT02
 
 turns as (
     select * from {{ ref('phase2_zoom_transcripts_and_chats') }}
@@ -177,19 +133,17 @@ transcripts as (
         session_id,
         listagg(turn_line, '\n') within group (order by turn_idx) as transcript_text,
         sum(length(turn_line)) as n_transcript_chars,
-        -- Order-independent hash of the session's turn_hashes: changes iff the set of turns
-        -- (or any turn's content) changes. Stamped on every row this session produces.
-        hash_agg(turn_hash) as transcript_fingerprint
+        hash_agg(turn_hash) as transcript_fingerprint  -- Determines if session contents change for some reason
     from rendered_turns
     group by session_id
 ),
 
 -- noqa: disable=LT02
 -- the `is_incremental()` block is causing issues with the linter. Disabling indentation QA for this CTE only.
--- Which (session, theme) calls to make: a pair is pending unless this table already holds
--- a SUCCESS row for it built from the session's current transcript fingerprint. The cross
--- join against the CURRENT seed makes this seed-aware too: new sessions, new themes,
--- failed-pair retries, and full re-tags of sessions whose turns changed are all covered.
+-- This CTE determines which "pairs" (session + theme) have yet to be successfully processed.
+-- Ideally, incremental logic would not be necessary, since both sessions and themes should
+-- be static. But the risk of transient failures during processing require it so that
+-- subsequent runs pick up and retry the failed pairs.
 pending_pairs as (
     select
         t.session_id,
@@ -247,14 +201,29 @@ theme_calls as (
         on pp.policy_concept_id = th.policy_concept_id
     cross join prompts as p
 ),
--- noqa: enable=LT02
 
 tagged as (
     select
         *,
-        case when user_prompt is not null then {{ theme_llm_call }} end as raw_response
+        case when user_prompt is not null then
+            snowflake.cortex.try_complete(
+                '{{ var("llm_model") }}',
+                [
+                    { 'role': 'system', 'content': system_prompt },
+                    { 'role': 'user', 'content': user_prompt }
+                ],
+                object_construct(
+                    'temperature', 0,
+                    'max_tokens', {{ llm_max_tokens }},
+                    -- annoyingly required to be one line.
+                    -- "additionalProperties":false required by OpenAI models for some reason
+                    'response_format', parse_json('{"type":"json","schema":{"type":"object","properties":{"matching_turn_idxs":{"type":"array","items":{"type":"number"}}},"required":["matching_turn_idxs"],"additionalProperties":false}}')
+                )
+            )
+        end as raw_response
     from theme_calls
 ),
+-- noqa: enable=LT02
 
 parsed as (
     select
@@ -287,9 +256,7 @@ exploded_idxs as (
     where p.tag_status = 'SUCCESS'
 ),
 
--- Verified staff/facilitators from the attendance roster. survey_respondent_id = 'staff'
--- alone over-matches (it is also assigned to unmatched attendees upstream), so the join is
--- restricted to rows the roster explicitly marks as staff.
+
 staff_speakers as (
     select distinct
         session_id,
@@ -347,7 +314,6 @@ pair_counts as (
     group by session_id, policy_concept_id
 ),
 
--- One row per surviving tagged turn, with the verbatim source columns.
 turn_rows as (
     select
         p.session_id,
