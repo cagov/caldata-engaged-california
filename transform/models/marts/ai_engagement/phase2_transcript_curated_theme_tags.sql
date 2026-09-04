@@ -141,9 +141,10 @@ transcripts as (
 -- noqa: disable=LT02
 -- the `is_incremental()` block is causing issues with the linter. Disabling indentation QA for this CTE only.
 -- This CTE determines which "pairs" (session + theme) have yet to be successfully processed.
--- Ideally, incremental logic would not be necessary, since both sessions and themes should
--- be static. But the risk of transient failures during processing require it so that
--- subsequent runs pick up and retry the failed pairs.
+-- Incremental logic keeps the pipeline idempotent: LLM calls are slow, cost real money, and
+-- can vary slightly between runs, so a pair is only (re)processed when it has no successful
+-- result for the session's current transcript — new pairs, transient failures, or upstream
+-- transcript changes.
 pending_pairs as (
     select
         t.session_id,

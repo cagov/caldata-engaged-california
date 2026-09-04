@@ -381,6 +381,11 @@ models:
           (md5 of the label); the incremental grain key. Renaming a concept changes it.
         data_tests:
           - not_null
+          - relationships:
+              to: ref('stg_phase2_policy_concepts_and_themes')
+              field: policy_concept_id
+              config:
+                severity: error
       - name: policy_concept
         description: >
           The policy concept's human-readable display name (the tagging unit), verbatim from
