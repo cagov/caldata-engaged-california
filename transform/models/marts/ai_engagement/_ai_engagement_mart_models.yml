@@ -345,6 +345,119 @@ models:
       - name: text
         description: The verbatim text of the turn.
 
+  - name: phase2_transcript_curated_theme_tags
+    description: |
+      Every non-facilitator turn that substantively expresses one of the manually-curated
+      policy concepts (stg_phase2_policy_concepts_and_themes, one tagging unit per row,
+      grouped theme > subtheme > policy_concept), tagged by AI: one
+      row per (session, policy concept, tagged turn) with verbatim turn text, speaker, and
+      timestamps joined back from the source events, plus one status row (turn_seq = 0) per
+      (session, policy concept) pair whatever its outcome. Unlike
+      phase2_transcript_turn_tags (per-session AI-derived themes), the taxonomy here is
+      fixed and human-curated across all sessions; the AI only decides which turns express
+      each policy concept, citing them by index so quotes cannot be hallucinated.
+      Facilitator/staff turns are excluded deterministically (display-name heuristic plus
+      the verified staff roster).
+
+      Incremental at the (session, policy concept) grain via delete+insert: a pair is
+      (re)called when no SUCCESS row exists for it at the session's current
+      transcript_fingerprint, so new sessions, new policy concepts, failed pairs, and
+      sessions whose turns changed upstream are all handled by a plain build (which also
+      refreshes the stored verbatim turn columns). FAILED pairs fail the build via an
+      error-severity test, never silently. Prompt edits and taxonomy rewording still
+      require a --full-refresh — and because policy_concept_id is md5(policy_concept),
+      renaming a concept changes its id, orphaning the old id's rows until a --full-refresh.
+
+      Speaker display names are PII, carried intentionally for verified quote display in the
+      pull quote explorer dashboard; confirm the display policy before exposing them publicly.
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+        data_tests:
+          - not_null
+      - name: policy_concept_id
+        description: >
+          The policy concept's identifier from stg_phase2_policy_concepts_and_themes
+          (md5 of the label); the incremental grain key. Renaming a concept changes it.
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_phase2_policy_concepts_and_themes')
+              field: policy_concept_id
+              config:
+                severity: error
+      - name: policy_concept
+        description: >
+          The policy concept's human-readable display name (the tagging unit), verbatim from
+          the curated taxonomy.
+      - name: policy_concept_description
+        description: The curator-written description of what the policy concept encompasses.
+      - name: subtheme
+        description: The mid-level grouping the policy concept belongs to, verbatim from the curated taxonomy.
+      - name: theme
+        description: The top-level grouping the policy concept belongs to, verbatim from the curated taxonomy.
+      - name: turn_seq
+        description: |
+          1-based chronological position of the tagged turn within its (session, theme) pair.
+          0 marks the pair's status row (no turn columns); dashboards should filter on
+          turn_seq > 0 for quotes and read turn_seq = 0 rows for tag_status.
+      - name: turn_hash
+        description: |
+          The tagged turn's stable, content-addressed identity (joins to
+          phase2_zoom_transcripts_and_chats.turn_hash) — the durable reference to use for
+          resolving quotes against the current transcript. Null on status rows.
+      - name: turn_idx
+        description: |
+          The turn's per-session chronological index as of tagging time. Positional, so it can
+          go stale between a transcript change and the pipeline's next run — resolve via
+          turn_hash when currency matters. Null on status rows.
+      - name: source
+        description: Either 'speech' for transcript turns or 'chat' for chat messages; null on status rows.
+      - name: src_ref
+        description: The turn's reference in its source file (cue start_seq or chat line_no); null on status rows.
+      - name: start_sec
+        description: The start time of the turn in seconds since the start of the session; null on status rows.
+      - name: end_sec
+        description: The end time of the turn in seconds since the start of the session; null on status rows.
+      - name: speaker
+        description: The display name of the speaker (verbatim from the source data, PII); null on status rows.
+      - name: text
+        description: The verbatim text of the turn; null on status rows.
+      - name: n_matched_turns
+        description: >
+          How many turns survived index verification and the facilitator filter for this
+          (session, theme) pair.
+      - name: n_unverified_idxs_dropped
+        description: |
+          How many returned indices did not exist in the session and were dropped
+          (hallucination guardrail); consistently high values mean the model is fabricating
+          indices.
+      - name: n_facilitator_turns_dropped
+        description: How many verified turns were dropped because the speaker matched the facilitator/staff filters.
+      - name: tag_status
+        description: |
+          SUCCESS when the pair's Cortex call returned parseable JSON (n_matched_turns may
+          still be 0), FAILED when it returned NULL or unparseable output. FAILED pairs are
+          retried on the next run; the test below turns the build red so failures are loud.
+        data_tests:
+          - dbt_utils.not_accepted_values:
+              values: ["FAILED"]
+              severity: error
+      - name: transcript_fingerprint
+        description: |
+          HASH_AGG of the session's turn_hashes at tagging time. The incremental filter compares
+          it to the current transcript: a mismatch means the turns changed since tagging, and
+          every theme of the session is re-called on the next run. Dashboards can compare it
+          against HASH_AGG(turn_hash) over phase2_zoom_transcripts_and_chats to flag stale tags.
+      - name: llm_tokens
+        description: >
+          Total tokens billed for this pair's Cortex call (0 when the call was skipped or
+          failed without usage).
+      - name: llm_model
+        description: The LLM model used, per the LLM_MODEL environment variable (see docs/llm-cost-control.md).
+      - name: processed_at
+        description: Timestamp of when the pair was tagged.
+
   - name: phase2_transcript_cross_talk_moments
     description: |
       The top 5 minutes of heaviest cross-talk per Phase 2 transcript, i.e. the minutes with the

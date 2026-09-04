@@ -203,7 +203,14 @@ models:
       and these were then mapped to broader policy concepts, which were then grouped into subthemes and themes.
     columns:
       - name: policy_concept_id
-        description: Identifier for the policy concept.
+        description: >
+          Identifier for the policy concept (md5 of the label). The incremental grain key of
+          phase2_transcript_curated_theme_tags, so uniqueness is enforced — two concepts with
+          the same label would silently collapse into one id. Renaming a concept changes its
+          id (see the mart's docs for the --full-refresh implications).
+        data_tests:
+          - unique
+          - not_null
       - name: policy_concept
         description: The policy concept discussed during the event.
       - name: policy_concept_description
