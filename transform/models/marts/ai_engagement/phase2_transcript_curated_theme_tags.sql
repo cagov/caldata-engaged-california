@@ -262,7 +262,7 @@ staff_speakers as (
         session_id,
         speaker
     from {{ ref('phase2_speaker_ai_survey') }}
-    where survey_respondent_id = 'staff' and attendee_status = 'staff'
+    where survey_respondent_id = 'staff' or attendee_status = 'staff'
 ),
 
 -- Guardrail 1: an index is kept only if it exists in the session (left-join miss =
