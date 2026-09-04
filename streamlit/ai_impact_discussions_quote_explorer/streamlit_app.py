@@ -764,11 +764,22 @@ concept_meta = filtered_df.drop_duplicates("policy_concept").set_index("policy_c
 # accordion is hand-rolled from buttons because Streamlit-in-Snowflake tops out at 1.52,
 # and st.expander only exposes its open state (key/on_change) from 1.62.
 st.markdown(
-    # Left-align the tertiary accordion buttons so they read as expander headers. The
-    # centering lives on an unnamed flex div INSIDE the button, hence the > div selector
-    # (verified against streamlit 1.52.2 DOM).
-    "<style>[data-testid='stBaseButton-tertiary'], [data-testid='stBaseButton-tertiary'] > div "
-    "{ justify-content: flex-start; text-align: left; }</style>",
+    # Dress the tertiary accordion buttons as expander-style header rows: left-aligned
+    # (the centering lives on an unnamed flex div INSIDE the button, hence the > div
+    # selector — verified against streamlit 1.52.2 DOM), bordered, with a hover tint so
+    # they read as clickable. Scoped to tertiary, which only the accordion uses; styling
+    # secondary would leak onto every default button in the app.
+    "<style>"
+    "[data-testid='stBaseButton-tertiary'], [data-testid='stBaseButton-tertiary'] > div "
+    "{ justify-content: flex-start; text-align: left; }"
+    "[data-testid='stBaseButton-tertiary'] {"
+    "  border: 1px solid rgba(136, 136, 136, 0.35); border-radius: 8px;"
+    "  padding: 0.5rem 0.75rem; margin-bottom: 2px;"
+    "}"
+    "[data-testid='stBaseButton-tertiary']:hover {"
+    "  border-color: #1565c0; background: rgba(21, 101, 192, 0.06);"
+    "}"
+    "</style>",
     unsafe_allow_html=True,
 )
 for policy_concept in concept_order:
