@@ -99,7 +99,8 @@ def load_quotes() -> pd.DataFrame:
     df = session.sql(f"""
         SELECT session_id, policy_concept_id, policy_concept, policy_concept_description,
                subtheme, theme, turn_seq, turn_hash, turn_idx, source, start_sec, end_sec,
-               speaker, text, n_matched_turns, tag_status, transcript_fingerprint,
+               speaker, text, n_matched_turns, tag_status,
+               transcript_fingerprint::VARCHAR AS transcript_fingerprint,
                llm_model, processed_at,
                -- speaker_id computed here, matching the dbt definition
                -- (stg_zoom_transcript_speakers), so the app never hashes PII itself
@@ -126,17 +127,17 @@ def load_events() -> pd.DataFrame:
 
 
 @st.cache_data
-def load_transcript_fingerprints() -> dict[str, int]:
+def load_transcript_fingerprints() -> dict[str, str]:
     """Current per-session transcript fingerprint — the same HASH_AGG(turn_hash) the dbt
-    model stamps on tag rows at tagging time. A tag whose stored fingerprint differs was
-    made against an earlier version of the transcript (the pipeline re-tags it on its
-    next run); the app flags the session as stale in the meantime."""
+    model stamps on tag rows at tagging time. A tag whose stored fingerprint
+    differs was made against an earlier version of the transcript (the pipeline re-tags
+    it on its next run); the app flags the session as stale in the meantime."""
     df = session.sql(f"""
-        SELECT session_id, HASH_AGG(turn_hash) AS fingerprint
+        SELECT session_id, HASH_AGG(turn_hash)::VARCHAR AS fingerprint
         FROM {EVENTS_TABLE}
         GROUP BY session_id
     """).to_pandas()
-    return {r.SESSION_ID: int(r.FINGERPRINT) for r in df.itertuples()}
+    return {r.SESSION_ID: str(r.FINGERPRINT) for r in df.itertuples()}
 
 
 @st.cache_data
@@ -345,7 +346,7 @@ except Exception:
 stale_sids = sorted({
     sid
     for sid, fp in zip(tags_df["session_id"], tags_df["transcript_fingerprint"])
-    if (int(fp) if pd.notna(fp) else None) != current_fingerprints.get(sid)
+    if (str(fp) if pd.notna(fp) else None) != current_fingerprints.get(sid)
 })
 
 # Session labels & chronological order from phase2_sessions, with a fallback for
@@ -520,7 +521,8 @@ st.markdown(
 )
 
 m1, m2, m3, m4 = st.columns(4)
-m1.metric("Tagged quotes", f"{len(filtered_df):,}")
+# Unique turns, not tag rows — a turn tagged with several concepts is still one quote
+m1.metric("Quotes", f"{len(filtered_df.drop_duplicates(['session_id', 'turn_hash'])):,}")
 m2.metric("Policy concepts", filtered_df["policy_concept"].nunique())
 m3.metric("Sessions", filtered_df["session_id"].nunique())
 m4.metric("Speakers", filtered_df["speaker"].nunique())
@@ -532,13 +534,20 @@ if not failed_pairs.empty:
         "missing below. Failed pairs are retried automatically on the next dbt pipeline run."
     )
 
-if stale_sids or n_unresolved:
+if stale_sids:
     stale_labels = ", ".join(format_session_label(sid) for sid in stale_sids)
     st.warning(
         f"⚠️ {len(stale_sids)} session(s) have **stale tags** — the transcript changed since "
-        f"tagging ({stale_labels}). {n_unresolved} tagged quote(s) no longer resolve to a "
-        "current turn and are hidden rather than shown wrong. The pipeline re-tags affected "
-        "sessions automatically on its next run; until then treat their tags as provisional."
+        f"tagging ({stale_labels}). Counted across all sessions, regardless of the current "
+        "filters. The pipeline re-tags affected sessions automatically on its next run; "
+        "until then treat their tags as provisional."
+    )
+
+if n_unresolved:
+    st.warning(
+        f"⚠️ {n_unresolved} tagged quote(s) no longer resolve to a current transcript turn "
+        "and are hidden rather than shown wrong. Counted across all sessions, regardless of "
+        "the current filters; they will be re-tagged on the next pipeline run."
     )
 
 if not status_df.empty:
