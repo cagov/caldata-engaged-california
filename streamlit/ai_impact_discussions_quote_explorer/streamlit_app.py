@@ -624,6 +624,10 @@ def _bump(state_key: str) -> None:
     st.session_state[state_key] = st.session_state.get(state_key, 0) + CONTEXT_STEP
 
 
+def _flip(state_key: str) -> None:
+    st.session_state[state_key] = not st.session_state.get(state_key, False)
+
+
 def _reset(state_key: str) -> None:
     st.session_state[state_key] = 0
 
@@ -752,26 +756,52 @@ st.markdown("### Quotes by policy concept")
 
 concept_meta = filtered_df.drop_duplicates("policy_concept").set_index("policy_concept")
 
-# Expanders render LAZILY: only an open concept's quotes are built and sent to the browser.
-# Rendering all ~27 groups eagerly (hundreds of cards, buttons, and popovers) pushed the
-# initial page past the point where the browser session survived — the websocket dropped
-# right after the first render and every button silently died (verified headless,
-# 2026-09-02; adding any element type, even an empty iframe, tipped it over). Lazy
-# expanders keep the page small no matter how many concepts or quotes exist.
+# Quote groups render LAZILY: only an opened concept's quotes are built and sent to the
+# browser. Rendering all ~27 groups eagerly (hundreds of cards, buttons, and popovers)
+# pushed the initial page past the point where the browser session survived — the websocket
+# dropped right after the first render and every button silently died (verified headless,
+# 2026-09-02; adding any element type, even an empty iframe, tipped it over). The
+# accordion is hand-rolled from buttons because Streamlit-in-Snowflake tops out at 1.52,
+# and st.expander only exposes its open state (key/on_change) from 1.62.
+st.markdown(
+    # Dress the tertiary accordion buttons as expander-style header rows: left-aligned
+    # (the centering lives on an unnamed flex div INSIDE the button, hence the > div
+    # selector — verified against streamlit 1.52.2 DOM), bordered, with a hover tint so
+    # they read as clickable. Scoped to tertiary, which only the accordion uses; styling
+    # secondary would leak onto every default button in the app.
+    "<style>"
+    "[data-testid='stBaseButton-tertiary'], [data-testid='stBaseButton-tertiary'] > div "
+    "{ justify-content: flex-start; text-align: left; }"
+    "[data-testid='stBaseButton-tertiary'] {"
+    "  border: 1px solid rgba(136, 136, 136, 0.35); border-radius: 8px;"
+    "  padding: 0.5rem 0.75rem; margin-bottom: 2px;"
+    "}"
+    "[data-testid='stBaseButton-tertiary']:hover {"
+    "  border-color: #1565c0; background: rgba(21, 101, 192, 0.06);"
+    "}"
+    "</style>",
+    unsafe_allow_html=True,
+)
 for policy_concept in concept_order:
     theme_df = (
         filtered_df[filtered_df["policy_concept"] == policy_concept]
         .sort_values(["session_rank", "current_idx"])
     )
     meta = concept_meta.loc[policy_concept]
-    exp = st.expander(
-        f"**{policy_concept}** ({len(theme_df)} quote{'s' if len(theme_df) != 1 else ''})",
-        key=f"exp_{meta['policy_concept_id']}",
-        on_change="rerun",
+    state_key = f"exp_{meta['policy_concept_id']}"
+    is_open = st.session_state.get(state_key, False)
+    st.button(
+        f"{'▾' if is_open else '▸'} **{policy_concept}** "
+        f"({len(theme_df)} quote{'s' if len(theme_df) != 1 else ''})",
+        key=f"btn_{state_key}",
+        on_click=_flip,
+        args=(state_key,),
+        type="tertiary",
+        width="stretch",
     )
-    if not exp.open:
+    if not is_open:
         continue
-    with exp:
+    with st.container(border=True):
         crumb = " › ".join(str(v) for v in [meta["theme"], meta["subtheme"]] if pd.notna(v) and v)
         description = meta["policy_concept_description"]
         caption = " — ".join(p for p in [crumb, description if isinstance(description, str) else ""] if p)
