@@ -1,6 +1,8 @@
 import html
 import json
 import os
+import re
+import zlib
 
 import pandas as pd
 import plotly.express as px
@@ -253,11 +255,20 @@ def render_turn_html(turn_idx: int, source: str, speaker: str, start_sec, text: 
     border = "2px solid rgba(136,136,136,0.5)" if dimmed else f"4px solid {color}"
     opacity = "opacity:0.6;" if dimmed else ""
     speaker_color = "#888" if dimmed else color
+    # Context turns indent under the tagged turn so the block reads quote-first
+    margin = "margin:4px 0 4px 1.5rem;" if dimmed else "margin:4px 0;"
+    # The tagged turn gets a ❝ glyph in the speaker accent and slightly larger text so
+    # it stands apart from the dimmed context turns around it
+    text_div = (
+        f'<div style="margin-top:2px;">{html.escape(str(text))}</div>' if dimmed else
+        f'<div style="margin-top:2px; font-size:1.05em;">'
+        f'<span style="color:{color}; font-weight:700;">❝ </span>{html.escape(str(text))}</div>'
+    )
     # scroll-margin-top keeps the card top visible below Streamlit's sticky header
     return (
         f'<div id="{anchor_prefix}-{turn_idx}" class="ecq-card" style="'
         f'border-left:{border}; {opacity}'
-        f'padding:6px 10px; margin:4px 0; border-radius:4px; scroll-margin-top:4.5rem; '
+        f'padding:6px 10px; {margin} border-radius:4px; scroll-margin-top:4.5rem; '
         f"{background}\">"
         f'<span style="color:{speaker_color}; font-weight:600;">{html.escape(str(speaker))}</span>'
         # #888 (not the upstream app's #333) so the demographics line stays legible on the
@@ -265,18 +276,9 @@ def render_turn_html(turn_idx: int, source: str, speaker: str, start_sec, text: 
         + (f' <span style="color:#888; font-size:0.80em; padding-left: 16px;">{html.escape(speaker_demographics)}</span>' if speaker_demographics else "")
         + f'<div style="color:#999; font-size:0.80em; margin-top:2px; margin-bottom:6px;">[{turn_idx}] · {fmt_ts(start_sec)} · {icon}</div>'
         f"{badges}"
-        f'<div style="margin-top:2px;">{html.escape(str(text))}</div>'
+        f"{text_div}"
         f"</div>"
     )
-
-
-# Solid full-width rule between quote blocks (deliberately distinct from the dashed
-# gap_divider used inside transcript context). When one quote's expanded context grows
-# to overlap the next quote's turns, the blocks still render independently — the
-# separator marks block boundaries, not transcript continuity.
-QUOTE_SEPARATOR = (
-    '<div style="border-top:1px solid rgba(136,136,136,0.4); margin:4px 0 16px;"></div>'
-)
 
 
 def quote_footer_html(session_label: str, also_tagged: list[str]) -> str:
@@ -286,7 +288,7 @@ def quote_footer_html(session_label: str, also_tagged: list[str]) -> str:
     if also_tagged:
         also = ' · also tagged: ' + "".join(theme_badge(lbl) for lbl in also_tagged)
     return (
-        f'<div style="color:#888; font-size:0.9rem; margin:4px 0 14px 4px;">'
+        f'<div style="color:#888; font-size:0.9rem; margin:10px 0 0 4px;">'
         f"{html.escape(session_label)}{also}</div>"
     )
 
@@ -459,7 +461,6 @@ turn_concepts: dict[tuple[str, str], list[str]] = (
 
 with st.sidebar:
     st.header("Filters")
-    st.caption("Empty filters mean “show everything”. The chart and quote list react to all of them.")
 
     theme_filter = st.multiselect("Themes", sorted(quotes_df["theme"].unique()))
     concept_totals = quotes_df.groupby("policy_concept").size().sort_values(ascending=False)
@@ -469,10 +470,6 @@ with st.sidebar:
     source_filter = st.multiselect("Source", ["speech", "chat"])
 
     st.subheader("Participant demographics")
-    st.caption(
-        "From the participant survey. Speakers without a survey match, or who skipped a "
-        "question, are under “None specified”."
-    )
     demographic_filters = {
         col: st.multiselect(label, demographic_options(col)) for col, label in DEMOGRAPHIC_FILTERS
     }
@@ -512,20 +509,6 @@ for col, selected in demographic_filters.items():
 # ---------------------------------------------------------------------------
 
 st.title("Engaged California — pull quote explorer")
-st.markdown(
-    "Browse representative participant quotes from the phase 2 discussion sessions, organized "
-    "by the manually-curated policy concepts (grouped theme › subtheme › policy concept). "
-    "Tags are pre-computed by the dbt pipeline; every quote is "
-    "resolved verbatim from the source transcript, never from a model's memory. Facilitator and "
-    "staff turns are excluded."
-)
-
-m1, m2, m3, m4 = st.columns(4)
-# Unique turns, not tag rows — a turn tagged with several concepts is still one quote
-m1.metric("Quotes", f"{len(filtered_df.drop_duplicates(['session_id', 'turn_hash'])):,}")
-m2.metric("Policy concepts", filtered_df["policy_concept"].nunique())
-m3.metric("Sessions", filtered_df["session_id"].nunique())
-m4.metric("Speakers", filtered_df["speaker"].nunique())
 
 failed_pairs = status_df[status_df["tag_status"] == "FAILED"]
 if not failed_pairs.empty:
@@ -550,14 +533,6 @@ if n_unresolved:
         "the current filters; they will be re-tagged on the next pipeline run."
     )
 
-if not status_df.empty:
-    latest = status_df.sort_values("processed_at").iloc[-1]
-    st.caption(
-        f"Tagged with `{latest['llm_model']}` · latest run {str(latest['processed_at'])[:16]} · "
-        "served from the pre-tagged dbt table."
-    )
-
-
 # ---------------------------------------------------------------------------
 # Theme frequency by session (reacts to the sidebar filters)
 # ---------------------------------------------------------------------------
@@ -581,7 +556,18 @@ heat = (
 
 # Nested expanders aren't allowed in Streamlit, so the table lives in a tab here
 # rather than its own expander.
-with st.expander("📊 Policy concept frequency by session", expanded=False):
+with st.expander("📊 Metrics & policy concept frequency by session", expanded=False):
+    m1, m2, m3 = st.columns(3)
+    # Unique turns, not tag rows — a turn tagged with several concepts is still one quote
+    m1.metric("Quotes", f"{len(filtered_df.drop_duplicates(['session_id', 'turn_hash'])):,}")
+    m2.metric("Policy concepts", filtered_df["policy_concept"].nunique())
+    m3.metric("Sessions", filtered_df["session_id"].nunique())
+    if not status_df.empty:
+        latest = status_df.sort_values("processed_at").iloc[-1]
+        st.caption(
+            f"Tagged with `{latest['llm_model']}` · latest run {str(latest['processed_at'])[:16]} · "
+            "served from the pre-tagged dbt table."
+        )
     chart_tab, table_tab = st.tabs(["Chart", "Table"])
     with chart_tab:
         fig = px.imshow(
@@ -637,7 +623,7 @@ def _shift_page(page_key: str, delta: int, n_pages: int) -> None:
     st.session_state[page_key] = max(0, min(n_pages - 1, page))
 
 
-def render_quote_block(concept_id: str, row, show_separator: bool = False) -> None:
+def render_quote_block(concept_id: str, row) -> None:
     """One tagged turn plus its expandable context: a "show earlier/later" button above
     and below reveals CONTEXT_STEP more transcript turns per click, and a "hide" button
     collapses that side again (state survives reruns via st.session_state). Context
@@ -654,9 +640,6 @@ def render_quote_block(concept_id: str, row, show_separator: bool = False) -> No
     up_key, dn_key = f"ctx_up_{base}", f"ctx_dn_{base}"
     lo = max(lo_bound, idx - st.session_state.get(up_key, 0))
     hi = min(hi_bound, idx + st.session_state.get(dn_key, 0))
-
-    if show_separator:
-        st.markdown(QUOTE_SEPARATOR, unsafe_allow_html=True)
 
     if lo > lo_bound or lo < idx:
         b1, b2, _ = st.columns([1, 1, 2])
@@ -697,16 +680,17 @@ def render_quote_block(concept_id: str, row, show_separator: bool = False) -> No
                 anchor_prefix=anchor, dimmed=True,
             ))
     also_tagged = [lbl for lbl in turn_concepts.get((sid, row.turn_hash), []) if lbl != row.policy_concept]
-    cards.append(quote_footer_html(format_session_label(sid), also_tagged))
     st.markdown("".join(cards), unsafe_allow_html=True)
 
-    # Copy affordance with NO JavaScript: a code block gets Streamlit's native copy button.
-    # (Any script or iframe on this page — st.components.v1.html, or st.html with
+    # Footer (session provenance) and the copy affordance share one row to cut a
+    # vertical stop. Copy uses NO JavaScript: a code block gets Streamlit's native copy
+    # button. (Any script or iframe on this page — st.components.v1.html, or st.html with
     # unsafe_allow_javascript — drops the websocket session right after the initial render
     # on Streamlit 1.62 and silently kills every button; verified headless 2026-09-02.)
+    f1, f2 = st.columns([3, 1])
+    f1.markdown(quote_footer_html(session_label, also_tagged), unsafe_allow_html=True)
     if quote_copy_text:
-        c1, _ = st.columns([1, 3])
-        with c1.popover("⧉ Copy quote", help="Quote with attribution and demographics, ready to paste"):
+        with f2.popover("⧉ Copy quote", help="Quote with attribution and demographics, ready to paste"):
             st.code(quote_copy_text, language=None, wrap_lines=True)
 
     if hi < hi_bound or hi > idx:
@@ -723,6 +707,24 @@ def render_quote_block(concept_id: str, row, show_separator: bool = False) -> No
             )
 
 
+def _pager(concept_id: str, page_key: str, page: int, n_pages: int, n_quotes: int,
+           position: str) -> None:
+    """One Prev / page-count / Next row. Rendered at the top and bottom of a theme
+    group's page; both rows drive the same page_key state, position only uniquifies
+    the widget keys."""
+    p1, p2, p3 = st.columns([1, 3, 1])
+    p1.button("← Prev", key=f"prev_{position}_{concept_id}", disabled=page <= 0,
+              on_click=_shift_page, args=(page_key, -1, n_pages), width="stretch")
+    p3.button("Next →", key=f"next_{position}_{concept_id}", disabled=page >= n_pages - 1,
+              on_click=_shift_page, args=(page_key, 1, n_pages), width="stretch")
+    start, end = page * PAGE_SIZE_QUOTES, min((page + 1) * PAGE_SIZE_QUOTES, n_quotes)
+    p2.markdown(
+        f"<div style='text-align:center; color:#888;'>Page {page + 1} of {n_pages} — "
+        f"quotes {start + 1}–{end} of {n_quotes}</div>",
+        unsafe_allow_html=True,
+    )
+
+
 @st.fragment
 def render_theme_group(concept_id: str, theme_df: pd.DataFrame) -> None:
     """Everything inside one theme's expander. As a fragment, button clicks in here
@@ -734,22 +736,23 @@ def render_theme_group(concept_id: str, theme_df: pd.DataFrame) -> None:
     st.session_state[page_key] = page
 
     if n_pages > 1:
-        p1, p2, p3 = st.columns([1, 3, 1])
-        p1.button("← Prev", key=f"prev_{concept_id}", disabled=page <= 0,
-                  on_click=_shift_page, args=(page_key, -1, n_pages), width="stretch")
-        p3.button("Next →", key=f"next_{concept_id}", disabled=page >= n_pages - 1,
-                  on_click=_shift_page, args=(page_key, 1, n_pages), width="stretch")
-        start, end = page * PAGE_SIZE_QUOTES, min((page + 1) * PAGE_SIZE_QUOTES, len(theme_df))
-        p2.markdown(
-            f"<div style='text-align:center; color:#888;'>Page {page + 1} of {n_pages} — "
-            f"quotes {start + 1}–{end} of {len(theme_df)}</div>",
-            unsafe_allow_html=True,
-        )
-    else:
-        start, end = 0, len(theme_df)
+        _pager(concept_id, page_key, page, n_pages, len(theme_df), "top")
+    start, end = page * PAGE_SIZE_QUOTES, min((page + 1) * PAGE_SIZE_QUOTES, len(theme_df))
 
+    # Alternating tinted panels group each quote block (tagged turn + context + footer
+    # + buttons) into one visual unit. Streamlit widgets can't live inside an HTML div,
+    # so the band is a keyed st.container styled via its st-key-* class (see the CSS
+    # block below the accordion styles). Container keys become CSS classes, so they only
+    # allow [a-zA-Z0-9_-] — sanitize the concept_id and key by page position (containers
+    # hold no state, so position-based keys are safe across page flips).
+    safe_cid = re.sub(r"[^a-zA-Z0-9_-]", "_", str(concept_id))
     for j, quote_row in enumerate(theme_df.iloc[start:end].itertuples()):
-        render_quote_block(concept_id, quote_row, show_separator=j > 0)
+        tint = "-tint" if j % 2 == 0 else ""
+        with st.container(key=f"qblock{tint}-{safe_cid}-{j}"):
+            render_quote_block(concept_id, quote_row)
+
+    if n_pages > 1:
+        _pager(concept_id, page_key, page, n_pages, len(theme_df), "bottom")
 
 
 st.markdown("### Quotes by policy concept")
@@ -773,20 +776,64 @@ st.markdown(
     "[data-testid='stBaseButton-tertiary'], [data-testid='stBaseButton-tertiary'] > div "
     "{ justify-content: flex-start; text-align: left; }"
     "[data-testid='stBaseButton-tertiary'] {"
-    "  border: 1px solid rgba(136, 136, 136, 0.35); border-radius: 8px;"
+    "  border: 2px solid rgba(136, 136, 136, 0.55); border-radius: 8px;"
     "  padding: 0.5rem 0.75rem; margin-bottom: 2px;"
     "}"
     "[data-testid='stBaseButton-tertiary']:hover {"
     "  border-color: #1565c0; background: rgba(21, 101, 192, 0.06);"
     "}"
+    # Quote-block panels: every qblock container gets the same padding so text aligns
+    # across bands; the -tint variant adds a neutral low-alpha background that reads as
+    # a band on both light and dark themes. Attribute selectors because the key lands in
+    # the container's class list as st-key-<key>.
+    "[class*='st-key-qblock'] { padding: 0.6rem 0.9rem 0.7rem; margin-bottom: 4px; }"
+    "[class*='st-key-qblock-tint'] {"
+    "  background: rgba(136, 136, 136, 0.18); border-radius: 8px;"
+    "}"
+    # Heavier outlines on the structural containers so element boundaries read at a
+    # glance; alpha gray so the same rules work on light and dark surfaces. The opened-
+    # concept container is keyed (st-key-concept-*) rather than border=True because the
+    # element Streamlit draws the built-in border on differs across 1.52/1.62 — the
+    # st-key class always lands on the container itself.
+    "[class*='st-key-concept-'] {"
+    "  border: 2px solid rgba(136, 136, 136, 0.45); border-radius: 8px;"
+    "  padding: 1rem 1rem 0.75rem; margin-bottom: 6px;"
+    "}"
+    "[data-testid='stExpander'] > details {"
+    "  border: 2px solid rgba(136, 136, 136, 0.45) !important;"
+    "}"
     "</style>",
     unsafe_allow_html=True,
 )
+
+order_col, reshuffle_col, _ = st.columns([1, 1, 2])
+quote_order = order_col.selectbox(
+    "Quote order",
+    ["Chronological", "Shuffled"],
+    help="Chronological orders each concept's quotes by session then timestamp; "
+    "Shuffled mixes them so early sessions don't dominate.",
+)
+if quote_order == "Shuffled":
+    # Vertical shim so the button lines up with the selectbox input, not its label
+    reshuffle_col.markdown("<div style='height:1.75rem;'></div>", unsafe_allow_html=True)
+    reshuffle_col.button(
+        "🔀 Reshuffle",
+        on_click=lambda: st.session_state.update(
+            shuffle_seed=st.session_state.get("shuffle_seed", 0) + 1
+        ),
+    )
+
 for policy_concept in concept_order:
     theme_df = (
         filtered_df[filtered_df["policy_concept"] == policy_concept]
         .sort_values(["session_rank", "current_idx"])
     )
+    if quote_order == "Shuffled":
+        # Deterministic per (concept, seed) so pagination and expanded-context state
+        # stay stable across reruns until the user reshuffles. crc32, not hash():
+        # Python's str hash is salted per process.
+        seed = (zlib.crc32(str(policy_concept).encode()) ^ st.session_state.get("shuffle_seed", 0)) & 0x7FFFFFFF
+        theme_df = theme_df.sample(frac=1, random_state=seed)
     meta = concept_meta.loc[policy_concept]
     state_key = f"exp_{meta['policy_concept_id']}"
     is_open = st.session_state.get(state_key, False)
@@ -801,7 +848,7 @@ for policy_concept in concept_order:
     )
     if not is_open:
         continue
-    with st.container(border=True):
+    with st.container(key=f"concept-{re.sub(r'[^a-zA-Z0-9_-]', '_', str(meta['policy_concept_id']))}"):
         crumb = " › ".join(str(v) for v in [meta["theme"], meta["subtheme"]] if pd.notna(v) and v)
         description = meta["policy_concept_description"]
         caption = " — ".join(p for p in [crumb, description if isinstance(description, str) else ""] if p)
