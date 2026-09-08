@@ -39,10 +39,12 @@ session = get_session()
 # Config
 # ---------------------------------------------------------------------------
 
-# Theme tags are pre-computed by the dbt tagging pipeline (model
-# phase2_transcript_curated_theme_tags, built on phase2_zoom_transcripts_and_chats
-# against the stg_phase2_policy_concepts_and_themes taxonomy). This app only reads tables — it makes
-# zero live Cortex calls. Tags reference turns by stable turn_hash; the app resolves
+# Theme tags are pre-computed by the two-stage dbt tagging pipeline: stage 1
+# (phase2_transcript_curated_theme_tags, built on phase2_zoom_transcripts_and_chats
+# against the stg_phase2_policy_concepts_and_themes taxonomy) tags turns recall-oriented
+# from the full transcript; stage 2 (phase2_transcript_curated_theme_tag_reviews) re-judges
+# each tagged turn STANDALONE — text only, no transcript — and the app shows only quotes
+# that review kept. This app only reads tables — it makes zero live Cortex calls. Tags reference turns by stable turn_hash; the app resolves
 # those to the current transcript on load and hides (with a warning) any that no longer
 # resolve. Point it at your environment via .env; defaults target the production
 # analytics schema.
@@ -50,6 +52,7 @@ DISCUSSIONS_DATABASE = os.environ.get("DISCUSSIONS_DATABASE", "analytics_engca_p
 DISCUSSIONS_SCHEMA = os.environ.get("DISCUSSIONS_SCHEMA", "ai_engagement")
 
 QUOTES_TABLE = f"{DISCUSSIONS_DATABASE}.{DISCUSSIONS_SCHEMA}.phase2_transcript_curated_theme_tags"
+REVIEWS_TABLE = f"{DISCUSSIONS_DATABASE}.{DISCUSSIONS_SCHEMA}.phase2_transcript_curated_theme_tag_reviews"
 EVENTS_TABLE = f"{DISCUSSIONS_DATABASE}.{DISCUSSIONS_SCHEMA}.phase2_zoom_transcripts_and_chats"
 SPEAKERS_TABLE = f"{DISCUSSIONS_DATABASE}.{DISCUSSIONS_SCHEMA}.phase2_speaker_ai_survey"
 SESSIONS_TABLE = f"{DISCUSSIONS_DATABASE}.{DISCUSSIONS_SCHEMA}.phase2_sessions"
@@ -97,18 +100,29 @@ st.warning(
 def load_quotes() -> pd.DataFrame:
     """Curated theme tags: one row per (session, theme, tagged turn) with verbatim text,
     plus one status row (turn_seq = 0) per (session, theme) pair — that's how "call
-    failed" is distinguished from "no turns matched"."""
+    failed" is distinguished from "no turns matched".
+
+    Quote rows are hard-filtered to those the stage-2 standalone review kept
+    (phase2_transcript_curated_theme_tag_reviews.keep = TRUE): tags whose relevance
+    depends on surrounding context never reach the app. Fail-closed — a quote without a
+    successful review (pair not yet reviewed, or its review call FAILED) is excluded
+    until the pipeline's next run. Status rows pass through unfiltered."""
     df = session.sql(f"""
-        SELECT session_id, policy_concept_id, policy_concept, policy_concept_description,
-               subtheme, theme, turn_seq, turn_hash, turn_idx, source, start_sec, end_sec,
-               speaker, text, n_matched_turns, tag_status,
-               transcript_fingerprint::VARCHAR AS transcript_fingerprint,
-               llm_model, processed_at,
+        SELECT q.session_id, q.policy_concept_id, q.policy_concept, q.policy_concept_description,
+               q.subtheme, q.theme, q.turn_seq, q.turn_hash, q.turn_idx, q.source, q.start_sec, q.end_sec,
+               q.speaker, q.text, q.n_matched_turns, q.tag_status,
+               q.transcript_fingerprint::VARCHAR AS transcript_fingerprint,
+               q.llm_model, q.processed_at,
                -- speaker_id computed here, matching the dbt definition
                -- (stg_zoom_transcript_speakers), so the app never hashes PII itself
-               MD5(speaker || '|' || session_id) AS speaker_id
-        FROM {QUOTES_TABLE}
-        ORDER BY policy_concept_id, session_id, turn_idx
+               MD5(q.speaker || '|' || q.session_id) AS speaker_id
+        FROM {QUOTES_TABLE} AS q
+        LEFT JOIN {REVIEWS_TABLE} AS r
+            ON r.session_id = q.session_id
+            AND r.policy_concept_id = q.policy_concept_id
+            AND r.turn_hash = q.turn_hash
+        WHERE q.turn_seq = 0 OR r.keep = TRUE
+        ORDER BY q.policy_concept_id, q.session_id, q.turn_idx
     """).to_pandas()
     df.columns = [c.lower() for c in df.columns]
     return df

@@ -458,6 +458,89 @@ models:
       - name: processed_at
         description: Timestamp of when the pair was tagged.
 
+  - name: phase2_transcript_curated_theme_tag_reviews
+    description: |
+      Stage-2 standalone review of phase2_transcript_curated_theme_tags: one verdict row per
+      tagged turn saying whether it works as a standalone pull quote, plus one status row
+      (null turn_hash) per (session, policy concept) pair. The reviewer sees each candidate
+      quote alone — no transcript — so turns that are relevant only via surrounding context
+      (reactions like "Exactly.", trailing fragments, rambling multi-topic turns) cannot
+      pass. It is monotone: it can only reject stage-1 tags, never add turns. The pull quote
+      explorer hard-excludes quote rows without keep = true (fail-closed: unreviewed or
+      FAILED pairs stay hidden until the next successful run).
+
+      Incremental at the (session, policy concept) grain via delete+insert: a pair is
+      re-reviewed when it has no SUCCESS row at its current pair_tag_fingerprint, so stage-1
+      re-tags and transcript changes re-review exactly the affected pairs. FAILED pairs fail
+      the build via an error-severity test and retry on the next run. Review-prompt edits
+      require a --full-refresh.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - session_id
+            - policy_concept_id
+            - turn_hash
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+        data_tests:
+          - not_null
+      - name: policy_concept_id
+        description: >
+          The policy concept's identifier from stg_phase2_policy_concepts_and_themes
+          (md5 of the label); with session_id, the incremental grain key.
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_phase2_policy_concepts_and_themes')
+              field: policy_concept_id
+              config:
+                severity: error
+      - name: policy_concept
+        description: The policy concept's human-readable display name, carried through for eyeballing.
+      - name: turn_hash
+        description: >
+          The reviewed turn's stable identity (joins to
+          phase2_transcript_curated_theme_tags.turn_hash within the pair). Null on status rows.
+      - name: turn_idx
+        description: The turn's per-session chronological index as of review time; null on status rows.
+      - name: keep
+        description: |
+          TRUE when the reviewer judged the turn a standalone pull quote (substantively
+          expresses the concept AND self-contained without context), FALSE when rejected.
+          Null on status rows. Dashboards should show only keep = TRUE quotes.
+      - name: n_candidates
+        description: How many tagged turns the pair submitted for review.
+      - name: n_kept
+        description: How many candidates the reviewer kept for this pair.
+      - name: n_invented_idxs
+        description: |
+          How many returned indices were never candidates and were ignored (guardrail);
+          consistently nonzero values mean the model is inventing indices.
+      - name: review_status
+        description: |
+          SUCCESS when the pair's Cortex call returned parseable JSON, FAILED when it
+          returned NULL or unparseable output. FAILED pairs have no verdict rows, are
+          retried on the next run, and the test below turns the build red so failures are
+          loud.
+        data_tests:
+          - dbt_utils.not_accepted_values:
+              values: ["FAILED"]
+              severity: error
+      - name: pair_tag_fingerprint
+        description: |
+          HASH_AGG of the pair's tagged turn_hashes at review time. The incremental filter
+          compares it to the pair's current tag set: a mismatch means stage-1 tags changed
+          since review, and the pair is re-reviewed on the next run.
+      - name: llm_tokens
+        description: >
+          Total tokens billed for this pair's Cortex call (0 when the call failed without
+          usage).
+      - name: llm_model
+        description: The LLM model used, per the LLM_MODEL environment variable (see docs/llm-cost-control.md).
+      - name: processed_at
+        description: Timestamp of when the pair was reviewed.
+
   - name: phase2_transcript_cross_talk_moments
     description: |
       The top 5 minutes of heaviest cross-talk per Phase 2 transcript, i.e. the minutes with the
