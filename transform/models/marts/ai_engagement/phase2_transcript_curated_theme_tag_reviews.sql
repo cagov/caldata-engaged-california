@@ -86,8 +86,7 @@ pairs as (
         any_value(policy_concept_description) as policy_concept_description,
         hash_agg(turn_hash) as pair_tag_fingerprint,
         count(*) as n_candidates,
-        listagg('[' || turn_idx || '] ' || trim(text), '\n\n')
-            within group (order by turn_idx) as candidates
+        listagg('[' || turn_idx || '] ' || trim(text), '\n\n') within group (order by turn_idx) as candidates
     from tag_quotes
     group by session_id, policy_concept_id
 ),
