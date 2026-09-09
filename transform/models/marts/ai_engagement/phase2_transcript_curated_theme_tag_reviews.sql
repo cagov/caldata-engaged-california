@@ -136,7 +136,7 @@ reviewed as (
 ),
 -- noqa: enable=LT02
 
-parsed as (
+extracted as (
     select
         session_id,
         policy_concept_id,
@@ -144,13 +144,18 @@ parsed as (
         pair_tag_fingerprint,
         n_candidates,
         coalesce(raw_response:usage:total_tokens::int, 0) as llm_tokens,
-        try_parse_json(to_json(raw_response:structured_output[0]:raw_message)) as review_json,
+        try_parse_json(to_json(raw_response:structured_output[0]:raw_message)) as review_json
+    from reviewed
+),
+
+parsed as (
+    select
+        *,
         case
-            when try_parse_json(to_json(raw_response:structured_output[0]:raw_message)) is null
-                then 'FAILED'
+            when review_json is null then 'FAILED'
             else 'SUCCESS'
         end as review_status
-    from reviewed
+    from extracted
 ),
 
 keep_idxs as (
