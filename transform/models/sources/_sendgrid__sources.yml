@@ -77,3 +77,9 @@ sources:
           - name: CUSTOM_RESELLER_ID
           - name: CUSTOM_DOMAIN
           - name: CUSTOM_FROM
+          - name: CUSTOM_SG_TEMPLATE_ID
+          - name: CUSTOM_TEMPLATE_ID
+          - name: CUSTOM_TEMPLATE_VERSION_ID
+          - name: CUSTOM_MC_POD_ID
+          - name: CUSTOM_TEMPLATE_HASH
+          - name: CUSTOM_SG_TEMPLATE_NAME
