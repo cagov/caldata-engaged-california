@@ -1,5 +1,3 @@
-- this
-
 with
 
 phase1_respondents as (
@@ -60,7 +58,6 @@ phase2_attendees as (
 
 select
     r.survey_respondent_id,
-    r.email,
     r.age,
     r.gender_array,
     r.gender_category,
@@ -99,7 +96,7 @@ select
     si.survey_respondent_id is not null as invited_to_phase2,
     pa.survey_respondent_id is not null as attended_phase2
 from phase1_respondents as r
-left join ai_response_labels as ai
+inner join ai_response_labels as ai
     on r.survey_respondent_id = ai.survey_respondent_id
 left join sortition_invitees as si
     on r.survey_respondent_id = si.survey_respondent_id

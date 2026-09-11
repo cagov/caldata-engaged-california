@@ -12,8 +12,6 @@ models:
         data_tests:
           - not_null
           - unique
-      - name: email
-        description: The participant's email address, from their Go Vocal user profile.
       - name: age
         description: Response to the question "What is your age?"
       - name: gender_array
