@@ -33,6 +33,10 @@ models:
         description: Region corresponding to the California county.
       - name: field_of_work
         description: Response to the question "Which best describes your field of work?"
+      - name: field_of_work_rollup
+        description: |
+          Response to the question "Which best describes your field of work?" with certain values
+          rolled up into broader categories.
       - name: current_work_status
         description: Response to the question "Are you currently working?"
       - name: role_at_work

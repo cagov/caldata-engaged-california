@@ -40,8 +40,7 @@ unmatched_participants as (
 -- Attendees are resolved from the attendance tracker by joining invitee_email to Go Vocal users
 -- directly, falling back to the manually-maintained unmatched-participants match.
 attendance as (
-    select
-        coalesce(gv.user_id, un.survey_respondent_id_match) as survey_respondent_id
+    select coalesce(gv.user_id, un.survey_respondent_id_match) as survey_respondent_id
     from {{ ref('stg_attendance_tracker') }} as att
     left join gv_users as gv
         on lower(trim(att.invitee_email)) = lower(trim(gv.email))
@@ -86,10 +85,10 @@ select
                     when 'Science' then 'Professional services'
                     when 'Transportation or warehousing' then 'Logistics'
                     when 'Utilities or waste management' then 'Logistics'
-                    else field_of_work
+                    else r.field_of_work
                 end
             )
-        end as field_of_work_rollup,
+    end as field_of_work_rollup,
     r.current_work_status,
     r.role_at_work,
     ai.ai_response_label,
