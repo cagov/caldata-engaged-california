@@ -6,7 +6,7 @@ phase1_respondents as (
     where
         survey_respondent_id is not null
         and publication_status = 'published'
-        and coalesce(age, '') <> 'Under 18'
+        and age <> 'Under 18'
         and region is not null
 ),
 
