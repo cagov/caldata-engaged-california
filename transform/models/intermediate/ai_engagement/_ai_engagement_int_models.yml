@@ -1,5 +1,64 @@
 version: 2
 models:
+  - name: int_ai_engagement_participants_all_phases_all_demos
+    description: |
+      One row per AI engagement participant, where a participant is a non-admin Go Vocal user who
+      submitted (non-draft) the Phase 1 AI survey. Joins in the user's demographic profile, their
+      derived AI sentiment label, and boolean flags for whether they were invited to Phase 2 and
+      whether they attended a Phase 2 session.
+    columns:
+      - name: survey_respondent_id
+        description: The Go Vocal user ID of the Phase 1 survey respondent.
+        data_tests:
+          - not_null
+          - unique
+      - name: age
+        description: Response to the question "What is your age?"
+      - name: gender_array
+        description: Responses to the question "What is your gender identity?"
+      - name: gender_category
+        description: |
+          Response to the question "What is your gender identity?" with 'Multiple' assigned when
+          more than one gender was selected and ' (only)' appended when a single gender was selected.
+      - name: race_ethnicity_array
+        description: Responses to the question "What is your race or ethnicity?"
+      - name: race_ethnicity_category
+        description: |
+          Response to the question "What is your race or ethnicity?" with 'Multiple' assigned when
+          more than one race/ethnicity was selected and ' (only)' appended when a single value was
+          selected.
+      - name: county
+        description: Response to the question "Which county do you live in?"
+      - name: region
+        description: Region corresponding to the California county.
+      - name: field_of_work
+        description: Response to the question "Which best describes your field of work?"
+      - name: field_of_work_rollup
+        description: |
+          Response to the question "Which best describes your field of work?" with certain values
+          rolled up into broader categories.
+      - name: current_work_status
+        description: Response to the question "Are you currently working?"
+      - name: role_at_work
+        description: Response to the question "What is your role at work?"
+      - name: ai_response_label
+        description: |
+          LLM-derived label ('pos', 'neg', or 'mix') for the participant's overall sentiment about
+          the impact of AI, from int_govocal_ai_response_label. Null if the participant did not
+          provide any of the open-text answers about the impact of AI used for classification.
+      - name: invited_to_phase2
+        description: |
+          TRUE if the participant's survey_respondent_id appears in the
+          AI_ENGAGEMENT.INT_AI_ENGAGEMENT_SORTITION_SELECTIONS source table (i.e. they were
+          selected in a sortition round).
+      - name: attended_phase2
+        description: |
+          TRUE if the participant appears in stg_attendance_tracker with actual_status = 'attended'.
+          The tracker's invitee_email is matched to a survey_respondent_id via stg_govocal_users
+          (email) with a fallback to stg_zoom_unmatched_participants.survey_respondent_id_match for
+          attendees whose email doesn't match a Go Vocal profile. FALSE for participants who did not
+          attend a session.
+
   - name: int_ai_engagement_phase2_invitee_status
     description: |
       This table joins the sortition selections with the statuses of Phase 2 invitees. If a Phase 2 invitee email is
