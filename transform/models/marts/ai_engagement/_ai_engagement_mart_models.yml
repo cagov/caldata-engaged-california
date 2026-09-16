@@ -72,6 +72,12 @@ models:
       This table combines the Phase 2 Zoom transcript turns and chat messages into one table of all
       Zoom engagement, with a common set of columns. Transcript turns are derived from the raw Phase 2
       transcripts, and chat messages are derived from the raw Phase 2 chat logs.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - session_id
+              - turn_idx
     columns:
       - name: session_id
         description: The unique identifier for each Zoom session.
@@ -235,6 +241,13 @@ models:
       transcript_fingerprint, so new sessions, failed sections, and sessions whose turns
       changed upstream are all handled by a plain build. Prompts live at the top of the model
       SQL; editing them requires a --full-refresh to re-tag existing sessions.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - session_id
+              - section
+              - theme_seq
     columns:
       - name: session_id
         description: The unique identifier for each Zoom session.
@@ -317,6 +330,14 @@ models:
       table cannot be hallucinated. Intended for dashboards to display theme-tagged turns
       without joins at read time. Speaker display names are PII; confirm display policy before
       exposing them publicly.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - session_id
+              - turn_hash
+              - section
+              - theme_seq
     columns:
       - name: session_id
         description: The unique identifier for each Zoom session.
