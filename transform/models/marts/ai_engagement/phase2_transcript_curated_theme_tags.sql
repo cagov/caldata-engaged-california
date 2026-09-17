@@ -3,7 +3,13 @@
     materialized='incremental',
     incremental_strategy='delete+insert',
     unique_key=['session_id', 'policy_concept_id'],
-    on_schema_change='sync_all_columns'
+    on_schema_change='sync_all_columns',
+    pre_hook="{% if is_incremental() %}
+        delete from {{ this }}
+        where policy_concept_id not in (
+            select policy_concept_id from {{ ref('stg_phase2_policy_concepts_and_themes') }}
+        )
+    {% endif %}"
 ) }}
 
 -- Every non-facilitator turn that substantively expresses one of the manually-curated
@@ -35,14 +41,16 @@
 -- Incremental at the (session, theme) grain. A pair is called when this table has no
 -- SUCCESS row for it built from the session's CURRENT transcript fingerprint: new
 -- sessions, new policy concepts in the taxonomy, failed pairs, and every concept of a
--- session whose turns changed upstream (which re-bills that whole session). Reserve
--- --full-refresh for changes the fingerprint can NOT detect:
+-- session whose turns changed upstream (which re-bills that whole session).
+--
+-- Taxonomy edits are self-correcting: policy_concept_id is md5(policy_concept), so RENAMING
+-- or REMOVING a concept changes/retires its id. The pre_hook above deletes rows for ids no
+-- longer in the taxonomy before each incremental build, and the new id then auto-tags as a
+-- "new" concept — only the changed concepts re-bill. Reserve
+-- --full-refresh for changes neither the fingerprint nor the pre-hook can detect:
 --   * prompt edits in this file;
---   * taxonomy rewording — policy_concept_id is md5(policy_concept), so RENAMING a concept
---     changes its id: the new id auto-tags as a "new" concept on the next plain build, but
---     the old id's rows linger until a --full-refresh clears them. Rewording only the
---     DESCRIPTION keeps the id and does not re-tag; the stored text stays frozen until a
---     --full-refresh.
+--   * rewording only a concept's DESCRIPTION, which keeps the id and does not re-tag; the
+--     stored text stays frozen until a --full-refresh.
 --
 -- Sessions above ~500k chars (none exist; real sessions are ~12k-200k) are NOT map-reduced
 -- here: their calls are skipped entirely and surface as persistent FAILED status rows.

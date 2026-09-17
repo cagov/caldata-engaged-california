@@ -3,7 +3,13 @@
     materialized='incremental',
     incremental_strategy='delete+insert',
     unique_key=['session_id', 'policy_concept_id'],
-    on_schema_change='sync_all_columns'
+    on_schema_change='sync_all_columns',
+    pre_hook="{% if is_incremental() %}
+        delete from {{ this }}
+        where policy_concept_id not in (
+            select policy_concept_id from {{ ref('stg_phase2_policy_concepts_and_themes') }}
+        )
+    {% endif %}"
 ) }}
 
 -- Stage-2 standalone review of the tags in phase2_transcript_curated_theme_tags: one
@@ -32,8 +38,10 @@
 -- Incremental at the (session, policy concept) grain. A pair is re-reviewed when it has no
 -- SUCCESS row at its CURRENT pair_tag_fingerprint (HASH_AGG of the pair's tagged
 -- turn_hashes) — so stage-1 re-tags and upstream transcript changes re-review exactly the
--- affected pairs, and unchanged pairs never re-bill. Reserve --full-refresh for edits to
--- the review prompt in this file.
+-- affected pairs, and unchanged pairs never re-bill. Rows for policy_concept_ids that
+-- have left the taxonomy (renamed/removed concepts) are deleted by the pre_hook above
+-- before each incremental build. Reserve --full-refresh for edits to the review prompt in
+-- this file.
 --
 -- The dashboard hard-excludes quote rows without keep = true (fail-closed: unreviewed or
 -- FAILED pairs are hidden until this model's next successful run).

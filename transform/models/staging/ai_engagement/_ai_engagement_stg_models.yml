@@ -207,7 +207,7 @@ models:
           Identifier for the policy concept (md5 of the label). The incremental grain key of
           phase2_transcript_curated_theme_tags, so uniqueness is enforced — two concepts with
           the same label would silently collapse into one id. Renaming a concept changes its
-          id (see the mart's docs for the --full-refresh implications).
+          id; the marts prune the old id's rows via a pre-hook and re-tag the new id.
         data_tests:
           - unique
           - not_null
