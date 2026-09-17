@@ -385,9 +385,11 @@ models:
       transcript_fingerprint, so new sessions, new policy concepts, failed pairs, and
       sessions whose turns changed upstream are all handled by a plain build (which also
       refreshes the stored verbatim turn columns). FAILED pairs fail the build via an
-      error-severity test, never silently. Prompt edits and taxonomy rewording still
-      require a --full-refresh — and because policy_concept_id is md5(policy_concept),
-      renaming a concept changes its id, orphaning the old id's rows until a --full-refresh.
+      error-severity test, never silently. Because policy_concept_id is md5(policy_concept),
+      renaming or removing a concept changes/retires its id; a pre-hook deletes the old id's
+      rows before each incremental build and the new id auto-tags, so taxonomy edits are
+      self-correcting. Prompt edits and description-only rewording still require a
+      --full-refresh.
 
       Speaker display names are PII, carried intentionally for verified quote display in the
       pull quote explorer dashboard; confirm the display policy before exposing them publicly.
@@ -399,7 +401,8 @@ models:
       - name: policy_concept_id
         description: >
           The policy concept's identifier from stg_phase2_policy_concepts_and_themes
-          (md5 of the label); the incremental grain key. Renaming a concept changes it.
+          (md5 of the label); the incremental grain key. Renaming a concept changes it;
+          rows for ids no longer in the taxonomy are pruned by a pre-hook.
         data_tests:
           - not_null
           - relationships:
@@ -493,7 +496,8 @@ models:
       Incremental at the (session, policy concept) grain via delete+insert: a pair is
       re-reviewed when it has no SUCCESS row at its current pair_tag_fingerprint, so stage-1
       re-tags and transcript changes re-review exactly the affected pairs. FAILED pairs fail
-      the build via an error-severity test and retry on the next run. Review-prompt edits
+      the build via an error-severity test and retry on the next run. Rows for policy
+      concepts that have left the taxonomy are pruned by a pre-hook. Review-prompt edits
       require a --full-refresh.
     data_tests:
       - dbt_utils.unique_combination_of_columns:
