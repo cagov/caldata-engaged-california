@@ -1,3 +1,5 @@
+-- depends_on: {{ ref('stg_phase2_policy_concepts_and_themes') }}
+-- (the pre_hook refs it inside is_incremental(), which dbt cannot see at parse time)
 -- noqa: disable=LT05
 {{ config(
     materialized='incremental',
