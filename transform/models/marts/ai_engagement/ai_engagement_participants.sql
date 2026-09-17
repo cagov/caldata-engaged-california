@@ -1,3 +1,7 @@
+-- Canonical AI engagement participant table: one row per eligible Phase 1 survey respondent,
+-- with flags for Phase 2 invitation and attendance. See _ai_engagement_mart_models.yml for the
+-- full list of eligibility criteria.
+
 with
 
 phase1_respondents as (
@@ -6,14 +10,28 @@ phase1_respondents as (
     where
         survey_respondent_id is not null
         and publication_status = 'published'
+        -- exclude internal ODI staff and test accounts
+        and lower(trim(email)) not like '%@innovation.ca.gov'
+        -- exclude minors and respondents who left age blank
+        and age is not null
         and age <> 'Under 18'
+        -- CA residents only: null region covers 'I live outside of California', 'I don''t want to say', and blank
         and region is not null
 ),
 
+-- One row per respondent who answered at least one of the three open-text AI questions.
+-- The inner join below makes this an eligibility criterion.
+-- The raw label column mixes vocabularies (mostly pos/neg/mix, with some neutral/pro/anti), so
+-- normalize to pos/neg/mix here, matching int_govocal_sortition_candidates.
 ai_response_labels as (
     select
         survey_respondent_id,
-        ai_response_label
+        case ai_response_label
+            when 'neutral' then 'mix'
+            when 'pro' then 'pos'
+            when 'anti' then 'neg'
+            else ai_response_label
+        end as ai_response_label
     from {{ ref('int_govocal_ai_response_label') }}
 ),
 
@@ -37,10 +55,12 @@ unmatched_participants as (
     from {{ ref('stg_zoom_unmatched_participants') }}
 ),
 
--- Attendees are resolved from the attendance tracker by joining invitee_email to Go Vocal users
--- directly, falling back to the manually-maintained unmatched-participants match.
+-- Attendees are resolved from the attendance tracker by matching invitee_email. The manually-maintained
+-- unmatched-participants match takes precedence over a direct Go Vocal email match: a participant can
+-- register for Phase 2 with a different email that has its own (survey-less) Go Vocal account, in which
+-- case the email match points at the wrong account and the curated match is the correct one.
 attendance as (
-    select coalesce(gv.user_id, un.survey_respondent_id_match) as survey_respondent_id
+    select coalesce(un.survey_respondent_id_match, gv.user_id) as survey_respondent_id
     from {{ ref('stg_attendance_tracker') }} as att
     left join gv_users as gv
         on lower(trim(att.invitee_email)) = lower(trim(gv.email))
@@ -95,6 +115,7 @@ select
     si.survey_respondent_id is not null as invited_to_phase2,
     pa.survey_respondent_id is not null as attended_phase2
 from phase1_respondents as r
+-- inner join: respondents with no open-text AI answers have no label row and are excluded
 inner join ai_response_labels as ai
     on r.survey_respondent_id = ai.survey_respondent_id
 left join sortition_invitees as si

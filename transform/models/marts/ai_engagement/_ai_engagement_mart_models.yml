@@ -1,5 +1,78 @@
 version: 2
 models:
+  - name: ai_engagement_participants
+    description: |
+      Canonical AI engagement participant table. One row per participant, where a participant is a
+      non-admin Go Vocal user who meets ALL of the following Phase 1 criteria:
+        - submitted the Phase 1 "Impact of AI on work" survey (publication_status = 'published';
+          drafts are excluded),
+        - did not register with an internal @innovation.ca.gov email (ODI staff and test accounts),
+        - reported an age other than 'Under 18' (respondents who left age blank are excluded),
+        - reported a California county that maps to a region (excludes 'I live outside of
+          California', 'I don't want to say', and blank), and
+        - answered at least one of the three open-text questions about AI, i.e. has a row in
+          int_govocal_ai_response_label. This is enforced with an inner join, so respondents who
+          skipped all three open-text questions are excluded from this table entirely.
+      Joins in the user's demographic profile, their LLM-derived AI sentiment label, and boolean
+      flags for whether they were invited to Phase 2 and whether they attended a Phase 2 session.
+      Because the grain is Phase 1 respondents, a Phase 2 attendee who fails any criterion above
+      does not appear in this table.
+    columns:
+      - name: survey_respondent_id
+        description: The Go Vocal user ID of the Phase 1 survey respondent.
+        data_tests:
+          - not_null
+          - unique
+      - name: age
+        description: Response to the question "What is your age?"
+      - name: gender_array
+        description: Responses to the question "What is your gender identity?"
+      - name: gender_category
+        description: |
+          Response to the question "What is your gender identity?" with 'Multiple' assigned when
+          more than one gender was selected and ' (only)' appended when a single gender was selected.
+      - name: race_ethnicity_array
+        description: Responses to the question "What is your race or ethnicity?"
+      - name: race_ethnicity_category
+        description: |
+          Response to the question "What is your race or ethnicity?" with 'Multiple' assigned when
+          more than one race/ethnicity was selected and ' (only)' appended when a single value was
+          selected.
+      - name: county
+        description: Response to the question "Which county do you live in?"
+      - name: region
+        description: Region corresponding to the California county.
+      - name: field_of_work
+        description: Response to the question "Which best describes your field of work?"
+      - name: field_of_work_rollup
+        description: |
+          Response to the question "Which best describes your field of work?" with certain values
+          rolled up into broader categories.
+      - name: current_work_status
+        description: Response to the question "Are you currently working?"
+      - name: role_at_work
+        description: Response to the question "What is your role at work?"
+      - name: ai_response_label
+        description: |
+          LLM-derived label for the participant's overall stance on AI: 'pos', 'neg', or 'mix'.
+          The raw int_govocal_ai_response_label output mixes vocabularies (pos/neg/mix plus
+          occasional neutral/pro/anti), so it is normalized here the same way as in
+          int_govocal_sortition_candidates. Every row has a label row by construction (inner
+          join); the value is null only when the LLM output could not be parsed.
+      - name: invited_to_phase2
+        description: |
+          TRUE if the participant's survey_respondent_id appears in the
+          AI_ENGAGEMENT.INT_AI_ENGAGEMENT_SORTITION_SELECTIONS source table (i.e. they were
+          selected in a sortition round).
+      - name: attended_phase2
+        description: |
+          TRUE if the participant appears in stg_attendance_tracker with actual_status = 'attended'.
+          The tracker's invitee_email is resolved to a survey_respondent_id using
+          stg_zoom_unmatched_participants.survey_respondent_id_match first (the manually curated
+          match), falling back to a direct email match against stg_govocal_users. The curated match
+          wins because a participant may register for Phase 2 with a second email that has its own
+          survey-less Go Vocal account. FALSE for participants who did not attend a session.
+
   - name: ai_engagement_phase2_zoom_registrations
     description: |
       Net-new Phase 2 Zoom registrations and declines per upload date, derived from cumulative
