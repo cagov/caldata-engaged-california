@@ -1,5 +1,139 @@
 version: 2
 models:
+  - name: int_ai_engagement_participants
+    description: |
+      Canonical AI engagement participant table. One row per participant, where a participant is
+      either a Phase 1 participant, a Phase 2 attendee, or both. This is the source of truth for
+      participation counts; other models should reference it rather than re-deriving the logic.
+      It carries PII (email, first_name, last_name) so that it can be joined to registration and
+      attendance records. ai_engagement_participants is the PII-free mart view over this model.
+
+      Phase 1 participant (participated_in_phase1 = TRUE): a non-admin Go Vocal user with a
+      published response to the Phase 1 "Impact of AI on work" survey. Publishing is the ONLY
+      criterion, per leadership direction (September 2026). Drafts do not count.
+
+      Phase 2 attendee (attended_phase2 = TRUE): any non-staff person recorded as 'attended' in
+      the attendance tracker, whether or not they were invited through sortition ("crashers") and
+      whether or not they have a Go Vocal account. Attendees who are not Phase 1 participants get
+      their own row with participated_in_phase1 = FALSE and whatever demographics their Go Vocal
+      profile and survey provide (all null when they have no account).
+
+      The four quality flags (has_internal_email, reported_age_18_plus, has_california_region,
+      answered_open_text_ai_question) and their conjunction meets_phase1_analysis_criteria exist
+      for analyses that want a cleaner population. They describe participants; they never decide
+      whether someone is one.
+    columns:
+      - name: participant_id
+        description: |
+          Primary key. The Go Vocal user ID when the participant has a Go Vocal account (identical to
+          survey_respondent_id), otherwise the md5 hash of the lower-cased attendance-tracker email,
+          so attendees with no account still have a stable, non-PII key.
+        data_tests:
+          - not_null
+          - unique
+      - name: survey_respondent_id
+        description: |
+          The participant's Go Vocal user ID. Null only for Phase 2 attendees who never registered
+          in Go Vocal; every Phase 1 participant has one.
+        data_tests:
+          - unique
+      - name: email
+        description: |
+          PII. The Go Vocal account email, or the attendance-tracker email for attendees with no
+          account. Not exposed in the mart view.
+      - name: first_name
+        description: |
+          PII. From the Go Vocal profile, or the attendance tracker when there is no account.
+          Not exposed in the mart view.
+      - name: last_name
+        description: |
+          PII. From the Go Vocal profile, or the attendance tracker when there is no account.
+          Not exposed in the mart view.
+      - name: age
+        description: |
+          Response to the question "What is your age?" Demographic and survey columns are null for
+          Phase 2 attendees with no Go Vocal account, and survey columns are null for attendees who
+          have an account but never took the Phase 1 survey.
+      - name: gender_array
+        description: Responses to the question "What is your gender identity?"
+      - name: gender_category
+        description: |
+          Response to the question "What is your gender identity?" with 'Multiple' assigned when
+          more than one gender was selected and ' (only)' appended when a single gender was selected.
+      - name: race_ethnicity_array
+        description: Responses to the question "What is your race or ethnicity?"
+      - name: race_ethnicity_category
+        description: |
+          Response to the question "What is your race or ethnicity?" with 'Multiple' assigned when
+          more than one race/ethnicity was selected and ' (only)' appended when a single value was
+          selected.
+      - name: county
+        description: Response to the question "Which county do you live in?"
+      - name: region
+        description: Region corresponding to the California county.
+      - name: field_of_work
+        description: Response to the question "Which best describes your field of work?"
+      - name: field_of_work_rollup
+        description: |
+          Response to the question "Which best describes your field of work?" with certain values
+          rolled up into broader categories.
+      - name: current_work_status
+        description: Response to the question "Are you currently working?"
+      - name: role_at_work
+        description: Response to the question "What is your role at work?"
+      - name: ai_response_label
+        description: |
+          LLM-derived label for the participant's overall stance on AI: 'pos', 'neg', or 'mix'.
+          The raw int_govocal_ai_response_label output mixes vocabularies (pos/neg/mix plus
+          occasional neutral/pro/anti), so it is normalized here the same way as in
+          int_govocal_sortition_candidates. Null when the participant answered no open-text AI
+          question, or when the LLM output could not be parsed.
+      - name: participated_in_phase1
+        description: |
+          TRUE if the participant is a non-admin Go Vocal user with a published Phase 1 survey
+          response. This is the only Phase 1 participation criterion. FALSE for Phase 2 attendees
+          who never published a survey or have no Go Vocal account.
+      - name: invited_to_phase2
+        description: |
+          TRUE if the participant's Go Vocal user ID appears in the
+          AI_ENGAGEMENT.INT_AI_ENGAGEMENT_SORTITION_SELECTIONS source table (i.e. they were
+          selected in a sortition round).
+      - name: attended_phase2
+        description: |
+          TRUE if the participant appears in stg_attendance_tracker with actual_status = 'attended',
+          excluding anyone flagged staff_or_moderator in stg_zoom_unmatched_participants or
+          registered with an @innovation.ca.gov email. Invited and uninvited ("crasher") attendees
+          both count. The tracker's invitee_email is resolved to a Go Vocal user ID using
+          stg_zoom_unmatched_participants.survey_respondent_id_match first (the manually curated
+          match), falling back to a direct email match against stg_govocal_users. The curated match
+          wins because a participant may register for Phase 2 with a second email that has its own
+          survey-less Go Vocal account. Attendees who resolve to no Go Vocal account are still
+          counted, keyed by their tracker email. FALSE for participants who did not attend a session.
+      - name: has_internal_email
+        description: |
+          Quality flag, NOT a participation criterion. TRUE if the participant's email ends in
+          @innovation.ca.gov (ODI staff and test accounts).
+      - name: reported_age_18_plus
+        description: |
+          Quality flag, NOT a participation criterion. TRUE if the participant reported an age
+          other than 'Under 18'. FALSE when age is 'Under 18' or blank.
+      - name: has_california_region
+        description: |
+          Quality flag, NOT a participation criterion. TRUE if the reported county maps to a
+          California region. FALSE for 'I live outside of California', 'I don't want to say', and
+          blank, so it under-counts residents who declined to answer.
+      - name: answered_open_text_ai_question
+        description: |
+          Quality flag, NOT a participation criterion. TRUE if the participant answered at least
+          one of the three open-text AI questions, i.e. has a row in int_govocal_ai_response_label.
+      - name: meets_phase1_analysis_criteria
+        description: |
+          Quality flag, NOT a participation criterion. TRUE when participated_in_phase1 is TRUE,
+          has_internal_email is FALSE, and the other three quality flags are TRUE. This reproduces
+          the stricter Phase 1 population this model reported before 2026-09-18, for analyses that
+          want to exclude internal accounts, minors, non-residents, and respondents with no
+          open-text answers.
+
   - name: int_ai_engagement_phase2_invitee_status
     description: |
       This table joins the sortition selections with the statuses of Phase 2 invitees. If a Phase 2 invitee email is
