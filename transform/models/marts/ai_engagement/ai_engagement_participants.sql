@@ -1,7 +1,8 @@
 {{ config(materialized='view') }}
 
 -- PII-free view of int_ai_engagement_participants for dashboards and Coda. Same grain and flags;
--- only email and names are dropped. See the intermediate model for how each column is derived.
+-- email, names, county, and raw field_of_work are dropped (region and field_of_work_rollup remain).
+-- See the intermediate model for how each column is derived.
 
 select
     participant_id,
@@ -11,9 +12,7 @@ select
     gender_category,
     race_ethnicity_array,
     race_ethnicity_category,
-    county,
     region,
-    field_of_work,
     field_of_work_rollup,
     current_work_status,
     role_at_work,
