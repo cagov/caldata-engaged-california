@@ -1,5 +1,75 @@
 version: 2
 models:
+  - name: ai_engagement_participants
+    description: |
+      PII-free view of int_ai_engagement_participants, the canonical AI engagement participant table.
+      Same grain (one row per participant) and same columns, minus email, names, county, and raw
+      field_of_work (region and field_of_work_rollup are kept). Use this for
+      dashboards, Coda, and any analysis that does not need to identify individuals; join to the
+      intermediate model on participant_id when it does.
+
+      A participant is a Phase 1 participant (participated_in_phase1), a Phase 2 attendee
+      (attended_phase2), or both. See the intermediate model's documentation for the exact
+      definitions and for the quality flags, which describe participants but do not decide who
+      counts as one.
+    columns:
+      - name: participant_id
+        description: |
+          Primary key. The Go Vocal user ID when the participant has a Go Vocal account (identical to
+          survey_respondent_id), otherwise the md5 hash of the lower-cased attendance-tracker email.
+        data_tests:
+          - not_null
+          - unique
+      - name: survey_respondent_id
+        description: The participant's Go Vocal user ID. Null for Phase 2 attendees with no Go Vocal account.
+      - name: age
+        description: Response to the question "What is your age?"
+      - name: gender_array
+        description: Responses to the question "What is your gender identity?"
+      - name: gender_category
+        description: |
+          Response to the question "What is your gender identity?" with 'Multiple' assigned when
+          more than one gender was selected and ' (only)' appended when a single gender was selected.
+      - name: race_ethnicity_array
+        description: Responses to the question "What is your race or ethnicity?"
+      - name: race_ethnicity_category
+        description: |
+          Response to the question "What is your race or ethnicity?" with 'Multiple' assigned when
+          more than one race/ethnicity was selected and ' (only)' appended when a single value was
+          selected.
+      - name: region
+        description: Region corresponding to the California county.
+      - name: field_of_work_rollup
+        description: |
+          Response to the question "Which best describes your field of work?" with certain values
+          rolled up into broader categories.
+      - name: current_work_status
+        description: Response to the question "Are you currently working?"
+      - name: role_at_work
+        description: Response to the question "What is your role at work?"
+      - name: ai_response_label
+        description: LLM-derived label for the participant's overall stance on AI ('pos', 'neg', or 'mix').
+      - name: participated_in_phase1
+        description: TRUE if the participant published a Phase 1 survey response. The only Phase 1 criterion.
+      - name: invited_to_phase2
+        description: TRUE if the participant was selected in a sortition round.
+      - name: attended_phase2
+        description: TRUE if the participant attended a Phase 2 session, invited or not.
+      - name: has_internal_email
+        description: Quality flag, not a participation criterion. TRUE for @innovation.ca.gov emails.
+      - name: reported_age_18_plus
+        description: Quality flag, not a participation criterion. TRUE if age was reported and is not 'Under 18'.
+      - name: has_california_region
+        description: Quality flag, not a participation criterion. TRUE if the reported county maps to a region.
+      - name: answered_open_text_ai_question
+        description: |
+          Quality flag, not a participation criterion. TRUE if at least one open-text AI question
+          was answered.
+      - name: meets_phase1_analysis_criteria
+        description: |
+          Quality flag, not a participation criterion. TRUE when participated_in_phase1 and all four
+          quality flags pass; this reproduces the stricter Phase 1 population used before 2026-09-18.
+
   - name: ai_engagement_phase2_zoom_registrations
     description: |
       Net-new Phase 2 Zoom registrations and declines per upload date, derived from cumulative
