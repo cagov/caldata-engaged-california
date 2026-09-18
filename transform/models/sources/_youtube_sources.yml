@@ -1,0 +1,93 @@
+version: 2
+
+sources:
+  - name: YOUTUBE_ANALYTICS
+    database: RAW_ENGCA_PRD
+    schema: YOUTUBE_ANALYTICS
+    description: Data from Youtube loaded into Snowflake via Fivetran
+    tables:
+      - name: VIDEO
+        description: Video metadata
+        columns:
+          - name: ID
+          - name: KIND
+          - name: ETAG
+          - name: SNIPPET_TITLE
+          - name: SNIPPET_DESCRIPTION
+          - name: SNIPPET_TAGS
+          - name: SNIPPET_PUBLISHED_AT
+          - name: SNIPPET_CHANNEL_ID
+          - name: SNIPPET_CHANNEL_TITLE
+          - name: SNIPPET_CATEGORY_ID
+          - name: SNIPPET_THUMBNAILS
+          - name: SNIPPET_LIVE_BROADCAST_CONTENT
+          - name: SNIPPET_DEFAULT_LANGUAGE
+          - name: SNIPPET_LOCALIZED
+          - name: SNIPPET_DEFAULT_AUDIO_LANGUAGE
+          - name: CONTENT_DETAILS_DURATION
+          - name: CONTENT_DETAILS_DIMENSION
+          - name: CONTENT_DETAILS_DEFINITION
+          - name: CONTENT_DETAILS_CAPTION
+          - name: CONTENT_DETAILS_LICENSED_CONTENT
+          - name: CONTENT_DETAILS_REGION_RESTRICTION
+          - name: CONTENT_DETAILS_PROJECTION
+          - name: CONTENT_DETAILS_HAS_CUSTOM_THUMBNAIL
+          - name: UPLOAD_STATUS
+          - name: PRIVACY_STATUS
+          - name: STATUS_FAILURE_REASON
+          - name: STATUS_REJECTION_REASON
+          - name: STATUS_PUBLISH_AT
+          - name: STATUS_LICENSE
+          - name: STATUS_EMBEDDABLE
+          - name: STATUS_PUBLIC_STATS_VIEWABLE
+          - name: STATUS_MADE_FOR_KIDS
+          - name: STATUS_SELF_DECLARED_MADE_FOR_KIDS
+          - name: STATISTICS_VIEW_COUNT
+          - name: STATISTICS_LIKE_COUNT
+          - name: STATISTICS_DISLIKE_COUNT
+          - name: STATISTICS_FAVORITE_COUNT
+          - name: STATISTICS_COMMENT_COUNT
+          - name: PLAYER_EMBED_HTML
+          - name: PLAYER_EMBED_HEIGHT
+          - name: PLAYER_EMBED_WIDTH
+          - name: _FIVETRAN_SYNCED
+
+      - name: CHANNEL_BASIC_A_2
+        description: Daily video stats per country
+        columns:
+          - name: _FIVETRAN_ID
+          - name: DATE
+          - name: CHANNEL_ID
+          - name: VIDEO_ID
+          - name: LIVE_OR_ON_DEMAND
+          - name: SUBSCRIBED_STATUS
+          - name: COUNTRY_CODE
+          - name: VIEWS
+          - name: ENGAGED_VIEWS
+          - name: COMMENTS
+          - name: LIKES
+          - name: DISLIKES
+          - name: SHARES
+          - name: WATCH_TIME_MINUTES
+          - name: AVERAGE_VIEW_DURATION_SECONDS
+          - name: AVERAGE_VIEW_DURATION_PERCENTAGE
+          - name: SUBSCRIBERS_GAINED
+          - name: SUBSCRIBERS_LOST
+          - name: VIDEOS_ADDED_TO_PLAYLISTS
+          - name: VIDEOS_REMOVED_FROM_PLAYLISTS
+          - name: ANNOTATION_CLICK_THROUGH_RATE
+          - name: ANNOTATION_CLOSE_RATE
+          - name: ANNOTATION_IMPRESSIONS
+          - name: ANNOTATION_CLICKABLE_IMPRESSIONS
+          - name: ANNOTATION_CLOSABLE_IMPRESSIONS
+          - name: ANNOTATION_CLICKS
+          - name: ANNOTATION_CLOSES
+          - name: CARD_CLICK_RATE
+          - name: CARD_TEASER_CLICK_RATE
+          - name: CARD_IMPRESSIONS
+          - name: CARD_TEASER_IMPRESSIONS
+          - name: CARD_CLICKS
+          - name: CARD_TEASER_CLICKS
+          - name: RED_VIEWS
+          - name: RED_WATCH_TIME_MINUTES
+          - name: _FIVETRAN_SYNCED

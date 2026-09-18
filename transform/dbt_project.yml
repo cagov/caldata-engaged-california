@@ -13,8 +13,8 @@ profile: caldata_engaged_california
 
 # Variables for environment-specific configuration
 vars:
-  # LLM model configuration - automatically switch based on target
-  llm_model: "{{ 'claude-4-sonnet' if target.name == 'prd' else 'llama4-maverick' }}"
+  # LLM model configuration - automatically chooses the appropriate model based on target env
+  llm_model: "{{ env_var('LLM_MODEL') }}"
 
 # These configurations specify where dbt should look for different types of files.
 # The `source-paths` config, for example, states that models in this project can be
@@ -35,11 +35,22 @@ seeds:
   caldata_engaged_california:
     # resource-paths
     ethelo_la_agenda_setting:
+    govocal_ai:
+      +enabled: true
+      +schema: govocal
+      +tags: ["ai_impact"]
+    zoom:
+      +enabled: true
+      +schema: ai_engagement
+      +tags: ["ai_impact"]
 
 models:
   caldata_engaged_california:
     staging:
       +materialized: view
+      ai_engagement:
+        +schema: ai_engagement
+        +tags: ["ai_impact"]
       mailchimp:
         +schema: mailchimp
         +tags: ["marketing"]
@@ -55,9 +66,21 @@ models:
       ethelo_e3:
         +schema: ethelo_e3
         +tags: ["state_employees"]
+      social:
+        +schema: social
+        +tags: ["marketing"]
+      go_vocal:
+        +schema: govocal
+        +tags: ["ai_impact"]
+      sendgrid:
+        +schema: sendgrid
+        +tags: ["marketing"]
 
     intermediate:
       +materialized: view
+      ai_engagement:
+        +schema: ai_engagement
+        +tags: ["ai_impact"]
       mailchimp:
         +schema: mailchimp
         +tags: ["marketing"]
@@ -73,6 +96,15 @@ models:
       ethelo_e3:
         +schema: ethelo_e3
         +tags: ["state_employees"]
+      social:
+        +schema: social
+        +tags: ["marketing"]
+      go_vocal:
+        +schema: govocal
+        +tags: ["ai_impact"]
+      sendgrid:
+        +schema: sendgrid
+        +tags: ["marketing"]
 
     marts:
       +materialized: table
@@ -91,6 +123,19 @@ models:
         +tags: ["la_fires_phase_2"]
       ethelo_e3:
         +schema: ethelo_e3
+        +tags: ["state_employees"]
+      social:
+        +schema: social
+        +tags: ["marketing"]
+      ai_engagement:
+        +schema: ai_engagement
+        +tags: ["ai_impact"]
+      go_vocal:
+        +schema: govocal
+        +tags: ["ai_impact"]
+      sendgrid:
+        +schema: sendgrid
+        +tags: ["marketing"]
       daily_report:
         +schema: daily_report
         ethelo_la_agenda_setting:

@@ -1,0 +1,220 @@
+version: 2
+models:
+  - name: int_govocal_ai_survey
+    description: |
+      This model extracts and transforms survey responses from the 'Impact of AI on work' survey.
+    columns:
+      - name: survey_id
+        description: Unique identifier for each 'Impact of AI on work' survey.
+      - name: survey_respondent_id
+        description: User ID of the survey respondent.
+      - name: published_at
+        description: Timestamp when the survey was published.
+      - name: submitted_at
+        description: Timestamp when the survey was submitted.
+      - name: publication_status
+        description: Status of publication (e.g., published, draft).
+      - name: created_at
+        description: Timestamp when the survey was created.
+      - name: updated_at
+        description: Timestamp when the survey was last updated.
+      - name: href
+        description: Link to the survey response.
+      - name: custom_field_values
+        description: JSON object containing custom field values from the survey.
+      - name: current_work_status
+        description: Response to the question "Are you currently working?"
+      - name: role_at_work
+        description: Response to the question "What is your role at work?"
+      - name: county
+        description: Response to the question "Which county do you live in?"
+      - name: field_of_work
+        description: Response to the question "Which best describes your field of work?"
+      - name: economic_impact_expectation
+        description: Response to the question "What do you expect the impact of AI to be on the economy?"
+      - name: government_action_suggestion
+        description: |
+          Response to the question "What would you like the government to do about what you see as these impacts?"
+      - name: personal_ai_impact
+        description: |
+          Response to the question "What has been your experience if any of the impact of AI on your own job
+          and workplace?"
+      - name: availability_for_discussion
+        description: Response to a question about whether the respondent is open to joining a live discussion about AI.
+      - name: survey_fields_completed_count
+        description: Count of how many survey questions the respondent answered.
+      - name: region
+        description: Region corresponding to the California county, as described by sortition strategy.
+  - name: int_govocal_users_x_ai_survey
+    description: |
+      This model joins all non-admin users with their responses from the ai survey. Users who did not
+      submit a survey are included.
+    columns:
+      - name: user_id
+        description: Unique identifier for the Go Vocal user.
+      - name: email
+        description: Email address of the Go Vocal user.
+      - name: survey_respondent_id
+        description: User ID of the survey respondent.
+      - name: survey_id
+        description: Unique identifier for each 'Impact of AI on work' survey.
+      - name: age
+        description: Response to the question 'What is your age?'
+      - name: gender_array
+        description: Responses to the question "What is your gender identity?"
+      - name: gender_category
+        description: |
+          Response to the question 'What is your gender identity?' with multiple responses categorized as 'multiple'.
+      - name: race_ethnicity_array
+        description: Responses to the question "What is your race or ethnicity?"
+      - name: race_ethnicity_category
+        description: |
+          Response to the question 'What is your race or ethnicity?' with multiple responses categorized as 'multiple'.
+      - name: user_status
+        description: |
+          User status. The possible statuses are
+          'invited' if invite_status is pending,
+          'active' if a user is registered and not blocked,
+          'incomplete' for all else.
+      - name: publication_status
+        description: Status of publication (e.g., published, draft).
+      - name: published_at
+        description: Timestamp when the survey was published.
+      - name: current_work_status
+        description: Response to the question "Are you currently working?"
+      - name: role_at_work
+        description: Response to the question "What is your role at work?"
+      - name: county
+        description: Response to the question "Which county do you live in?"
+      - name: region
+        description: Region corresponding to the California county, as described by sortition strategy.
+      - name: field_of_work
+        description: Response to the question "Which best describes your field of work?"
+      - name: economic_impact_expectation
+        description: Response to the question "What do you expect the impact of AI to be on the economy?"
+      - name: government_action_suggestion
+        description: |
+          Response to the question "What would you like the government to do about what you see as these impacts?"
+      - name: personal_ai_impact
+        description: |
+          Response to the question "What has been your experience if any of the impact of AI on your own job
+          and workplace?"
+      - name: availability_for_discussion
+        description: Response to a question about whether the respondent is open to joining a live discussion about AI.
+      - name: fields_completed_count
+        description: Count of how many survey questions and demographic questions the respondent answered.
+      - name: _loaded_at
+        description: Timestamp of the most recent load of Go Vocal data into Snowflake. From _loaded_at.
+  - name: int_govocal_ai_response_exemplars
+    description: |
+      This model joins the exemplar survey responses that were used to calibrate the LLM's
+      classifications of ai survey
+      responses with user responses. These exemplars were identified during the initial
+      classification process,
+      and were sanity checked by humans.
+    columns:
+      - name: exemplar_block
+        description: |
+          Full text of the exemplars used for the LLM classification calibration,
+          formatted for insertion into the prompt.
+          These data are very long, so this was done to keep the dbt model reasonably readable.
+  - name: int_govocal_ai_response_label
+    description: |
+      This model contains the AI response label classifications for all survey responses. Incremental.
+    columns:
+      - name: survey_respondent_id
+        description: User ID of the survey respondent.
+      - name: ai_response_label
+        description: Label for the survey response, "pos", "neg", or "mix".
+      - name: ai_response_rationale
+        description: Rationale for the assigned AI response label.
+  - name: int_govocal_sortition_candidates
+    description: |
+      This model filters AI Impact survey respondents to identify the respondents who are eligible for sortition.
+      Respondents are considered as eligible if they are available for discussion and meet certain eligibility
+      filters (e.g., age, current work status). The model also recategorizes some question answers to align with
+      the categories and groups used in the sortition strategy. This includes generally grouping all null and
+      'I don't want to say' responses into a single 'Non-response' grouping. The resulting model has one row per
+      candidate.
+    columns:
+      - name: survey_respondent_id
+        description: User ID of the survey respondent.
+      - name: age
+        description: Response to the question 'What is your age?' with handling for non-responses.
+      - name: gender_category
+        description: |
+          Response to the question 'What is your gender identity?' with handling for non-responses and
+          with multiple responses and 'Another gender identity' responses categorized together as
+          'Nonbinary / multi / other'.
+      - name: race_ethnicity_category
+        description: |
+          Response to the question 'What is your race or ethnicity?' with handling for non-responses.
+      - name: region
+        description: Region corresponding to the California county, as described by sortition strategy.
+      - name: field_of_work
+        description: |
+          Response to the question "Which best describes your field of work?" with handling for non-responses and
+          with a remapping of some responses to align with sortition strategy groupings.
+      - name: ai_response_label
+        description: |
+          Label, "pos", "neg", or "mix", for the respondent's overall sentiment about the impact of AI on work.
+          The label is generated by an LLM based on the respondent's responses to the ai-related survey questions.
+      - name: invite_count
+        description: The number of times the respondent has been invited to participate in Phase 2.
+      - name: invitee_status
+        description: |
+          The status of the respondent (or sortition candidate) indicating whether the respondent has previously
+          been selected to participate in an earlier round of sortition or has already accepted an invitation to
+          participate.
+      - name: accepted_event_start_date_time
+        description: |
+          The start date and time of the Phase 2 event that the candidate has accepted, if a candidate has already been
+          invited in a sortition lottery and accepted the invitation. Null if the candidate has not yet been invited or
+          has not accepted an invitation.
+      - name: attendee_status
+        description: |
+          The actual attendance status of the candidate at the Phase 2 sortition event, if a candidate has already been
+          invited in a sortition lottery and accepted the invitation. Null if the candidate has
+  - name: int_govocal_sortition_targets
+    description: |
+      This model counts the number of sortition candidates matching each target category from the sortition strategy.
+      Then the model computes adjusted target percentages by scaling down the sortition target percentages
+      to account for a proportional amount of non-responses. The model has one row per question and answer (or
+      sortition category and group).
+    columns:
+      - name: question
+        description: The AI Impact survey question, or sortition category. (e.g., 'Age').
+      - name: answer
+        description: The specific response to the survey question, or category group (e.g., '25-44').
+      - name: candidate_count
+        description: Total count of eligible candidates who provided this answer to this question.
+      - name: invited_count
+        description: Count of candidates who have been invited to participate in the sortition.
+      - name: not_yet_invited_count
+        description: Count of candidates who have not yet been invited.
+      - name: accepted_count
+        description: Count of candidates who accepted the invitation.
+      - name: declined_count
+        description: Count of candidates who declined the invitation or whose invitation was closed.
+      - name: invited_no_response_count
+        description: Count of invited candidates who have not yet provided a response.
+      - name: accept_rate
+        description: Ratio of accepted invitations to total invited candidates.
+      - name: registered_pct_of_total
+        description: Percentage of all registered candidates who provided this answer.
+      - name: target_pct
+        description: Target percentage for this answer category based on sortition strategy (from source).
+      - name: adjusted_target_pct
+        description: Adjusted target percentage accounting for non-responses.
+      - name: attended_count
+        description: Count of candidates who attended the event.
+      - name: no_show_count
+        description: Count of candidates who did not attend the event after accepting the invitation.
+      - name: attendance_rate
+        description: |
+          Ratio of candidates who attended the event to those who accepted the invitation,
+          for events that have already occurred.
+      - name: attended_pct_of_total
+        description: Percentage of all attending candidates who provided this answer.
+      - name: future_event_registration_count
+        description: Count of candidates who accepted an invitation to an event that is scheduled for the future.

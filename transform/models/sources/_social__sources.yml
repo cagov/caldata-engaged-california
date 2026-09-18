@@ -1,0 +1,287 @@
+version: 2
+
+sources:
+  - name: FACEBOOK_PAGES
+    database: RAW_ENGCA_PRD
+    schema: FACEBOOK_PAGES_ENGCA
+    description: Facebook data for the EngagedCA Facebook page.
+    tables:
+      - name: POST_HISTORY
+        description: Information about each Facebook post. One row per post.
+        columns:
+          - name: ID
+            description: Unique identifier for each Facebook post.
+          - name: UPDATED_TIME
+            description: The timestamp when the post was last updated.
+          - name: PAGE_ID
+            description: The ID of the Facebook page to which the post belongs.
+          - name: CREATED_TIME
+            description: The timestamp when the post was created.
+          - name: FULL_PICTURE
+            description: URL of the full-size image associated with the post.
+          - name: IS_HIDDEN
+            description: Indicates whether the post is hidden from public view.
+          - name: IS_INSTAGRAM_ELIGIBLE
+            description: Indicates whether the post is eligible for Instagram sharing.
+          - name: IS_ELIGIBLE_FOR_PROMOTION
+            description: Indicates whether the post is eligible for promotion.
+          - name: IS_EXPIRED
+            description: Indicates whether the post has expired.
+          - name: IS_PUBLISHED
+            description: Indicates whether the post is published.
+          - name: MESSAGE
+            description: The text content of the post.
+          - name: PARENT_ID
+            description: The ID of the parent post, if applicable.
+          - name: PROMOTABLE_ID
+            description: The ID of the promotable version of the post.
+          - name: STATUS_TYPE
+            description: The type of status update (e.g., "shared_story", "created_post").
+          - name: PRIVACY_ALLOW
+            description: A list of users who are allowed to see the post.
+          - name: PRIVACY_DENY
+            description: A list of users who are denied access to the post.
+          - name: PRIVACY_DESCRIPTION
+            description: A human-readable explanation of the privacy settings for the post.
+          - name: PRIVACY_FRIENDS
+            description: The list of friends who can see the post.
+          - name: PRIVACY_VALUE
+          - name: SHARE_COUNT
+            description: The number of times the post has been shared.
+          - name: PERMALINK_URL
+            description: The URL of the post's permalink.
+          - name: _FIVETRAN_SYNCED
+            description: Timestamp when Fivetran last synced this row.
+
+      - name: LIFETIME_POST_METRICS_TOTAL
+        description:
+          Cumulative engagement and video metrics per post, sourced from the
+          Facebook Pages API. One row per post. Metrics represent cumulative
+          totals over the post's entire lifespan and are overwritten on each
+          Fivetran sync.
+        columns:
+          - name: date
+            description: Date the lifetime metrics were last fetched from the Facebook API.
+          - name: post_id
+            description: Unique identifier for each Facebook post.
+          - name: post_video_views
+            description: Total video views (organic + paid). Null for non-video posts.
+          - name: post_video_view_time
+            description: Total milliseconds the video was watched across all views.
+          - name: post_video_views_organic
+            description: Video views from organic (non-paid) distribution.
+          - name: post_video_views_paid
+            description: Video views from paid/boosted distribution.
+          - name: post_video_avg_time_watched
+            description: Average milliseconds watched per view.
+          - name: post_video_length
+            description: Duration of the video in milliseconds.
+          - name: post_video_complete_views_organic
+            description: Full video watches via organic distribution.
+          - name: post_video_complete_views_paid
+            description: Full video watches via paid distribution.
+          - name: POST_CLICKS
+          - name: POST_MEDIA_VIEW
+          - name: POST_REACTIONS_LIKE_TOTAL
+          - name: POST_REACTIONS_LOVE_TOTAL
+          - name: POST_REACTIONS_WOW_TOTAL
+          - name: POST_REACTIONS_HAHA_TOTAL
+          - name: POST_REACTIONS_SORRY_TOTAL
+          - name: POST_REACTIONS_ANGER_TOTAL
+          - name: POST_VIDEO_VIEWS_AUTOPLAYED
+          - name: POST_VIDEO_VIEWS_CLICKED_TO_PLAY
+          - name: POST_VIDEO_VIEWS_15_S
+          - name: POST_VIDEO_VIEWS_60_S_EXCLUDES_SHORTER
+          - name: POST_VIDEO_VIEWS_SOUND_ON
+          - name: POST_VIDEO_VIEW_TIME_ORGANIC
+          - name: POST_VIDEO_COMPLETE_VIEWS_30_S_AUTOPLAYED
+          - name: POST_VIDEO_COMPLETE_VIEWS_30_S_CLICKED_TO_PLAY
+          - name: POST_VIDEO_COMPLETE_VIEWS_30_S_ORGANIC
+          - name: POST_VIDEO_COMPLETE_VIEWS_30_S_PAID
+          - name: POST_VIDEO_AD_BREAK_AD_IMPRESSIONS
+          - name: POST_VIDEO_AD_BREAK_EARNINGS
+          - name: POST_VIDEO_AD_BREAK_AD_CPM
+          - name: _fivetran_synced
+            description: Timestamp when Fivetran last synced this row.
+  - name: INSTAGRAM_BUSINESS
+    database: RAW_ENGCA_PRD
+    schema: ENGCA_INSTAGRAM_BUSINESS
+    description: Data from the EngCA instagram ingested using fivetran.
+    tables:
+      - name: USER_HISTORY
+        description: User history table from instagram API.
+        columns:
+          - name: _FIVETRAN_ID
+            description: Fivetran ID.
+          - name: ID
+            description: App-scoped User ID (new version).
+          - name: IG_ID
+            description: App-scoped User ID (legacy ID column).
+          - name: FOLLOWS_COUNT
+            description: Total number of Instagram users the user follows.
+          - name: FOLLOWERS_COUNT
+            description: Total number of Instagram users following the user.
+          - name: MEDIA_COUNT
+            description: Total number of IG Media published on your app user's account.
+          - name: NAME
+            description: Your app user's Instagram profile name.
+          - name: USERNAME
+            description: Your app user's Instagram profile username.
+          - name: WEBSITE
+            description: Your app user's website URL.
+          - name: HAS_PROFILE_PIC
+            description: Indicates if the user has a profile picture.
+          - name: PROFILE_PICTURE_URL
+            description: URL of the user's profile picture.
+          - name: IS_PUBLISHED
+            description: Indicates whether the user history record is published.
+          - name: _FIVETRAN_SYNCED
+            description: Time stamp of Fivetran Sync.
+      - name: MEDIA_HISTORY
+        description: Records of published Instagram media over time.
+        columns:
+          - name: _FIVETRAN_ID
+            description: Fivetran ID.
+          - name: OWNER_ID
+          - name: USER_ID
+            description: Identifier of the Instagram business account.
+          - name: IS_STORY
+            description: Indicates if the media is an Instagram Story.
+          - name: CAROUSEL_ALBUM_ID
+            description: Identifier for carousel album media.
+          - name: ID
+            description: Unique identifier for the media post.
+          - name: IG_ID
+            description: Instagram-assigned media ID (legacy ID column).
+          - name: USERNAME
+            description: Instagram username of the account that posted the media.
+          - name: MEDIA_URL
+            description: URL of the media content.
+          - name: PERMALINK
+            description: Permanent link to the Instagram post.
+          - name: SHORTCODE
+            description: Identifier for the post. Final string at end of post URL.
+          - name: THUMBNAIL_URL
+            description: URL of the media thumbnail.
+          - name: CAPTION
+            description: Text caption associated with the media.
+          - name: IS_COMMENT_ENABLED
+            description: Indicates if comments are enabled for the media.
+          - name: MEDIA_TYPE
+            description: Type of media (CAROUSEL_ALBUM, IMAGE, or VIDEO).
+          - name: MEDIA_PRODUCT_TYPE
+            description: Category of Instagram media (AD, FEED, STORY or REELS).
+          - name: CREATED_TIME
+            description: Timestamp when the media was created.
+          - name: _FIVETRAN_SYNCED
+            description: Time stamp of Fivetran Sync.
+      - name: MEDIA_INSIGHTS
+        description: Performance analytics for Instagram media.
+        columns:
+          - name: _FIVETRAN_ID
+            description: Fivetran ID.
+          - name: ID
+            description: Unique identifier for the media post
+          - name: LIKE_COUNT
+            description: Count of likes on the media, including replies on comments.
+          - name: COMMENT_COUNT
+            description: Total number of comments on the media
+          - name: VIDEO_PHOTO_IMPRESSIONS
+            description: Total number of times media was displayed on users' feeds.
+          - name: VIDEO_PHOTO_REACH
+            description: Number of unique users who viewed the video or photo
+          - name: VIDEO_PHOTO_SAVED
+            description: Number of times the video or photo was saved
+          - name: CAROUSEL_ALBUM_ENGAGEMENT
+            description: |
+              Total interactions on carousel album posts.
+              Interactions are likes, saves, comments, or shares minus the
+              number of unlikes, unsaves, and deleted comments.
+          - name: CAROUSEL_ALBUM_IMPRESSIONS
+            description: Total number of times a carousel album post was displayed on users' feeds.
+          - name: CAROUSEL_ALBUM_REACH
+            description: Number of unique users who viewed the carousel album
+          - name: CAROUSEL_ALBUM_SAVED
+            description: Number of times the carousel album was saved
+          - name: STORY_IMPRESSIONS
+            description: Total number of times an Instagram Story was displayed on users' feeds.
+          - name: STORY_REACH
+            description: Number of unique users who viewed the Story
+          - name: NAVIGATION
+            description: |
+              This is the total number of actions taken from your story.
+              These are made up of metrics like exited, forward, back and next story.
+          - name: REEL_REACH
+            description: Number of unique users who viewed the Reel
+          - name: REEL_SAVED
+            description: Number of times the Reel was saved
+          - name: VIDEO_PHOTO_ENGAGEMENT
+            description: |
+              Total interactions on videos and photos
+              Interactions are likes, saves, comments, or shares minus
+              the number of unlikes, unsaves, and deleted comments.
+          - name: STORY_EXITS
+            description: Number of times users exited the Story
+          - name: STORY_REPLIES
+            description: Number of replies to the Story
+          - name: STORY_TAPS_BACK
+            description: Number of times users tapped back on the Story
+          - name: STORY_TAPS_FORWARD
+            description: Number of times users tapped forward on the Story
+          - name: STORY_SWIPE_FORWARD
+            description: Number of times users swiped forward on the Story
+          - name: REEL_COMMENTS
+            description: Total number of comments on the Reel
+          - name: REEL_LIKES
+            description: Total number of likes on the Reel
+          - name: REEL_SHARES
+            description: Number of times the Reel was shared
+          - name: REEL_TOTAL_INTERACTIONS
+            description: |
+              Total interactions on the Reel.
+              Interactions are likes, saves, comments, or shares minus
+              the number of unlikes, unsaves, and deleted comments.
+          - name: VIDEO_PHOTO_VIEWS
+          - name: VIDEO_PHOTO_SHARES
+          - name: VIDEO_PHOTO_FOLLOWS
+          - name: CAROUSEL_ALBUM_VIEWS
+          - name: CAROUSEL_ALBUM_SHARES
+          - name: CAROUSEL_ALBUM_FOLLOWS
+          - name: STORY_VIEWS
+          - name: STORY_SHARES
+          - name: STORY_FOLLOWS
+          - name: REEL_VIEWS
+          - name: IG_REELS_AVG_WATCH_TIME
+          - name: IG_REELS_VIDEO_VIEW_TOTAL_TIME
+          - name: VIDEO_PHOTO_REPOSTS
+          - name: REELS_SKIP_RATE
+          - name: REEL_FACEBOOK_VIEWS
+          - name: REEL_REPOSTS
+          - name: REEL_CROSSPOSTED_VIEWS
+          - name: CAROUSEL_ALBUM_REPOSTS
+          - name: _FIVETRAN_SYNCED
+            description: Time stamp of Fivetran Sync.
+      - name: MEDIA_COMMENT
+        description: User comments on Instagram media.
+        columns:
+          - name: _FIVETRAN_ID
+            description: Fivetran ID.
+          - name: MEDIA_ID
+            description: Unique identifier for the associated media.
+          - name: HIDDEN
+            description: Indicates if the comment is hidden.
+          - name: ID
+            description: Unique identifier for the comment.
+          - name: LIKE_COUNT
+            description: Total number of likes on the comment.
+          - name: PARENT_ID
+            description: Identifier for the parent comment in a thread.
+          - name: TEXT
+            description: Content of the comment.
+          - name: OWNER_ID
+            description: Unique identifier of the user who posted the comment.
+          - name: OWNER_USERNAME
+          - name: CREATED_TIME
+            description: Timestamp when the comment was created.
+          - name: _FIVETRAN_SYNCED
+            description: Time stamp of Fivetran Sync.

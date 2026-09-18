@@ -183,3 +183,96 @@ sources:
           - name: target_count
             description: Target count for this demographic group in the fire area
             data_type: integer
+
+  - name: DEMOGRAPHICS
+    database: RAW_ENGCA_PRD
+    schema: DEMOGRAPHICS
+    description: |
+      Source datasets for EngagedCA demographics information.
+    tables:
+      - name: COUNTY_REGION_MAP
+        description: |
+          Mapping table between California counties and regions. Used to assign counties to regions
+          for the AI Impact sortition process. One row per California county. (58 counties)
+        columns:
+          - name: COUNTY
+            description: California county. For example, 'Inyo County'.
+          - name: REGION
+            description: Region. For example, 'Sierra Region'.
+      - name: AI_SORTITION_TARGETS
+        description: |
+          Target sortition percentages for the AI Impact sortition process. One row per category-group.
+          The targets are defined in "EngagedCA - AI Impact - Sortition Strategy".
+          https://docs.google.com/document/d/10c2Y3mZQSqGPv06SaCboTElp7jtGVN2ybmqeAMDvwK0/
+        columns:
+          - name: CATEGORY
+            description: Sortition category. For example, 'Age'.
+          - name: NAME
+            description: Specific group within the category. For example, '25-44'.
+          - name: TARGET_PCT
+            description: |
+              Target percentage for this group in the sortition outcome. Formatted as a decimal.
+              For example, 0.35 for 35% of sortition candidates.
+
+  - name: FILE_DOWNLOADS
+    database: RAW_ENGCA_PRD
+    schema: ENGAGEDCA_GOOGLE_DRIVE_AI
+    description: |
+      Manually downloaded files for the AI Impact on the Workplace 2026 Engagement.
+    tables:
+      - name: PH_2_ATTENDEES
+        description: |
+          Contains registrant information. Sourced from a manual download of the csv that collects
+          registration information for the AI Engagement. Updated manually from Zoom registrations.
+        columns:
+          - name: EVENT_TYPE_NAME
+            description: The name of the event
+          - name: INVITEE_EMAIL
+            description: The email address of the invitee
+          - name: INVITEE_FIRST_NAME
+            description: The first name of the invitee.
+          - name: INVITEE_LAST_NAME
+            description: The last name of the invitee
+          - name: INVITEE_NAME
+            description: The name of the invitee
+          - name: INVITEE_STATUS
+            description: The status of the invitee (e.g., accepted, declined)
+          - name: INVITEE_TIME_ZONE
+            description: The time zone of the invitee
+          - name: MARKED_AS_NO_SHOW
+            description: Indicates if the invitee was marked as a no-show
+          - name: START_DATE_TIME
+            description: The date and time when the event starts
+          - name: END_DATE_TIME
+            description: The date and time when the event ends
+          - name: EVENT_CREATED_DATE_TIME
+            description: The date and time when the event was created
+          - name: USER_NAME
+            description: The user name of the user hosting the event
+          - name: _FILE
+            description: The name of the file from which the data was sourced
+          - name: _LINE
+            description: The line number in the source file
+          - name: _MODIFIED
+            description: Timestamp of when the data has been modified
+          - name: _FIVETRAN_SYNCED
+            description: Timestamp of when the data has been synced with Fivetran
+          - name: RESPONSE_1
+          - name: QUESTION_1
+      - name: AI_POLICY_CONCEPTS_AND_THEMES
+        description: |
+          This table contains the policy concepts that were discussed during the AI Impact on the Workplace 2026
+          Phase 2 live discussions and provides the mapping between policy concepts, subthemes, and themes that
+          was defined through manual affinity mapping.
+          Only policy concepts that received at least some support from participants (as demonstrated by end of session
+          polling) have been included in this table. Participants were asked to vote on specific policy statements,
+          and these were then mapped to broader policy concepts, which were then grouped into subthemes and themes.
+        columns:
+          - name: policy_concept
+            description: The policy concept discussed during the event.
+          - name: policy_concept_description
+            description: A brief description of the policy concept.
+          - name: subtheme
+            description: The subtheme under which the policy concept falls.
+          - name: theme
+            description: The overarching theme under which the subtheme and policy concept fall.

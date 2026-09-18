@@ -1,0 +1,182 @@
+version: 2
+
+models:
+  - name: int_youtube_video_daily
+    description: |
+      Daily YouTube video stats joined with video metadata. Sourced from country-level
+      analytics (CHANNEL_BASIC_A_2). Rows with no matching video metadata are excluded.
+    columns:
+      - name: _fivetran_id
+        description: Unique row identifier assigned by Fivetran.
+      - name: stats_date
+        description: Date of the stats.
+      - name: channel_id
+        description: YouTube channel identifier.
+      - name: video_id
+        description: YouTube video identifier.
+      - name: snippet_title
+        description: Title of the video.
+      - name: snippet_published_at
+        description: Timestamp when the video was published.
+      - name: snippet_description
+        description: Description of the video.
+      - name: snippet_tags
+        description: Tags associated with the video.
+      - name: privacy_status
+        description: Privacy status of the video (public, private, unlisted, or unknown if missing).
+      - name: country_code
+        description: ISO country code of the viewer.
+      - name: views
+        description: Total number of views.
+      - name: engaged_views
+        description: Number of views where the viewer engaged with the video.
+      - name: comments
+        description: Number of comments on the video.
+      - name: likes
+        description: Number of likes on the video.
+      - name: dislikes
+        description: Number of dislikes on the video.
+      - name: shares
+        description: Number of times the video was shared.
+      - name: watch_time_minutes
+        description: Total watch time in minutes.
+      - name: average_view_duration_seconds
+        description: Average view duration in seconds.
+      - name: average_view_duration_percentage
+        description: |
+          Sourced directly from YouTube Analytics. The average percentage of the video watched
+          per view for this row's segment (date/country/subscribed status). Already accounts
+          for the number of viewers.
+      - name: video_duration_seconds
+        description: Duration of the video in seconds.
+
+  - name: int_youtube_channel_daily
+    description: |
+      Daily YouTube channel stats aggregated from country-level analytics (CHANNEL_BASIC_A_2).
+      Grouped by date, channel, and country.
+    columns:
+      - name: stats_date
+        description: Date of the stats.
+      - name: channel_id
+        description: YouTube channel identifier.
+      - name: country_code
+        description: ISO country code of the viewer.
+      - name: views_total
+        description: Total views for the channel on this date and country.
+      - name: engaged_views_total
+        description: Total engaged views for the channel on this date and country.
+      - name: comments_total
+        description: Total comments across all videos on this date and country.
+      - name: likes_total
+        description: Total likes across all videos on this date and country.
+      - name: dislikes_total
+        description: Total dislikes across all videos on this date and country.
+      - name: shares_total
+        description: Total shares across all videos on this date and country.
+      - name: watch_time_minutes_total
+        description: Total watch time in minutes across all videos on this date and country.
+
+  - name: int_facebook_pages__post_analytics
+    description: Intermediate model that aggregates key engagement and video metrics for each Facebook post.
+    columns:
+      - name: post_id
+        description: Unique identifier for each Facebook post.
+      - name: page_id
+        description: Identifier for the Facebook page to which the post belongs.
+      - name: post_message
+        description: The text content of the Facebook post.
+      - name: post_type
+        description: The type of the Facebook post (e.g. status, link, photo, video).
+      - name: permalink_url
+        description: The URL of the Facebook post.
+      - name: picture_url
+        description: The URL of the image associated with the Facebook post.
+      - name: created_at
+        description: The timestamp when the Facebook post was created.
+      - name: updated_at
+        description: The timestamp when the Facebook post was last updated.
+      - name: is_expired
+        description: Indicates whether the Facebook post is expired (i.e. no longer active or visible on the page).
+      - name: post_views_total
+        description: Total number of views for the post (including both organic and paid views).
+      - name: clicks_total
+        description: Total clicks on any part of the post (link, photo, name, etc.).
+      - name: share_count
+        description: The number of times the Facebook post has been shared.
+      - name: reactions_total
+        description: Total reactions across all reaction types (Like, Love, Haha, Wow, Sorry, Anger).
+      - name: reactions_like
+        description: Count of Like reactions.
+      - name: reactions_love
+        description: Count of Love reactions.
+      - name: reactions_haha
+        description: Count of Haha reactions.
+      - name: reactions_wow
+        description: Count of Wow reactions.
+      - name: reactions_sorry
+        description: Count of Sorry (Sad) reactions.
+      - name: reactions_anger
+        description: Count of Anger reactions.
+      - name: post_video_views
+        description: Total video views (organic + paid). Null for non-video posts.
+      - name: post_video_view_time
+        description: Total milliseconds the video was watched across all views.
+      - name: post_video_avg_time_watched
+        description: Average milliseconds watched per view.
+      - name: total_engagements
+        description: Total engagements, calculated as the sum of all reactions and clicks.
+      - name: engagement_rate_pct
+        description: Engagement rate, calculated as (total reactions + clicks) / total views × 100.
+      - name: POST_VIDEO_LENGTH
+        description: The length of the video in seconds.
+      - name: POST_VIDEO_COMPLETE_VIEWS_ORGANIC
+        description: Total organic complete views of the video.
+      - name: POST_VIDEO_COMPLETE_VIEWS_PAID
+        description: Total paid complete views of the video.
+      - name: CLICK_THROUGH_RATE_PCT
+        description: Click-through rate, calculated as (clicks) / (views) × 100.
+      - name: REACTION_RATE_PCT
+        description: Reaction rate, calculated as (reactions) / (views) × 100.
+  - name: int_instagram_posts_join
+    description: |
+      this model combines the media_history table which has all instagram posts and
+      their metadata with the media_insights table which has metrics per post.
+    columns:
+      - name: PERMALINK
+        description: URL to instagram post.
+      - name: MEDIA_TYPE
+      - name: MEDIA_PRODUCT_TYPE
+      - name: MEDIA_URL
+        description: URL to the media contained within an instagram post.
+      - name: CAPTION
+      - name: CAROUSEL_ALBUM_ID
+      - name: IS_COMMENT_ENABLED
+      - name: IS_STORY
+      - name: CREATED_TIME
+      - name: MEDIA_ID
+      - name: LIKE_COUNT
+      - name: COMMENT_COUNT
+      - name: VIDEO_PHOTO_IMPRESSIONS
+      - name: VIDEO_PHOTO_REACH
+      - name: VIDEO_PHOTO_SAVED
+      - name: CAROUSEL_ALBUM_ENGAGEMENT
+      - name: CAROUSEL_ALBUM_IMPRESSIONS
+      - name: CAROUSEL_ALBUM_REACH
+      - name: CAROUSEL_ALBUM_SAVED
+      - name: STORY_IMPRESSIONS
+      - name: STORY_REACH
+      - name: NAVIGATION
+      - name: REEL_REACH
+      - name: REEL_SAVED
+      - name: VIDEO_PHOTO_ENGAGEMENT
+      - name: STORY_EXITS
+      - name: STORY_REPLIES
+      - name: STORY_TAPS_BACK
+      - name: STORY_TAPS_FORWARD
+      - name: STORY_SWIPE_FORWARD
+      - name: REEL_COMMENTS
+      - name: REEL_LIKES
+      - name: REEL_SHARES
+      - name: REEL_TOTAL_INTERACTIONS
+      - name: _FIVETRAN_ID
+      - name: _FIVETRAN_SYNCED

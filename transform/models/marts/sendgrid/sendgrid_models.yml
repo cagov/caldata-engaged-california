@@ -1,0 +1,35 @@
+version: 2
+models:
+  - name: sendgrid_email_metrics
+    description: Summary stats for Sendgrid emails
+    columns:
+      - name: subject_line
+      - name: first_send_date
+      - name: latest_send_date
+      - name: recipients
+      - name: sends
+      - name: deliveries
+      - name: opens
+      - name: bounces
+      - name: clicks
+      - name: defers
+      - name: unsubscribes
+      - name: drops
+      - name: spam_reports
+
+  - name: sendgrid_clicks_metrics
+    description: Clicks per URL per email subject line
+    columns:
+      - name: subject_line
+      - name: url
+      - name: total_clicks
+      - name: total_opens
+      - name: click_rate
+
+  - name: sendgrid_clicks_by_time
+    description: Clicks by subject line, date, and hour of day
+    columns:
+      - name: subject_line
+      - name: send_date
+      - name: hour_of_day
+      - name: total_clicks
