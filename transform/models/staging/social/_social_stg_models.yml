@@ -1,0 +1,400 @@
+version: 2
+
+models:
+  - name: stg_facebook_pages__posts
+    description: |
+      Staging model for Facebook posts, sourced from the `POST_HISTORY` table in the `FACEBOOK` source.
+    columns:
+      - name: post_id
+        description: Unique identifier for each Facebook post.
+      - name: page_id
+        description: Identifier for the Facebook page to which the post belongs.
+      - name: post_message
+        description: The text content of the Facebook post.
+      - name: post_type
+        description: The type of the Facebook post (e.g. status, link, photo, video).
+      - name: share_count
+        description: The number of times the Facebook post has been shared.
+      - name: permalink_url
+        description: The URL of the Facebook post.
+      - name: picture_url
+        description: The URL of the image associated with the Facebook post.
+      - name: created_at
+        description: The timestamp when the Facebook post was created.
+      - name: updated_at
+        description: The timestamp when the Facebook post was last updated.
+      - name: is_expired
+        description: Indicates whether the Facebook post is expired (i.e. no longer active or visible on the page).
+      - name: _fivetran_synced
+        description: The timestamp when the data was last synced by Fivetran.
+
+  - name: stg_facebook_pages__post_metrics
+    description: |
+      Metrics represent cumulative totals over the post's entire lifespan and are overwritten on each Fivetran sync.
+    columns:
+      - name: post_id
+        description: Unique identifier for each Facebook post.
+      - name: metrics_date
+        description: The date when the metrics were last fetched from the Facebook API.
+      - name: clicks_total
+        description: Total clicks on any part of the post (link, photo, name, etc.).
+      - name: media_views_total
+        description: Number of times a media attachment on the post was viewed.
+      - name: reactions_like
+        description: Count of Like reactions.
+      - name: reactions_love
+        description: Count of Love reactions.
+      - name: reactions_haha
+        description: Count of Haha reactions.
+      - name: reactions_wow
+        description: Count of Wow reactions.
+      - name: reactions_sorry
+        description: Count of Sorry (Sad) reactions.
+      - name: reactions_anger
+        description: Count of Anger reactions.
+      - name: reactions_total
+        description: Total reactions, calculated as the sum of all reaction types (Like, Love, Haha, Wow, Sorry, Anger).
+      - name: post_video_views
+        description: Total video views (organic + paid). Null for non-video posts.
+      - name: post_video_view_time
+        description: Total milliseconds the video was watched across all views.
+      - name: post_video_views_organic
+        description: Video views from organic (non-paid) distribution.
+      - name: post_video_views_paid
+        description: Video views from paid/boosted distribution.
+      - name: post_video_avg_time_watched
+        description: Average milliseconds watched per view.
+      - name: post_video_length
+        description: Duration of the video in milliseconds.
+      - name: post_video_complete_views_organic
+        description: Video views that were watched to completion via organic distribution.
+      - name: post_video_complete_views_paid
+        description: Video views that were watched to completion via paid/boosted distribution.
+      - name: _fivetran_synced
+        description: The timestamp when the data was last synced by Fivetran.
+
+  - name: stg_instagram__subscribers
+    description: Number of instagram followers per day. Follower count is last snapshot taken by fivetran.
+    columns:
+      - name: instagram_account_id
+        description: App-scoped User ID (new version).
+        data_tests:
+          - not_null
+      - name: snapshot_followers_count
+        description: Total number of Instagram users following the EngCA account. Last snapshot captured per day.
+        data_tests:
+          - not_null
+      - name: last_updated_date
+        description: Date
+        data_tests:
+          - unique
+          - not_null
+  - name: stg_instagram__media_history
+    description: Records of published Instagram media over time.
+    columns:
+      - name: IS_STORY
+        description: Indicates if the media is an Instagram Story.
+      - name: CAROUSEL_ALBUM_ID
+        description: Identifier for carousel album media.
+      - name: MEDIA_ID
+        description: Unique identifier for the media post.
+      - name: MEDIA_URL
+        description: URL of the media content.
+      - name: PERMALINK
+        description: Permanent link to the Instagram post.
+      - name: CAPTION
+        description: Text caption associated with the media.
+      - name: IS_COMMENT_ENABLED
+        description: Indicates if comments are enabled for the media.
+      - name: MEDIA_TYPE
+        description: Type of media (CAROUSEL_ALBUM, IMAGE, or VIDEO).
+      - name: MEDIA_PRODUCT_TYPE
+        description: Category of Instagram media (AD, FEED, STORY or REELS).
+      - name: CREATED_TIME
+        description: Timestamp when the media was created.
+      - name: _FIVETRAN_SYNCED
+        description: Time stamp of Fivetran Sync.
+  - name: stg_instagram__media_insights
+    description: Performance analytics for Instagram media.
+    columns:
+      - name: MEDIA_ID
+        description: Unique identifier for the media post
+      - name: LIKE_COUNT
+        description: Count of likes on the media, including replies on comments.
+      - name: COMMENT_COUNT
+        description: Total number of comments on the media
+      - name: VIDEO_PHOTO_IMPRESSIONS
+        description: Total number of times media was displayed on users' feeds.
+      - name: VIDEO_PHOTO_REACH
+        description: Number of unique users who viewed the video or photo
+      - name: VIDEO_PHOTO_SAVED
+        description: Number of times the video or photo was saved
+      - name: CAROUSEL_ALBUM_ENGAGEMENT
+        description: |
+          Total interactions on carousel album posts.
+          Interactions are likes, saves, comments, or shares minus the number of unlikes, unsaves, and deleted comments.
+      - name: CAROUSEL_ALBUM_IMPRESSIONS
+        description: Total number of times a carousel album post was displayed on users' feeds.
+      - name: CAROUSEL_ALBUM_REACH
+        description: Number of unique users who viewed the carousel album
+      - name: CAROUSEL_ALBUM_SAVED
+        description: Number of times the carousel album was saved
+      - name: STORY_IMPRESSIONS
+        description: Total number of times an Instagram Story was displayed on users' feeds.
+      - name: STORY_REACH
+        description: Number of unique users who viewed the Story
+      - name: NAVIGATION
+        description: |
+          This is the total number of actions taken from your story.
+          These are made up of metrics like exited, forward, back and next story.
+      - name: REEL_REACH
+        description: Number of unique users who viewed the Reel
+      - name: REEL_SAVED
+        description: Number of times the Reel was saved
+      - name: VIDEO_PHOTO_ENGAGEMENT
+        description: |
+          Total interactions on videos and photos
+          Interactions are likes, saves, comments, or shares minus the number of unlikes, unsaves, and deleted comments.
+      - name: STORY_EXITS
+        description: Number of times users exited the Story
+      - name: STORY_REPLIES
+        description: Number of replies to the Story
+      - name: STORY_TAPS_BACK
+        description: Number of times users tapped back on the Story
+      - name: STORY_TAPS_FORWARD
+        description: Number of times users tapped forward on the Story
+      - name: STORY_SWIPE_FORWARD
+        description: Number of times users swiped forward on the Story
+      - name: REEL_COMMENTS
+        description: Total number of comments on the Reel
+      - name: REEL_LIKES
+        description: Total number of likes on the Reel
+      - name: REEL_SHARES
+        description: Number of times the Reel was shared
+      - name: REEL_TOTAL_INTERACTIONS
+        description: |
+          Total interactions on the Reel.
+          Interactions are likes, saves, comments, or shares minus the number of unlikes, unsaves, and deleted comments.
+      - name: _FIVETRAN_ID
+      - name: _FIVETRAN_SYNCED
+        description: Time stamp of Fivetran Sync.
+  - name: stg_youtube_stats_daily
+    description: Daily YouTube video stats per country, sourced from the CHANNEL_BASIC_A_2 table.
+    columns:
+      - name: _fivetran_id
+        description: Unique identifier assigned by Fivetran.
+      - name: stats_date
+        description: Date of the stats.
+      - name: channel_id
+        description: YouTube channel identifier.
+      - name: video_id
+        description: YouTube video identifier.
+      - name: live_or_on_demand
+        description: Indicates whether the video was streamed live or on demand.
+      - name: subscribed_status
+        description: Viewer subscription status at time of view.
+      - name: country_code
+        description: ISO country code of the viewer.
+      - name: views
+        description: Total number of times the video was viewed, including very short or accidental views.
+      - name: engaged_views
+        description: |
+          Number of views where the viewer watched past the initial seconds of the video.
+          Unlike views, this metric filters out accidental or near-instant plays,
+          reflecting meaningful viewer engagement.
+      - name: comments
+        description: Number of comments on the video.
+      - name: likes
+        description: Number of likes on the video.
+      - name: dislikes
+        description: Number of dislikes on the video.
+      - name: shares
+        description: Number of times the video was shared.
+      - name: watch_time_minutes
+        description: Total watch time in minutes.
+      - name: average_view_duration_seconds
+        description: Average view duration in seconds.
+      - name: average_view_duration_percentage
+        description: Average percentage of the video watched.
+      - name: subscribers_lost
+        description: Number of subscribers lost after watching the video.
+      - name: subscribers_gained
+        description: Number of subscribers gained after watching the video.
+
+  - name: stg_youtube_video_metadata
+    description: YouTube video metadata sourced from the VIDEO table.
+    columns:
+      - name: id
+        description: Unique YouTube video identifier.
+      - name: snippet_title
+        description: Title of the video.
+      - name: snippet_description
+        description: Description of the video.
+      - name: snippet_tags
+        description: Tags associated with the video.
+      - name: snippet_published_at
+        description: Timestamp when the video was published.
+      - name: snippet_channel_title
+        description: Display name of the channel.
+      - name: snippet_category_id
+        description: YouTube category ID for the video.
+      - name: content_details_duration
+        description: Duration of the video in ISO 8601 format.
+      - name: video_duration_seconds
+        description: Duration of the video in seconds, parsed from content_details_duration.
+      - name: privacy_status
+        description: Privacy status of the video (public, private, unlisted).
+      - name: statistics_view_count
+        description: Total number of views.
+      - name: statistics_like_count
+        description: Total number of likes.
+      - name: statistics_dislike_count
+        description: Total number of dislikes.
+      - name: statistics_comment_count
+        description: Total number of comments.
+      - name: statistics_favorite_count
+        description: Total number of times the video was favorited.
+
+  - name: stg_instagram__media_comment
+    description: User comments on Instagram media.
+    columns:
+      - name: MEDIA_ID
+        description: Unique identifier for the associated media.
+      - name: HIDDEN
+        description: Indicates if the comment is hidden.
+      - name: COMMENT_ID
+        description: Unique identifier for the comment.
+      - name: LIKE_COUNT
+        description: Total number of likes on the comment.
+      - name: PARENT_COMMENT_ID
+        description: Identifier for the parent comment in a thread.
+      - name: TEXT
+        description: Content of the comment.
+      - name: COMMENT_USER_ID
+        description: Unique identifier of the user who posted the comment.
+      - name: CREATED_TIME
+        description: Timestamp when the comment was created.
+      - name: _FIVETRAN_SYNCED
+        description: Time stamp of Fivetran Sync.
+
+  - name: stg_linkedin_post_history
+    description: Records of posts made by the organization on LinkedIn, including content and metadata.
+    columns:
+      - name: post_id
+        description: Unique identifier for each post in URN format (urn:li:ugcPost:xxx).
+      - name: post_published_at
+        description: Timestamp when the post was first published.
+      - name: post_created_at
+        description: Timestamp when the post was created.
+      - name: post_last_modified_at
+        description: Timestamp when the post was last modified.
+      - name: post_commentary
+        description: Text content of the post.
+      - name: post_visibility
+        description: Visibility setting of the post (e.g. PUBLIC).
+      - name: post_lifecycle_state
+        description: Current state of the post (e.g. PUBLISHED).
+      - name: post_author_urn
+        description: URN of the author who created the post.
+      - name: post_organization_urn
+        description: URN of the organization that owns the post.
+
+  - name: stg_linkedin_share_stats
+    description: Engagement metrics for each LinkedIn post including impressions, clicks, likes, comments, and shares.
+    columns:
+      - name: share_statistic_id
+        description: Fivetran generated unique identifier for each record.
+      - name: post_id
+        description: URN of the post this statistic belongs to. Joins to stg_linkedin_post_history.post_id.
+      - name: organization_urn
+        description: URN of the organization this statistic belongs to.
+      - name: impression_count
+        description: Total number of times the post was shown in the feed, including passive views.
+      - name: click_count
+        description: Total number of clicks on the post.
+      - name: like_count
+        description: Total number of likes on the post.
+      - name: comment_count
+        description: Total number of comments on the post.
+      - name: share_count
+        description: Total number of times the post was shared.
+      - name: engagement
+        description: Engagement rate calculated as total organic interactions over impressions.
+
+  - name: stg_linkedin_page_seniority
+    description: Page view statistics broken down by seniority level of visitors to the LinkedIn company page.
+    columns:
+      - name: _fivetran_id
+        description: Fivetran generated unique identifier for each record.
+      - name: seniority_id
+        description: Numeric identifier for the seniority level. Joins to stg_linkedin_seniority.seniority_id.
+      - name: organization_urn
+        description: URN of the organization this statistic belongs to.
+      - name: all_page_views
+        description: Total page views across all sections and devices.
+      - name: all_mobile_page_views
+        description: Total page views from mobile devices.
+      - name: overview_page_views
+        description: Views of the overview page section.
+      - name: people_page_views
+        description: Views of the people page section.
+      - name: jobs_page_views
+        description: Views of the jobs page section.
+      - name: life_at_page_views
+        description: Views of the life at page section.
+      - name: insights_page_views
+        description: Views of the insights page section.
+      - name: careers_page_views
+        description: Views of the careers page section.
+      - name: products_page_views
+        description: Views of the products page section.
+
+  - name: stg_linkedin_seniority
+    description: Lookup table mapping seniority IDs to seniority names.
+    columns:
+      - name: seniority_id
+        description: Unique identifier for the seniority level.
+      - name: seniority_name
+        description: Name of the seniority level (e.g. Senior, Director, Manager).
+
+  - name: stg_linkedin_industry
+    description: Lookup table mapping industry IDs to industry names.
+    columns:
+      - name: industry_id
+        description: Unique identifier for the industry.
+      - name: industry_name
+        description: Name of the industry.
+
+  - name: stg_linkedin_follower_seniority
+    description: Follower counts for the organization broken down by seniority level.
+    columns:
+      - name: _fivetran_id
+        description: Fivetran generated unique identifier for each record.
+      - name: organization_urn
+        description: URN of the organization this statistic belongs to.
+      - name: seniority_id
+        description: Numeric identifier for the seniority level. Joins to stg_linkedin_seniority.seniority_id.
+      - name: organic_follower_count
+        description: Number of followers gained organically.
+      - name: paid_follower_count
+        description: Number of followers gained through paid campaigns.
+      - name: fivetran_synced
+        description: Timestamp of when Fivetran last synced this record.
+
+  - name: stg_linkedin_follower_industry
+    description: Follower counts for the organization broken down by industry.
+    columns:
+      - name: _fivetran_id
+        description: Fivetran generated unique identifier for each record.
+      - name: organization_urn
+        description: URN of the organization this statistic belongs to.
+      - name: industry_id
+        description: Numeric identifier for the industry. Joins to stg_linkedin_industry.industry_id.
+      - name: organic_follower_count
+        description: Number of followers gained organically.
+      - name: paid_follower_count
+        description: Number of followers gained through paid campaigns.
+      - name: fivetran_synced
+        description: Timestamp of when Fivetran last synced this record.
+      - name: fivetran_synced
+        description: Timestamp of when Fivetran last synced this record.

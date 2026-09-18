@@ -31,6 +31,7 @@ with problem_solution_links as (
         psl.link_id,
         psl.linked_at,
         p.department_user_defined,
+        p.department_ai_generated,
         p.department_user_ai_combined
     from {{ ref('int_problem_solution_links') }} as psl
     left join {{ ref('int_extracted_problems') }} as p
@@ -60,6 +61,7 @@ problems_with_solutions as (
 
         -- Department information (should be the same for all rows in group)
         any_value(department_user_defined) as department_user_defined,
+        any_value(department_ai_generated) as department_ai_generated,
         any_value(department_user_ai_combined) as department_user_ai_combined,
 
         -- Count of linked solutions
@@ -110,6 +112,7 @@ ai_consolidated as (
         problem_sequence,
         problem_text,
         department_user_defined,
+        department_ai_generated,
         department_user_ai_combined,
         solution_count,
         avg_confidence_score,
@@ -191,6 +194,7 @@ select
 
     -- Department information
     department_user_defined,
+    department_ai_generated,
     department_user_ai_combined,
 
     -- Solution aggregation metadata

@@ -9,11 +9,12 @@
 -- Extract problems from E3 comments using Snowflake LLM functionality
 -- This model runs incrementally to only process new data
 -- Get department responses for each participant
-with participant_departments as (
+with comment_departments as (
     select
         comment_id,
-        array_to_string(department_user_defined, '; ') as department_user_defined,
-        array_to_string(department_user_ai_combined, '; ') as department_user_ai_combined
+        department_user_defined,
+        department_ai_generated,
+        department_user_ai_combined
     from {{ ref('int_comment_department') }}
 ),
 
@@ -29,9 +30,10 @@ source_comments as (
         c.posted_on,
         c._file_upload_date,
         d.department_user_defined,
+        d.department_ai_generated,
         d.department_user_ai_combined
     from {{ ref('int_ethelo_e3_comments_and_responses') }} as c
-    left join participant_departments as d on c.comment_id = d.comment_id
+    left join comment_departments as d on c.comment_id = d.comment_id
     where
         c.content is not null
         and trim(c.content) != ''
@@ -64,6 +66,7 @@ problem_extraction as (
         sc.posted_on,
         sc._file_upload_date,
         sc.department_user_defined,
+        sc.department_ai_generated,
         sc.department_user_ai_combined,
 
         -- Extract problems using Snowflake Cortex AI with fallback handling
@@ -88,8 +91,8 @@ problem_extraction as (
                                     'Question/Prompt: ', coalesce(sc.question, '[No context]'), '\n',
                                     'Comment Content: ', sc.content, '\n',
                                     case
-                                        when sc.department_user_ai_combined is not null
-                                            then concat('Department/Agency: ', sc.department_user_ai_combined, '\n')
+                                        when sc.department_user_ai_combined is not null and array_size(sc.department_user_ai_combined) > 0
+                                            then concat('Department/Agency: ', array_to_string(sc.department_user_ai_combined, '; '), '\n')
                                         else ''
                                     end,
                                     '\n',
@@ -146,6 +149,7 @@ flattened_problems as (
         pe.posted_on,
         pe._file_upload_date,
         pe.department_user_defined,
+        pe.department_ai_generated,
         pe.department_user_ai_combined,
         pe.problems_json,
 
@@ -189,6 +193,7 @@ select
 
     -- Department information
     department_user_defined,
+    department_ai_generated,
     department_user_ai_combined,
 
     -- AI processing metadata

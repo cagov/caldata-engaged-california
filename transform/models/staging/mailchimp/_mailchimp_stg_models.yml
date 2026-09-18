@@ -22,6 +22,8 @@ models:
         description: |
           Mailchimp's best guess at the most recent email client or device type the member
           used to interact with an email.
+      - name: last_changed
+        description: The date and time the member's information was last changed in ISO 8601 format.
       - name: unsubscribe_reason
       - name: _FIVETRAN_SYNCED
       - name: list_name

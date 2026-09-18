@@ -1,0 +1,260 @@
+version: 2
+models:
+  - name: int_ai_engagement_participants
+    description: |
+      Canonical AI engagement participant table. One row per participant, where a participant is
+      either a Phase 1 participant, a Phase 2 attendee, or both. This is the source of truth for
+      participation counts; other models should reference it rather than re-deriving the logic.
+      It carries PII (email, first_name, last_name) so that it can be joined to registration and
+      attendance records. ai_engagement_participants is the PII-free mart view over this model.
+
+      Phase 1 participant (participated_in_phase1 = TRUE): a non-admin Go Vocal user with a
+      published response to the Phase 1 "Impact of AI on work" survey. Publishing is the ONLY
+      criterion, per leadership direction (September 2026). Drafts do not count.
+
+      Phase 2 attendee (attended_phase2 = TRUE): any non-staff person recorded as 'attended' in
+      the attendance tracker, whether or not they were invited through sortition ("crashers") and
+      whether or not they have a Go Vocal account. Attendees who are not Phase 1 participants get
+      their own row with participated_in_phase1 = FALSE and whatever demographics their Go Vocal
+      profile and survey provide (all null when they have no account).
+
+      The four quality flags (has_internal_email, reported_age_18_plus, has_california_region,
+      answered_open_text_ai_question) and their conjunction meets_phase1_analysis_criteria exist
+      for analyses that want a cleaner population. They describe participants; they never decide
+      whether someone is one.
+    columns:
+      - name: participant_id
+        description: |
+          Primary key. The Go Vocal user ID when the participant has a Go Vocal account (identical to
+          survey_respondent_id), otherwise the md5 hash of the lower-cased attendance-tracker email,
+          so attendees with no account still have a stable, non-PII key.
+        data_tests:
+          - not_null
+          - unique
+      - name: survey_respondent_id
+        description: |
+          The participant's Go Vocal user ID. Null only for Phase 2 attendees who never registered
+          in Go Vocal; every Phase 1 participant has one.
+        data_tests:
+          - unique
+      - name: email
+        description: |
+          PII. The Go Vocal account email, or the attendance-tracker email for attendees with no
+          account. Not exposed in the mart view.
+      - name: first_name
+        description: |
+          PII. From the Go Vocal profile, or the attendance tracker when there is no account.
+          Not exposed in the mart view.
+      - name: last_name
+        description: |
+          PII. From the Go Vocal profile, or the attendance tracker when there is no account.
+          Not exposed in the mart view.
+      - name: age
+        description: |
+          Response to the question "What is your age?" Demographic and survey columns are null for
+          Phase 2 attendees with no Go Vocal account, and survey columns are null for attendees who
+          have an account but never took the Phase 1 survey.
+      - name: gender_array
+        description: Responses to the question "What is your gender identity?"
+      - name: gender_category
+        description: |
+          Response to the question "What is your gender identity?" with 'Multiple' assigned when
+          more than one gender was selected and ' (only)' appended when a single gender was selected.
+      - name: race_ethnicity_array
+        description: Responses to the question "What is your race or ethnicity?"
+      - name: race_ethnicity_category
+        description: |
+          Response to the question "What is your race or ethnicity?" with 'Multiple' assigned when
+          more than one race/ethnicity was selected and ' (only)' appended when a single value was
+          selected.
+      - name: county
+        description: Response to the question "Which county do you live in?"
+      - name: region
+        description: Region corresponding to the California county.
+      - name: field_of_work
+        description: Response to the question "Which best describes your field of work?"
+      - name: field_of_work_rollup
+        description: |
+          Response to the question "Which best describes your field of work?" with certain values
+          rolled up into broader categories.
+      - name: current_work_status
+        description: Response to the question "Are you currently working?"
+      - name: role_at_work
+        description: Response to the question "What is your role at work?"
+      - name: ai_response_label
+        description: |
+          LLM-derived label for the participant's overall stance on AI: 'pos', 'neg', or 'mix'.
+          The raw int_govocal_ai_response_label output mixes vocabularies (pos/neg/mix plus
+          occasional neutral/pro/anti), so it is normalized here the same way as in
+          int_govocal_sortition_candidates. Null when the participant answered no open-text AI
+          question, or when the LLM output could not be parsed.
+      - name: participated_in_phase1
+        description: |
+          TRUE if the participant is a non-admin Go Vocal user with a published Phase 1 survey
+          response. This is the only Phase 1 participation criterion. FALSE for Phase 2 attendees
+          who never published a survey or have no Go Vocal account.
+      - name: invited_to_phase2
+        description: |
+          TRUE if the participant's Go Vocal user ID appears in the
+          AI_ENGAGEMENT.INT_AI_ENGAGEMENT_SORTITION_SELECTIONS source table (i.e. they were
+          selected in a sortition round).
+      - name: attended_phase2
+        description: |
+          TRUE if the participant appears in stg_attendance_tracker with actual_status = 'attended',
+          excluding anyone flagged staff_or_moderator in stg_zoom_unmatched_participants or
+          registered with an @innovation.ca.gov email. Invited and uninvited ("crasher") attendees
+          both count. The tracker's invitee_email is resolved to a Go Vocal user ID using
+          stg_zoom_unmatched_participants.survey_respondent_id_match first (the manually curated
+          match), falling back to a direct email match against stg_govocal_users. The curated match
+          wins because a participant may register for Phase 2 with a second email that has its own
+          survey-less Go Vocal account. Attendees who resolve to no Go Vocal account are still
+          counted, keyed by their tracker email. FALSE for participants who did not attend a session.
+      - name: has_internal_email
+        description: |
+          Quality flag, NOT a participation criterion. TRUE if the participant's email ends in
+          @innovation.ca.gov (ODI staff and test accounts).
+      - name: reported_age_18_plus
+        description: |
+          Quality flag, NOT a participation criterion. TRUE if the participant reported an age
+          other than 'Under 18'. FALSE when age is 'Under 18' or blank.
+      - name: has_california_region
+        description: |
+          Quality flag, NOT a participation criterion. TRUE if the reported county maps to a
+          California region. FALSE for 'I live outside of California', 'I don't want to say', and
+          blank, so it under-counts residents who declined to answer.
+      - name: answered_open_text_ai_question
+        description: |
+          Quality flag, NOT a participation criterion. TRUE if the participant answered at least
+          one of the three open-text AI questions, i.e. has a row in int_govocal_ai_response_label.
+      - name: meets_phase1_analysis_criteria
+        description: |
+          Quality flag, NOT a participation criterion. TRUE when participated_in_phase1 is TRUE,
+          has_internal_email is FALSE, and the other three quality flags are TRUE. This reproduces
+          the stricter Phase 1 population this model reported before 2026-09-18, for analyses that
+          want to exclude internal accounts, minors, non-residents, and respondents with no
+          open-text answers.
+
+  - name: int_ai_engagement_phase2_invitee_status
+    description: |
+      This table joins the sortition selections with the statuses of Phase 2 invitees. If a Phase 2 invitee email is
+      not found in the Go Vocal user emails, and is not manually matched, the invitee status will be
+      'could not match'. The join used is a full outer join in order to preserve any invitee emails that are not
+      matched in the output. The final result is a single row per survey respondent, with the invitee status and
+      attendee status determined by the status that is the farthest along in the Phase 2 process.
+    columns:
+      - name: survey_respondent_id
+        description: User ID of the invitee.
+      - name: invitee_email
+        description: The email address of the invitee.
+      - name: invite_count
+        description: The number of times the invitee has been invited to participate in Phase 2.
+      - name: list_sortition_rounds
+        description: |
+          Comma-separated list of the sortition rounds for which the survey respondent received a Phase 2 invite.
+      - name: invitee_status
+        description: |
+          The status of the invitee (e.g., accepted, declined).
+          If an invitee received more than one invitation, their status will be:
+          - 'accepted' if they have accepted any invite
+          - 'invitation open' if they have not accepted an invite for the most recent sortition round
+          - 'declined' if they declined an invite, and have not accepted an invite, and do not have an invitation open
+          - 'invitation closed' if they received an invite to an earlier round, but did not accept or decline it
+      - name: email_match
+        description: |
+          If invitee email was manually matched, this field contains either:
+          - email_address of the matched Go Vocal profile
+          - 'could not match' if no match was found
+      - name: accepted_event_start_date_time
+        description: |
+          The start date and time of the Phase 2 event that an invitee has accepted, if an invitee
+          accepted the invitation. Null if the invitee has not accepted an invitation.
+          'multiple events accepted' if an invitee is simultaneously registered for more than one event,
+          which is typically expected only for moderators and staff and should therefore be filtered out.
+      - name: attendee_status
+        description: |
+          The attendance status of the registrant, if an invitee has already been
+          invited in a sortition lottery and accepted the invitation. Possible values: 'staff', 'attended',
+          'session in the future', 'no show', 'not registered'.
+
+  - name: int_phase2_speaker_gv_ids
+    description: |
+      This model matches each Phase 2 Zoom speaker to a Go Vocal participant using a date-scoped fuzzy-name
+      join between attendee records and transcript speakers. It preserves the session-level speaker key,
+      and resolves staff speakers to 'staff' while returning a survey respondent
+      ID for matched invitees when available.
+    columns:
+      - name: session_date
+        description: The date on which the Zoom session occurred.
+      - name: speaker
+        description: The display name of the speaker as it appeared in the Zoom transcript.
+      - name: speaker_match_name
+        description: The cleaned name of the speaker used as a helper column for matching.
+      - name: invitee_match_name
+        description: |
+          The cleaned name of the invitee as it appears in the Zoom attendance tracker records,
+          used as a helper column for matching.
+      - name: name_match_score
+        description: |
+          The fuzzy match score between the speaker name and the matched invitee name.
+          The score is based on exact matches of full name, first name, and last name, and attempted fuzzy matches
+          full name, first name, and last name based on jarowinkler similarity.
+          A higher score indicates a better match.
+      - name: survey_respondent_id
+        description: |
+          The matched Go Vocal survey respondent ID for the speaker, or 'staff' when the speaker is staff,
+          a moderator, or otherwise not mapped to a survey respondent. This may also show 'No GV account' if
+          the speaker was matched to an attendee, but the attendee did not have a Go Vocal account.
+      - name: attendee_status
+        description: |
+          The attendance status of the matched Phase 2 invitee, such as 'staff', 'attended'.
+          Other attendee_statuses such as 'session in the future', 'no show', or 'not registered' are unexpected.
+      - name: speaker_id
+        description: Stable surrogate key for the transcript speaker within a single session.
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+
+  - name: int_phase2_transcript_turns
+    description: |
+      This table takes the raw Phase 2 transcripts and groups them into "turns" of speech, where a turn is defined as
+      a continuous block of speech by a single speaker. Each turn is assigned a unique identifier (turn_grp) and the
+      start and end sequence numbers of the cues that make up the turn are recorded. The text of the turn is also
+      aggregated into a single block of text.
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+      - name: start_seq
+        description: The sequence number of the first cue in the turn.
+      - name: end_seq
+        description: The sequence number of the last cue in the turn.
+      - name: speaker
+        description: The display name of the speaker for the turn.
+      - name: start_sec
+        description: The start time of the turn in seconds.
+      - name: end_sec
+        description: The end time of the turn in seconds.
+      - name: text
+        description: The aggregated text of the turn, stitched together from the individual cues in the turn.
+  - name: int_ai_engagement_zoom_poll
+    description: |
+      Pre- and post-meeting Zoom poll responses, unpivoted to one row per (respondent, question).
+      Question 4 only exists on the post-meeting poll. This model applies no filtering of its
+      own (e.g. it does not exclude sessions where only one of the pre/post polls was launched);
+      that's left to downstream marts to apply as appropriate for their own use case, since not
+      every use case (e.g. question 4, which has no pre-side to compare against) needs it.
+    columns:
+      - name: meeting_id
+        description: The Zoom Meeting/Webinar ID this poll was launched in. One pre and post poll for each session.
+      - name: topic_name
+        description: The Zoom meeting topic/name the poll was launched in
+      - name: poll_stage
+        description: When the poll was administered, 'pre' or 'post'.
+      - name: submitted_at
+        description: When the respondent submitted the poll.
+      - name: response_seq
+        description: The response's position within the raw Poll Details listing. Not a stable business key.
+      - name: question_num
+        description: Poll question the response answers.
+      - name: question_text
+        description: The wording of the question, as it appeared on that poll.
+      - name: response
+        description: The respondent's answer to respective question.

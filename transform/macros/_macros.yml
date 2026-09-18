@@ -43,6 +43,13 @@ macros:
         description: |
           The database in which the schema resides. Optional; defaults to the target database.
 
+  - name: format_hms
+    description: Formats seconds as an HH:MM:SS string.
+    arguments:
+      - name: seconds_expr
+        type: string
+        description: Seconds expression, e.g. "t.start_sec".
+
   - name: generate_schema_name
     description: |
       Macro to retrieve a custom schema name for a model or source.

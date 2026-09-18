@@ -1,0 +1,96 @@
+name: pipeline
+on:
+  schedule:
+    # Run an hourly job at the 33rd minute.
+    - cron: "33 * * * *"
+  # Also allow for manual triggers
+  workflow_dispatch:
+
+env:
+  SNOWFLAKE_PRIVATE_KEY: ${{ SECRETS.SNOWFLAKE_PRIVATE_KEY_PRD }}
+  SNOWFLAKE_USER: ${{ SECRETS.SNOWFLAKE_USER_PRD }}
+  SNOWFLAKE_ACCOUNT: ${{ SECRETS.SNOWFLAKE_ACCOUNT }}
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+      - name: Load data
+        env:
+          SNOWFLAKE_ROLE: >-
+            ${{ github.ref == 'refs/heads/main'
+            && 'LOADER_ENGCA_PRD'
+            || 'LOADER_ENGCA_DEV' }}
+          SNOWFLAKE_DATABASE: >-
+            ${{ github.ref == 'refs/heads/main'
+            && 'RAW_ENGCA_PRD'
+            || 'RAW_ENGCA_DEV' }}
+          SNOWFLAKE_WAREHOUSE: >-
+            ${{ github.ref == 'refs/heads/main'
+            && 'LOADING_XS_ENGCA_PRD'
+            || 'LOADING_XS_ENGCA_DEV' }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          BITLY_API_KEY: ${{ secrets.BITLY_API_KEY }}
+          BITLY_GROUP_GUID: ${{ secrets.BITLY_GROUP_GUID }}
+        run: |
+          uv run python -m jobs.load_sendgrid
+          uv run python -m jobs.load_bitly
+
+      - name: Build dbt project
+        env:
+          DBT_PROFILES_DIR: transform/ci
+          DBT_ANALYTICS_DB: ANALYTICS_ENGCA_PRD
+          DBT_RAW_DB: RAW_ENGCA_PRD
+          SNOWFLAKE_ROLE: TRANSFORMER_ENGCA_PRD
+          SNOWFLAKE_DATABASE: TRANSFORM_ENGCA_PRD
+          SNOWFLAKE_WAREHOUSE: TRANSFORMING_XS_ENGCA_PRD
+          LLM_MODEL_LOW: ${{ secrets.LLM_MODEL_LOW}}
+          LLM_MODEL_MED: ${{ secrets.LLM_MODEL_MED}}
+          LLM_MODEL_HIGH: ${{ secrets.LLM_MODEL_HIGH}}
+          LLM_MODEL: ${{ github.ref == 'refs/heads/main' && secrets.LLM_MODEL_HIGH || secrets.LLM_MODEL_LOW }}
+
+        run: |
+          uv run dbt deps --project-dir transform --target prd
+          uv run dbt seed --project-dir transform --target prd --select tag:ai_impact
+
+          #this production job should only run models either tagged "marketing", or
+          #tagged with the name of an active engagement.
+          uv run dbt build --project-dir transform --target prd --select tag:marketing tag:ai_impact
+
+          uv run dbt run-operation validate_all_schemas --project-dir transform --target prd
+
+      - name: Upload dbt manifest
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-manifest-prod
+          path: transform/target/manifest.json
+          overwrite: true
+
+  slack-notification:
+    runs-on: ubuntu-latest
+    needs: pipeline
+    if: ${{  failure() || cancelled()  }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_USERNAME: cagov Slackbot
+          SLACK_TITLE: ⚠️ Engaged California pipeline load error! ⚠️
+          SLACK_MESSAGE: |
+            ${{ vars.EN_CA_SLACK_AT_LIST }}
+            pipeline workflow failed or was cancelled. See details at:
+            ${{ github.event.workflow_run.html_url }}
+          MSG_MINIMAL: actions url
+          SLACK_WEBHOOK: >
+            ${{ secrets.CALDATA_DATASERVICES_BOT_NOTIFICATIONS_SLACK_WEBHOOK_URL }}

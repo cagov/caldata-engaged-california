@@ -1,0 +1,221 @@
+version: 2
+models:
+  - name: stg_phase2_polls
+    description: |
+      Cleaned Zoom poll responses for the AI Engagement, one row per respondent submission.
+      Combines the pre-meeting and post-meeting poll reports (distinguished by poll_stage),
+      discards the raw export's History header sections, keeping only
+      the most recent upload of each file, and filtering to submissions on or after 2026-07-09.
+    columns:
+      - name: poll_stage
+        description: Either 'pre' or 'post', derived from which report file the row came from.
+      - name: response_seq
+        description: The response's position within the raw Poll Details listing. Not a stable business key.
+      - name: submitted_at
+        description: When the respondent submitted the poll.
+      - name: collected_from
+        description: Where the response was collected from.
+      - name: topic_name
+        description: The Zoom meeting topic/name this poll was launched in.
+      - name: meeting_id
+        description: |
+          The Zoom Meeting/Webinar ID this poll was launched in. Shared between the pre and
+          post poll for the same session.
+      - name: question_1_response
+        description: The respondent's answer to the poll's 1st question.
+      - name: question_1_text
+        description: The poll's 1st question.
+      - name: question_2_response
+        description: The respondent's answer to the poll's 2nd question.
+      - name: question_2_text
+        description: The poll's 2nd question.
+      - name: question_3_response
+        description: The respondent's answer to the poll's 3rd question.
+      - name: question_3_text
+        description: The poll's 3rd question.
+      - name: question_4_response
+        description: The respondent's answer to the poll's 4th question. Only present on the post-meeting poll.
+      - name: question_4_text
+        description: The poll's 4th question. Only present on the post-meeting poll.
+      - name: _file
+        description: The name of the file.
+      - name: _fivetran_synced
+        description: Timestamp of when the data has been synced with Fivetran.
+
+  - name: stg_zoom_unmatched_participants
+    description: |
+      Manually-maintained list of Zoom participants who were not automatically matched to a
+      Go Vocal user profile. Includes staff/moderators (staff_or_moderator = true) and
+      participants with fuzzy or no match to a Go Vocal profile.
+    columns:
+      - name: invitee_email
+        description: The email address of the invitee.
+      - name: staff_or_moderator
+        description: True if the invitee is a staff member or moderator, false if a participant.
+      - name: survey_respondent_id_match
+        description: The Go Vocal survey respondent ID that best matches this invitee, if applicable.
+      - name: email_match
+        description: Indicates if the invitee's email matches the matched Go Vocal respondent.
+      - name: sortition_round
+        description: The sortition round this invitee likely belongs to.
+
+  - name: stg_phase2_registrants
+    description: |
+      This table contains information about registrations for Phase 2 live discussion events, reflecting
+      Zoom event registrations. This source appends new rows each time a file with matching
+      column names is added to a Google Drive folder.
+    columns:
+      - name: event_name
+        description: The name of the event.
+      - name: invitee_email
+        description: The email address of the invitee.
+      - name: invitee_first_name
+        description: The first name of the invitee.
+      - name: invitee_last_name
+        description: The last name of the invitee.
+      - name: invitee_status
+        description: The status of the invitee (e.g., accepted, declined).
+      - name: marked_as_no_show
+        description: Indicates if the invitee was marked as a no-show.
+      - name: start_date_time
+        description: The date and time when the event starts.
+      - name: end_date_time
+        description: The date and time when the event ends.
+      - name: event_created_date_time
+        description: The date and time when the event was created.
+      - name: _file
+        description: The name of the file from which the data was sourced.
+      - name: _fivetran_synced
+        description: Timestamp of when the data has been synced with Fivetran.
+
+  - name: stg_zoom_chat_messages
+    description: |
+      This table contains the raw chat messages from Phase 2 events.
+      This data appends new rows each time a new .txt file is added
+      to the appropriate Stage in Snowflake, and is processed via
+      the Upload Transcripts notebook.
+    columns:
+      - name: filename
+        description: The name of the chat file.
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+      - name: message_id
+        description: The unique identifier for each chat message.
+      - name: is_reply
+        description: Indicates if the chat message is a reply to another message.
+      - name: reply_to_message_id
+        description: The message_id of the parent message if this message is a reply; null otherwise
+      - name: line_no
+        description: The line number of the chat message in the file.
+      - name: start_sec
+        description: The start time of the chat message in seconds.
+      - name: speaker
+        description: The display name of the sender of the chat message.
+      - name: text
+        description: The content of the chat message.
+
+  - name: stg_transcript_times
+    description: Per-session discussion boundaries from the transcript_times seed, parsed into seconds.
+    columns:
+      - name: session_id
+        description: >
+          The full filename-derived session_id (e.g. "GMT20260709-194459"), matched by exact
+          equality in stg_zoom_transcript_cues.
+        data_tests:
+          - unique
+          - not_null
+      - name: session_date
+        description: Human-readable session date, for the curator only.
+      - name: discussion_start_sec
+        description: When the real discussion begins, in seconds from recording start.
+      - name: discussion_end_sec
+        description: When the real discussion ends, in seconds from recording start.
+
+  - name: stg_zoom_transcript_cues
+    description: |
+      This table contains the raw transcripts from Phase 2 events.
+      This data appends new rows each time a new .vtt file is added
+      to the appropriate Stage in Snowflake, and is processed via
+      the Upload Transcripts notebook.
+
+      Each row is a 'cue' from the transcript, which is a block of text
+      spoken by a single speaker.
+
+      Cues outside a reviewed discussion window (see stg_transcript_times) are trimmed;
+      sessions with no reviewed window pass through unfiltered.
+    columns:
+      - name: filename
+        description: The name of the transcript file.
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+      - name: seq
+        description: The line number of the transcript cue in the file.
+      - name: start_sec
+        description: The start time of the transcript cue in seconds.
+      - name: end_sec
+        description: The end time of the transcript cue in seconds.
+      - name: speaker
+        description: The display name of the speaker in the transcript cue.
+      - name: text
+        description: The content of the transcript cue.
+
+  - name: stg_zoom_transcript_speakers
+    description: |
+      This model provides a unique list of each Phase 2 Zoom speaker appearing in the transcript or
+      chat records and assigns a stable speaker_id per speaker-session. One row per speaker_id.
+    columns:
+      - name: speaker
+        description: The display name of the speaker as it appeared in the Zoom transcript.
+      - name: speaker_id
+        description: Stable surrogate key for the transcript speaker within a single session.
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+
+  - name: stg_attendance_tracker
+    description: |
+      Manually uploaded participant lists recorded manually by staff and facilitators during the phase 2 live
+      discussion events. This tells us which registrants attended and which were no-shows.
+    columns:
+      - name: invitee_first_name
+        description: The user-input first name of the invitee
+      - name: invitee_last_name
+        description: The user-input last name of the invitee
+      - name: invitee_email
+        description: The email address of the invitee
+      - name: start_date_time
+        description: The start date and time of the Zoom meeting
+      - name: end_date_time
+        description: The end date and time of the Zoom meeting
+      - name: actual_status
+        description: |
+          The actual attendance status of the invitee
+          (Staff, Attended, No Show)
+      - name: session_number
+        description: The session number (1-15) of the engagement session
+
+  - name: stg_phase2_policy_concepts_and_themes
+    description: |
+      This table contains the policy concepts that were discussed during the AI Impact on the Workplace 2026
+      Phase 2 live discussions and provides the mapping between policy concepts, subthemes, and themes that
+      was defined through manual affinity mapping.
+      Only policy concepts that received at least some support from participants (as demonstrated by end of session
+      polling) have been included in this table. Participants were asked to vote on specific policy statements,
+      and these were then mapped to broader policy concepts, which were then grouped into subthemes and themes.
+    columns:
+      - name: policy_concept_id
+        description: >
+          Identifier for the policy concept (md5 of the label). The incremental grain key of
+          phase2_transcript_curated_theme_tags, so uniqueness is enforced — two concepts with
+          the same label would silently collapse into one id. Renaming a concept changes its
+          id; the marts prune the old id's rows via a pre-hook and re-tag the new id.
+        data_tests:
+          - unique
+          - not_null
+      - name: policy_concept
+        description: The policy concept discussed during the event.
+      - name: policy_concept_description
+        description: A brief description of the policy concept.
+      - name: subtheme
+        description: The subtheme under which the policy concept falls.
+      - name: theme
+        description: The overarching theme under which the subtheme and policy concept fall.

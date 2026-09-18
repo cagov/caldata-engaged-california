@@ -94,7 +94,6 @@ def _load_embeddings(embeddings_table: DataFrame, content_type: str) -> pd.DataF
         .to_pandas()
     )
 
-
 def _to_embedding_matrix(values: List[Any]) -> np.ndarray:
     """Convert Snowflake embedding values to a 2D NumPy array.
 

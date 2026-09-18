@@ -1,0 +1,705 @@
+version: 2
+models:
+  - name: ai_engagement_participants
+    description: |
+      PII-free view of int_ai_engagement_participants, the canonical AI engagement participant table.
+      Same grain (one row per participant) and same columns, minus email, names, county, and raw
+      field_of_work (region and field_of_work_rollup are kept). Use this for
+      dashboards, Coda, and any analysis that does not need to identify individuals; join to the
+      intermediate model on participant_id when it does.
+
+      A participant is a Phase 1 participant (participated_in_phase1), a Phase 2 attendee
+      (attended_phase2), or both. See the intermediate model's documentation for the exact
+      definitions and for the quality flags, which describe participants but do not decide who
+      counts as one.
+    columns:
+      - name: participant_id
+        description: |
+          Primary key. The Go Vocal user ID when the participant has a Go Vocal account (identical to
+          survey_respondent_id), otherwise the md5 hash of the lower-cased attendance-tracker email.
+        data_tests:
+          - not_null
+          - unique
+      - name: survey_respondent_id
+        description: The participant's Go Vocal user ID. Null for Phase 2 attendees with no Go Vocal account.
+      - name: age
+        description: Response to the question "What is your age?"
+      - name: gender_array
+        description: Responses to the question "What is your gender identity?"
+      - name: gender_category
+        description: |
+          Response to the question "What is your gender identity?" with 'Multiple' assigned when
+          more than one gender was selected and ' (only)' appended when a single gender was selected.
+      - name: race_ethnicity_array
+        description: Responses to the question "What is your race or ethnicity?"
+      - name: race_ethnicity_category
+        description: |
+          Response to the question "What is your race or ethnicity?" with 'Multiple' assigned when
+          more than one race/ethnicity was selected and ' (only)' appended when a single value was
+          selected.
+      - name: region
+        description: Region corresponding to the California county.
+      - name: field_of_work_rollup
+        description: |
+          Response to the question "Which best describes your field of work?" with certain values
+          rolled up into broader categories.
+      - name: current_work_status
+        description: Response to the question "Are you currently working?"
+      - name: role_at_work
+        description: Response to the question "What is your role at work?"
+      - name: ai_response_label
+        description: LLM-derived label for the participant's overall stance on AI ('pos', 'neg', or 'mix').
+      - name: participated_in_phase1
+        description: TRUE if the participant published a Phase 1 survey response. The only Phase 1 criterion.
+      - name: invited_to_phase2
+        description: TRUE if the participant was selected in a sortition round.
+      - name: attended_phase2
+        description: TRUE if the participant attended a Phase 2 session, invited or not.
+      - name: has_internal_email
+        description: Quality flag, not a participation criterion. TRUE for @innovation.ca.gov emails.
+      - name: reported_age_18_plus
+        description: Quality flag, not a participation criterion. TRUE if age was reported and is not 'Under 18'.
+      - name: has_california_region
+        description: Quality flag, not a participation criterion. TRUE if the reported county maps to a region.
+      - name: answered_open_text_ai_question
+        description: |
+          Quality flag, not a participation criterion. TRUE if at least one open-text AI question
+          was answered.
+      - name: meets_phase1_analysis_criteria
+        description: |
+          Quality flag, not a participation criterion. TRUE when participated_in_phase1 and all four
+          quality flags pass; this reproduces the stricter Phase 1 population used before 2026-09-18.
+
+  - name: ai_engagement_phase2_zoom_registrations
+    description: |
+      Net-new Phase 2 Zoom registrations and declines per upload date, derived from cumulative
+      upload snapshots using lag(). Staff and moderators are excluded. All registrations are
+      counted, including multiple registrations by the same person. Use to track day-over-day
+      registration progress toward the participation target.
+    columns:
+      - name: upload_date
+        description: Date the snapshot was synced into Snowflake via Fivetran, used as the upload date.
+      - name: new_registrations
+        description: Net-new accepted registrants since the previous upload snapshot.
+      - name: new_declines
+        description: Net-new declined registrants since the previous upload snapshot.
+      - name: total_registrations
+        description: Cumulative count of accepted registrants as of this upload.
+      - name: total_declines
+        description: Cumulative count of declined registrants as of this upload.
+
+  - name: ai_engagement_phase2_sendgrid_clicks
+    description: |
+      Daily clicks on links within Phase 2 sortition invite emails (subject line starting with
+      'Join a discussion about AI'), broken out by URL. Filter to the Zoom scheduler URL
+      to see clicks specifically on the registration link.
+    columns:
+      - name: click_date
+        description: Date of the click, in Pacific time.
+      - name: url
+        description: The URL that was clicked.
+      - name: clicks
+        description: Number of clicks on that URL on that date.
+
+  - name: phase2_poll_pre_and_post_counts
+    description: |
+      Respondent counts per (poll_stage, question, response) for poll questions 1-3, the
+      questions asked on both the pre- and post-meeting polls. Excludes sessions where only one
+      of the pre/post polls was launched, so pre vs. post counts reflect the same set of
+      sessions. Question 4 (post-only) is out of scope here; see phase2_polls_question4.
+    columns:
+      - name: poll_stage
+        description: Whether the poll was administered 'pre' or 'post' the session.
+      - name: question_text
+        description: Entire question as it appeared on the post-meeting poll.
+      - name: question_num
+        description: Poll question the response answers. Always 1, 2, or 3.
+      - name: response
+        description: Answer to the question on a likert scale.
+      - name: responses
+        description: Number of respondents who gave this response, for this question, by poll stage.
+
+  - name: phase2_polls_question4
+    description: |
+      Respondent counts per (question, response) for poll question 4, which only exists on the
+      post-meeting poll. Unlike phase2_poll_pre_and_post_counts, this mart does not exclude
+      sessions where the pre-meeting poll wasn't launched, since question 4 has no pre-side to
+      compare against and excluding those sessions would just discard valid post-poll responses.
+    columns:
+      - name: question_num
+        description: Question number, always 4.
+      - name: question_text
+        description: Entire question as it appeared on the post-meeting poll.
+      - name: response
+        description: Response on a likert scale.
+      - name: poll_stage
+        description: Always 'post', since question 4 only exists on the post-meeting poll.
+      - name: respondent_count
+        description: Number of respondents who gave a certain response to a question.
+
+  - name: phase2_zoom_transcripts_and_chats
+    description: |
+      This table combines the Phase 2 Zoom transcript turns and chat messages into one table of all
+      Zoom engagement, with a common set of columns. Transcript turns are derived from the raw Phase 2
+      transcripts, and chat messages are derived from the raw Phase 2 chat logs.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - session_id
+              - turn_idx
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+      - name: source
+        description: |
+          The source of the engagement data
+          either 'speech' for transcript turns or 'chat' for chat messages.
+      - name: src_ref
+        description: |
+          The reference to the source data
+          either the start sequence number for transcript turns or the line number for chat messages.
+      - name: start_sec
+        description: The start time of the engagement data in seconds.
+      - name: end_sec
+        description: The end time of the engagement data in seconds.
+      - name: speaker
+        description: The display name of the speaker for the engagement data.
+      - name: text
+        description: The text of the engagement data.
+      - name: turn_hash
+        description: |
+          Stable, content-addressed turn identity: md5 of session_id, source, src_ref, speaker,
+          and text. Unlike turn_idx it does not depend on which other turns survive upstream
+          filters. It changes if the turn's content changes.
+        data_tests:
+          - not_null
+          - unique
+      - name: turn_idx
+        description: |
+          Per-session chronological index (0-based) over all events, ordered by start_sec with
+          deterministic tie-breaking on source and src_ref. Positional, so it renumbers whenever
+          upstream filters change — never store it as a durable reference.
+
+  - name: phase2_speaker_ai_survey
+    description: |
+      This model joins each Phase 2 Zoom speaker to their Go Vocal survey respondent data, producing one row
+      per speaker-session with demographics and survey responses attached. This can be used with transcript turns
+      to analyze how speakers' survey responses and demographics relate to their speech in the Phase 2 discussions.
+    columns:
+      - name: survey_respondent_id
+        description: |
+          The matched Go Vocal survey respondent ID for the speaker, or 'staff' when the speaker is staff,
+          a moderator, or otherwise not mapped to a survey respondent. This may also show 'No GV account' if
+          the speaker was matched to an attendee, but the attendee did not have a Go Vocal account.
+      - name: session_date
+        description: The date on which the Zoom session occurred.
+      - name: speaker
+        description: The display name of the speaker as it appeared in the Zoom transcript.
+      - name: speaker_id
+        description: Stable surrogate key for the transcript speaker within a single session.
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+      - name: attendee_status
+        description: |
+          The attendance status of the matched Phase 2 invitee, such as 'staff', 'attended',
+          'session in the future', 'no show', or 'not registered'.
+      - name: age
+        description: Response to the question 'What is your age?'
+      - name: gender_array
+        description: Responses to the question "What is your gender identity?"
+      - name: gender_category
+        description: |
+          Response to the question 'What is your gender identity?' with handling for non-responses and
+          with multiple responses and 'Another gender identity' responses categorized together as
+          'Nonbinary / multi / other'.
+      - name: race_ethnicity_array
+        description: Responses to the question "What is your race or ethnicity?"
+      - name: race_ethnicity_category
+        description: |
+          Response to the question 'What is your race or ethnicity?' with handling for non-responses.
+      - name: current_work_status
+        description: Response to the question "Are you currently working?"
+      - name: role_at_work
+        description: Response to the question "What is your role at work?"
+      - name: county
+        description: Response to the question "Which county do you live in?"
+      - name: region
+        description: Region corresponding to the California county, as described by sortition strategy.
+      - name: field_of_work
+        description: Response to the question "Which best describes your field of work?"
+      - name: field_of_work_sortition_grouping
+        description: |
+          Sortition grouping for field of work, aligned to the targets used for candidate selection.
+      - name: ai_response_label
+        description: |
+          Label, "pos", "neg", or "mix", for the respondent's overall sentiment about the impact of AI on work.
+          The label is generated by an LLM based on the respondent's responses to the ai-related survey questions.
+      - name: economic_impact_expectation
+        description: Response to the question "What do you expect the impact of AI to be on the economy?"
+      - name: government_action_suggestion
+        description: |
+          Response to the question "What would you like the government to do about what you see as these impacts?"
+      - name: personal_ai_impact
+        description: |
+          Response to the question "What has been your experience if any of the impact of AI on your own job
+          and workplace?"
+      - name: fields_completed_count
+        description: Count of how many survey questions and demographic questions the respondent answered.
+      - name: gender_string
+        description: |
+          All responses from gender array formatted as a string, and joined with ' and '. Null responses
+          formatted as 'None specified'. Staff speakers are null.
+      - name: race_ethnicity_string
+        description: |
+          All responses from race ethnicity array formatted as a string, and joined with ' and '. Null responses
+          formatted as 'None specified'. Staff speakers are null.
+      - name: ai_response_string
+        description: |
+          Respondent's overall sentiment about the impact of AI on work formatted as a string.
+          Null responses formatted as 'None specified'. Staff speakers are null.
+      - name: region_string
+        description: |
+          Region corresponding to the California county formatted as a string.
+          Null responses formatted as 'None specified'. Staff speakers are null.
+      - name: field_of_work_string
+        description: |
+          Response to the question "Which best describes your field of work?" formatted as a string.
+          Null responses formatted as 'None specified'. Staff speakers are null.
+      - name: age_string
+        description: |
+          Response to the question "What is your age?" formatted as a string with "y.o." appended.
+          Null responses formatted as 'None specified'. Staff speakers are null.
+
+  - name: phase2_sessions
+    description: |
+      Foundational sessions table with core session identifiers and timing information.
+      Includes all session-level attributes from the transcript times seed.
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+      - name: session_date
+        description: The date on which the session occurred.
+      - name: discussion_start_sec
+        description: When the real discussion begins, in seconds from recording start.
+      - name: discussion_end_sec
+        description: When the real discussion ends, in seconds from recording start.
+      - name: session_number
+        description: |
+          1-based chronological numbering of sessions, ordered by session_date then session_id.
+          The first session to occur receives session_number = 1.
+
+  - name: phase2_transcript_session_summaries
+    description: |
+      Structured AI analysis of each phase 2 discussion session, flattened to one row per
+      (session, section, theme). Each section is its own structured Cortex call over the full
+      transcript (short per-section outputs avoid the transient timeouts that plagued
+      whole-session calls); a failed call is not retried in-query. The returned themes cite
+      turns by index only, and every cited index is validated against the session's real
+      turns — unverifiable indices are dropped and themes with no valid supporting turn are
+      removed (hallucination guardrail). Summary text excludes speaker names (PII) by design.
+
+      Sessions that fit the ~500k-char context feed each section call the whole transcript
+      (llm_input_kind = 'whole_transcript'); longer sessions are map-reduced — each ~400k-char
+      chunk gets its own theme-extraction call and the section calls synthesize from those
+      extractions (llm_input_kind = 'map_reduce').
+
+      Every (session, section) pair appears in this table via a status row (theme_seq = 0) —
+      check summary_status. FAILED pairs are retried automatically on the next run, and only
+      failed sections re-bill. Incremental at the (session, section) grain: a pair is
+      (re)called when no SUCCESS row exists for it at the session's current
+      transcript_fingerprint, so new sessions, failed sections, and sessions whose turns
+      changed upstream are all handled by a plain build. Prompts live at the top of the model
+      SQL; editing them requires a --full-refresh to re-tag existing sessions.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - session_id
+              - section
+              - theme_seq
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+        data_tests:
+          - not_null
+      - name: section
+        description: |
+          The summary section this row belongs to. 'overview' rows (one per session) carry the
+          session summary text; every other section has one status row (theme_seq = 0) plus one
+          row per extracted theme.
+        data_tests:
+          - accepted_values:
+              values:
+                - overview
+                - protect_themes
+                - gov_action_themes
+                - general_themes
+                - areas_of_tension
+                - areas_of_consensus
+                - deliberative_moments
+      - name: theme_seq
+        description: |
+          1-based position of the theme within its section. 0 marks a section status row (and
+          the overview row) rather than a theme.
+      - name: theme_label
+        description: |
+          Short theme label, preferring participants' own words. Null for overview and section
+          status rows.
+      - name: summary_text
+        description: |
+          The overview text (overview rows) or the theme description. Contains no speaker names.
+          Null on section status rows and when summary_status is not SUCCESS.
+      - name: supporting_turn_hashes
+        description: |
+          Array of stable turn_hashes supporting this theme, in transcript order. The LLM cited
+          positional turn indices; each was verified against the session's turns and translated
+          to its turn_hash at build time. Resolve against phase2_zoom_transcripts_and_chats.turn_hash
+          (or use phase2_transcript_turn_tags) for verbatim quotes.
+      - name: n_supporting_turns
+        description: Number of validated supporting turns.
+      - name: n_unverified_idxs_dropped
+        description: |
+          Number of turn indices the LLM returned that do not exist in the session and were
+          dropped (hallucination guardrail).
+      - name: summary_status
+        description: |
+          SUCCESS or FAILED, per (session, section) call (the Cortex call returned NULL,
+          returned unparseable JSON, or a map chunk failed for an oversize session).
+          Non-SUCCESS rows fail the run outright — Cortex COMPLETE failures are usually
+          transient, so the recovery path is simply re-running the model, which retries only
+          the failed sections.
+        data_tests:
+          - dbt_utils.not_accepted_values:
+              values: ["FAILED"]
+              severity: error
+      - name: llm_input_kind
+        description: |
+          'whole_transcript' when the session fit a single Cortex call, or 'map_reduce' when the
+          summary was synthesized from per-chunk theme extractions.
+      - name: n_transcript_chars
+        description: Rendered character length of the session transcript.
+      - name: transcript_fingerprint
+        description: |
+          HASH_AGG of the session's turn_hashes at tagging time. The incremental filter compares it
+          to the current transcript: a mismatch means the turns changed since tagging, and every
+          section of the session is re-called on the next run. Dashboards can compare it against
+          HASH_AGG(turn_hash) over phase2_zoom_transcripts_and_chats to flag stale summaries.
+      - name: llm_total_tokens
+        description: Total tokens used for this session, including any map-pass calls.
+      - name: llm_model
+        description: The LLM model used, per the LLM_MODEL environment variable (see docs/llm-cost-control.md).
+      - name: processed_at
+        description: Timestamp of when the session was tagged.
+
+  - name: phase2_transcript_turn_tags
+    description: |
+      The pre-tagged transcript: one row per (tagged turn, theme), with verbatim turn text,
+      speaker, and timestamps joined back from the source events. Because the AI only returns
+      turn indices — validated upstream in phase2_transcript_session_summaries — quotes in this
+      table cannot be hallucinated. Intended for dashboards to display theme-tagged turns
+      without joins at read time. Speaker display names are PII; confirm display policy before
+      exposing them publicly.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - session_id
+              - turn_hash
+              - section
+              - theme_seq
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+      - name: turn_hash
+        description: The stable turn identity the summary cites (joins to phase2_zoom_transcripts_and_chats.turn_hash).
+      - name: turn_idx
+        description: The turn's current per-session chronological index, from phase2_zoom_transcripts_and_chats.
+      - name: section
+        description: |
+          The summary section the tag belongs to (protect_themes, gov_action_themes,
+          general_themes, areas_of_tension, areas_of_consensus, or deliberative_moments).
+      - name: theme_seq
+        description: 1-based position of the theme within its section.
+      - name: theme_label
+        description: Short theme label, preferring participants' own words.
+      - name: theme_description
+        description: The theme description from the session summary.
+      - name: start_sec
+        description: The start time of the turn in seconds since the start of the session.
+      - name: end_sec
+        description: The end time of the turn in seconds since the start of the session.
+      - name: source
+        description: Either 'speech' for transcript turns or 'chat' for chat messages.
+      - name: speaker
+        description: The display name of the speaker (verbatim from the source data).
+      - name: text
+        description: The verbatim text of the turn.
+
+  - name: phase2_transcript_curated_theme_tags
+    description: |
+      Every non-facilitator turn that substantively expresses one of the manually-curated
+      policy concepts (stg_phase2_policy_concepts_and_themes, one tagging unit per row,
+      grouped theme > subtheme > policy_concept), tagged by AI: one
+      row per (session, policy concept, tagged turn) with verbatim turn text, speaker, and
+      timestamps joined back from the source events, plus one status row (turn_seq = 0) per
+      (session, policy concept) pair whatever its outcome. Unlike
+      phase2_transcript_turn_tags (per-session AI-derived themes), the taxonomy here is
+      fixed and human-curated across all sessions; the AI only decides which turns express
+      each policy concept, citing them by index so quotes cannot be hallucinated.
+      Facilitator/staff turns are excluded deterministically (display-name heuristic plus
+      the verified staff roster).
+
+      Incremental at the (session, policy concept) grain via delete+insert: a pair is
+      (re)called when no SUCCESS row exists for it at the session's current
+      transcript_fingerprint, so new sessions, new policy concepts, failed pairs, and
+      sessions whose turns changed upstream are all handled by a plain build (which also
+      refreshes the stored verbatim turn columns). FAILED pairs fail the build via an
+      error-severity test, never silently. Because policy_concept_id is md5(policy_concept),
+      renaming or removing a concept changes/retires its id; a pre-hook deletes the old id's
+      rows before each incremental build and the new id auto-tags, so taxonomy edits are
+      self-correcting. Prompt edits and description-only rewording still require a
+      --full-refresh.
+
+      Speaker display names are PII, carried intentionally for verified quote display in the
+      pull quote explorer dashboard; confirm the display policy before exposing them publicly.
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+        data_tests:
+          - not_null
+      - name: policy_concept_id
+        description: >
+          The policy concept's identifier from stg_phase2_policy_concepts_and_themes
+          (md5 of the label); the incremental grain key. Renaming a concept changes it;
+          rows for ids no longer in the taxonomy are pruned by a pre-hook.
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_phase2_policy_concepts_and_themes')
+              field: policy_concept_id
+              config:
+                severity: error
+      - name: policy_concept
+        description: >
+          The policy concept's human-readable display name (the tagging unit), verbatim from
+          the curated taxonomy.
+      - name: policy_concept_description
+        description: The curator-written description of what the policy concept encompasses.
+      - name: subtheme
+        description: The mid-level grouping the policy concept belongs to, verbatim from the curated taxonomy.
+      - name: theme
+        description: The top-level grouping the policy concept belongs to, verbatim from the curated taxonomy.
+      - name: turn_seq
+        description: |
+          1-based chronological position of the tagged turn within its (session, theme) pair.
+          0 marks the pair's status row (no turn columns); dashboards should filter on
+          turn_seq > 0 for quotes and read turn_seq = 0 rows for tag_status.
+      - name: turn_hash
+        description: |
+          The tagged turn's stable, content-addressed identity (joins to
+          phase2_zoom_transcripts_and_chats.turn_hash) — the durable reference to use for
+          resolving quotes against the current transcript. Null on status rows.
+      - name: turn_idx
+        description: |
+          The turn's per-session chronological index as of tagging time. Positional, so it can
+          go stale between a transcript change and the pipeline's next run — resolve via
+          turn_hash when currency matters. Null on status rows.
+      - name: source
+        description: Either 'speech' for transcript turns or 'chat' for chat messages; null on status rows.
+      - name: src_ref
+        description: The turn's reference in its source file (cue start_seq or chat line_no); null on status rows.
+      - name: start_sec
+        description: The start time of the turn in seconds since the start of the session; null on status rows.
+      - name: end_sec
+        description: The end time of the turn in seconds since the start of the session; null on status rows.
+      - name: speaker
+        description: The display name of the speaker (verbatim from the source data, PII); null on status rows.
+      - name: text
+        description: The verbatim text of the turn; null on status rows.
+      - name: n_matched_turns
+        description: >
+          How many turns survived index verification and the facilitator filter for this
+          (session, theme) pair.
+      - name: n_unverified_idxs_dropped
+        description: |
+          How many returned indices did not exist in the session and were dropped
+          (hallucination guardrail); consistently high values mean the model is fabricating
+          indices.
+      - name: n_facilitator_turns_dropped
+        description: How many verified turns were dropped because the speaker matched the facilitator/staff filters.
+      - name: tag_status
+        description: |
+          SUCCESS when the pair's Cortex call returned parseable JSON (n_matched_turns may
+          still be 0), FAILED when it returned NULL or unparseable output. FAILED pairs are
+          retried on the next run; the test below turns the build red so failures are loud.
+        data_tests:
+          - dbt_utils.not_accepted_values:
+              values: ["FAILED"]
+              severity: error
+      - name: transcript_fingerprint
+        description: |
+          HASH_AGG of the session's turn_hashes at tagging time. The incremental filter compares
+          it to the current transcript: a mismatch means the turns changed since tagging, and
+          every theme of the session is re-called on the next run. Dashboards can compare it
+          against HASH_AGG(turn_hash) over phase2_zoom_transcripts_and_chats to flag stale tags.
+      - name: llm_tokens
+        description: >
+          Total tokens billed for this pair's Cortex call (0 when the call was skipped or
+          failed without usage).
+      - name: llm_model
+        description: The LLM model used, per the LLM_MODEL environment variable (see docs/llm-cost-control.md).
+      - name: processed_at
+        description: Timestamp of when the pair was tagged.
+
+  - name: phase2_transcript_curated_theme_tag_reviews
+    description: |
+      Stage-2 standalone review of phase2_transcript_curated_theme_tags: one verdict row per
+      tagged turn saying whether it works as a standalone pull quote, plus one status row
+      (null turn_hash) per (session, policy concept) pair. The reviewer sees each candidate
+      quote alone — no transcript — so turns that are relevant only via surrounding context
+      (reactions like "Exactly.", trailing fragments, rambling multi-topic turns) cannot
+      pass. It is monotone: it can only reject stage-1 tags, never add turns. The pull quote
+      explorer hard-excludes quote rows without keep = true (fail-closed: unreviewed or
+      FAILED pairs stay hidden until the next successful run).
+
+      Incremental at the (session, policy concept) grain via delete+insert: a pair is
+      re-reviewed when it has no SUCCESS row at its current pair_tag_fingerprint, so stage-1
+      re-tags and transcript changes re-review exactly the affected pairs. FAILED pairs fail
+      the build via an error-severity test and retry on the next run. Rows for policy
+      concepts that have left the taxonomy are pruned by a pre-hook. Review-prompt edits
+      require a --full-refresh.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - session_id
+            - policy_concept_id
+            - turn_hash
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+        data_tests:
+          - not_null
+      - name: policy_concept_id
+        description: >
+          The policy concept's identifier from stg_phase2_policy_concepts_and_themes
+          (md5 of the label); with session_id, the incremental grain key.
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_phase2_policy_concepts_and_themes')
+              field: policy_concept_id
+              config:
+                severity: error
+      - name: policy_concept
+        description: The policy concept's human-readable display name, carried through for eyeballing.
+      - name: turn_hash
+        description: >
+          The reviewed turn's stable identity (joins to
+          phase2_transcript_curated_theme_tags.turn_hash within the pair). Null on status rows.
+      - name: turn_idx
+        description: The turn's per-session chronological index as of review time; null on status rows.
+      - name: keep
+        description: |
+          TRUE when the reviewer judged the turn a standalone pull quote (substantively
+          expresses the concept AND self-contained without context), FALSE when rejected.
+          Null on status rows. Dashboards should show only keep = TRUE quotes.
+      - name: n_candidates
+        description: How many tagged turns the pair submitted for review.
+      - name: n_kept
+        description: How many candidates the reviewer kept for this pair.
+      - name: n_invented_idxs
+        description: |
+          How many returned indices were never candidates and were ignored (guardrail);
+          consistently nonzero values mean the model is inventing indices.
+      - name: review_status
+        description: |
+          SUCCESS when the pair's Cortex call returned parseable JSON, FAILED when it
+          returned NULL or unparseable output. FAILED pairs have no verdict rows, are
+          retried on the next run, and the test below turns the build red so failures are
+          loud.
+        data_tests:
+          - dbt_utils.not_accepted_values:
+              values: ["FAILED"]
+              severity: error
+      - name: pair_tag_fingerprint
+        description: |
+          HASH_AGG of the pair's tagged turn_hashes at review time. The incremental filter
+          compares it to the pair's current tag set: a mismatch means stage-1 tags changed
+          since review, and the pair is re-reviewed on the next run.
+      - name: llm_tokens
+        description: >
+          Total tokens billed for this pair's Cortex call (0 when the call failed without
+          usage).
+      - name: llm_model
+        description: The LLM model used, per the LLM_MODEL environment variable (see docs/llm-cost-control.md).
+      - name: processed_at
+        description: Timestamp of when the pair was reviewed.
+
+  - name: phase2_transcript_cross_talk_moments
+    description: |
+      The top 5 minutes of heaviest cross-talk per Phase 2 transcript, i.e. the minutes with the
+      most distinct speakers active, plus every turn spoken during those minutes. Minutes are
+      ranked by density regardless of whether they clear the session's own average. Use to
+      review moments where several people were talking over each other. Computed over the full
+      transcript.
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+        data_tests:
+          - not_null
+      - name: moment_rank
+        description: |
+          This session's cross-talk moments ranked 1 (heaviest) to 5, by distinct speakers
+          then gap_sec then turn count. Distinguishes rows belonging to different moments
+          within the same session.
+      - name: start_minute
+        description: The minute of the session (0-indexed, floor(start_sec / 60)) this cross-talk moment falls in.
+      - name: n_distinct_speakers
+        description: The number of distinct speakers who spoke during this minute.
+      - name: avg_speakers_per_minute
+        description: The session's average number of distinct speakers per minute, for comparison.
+      - name: start_timestamp
+        description: The start time of the turn, formatted as HH:MM:SS from the start of the transcript.
+      - name: end_timestamp
+        description: The end time of the turn, formatted as HH:MM:SS from the start of the transcript.
+      - name: start_sec
+        description: The start time of the turn in seconds since the start of the transcript.
+      - name: end_sec
+        description: The end time of the turn in seconds since the start of the transcript.
+      - name: speaker
+        description: The display name of the speaker for the turn.
+      - name: text
+        description: The text of the turn.
+      - name: gap_sec
+        description: |
+          Seconds between this turn's end and the next turn's start, when the next turn is a
+          different speaker (negative means the next speaker started before this turn ended,
+          i.e. overlap; null if this is the last turn in the session).
+
+  - name: phase2_transcript_longest_turns
+    description: |
+      The 1-3 longest speaking turns per participant in each Phase 2 transcript, with
+      timestamps. Facilitators/staff are excluded via a display-name heuristic (not a verified
+      staff list).
+    columns:
+      - name: session_id
+        description: The unique identifier for each Zoom session.
+        data_tests:
+          - not_null
+      - name: speaker
+        description: The display name of the participant.
+      - name: start_timestamp
+        description: The start time of the turn, formatted as HH:MM:SS from the start of the transcript.
+      - name: end_timestamp
+        description: The end time of the turn, formatted as HH:MM:SS from the start of the transcript.
+      - name: start_sec
+        description: The start time of the turn in seconds since the start of the transcript.
+      - name: end_sec
+        description: The end time of the turn in seconds since the start of the transcript.
+      - name: duration_sec
+        description: The duration of the turn in seconds (end_sec - start_sec).
+      - name: word_count
+        description: The approximate word count of the turn, counted by whitespace-separated tokens.
+      - name: text
+        description: The text of the turn.
