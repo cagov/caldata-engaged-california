@@ -71,7 +71,9 @@ email_match as (
         aa.invitee_email,
         aa.invitee_status,
         aa.accepted_event_start_date_time,
-        coalesce(u.user_id, um.survey_respondent_id_match) as survey_respondent_id,
+        -- the manual match takes precedence: an invitee may register with a second email that has its
+        -- own survey-less Go Vocal account, in which case the exact email match is the wrong account
+        coalesce(um.survey_respondent_id_match, u.user_id) as survey_respondent_id,
         um.email_match,
         case
             when a.actual_status is null and aa.invitee_status = 'accepted' then 'session in the future'
