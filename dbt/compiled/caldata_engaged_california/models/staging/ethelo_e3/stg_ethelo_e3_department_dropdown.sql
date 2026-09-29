@@ -1,0 +1,6 @@
+WITH department_dropdown AS (
+    SELECT *
+    FROM RAW_ENGCA_PRD.GOV_EFFICIENCIES.E3_ENGAGEDCA_DEPARTMENT_DROPDOWN
+)
+
+SELECT * FROM department_dropdown

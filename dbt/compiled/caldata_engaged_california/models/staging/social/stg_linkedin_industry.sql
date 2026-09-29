@@ -1,0 +1,4 @@
+SELECT
+    id AS industry_id,
+    name AS industry_name
+FROM RAW_ENGCA_PRD.ENGAGED_CA_LINKEDIN_COMPANY_PAGES.INDUSTRY

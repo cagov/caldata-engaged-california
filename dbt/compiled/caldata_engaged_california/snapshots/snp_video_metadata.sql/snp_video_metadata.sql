@@ -1,0 +1,5 @@
+
+
+
+
+    select * from RAW_ENGCA_PRD.YOUTUBE_ANALYTICS.VIDEO
