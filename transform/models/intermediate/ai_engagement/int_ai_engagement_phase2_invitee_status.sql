@@ -1,10 +1,28 @@
+{% set selections_source = source('AI_ENGAGEMENT', 'INT_AI_ENGAGEMENT_SORTITION_SELECTIONS') %}
+{% if execute %}
+    {% set selections_relation = load_relation(selections_source) %}
+{% else %}
+    {% set selections_relation = none %}
+{% endif %}
+
+
 with
 
+-- If there are no sortition selections, then return an empty table with the correct schema
 sortition_round as (
-    select
-        *,
-        dense_rank() over (order by selection_timestamp asc) as sortition_round
-    from {{ source('AI_ENGAGEMENT', 'INT_AI_ENGAGEMENT_SORTITION_SELECTIONS') }}
+    {% if selections_relation is not none %}
+        select
+            survey_respondent_id,
+            selection_timestamp,
+            dense_rank() over (order by selection_timestamp asc) as sortition_round
+        from {{ selections_source }}
+    {% else %}
+        select
+            cast(null as varchar) as survey_respondent_id,
+            cast(null as timestamp_tz) as selection_timestamp,
+            cast(null as number) as sortition_round
+        where false
+    {% endif %}
 ),
 
 invitees as (
