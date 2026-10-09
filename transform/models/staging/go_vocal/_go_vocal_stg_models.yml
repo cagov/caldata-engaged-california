@@ -222,7 +222,16 @@ models:
       - name: USER_ID
         description: Unique identifier for each user.
       - name: EMAIL
-        description: Email address of the user.
+        description: |
+          PII. Email address of the user. This staging model is the only place in the dbt project that
+          carries a raw email address; downstream models use EMAIL_HASH and HAS_INTERNAL_EMAIL instead.
+      - name: EMAIL_HASH
+        description: |
+          md5 of the lower-cased, trimmed email (the hash_email macro). Pseudonymous join key shared with
+          the hashed Zoom registrant, attendance tracker, and unmatched-participant emails.
+      - name: HAS_INTERNAL_EMAIL
+        description: |
+          TRUE if the email ends in @innovation.ca.gov (ODI staff and test accounts). Null when email is null.
       - name: SLUG
         description: URL-friendly identifier for the user profile.
       - name: ROLES

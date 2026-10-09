@@ -3,7 +3,7 @@ models:
   - name: ai_engagement_participants
     description: |
       PII-free view of int_ai_engagement_participants, the canonical AI engagement participant table.
-      Same grain (one row per participant) and same columns, minus email, names, county, and raw
+      Same grain (one row per participant) and same columns, minus email_hash, names, county, and raw
       field_of_work (region and field_of_work_rollup are kept). Use this for
       dashboards, Coda, and any analysis that does not need to identify individuals; join to the
       intermediate model on participant_id when it does.

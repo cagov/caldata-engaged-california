@@ -6,17 +6,17 @@ source as (
 
 unmatched_participants as (
     select
-        invitee_email,
+        invitee_email_hash,
         max(staff_or_moderator) as staff_or_moderator
     from {{ ref('stg_zoom_unmatched_participants') }}
-    group by invitee_email
+    group by invitee_email_hash
 ),
 
 non_staff as (
     select s.*
     from source as s
     left join unmatched_participants as um
-        on lower(trim(s.invitee_email)) = lower(trim(um.invitee_email))
+        on s.invitee_email_hash = um.invitee_email_hash
     where
         um.staff_or_moderator is null
         or um.staff_or_moderator = false

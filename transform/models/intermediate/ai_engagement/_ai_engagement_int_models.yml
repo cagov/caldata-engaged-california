@@ -5,8 +5,9 @@ models:
       Canonical AI engagement participant table. One row per participant, where a participant is
       either a Phase 1 participant, a Phase 2 attendee, or both. This is the source of truth for
       participation counts; other models should reference it rather than re-deriving the logic.
-      It carries PII (email, first_name, last_name) so that it can be joined to registration and
-      attendance records. ai_engagement_participants is the PII-free mart view over this model.
+      It carries names (first_name, last_name) and a pseudonymous email_hash so that it can be joined to
+      registration and attendance records; raw email addresses exist only in staging models.
+      ai_engagement_participants is the PII-free mart view over this model.
 
       Phase 1 participant (participated_in_phase1 = TRUE): a non-admin Go Vocal user with a
       published response to the Phase 1 "Impact of AI on work" survey. Publishing is the ONLY
@@ -37,10 +38,11 @@ models:
           in Go Vocal; every Phase 1 participant has one.
         data_tests:
           - unique
-      - name: email
+      - name: email_hash
         description: |
-          PII. The Go Vocal account email, or the attendance-tracker email for attendees with no
-          account. Not exposed in the mart view.
+          md5 of the lower-cased, trimmed Go Vocal account email, or of the attendance-tracker email for
+          attendees with no account (the hash_email macro). Joins to the hashed email columns in the
+          staging models. Not exposed in the mart view.
       - name: first_name
         description: |
           PII. From the Go Vocal profile, or the attendance tracker when there is no account.
@@ -103,12 +105,12 @@ models:
           TRUE if the participant appears in stg_attendance_tracker with actual_status = 'attended',
           excluding anyone flagged staff_or_moderator in stg_zoom_unmatched_participants or
           registered with an @innovation.ca.gov email. Invited and uninvited ("crasher") attendees
-          both count. The tracker's invitee_email is resolved to a Go Vocal user ID using
+          both count. The tracker's hashed invitee email is resolved to a Go Vocal user ID using
           stg_zoom_unmatched_participants.survey_respondent_id_match first (the manually curated
-          match), falling back to a direct email match against stg_govocal_users. The curated match
+          match), falling back to a direct email_hash match against stg_govocal_users. The curated match
           wins because a participant may register for Phase 2 with a second email that has its own
           survey-less Go Vocal account. Attendees who resolve to no Go Vocal account are still
-          counted, keyed by their tracker email. FALSE for participants who did not attend a session.
+          counted, keyed by their hashed tracker email. FALSE for participants who did not attend a session.
       - name: has_internal_email
         description: |
           Quality flag, NOT a participation criterion. TRUE if the participant's email ends in
@@ -144,8 +146,10 @@ models:
     columns:
       - name: survey_respondent_id
         description: User ID of the invitee.
-      - name: invitee_email
-        description: The email address of the invitee.
+      - name: invitee_email_hash
+        description: |
+          md5 of the lower-cased, trimmed invitee email (the hash_email macro), taken from the registration
+          record with the most advanced attendee status. Joins to invitee_email_hash in the staging models.
       - name: invite_count
         description: The number of times the invitee has been invited to participate in Phase 2.
       - name: list_sortition_rounds
@@ -159,10 +163,10 @@ models:
           - 'invitation open' if they have not accepted an invite for the most recent sortition round
           - 'declined' if they declined an invite, and have not accepted an invite, and do not have an invitation open
           - 'invitation closed' if they received an invite to an earlier round, but did not accept or decline it
-      - name: email_match
+      - name: email_match_status
         description: |
-          If invitee email was manually matched, this field contains either:
-          - email_address of the matched Go Vocal profile
+          If the invitee was manually matched in stg_zoom_unmatched_participants, this field contains either:
+          - 'matched' if the curated list recorded the email of the matched Go Vocal profile
           - 'could not match' if no match was found
       - name: accepted_event_start_date_time
         description: |

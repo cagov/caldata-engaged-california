@@ -52,8 +52,10 @@ models:
     columns:
       - name: user_id
         description: Unique identifier for the Go Vocal user.
-      - name: email
-        description: Email address of the Go Vocal user.
+      - name: has_internal_email
+        description: |
+          TRUE if the user's Go Vocal email ends in @innovation.ca.gov (ODI staff and test accounts).
+          Replaces the raw email column, which is only available in stg_govocal_users.
       - name: survey_respondent_id
         description: User ID of the survey respondent.
       - name: survey_id

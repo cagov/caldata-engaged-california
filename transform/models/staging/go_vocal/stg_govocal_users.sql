@@ -40,7 +40,11 @@ users_demographics as (
 
     select
         u.user_id,
+        -- Raw email is kept here only. Downstream models join on email_hash and filter on
+        -- has_internal_email so that no intermediate or mart model carries an address.
         u.email,
+        {{ hash_email('u.email') }} as email_hash,
+        trim(lower(u.email)) like '%@innovation.ca.gov' as has_internal_email,
         u.slug,
         u.roles,
         array_size(filter(u.roles, r -> r:"type"::string = 'admin')) > 0 as is_admin,

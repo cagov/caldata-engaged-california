@@ -1,8 +1,9 @@
 -- Canonical AI engagement participant table: one row per participant, where a participant is a
 -- Phase 1 participant (published the Phase 1 survey), a Phase 2 session attendee, or both.
 --
--- This model carries PII (email, names) so it can be joined to registration and attendance
--- records. ai_engagement_participants is the PII-free mart view over it; point dashboards there.
+-- This model carries names and a pseudonymous email_hash (see the hash_email macro) so it can be joined
+-- to registration and attendance records. Raw email addresses live only in staging models.
+-- ai_engagement_participants is the PII-free mart view over it; point dashboards there.
 --
 -- Leadership decisions (2026-09-18):
 --   * Phase 1 participation means one thing: a published survey response. The quality filters the
@@ -61,7 +62,8 @@ sortition_invitees as (
 gv_users as (
     select
         user_id,
-        email,
+        email_hash,
+        has_internal_email,
         first_name,
         last_name
     from {{ ref('stg_govocal_users') }}
@@ -69,54 +71,54 @@ gv_users as (
 
 unmatched_participants as (
     select
-        invitee_email,
+        invitee_email_hash,
         staff_or_moderator,
         survey_respondent_id_match
     from {{ ref('stg_zoom_unmatched_participants') }}
 ),
 
 -- Phase 2 attendees are every non-staff 'attended' row in the attendance tracker, resolved to a Go Vocal
--- user where possible by matching invitee_email. The manually-maintained unmatched-participants match takes
--- precedence over a direct Go Vocal email match: a participant can register for Phase 2 with a different
--- email that has its own (survey-less) Go Vocal account, in which case the email match points at the wrong
--- account and the curated match is the correct one. Attendees with no Go Vocal account keep a null user_id
--- and are identified by their tracker email instead.
+-- user where possible by matching the hashed invitee email. The manually-maintained unmatched-participants
+-- match takes precedence over a direct Go Vocal email match: a participant can register for Phase 2 with a
+-- different email that has its own (survey-less) Go Vocal account, in which case the email match points at
+-- the wrong account and the curated match is the correct one. Attendees with no Go Vocal account keep a null
+-- user_id and are identified by their hashed tracker email instead.
 attendance as (
     select
-        lower(trim(att.invitee_email)) as invitee_email,
+        att.invitee_email_hash,
         att.invitee_first_name,
         att.invitee_last_name,
         coalesce(un.survey_respondent_id_match, gv.user_id) as user_id
     from {{ ref('stg_attendance_tracker') }} as att
     left join gv_users as gv
-        on lower(trim(att.invitee_email)) = lower(trim(gv.email))
+        on att.invitee_email_hash = gv.email_hash
     left join unmatched_participants as un
-        on lower(trim(att.invitee_email)) = lower(trim(un.invitee_email))
+        on att.invitee_email_hash = un.invitee_email_hash
     where
         lower(trim(att.actual_status)) = 'attended'
         -- staff are recorded with actual_status = 'Staff', but also drop anyone flagged as staff/moderator
-        -- in the curated match list or registered with an internal email
+        -- in the curated match list or registered with an internal email (a null email also drops out)
         and coalesce(un.staff_or_moderator, false) = false
-        and lower(trim(att.invitee_email)) not like '%@innovation.ca.gov'
+        and not att.has_internal_email
 ),
 
--- One row per attendee: the Go Vocal user when matched, otherwise the tracker email (and tracker names,
--- which are only needed for attendees with no Go Vocal profile).
+-- One row per attendee: the Go Vocal user when matched, otherwise the hashed tracker email (and tracker
+-- names, which are only needed for attendees with no Go Vocal profile).
 phase2_attendees as (
     select
         user_id,
-        iff(user_id is null, invitee_email, null) as unmatched_email,
+        iff(user_id is null, invitee_email_hash, null) as unmatched_email_hash,
         any_value(iff(user_id is null, invitee_first_name, null)) as unmatched_first_name,
         any_value(iff(user_id is null, invitee_last_name, null)) as unmatched_last_name
     from attendance
-    group by user_id, unmatched_email
+    group by user_id, unmatched_email_hash
 ),
 
 -- Union of the two populations...
 participant_rows as (
     select
         user_id,
-        null as unmatched_email,
+        null as unmatched_email_hash,
         null as unmatched_first_name,
         null as unmatched_last_name,
         true as participated_in_phase1,
@@ -125,7 +127,7 @@ participant_rows as (
     union all
     select
         user_id,
-        unmatched_email,
+        unmatched_email_hash,
         unmatched_first_name,
         unmatched_last_name,
         false as participated_in_phase1,
@@ -137,22 +139,22 @@ participant_rows as (
 participants as (
     select
         user_id,
-        unmatched_email,
+        unmatched_email_hash,
         any_value(unmatched_first_name) as unmatched_first_name,
         any_value(unmatched_last_name) as unmatched_last_name,
         boolor_agg(participated_in_phase1) as participated_in_phase1,
         boolor_agg(attended_phase2) as attended_phase2
     from participant_rows
-    group by user_id, unmatched_email
+    group by user_id, unmatched_email_hash
 ),
 
 with_flags as (
     select
-        -- Go Vocal user ID when the participant has an account; otherwise a hash of the attendance-tracker
+        -- Go Vocal user ID when the participant has an account; otherwise the hash of the attendance-tracker
         -- email so attendees with no account still get a stable, non-PII key.
-        coalesce(p.user_id, md5(p.unmatched_email)) as participant_id,
+        coalesce(p.user_id, p.unmatched_email_hash) as participant_id,
         p.user_id as survey_respondent_id,
-        coalesce(gv.email, p.unmatched_email) as email,
+        coalesce(gv.email_hash, p.unmatched_email_hash) as email_hash,
         coalesce(gv.first_name, p.unmatched_first_name) as first_name,
         coalesce(gv.last_name, p.unmatched_last_name) as last_name,
         u.age,
@@ -195,7 +197,9 @@ with_flags as (
         si.survey_respondent_id is not null as invited_to_phase2,
         p.attended_phase2,
         -- quality flags: these describe the participant but do NOT decide whether they are one
-        lower(trim(coalesce(gv.email, p.unmatched_email))) like '%@innovation.ca.gov' as has_internal_email,
+        -- Go Vocal flag when the participant has an account. Unmatched attendees were already filtered to
+        -- non-internal emails in the attendance CTE, so they are FALSE; null when there is no email at all.
+        coalesce(gv.has_internal_email, iff(p.unmatched_email_hash is not null, false, null)) as has_internal_email,
         coalesce(u.age is not null and u.age <> 'Under 18', false) as reported_age_18_plus,
         u.region is not null as has_california_region,
         ai.survey_respondent_id is not null as answered_open_text_ai_question
