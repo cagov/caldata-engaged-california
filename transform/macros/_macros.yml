@@ -26,6 +26,16 @@ macros:
           If true, treats undocumented columns as validation errors. If false,
           undocumented columns are reported as warnings but don't cause failure.
           Defaults to true.
+  - name: hash_email
+    description: |
+      Pseudonymous key for an email address: md5 of the lower-cased, trimmed value. Every model that
+      joins people across sources (Go Vocal users, Zoom registrants, the attendance tracker, the
+      manual unmatched-participants list) hashes with this macro so the keys agree. Raw email
+      addresses stay in staging models; intermediate and mart models carry only the hash.
+    arguments:
+      - name: column
+        type: string
+        description: SQL expression for the email column to hash.
   - name: drop_schemas_with_prefix
     description: |
       Macro to drop all schemas in the database with a specified prefix.

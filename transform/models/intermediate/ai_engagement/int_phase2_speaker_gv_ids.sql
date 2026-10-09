@@ -7,7 +7,7 @@ attendees AS (
         invitee_first_name,
         invitee_last_name,
         coalesce(invitee_first_name, '') || ' ' || coalesce(invitee_last_name, '') AS invitee_match_name,
-        invitee_email,
+        invitee_email_hash,
         try_to_date(start_date_time, 'MM/DD/YY') AS attendee_date,
         actual_status
     FROM {{ ref('stg_attendance_tracker') }}
@@ -31,7 +31,7 @@ transcript_dates AS (
 invitee_gv_ids AS (
     SELECT
         survey_respondent_id,
-        invitee_email,
+        invitee_email_hash,
         attendee_status
     FROM {{ ref('int_ai_engagement_phase2_invitee_status') }}
 ),
@@ -96,7 +96,7 @@ speaker_matches AS (
         s.session_id,
         a.invitee_first_name,
         a.invitee_last_name,
-        a.invitee_email
+        a.invitee_email_hash
     FROM cleaned_speakers AS s
     LEFT JOIN attendees AS a
         ON (s.session_date = a.attendee_date)
@@ -112,7 +112,7 @@ speaker_gv_ids AS (
         a.invitee_match_name,
         CASE
             WHEN sm.speaker_id = '47f97458a9cbf2a285a628b26dd97824' THEN 'No GV account'
-            WHEN i.attendee_status = 'staff' OR i.invitee_email IS null THEN 'staff'
+            WHEN i.attendee_status = 'staff' OR i.invitee_email_hash IS null THEN 'staff'
             ELSE i.survey_respondent_id
         END AS survey_respondent_id,
         sm.speaker,
@@ -127,7 +127,7 @@ speaker_gv_ids AS (
             a.invitee_match_name = sm.invitee_match_name
             AND a.attendee_date = sm.session_date
     LEFT JOIN invitee_gv_ids AS i
-        ON a.invitee_email = i.invitee_email
+        ON a.invitee_email_hash = i.invitee_email_hash
 )
 
 SELECT *

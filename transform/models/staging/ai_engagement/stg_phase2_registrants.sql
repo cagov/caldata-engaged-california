@@ -5,6 +5,7 @@ phase_2_registrants as (select * from {{ source('FILE_DOWNLOADS', 'PH_2_ATTENDEE
 select
     event_type_name as event_name,
     invitee_email,
+    {{ hash_email('invitee_email') }} as invitee_email_hash,
     invitee_first_name,
     invitee_last_name,
     invitee_status,

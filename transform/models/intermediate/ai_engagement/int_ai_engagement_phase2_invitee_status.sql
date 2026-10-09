@@ -35,14 +35,14 @@ invitees as (
 users as (
     select
         user_id,
-        email
+        email_hash
     from {{ ref('stg_govocal_users') }}
 ),
 
 -- Get the most recent responses for each zoom event (as determined by start_date_time)
 phase2_responses as (
     select
-        invitee_email,
+        invitee_email_hash,
         invitee_status,
         start_date_time
     from {{ ref('stg_phase2_registrants') }}
@@ -51,7 +51,7 @@ phase2_responses as (
 
 any_acceptance as (
     select
-        invitee_email,
+        invitee_email_hash,
         -- the only possible statuses are 'accepted' and 'declined'
         -- if an invitee has 'accepted' any zoom event, then return 'accepted', otherwise return 'declined'
         min(invitee_status) as invitee_status,
@@ -59,17 +59,17 @@ any_acceptance as (
         iff(array_size(start_date_time_array) > 1, 'multiple events accepted', start_date_time_array[0])
             as accepted_event_start_date_time
     from phase2_responses
-    group by invitee_email
+    group by invitee_email_hash
 ),
 
 manually_matched_participants as (
     select
-        invitee_email,
+        invitee_email_hash,
         staff_or_moderator,
         survey_respondent_id_match,
-        email_match,
+        email_match_status,
         sortition_round
-    from {{ source('ZOOM', 'UNMATCHED_PARTICIPANTS') }}
+    from {{ ref('stg_zoom_unmatched_participants') }}
     where
         -- remove all staff and moderators who have signed up for time slots
         staff_or_moderator is null
@@ -78,21 +78,21 @@ manually_matched_participants as (
 
 attendance_status as (
     select
-        invitee_email,
+        invitee_email_hash,
         actual_status
     from {{ ref('stg_attendance_tracker') }}
 ),
 
---reconcile attendees with GV profiles:
+--reconcile attendees with GV profiles (all joins are on the hashed, normalized email):
 email_match as (
     select
-        aa.invitee_email,
+        aa.invitee_email_hash,
         aa.invitee_status,
         aa.accepted_event_start_date_time,
         -- the manual match takes precedence: an invitee may register with a second email that has its
         -- own survey-less Go Vocal account, in which case the exact email match is the wrong account
         coalesce(um.survey_respondent_id_match, u.user_id) as survey_respondent_id,
-        um.email_match,
+        um.email_match_status,
         case
             when a.actual_status is null and aa.invitee_status = 'accepted' then 'session in the future'
             when
@@ -102,19 +102,19 @@ email_match as (
         end as attendee_status
     from any_acceptance as aa
     left join users as u
-        on lower(trim(aa.invitee_email)) = lower(trim(u.email)) -- exact matches
+        on aa.invitee_email_hash = u.email_hash -- exact matches
     left join manually_matched_participants as um
-        on lower(trim(aa.invitee_email)) = lower(trim(um.invitee_email)) -- manually matched emails
+        on aa.invitee_email_hash = um.invitee_email_hash -- manually matched emails
     left join attendance_status as a
-        on lower(trim(aa.invitee_email)) = lower(trim(a.invitee_email))
+        on aa.invitee_email_hash = a.invitee_email_hash
 ),
 
 invitee_status as (
     select
         i.sortition_round,
         coalesce(i.survey_respondent_id, em.survey_respondent_id, 'Unknown email') as survey_respondent_id,
-        em.invitee_email,
-        em.email_match,
+        em.invitee_email_hash,
+        em.email_match_status,
         case
             when em.invitee_status is null and not i.current_sortition_round then 'invitation closed'
             when em.invitee_status is null and i.current_sortition_round then 'invitation open'
@@ -131,7 +131,7 @@ single_status as (
     select
         survey_respondent_id,
         min_by(
-            invitee_email,
+            invitee_email_hash,
             case attendee_status
                 when 'staff' then 1
                 when 'attended' then 2
@@ -140,10 +140,10 @@ single_status as (
                 when 'not registered' then 5
                 else 9
             end
-        ) as invitee_email,
+        ) as invitee_email_hash,
         count(distinct sortition_round) as invite_count,
         listagg(sortition_round, ', ') as list_sortition_rounds,
-        any_value(distinct email_match) as email_match,
+        any_value(distinct email_match_status) as email_match_status,
         min_by(
             invitee_status,
             case invitee_status

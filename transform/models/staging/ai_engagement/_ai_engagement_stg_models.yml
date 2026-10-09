@@ -49,13 +49,22 @@ models:
       participants with fuzzy or no match to a Go Vocal profile.
     columns:
       - name: invitee_email
-        description: The email address of the invitee.
+        description: PII. The email address of the invitee. Downstream models use invitee_email_hash.
+      - name: invitee_email_hash
+        description: |
+          md5 of the lower-cased, trimmed invitee email (the hash_email macro). Join key for downstream models.
       - name: staff_or_moderator
         description: True if the invitee is a staff member or moderator, false if a participant.
       - name: survey_respondent_id_match
         description: The Go Vocal survey respondent ID that best matches this invitee, if applicable.
       - name: email_match
-        description: Indicates if the invitee's email matches the matched Go Vocal respondent.
+        description: |
+          PII. Manually entered: either the email address of the matched Go Vocal profile or a status
+          string such as 'could not match'. Downstream models use email_match_status.
+      - name: email_match_status
+        description: |
+          email_match with any email address replaced by 'matched'; other values (for example
+          'could not match') pass through unchanged. Null when email_match is null.
       - name: sortition_round
         description: The sortition round this invitee likely belongs to.
 
@@ -68,7 +77,10 @@ models:
       - name: event_name
         description: The name of the event.
       - name: invitee_email
-        description: The email address of the invitee.
+        description: PII. The email address of the invitee. Downstream models use invitee_email_hash.
+      - name: invitee_email_hash
+        description: |
+          md5 of the lower-cased, trimmed invitee email (the hash_email macro). Join key for downstream models.
       - name: invitee_first_name
         description: The first name of the invitee.
       - name: invitee_last_name
@@ -181,7 +193,12 @@ models:
       - name: invitee_last_name
         description: The user-input last name of the invitee
       - name: invitee_email
-        description: The email address of the invitee
+        description: PII. The email address of the invitee. Downstream models use invitee_email_hash.
+      - name: invitee_email_hash
+        description: |
+          md5 of the lower-cased, trimmed invitee email (the hash_email macro). Join key for downstream models.
+      - name: has_internal_email
+        description: TRUE if the invitee email ends in @innovation.ca.gov (ODI staff). Null when the email is null.
       - name: start_date_time
         description: The start date and time of the Zoom meeting
       - name: end_date_time
