@@ -1,0 +1,52 @@
+name: cleanup-stale-pr-schemas
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 11 * * *" # nightly, 3AM PT / 4AM PDT
+
+env:
+  DBT_PROFILES_DIR: transform/ci
+  DBT_RAW_DB: RAW_ENGCA_PRD
+  DBT_ANALYTICS_DB: ANALYTICS_ENGCA_DEV
+  SNOWFLAKE_PRIVATE_KEY: ${{ SECRETS.SNOWFLAKE_PRIVATE_KEY_DEV }}
+  SNOWFLAKE_USER: ${{ SECRETS.SNOWFLAKE_USER_DEV }}
+  SNOWFLAKE_ACCOUNT: ${{ SECRETS.SNOWFLAKE_ACCOUNT }}
+  SNOWFLAKE_ROLE: TRANSFORMER_ENGCA_DEV
+  SNOWFLAKE_WAREHOUSE: TRANSFORMING_XS_ENGCA_DEV
+  SNOWFLAKE_DATABASE: TRANSFORM_ENGCA_DEV
+  LLM_MODEL: ${{ secrets.LLM_MODEL_LOW }}
+  LLM_MODEL_LOW: ${{ secrets.LLM_MODEL_LOW }}
+  LLM_MODEL_MED: ${{ secrets.LLM_MODEL_MED }}
+  LLM_MODEL_HIGH: ${{ secrets.LLM_MODEL_HIGH }}
+
+jobs:
+  cleanup-stale-pr-schemas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+      - name: List open PRs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "OPEN_PRS=$(gh pr list --state open --limit 1000 --json number --jq '[.[].number]' | tr -d ' \n')" >> "$GITHUB_ENV"
+      - name: Install dbt packages
+        run: uv run dbt deps --project-dir transform --target prd
+      - name: Drop stale PR schemas (transform database)
+        run: |
+          uv run dbt run-operation drop_stale_pr_schemas \
+          --project-dir transform \
+          --args "{\"database_name\": \"$SNOWFLAKE_DATABASE\", \"open_pr_numbers\": $OPEN_PRS, \"max_age_days\": 14}"
+      - name: Drop stale PR schemas (analytics database)
+        if: ${{ !cancelled() }}
+        run: |
+          uv run dbt run-operation drop_stale_pr_schemas \
+          --project-dir transform \
+          --args "{\"database_name\": \"$DBT_ANALYTICS_DB\", \"open_pr_numbers\": $OPEN_PRS, \"max_age_days\": 14}"

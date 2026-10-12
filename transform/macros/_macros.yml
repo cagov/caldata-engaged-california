@@ -39,7 +39,6 @@ macros:
   - name: drop_schemas_with_prefix
     description: |
       Macro to drop all schemas in the database with a specified prefix.
-
       This macro constructs the schema name using the provided prefix and drops
       it if it exists.
       Useful for cleaning up test or temporary schemas in CI/CD workflows.
@@ -52,6 +51,21 @@ macros:
         type: string
         description: |
           The database in which the schema resides. Optional; defaults to the target database.
+
+  - name: drop_stale_pr_schemas
+    description: |
+      Drops CI schemas named GH_CI_PR_[<number>][_<suffix>] whose numbered PR is not open
+      (closed or deleted) or whose last_altered is older than max_age_days.
+    arguments:
+      - name: database_name
+        type: string
+        description: The database to clean up.
+      - name: open_pr_numbers
+        type: list
+        description: PR numbers that are currently open; their schemas are kept unless too old.
+      - name: max_age_days
+        type: integer
+        description: Schemas not altered for longer than this are dropped. Defaults to 14.
 
   - name: format_hms
     description: Formats seconds as an HH:MM:SS string.
