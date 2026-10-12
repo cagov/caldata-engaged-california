@@ -4,6 +4,10 @@ on:
   schedule:
     - cron: "0 11 * * *" # nightly, 3AM PT / 4AM PDT
 
+permissions:
+  contents: read
+  pull-requests: read
+
 env:
   DBT_PROFILES_DIR: transform/ci
   DBT_RAW_DB: RAW_ENGCA_PRD
@@ -36,7 +40,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "OPEN_PRS=$(gh pr list --state open --limit 1000 --json number --jq '[.[].number]' | tr -d ' \n')" >> "$GITHUB_ENV"
+          open_pr_numbers=$(gh pr list \
+            --state open \
+            --limit 1000 \
+            --json number \
+            --jq '[.[].number]' | tr -d ' \n')
+          echo "OPEN_PRS=$open_pr_numbers" >> "$GITHUB_ENV"
       - name: Install dbt packages
         run: uv run dbt deps --project-dir transform --target prd
       - name: Drop stale PR schemas (transform database)
