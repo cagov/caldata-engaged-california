@@ -1,0 +1,48 @@
+{
+  "name": "analysis",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "tsx --test tests/**/*.test.ts",
+    "audit": "tsx src/stages/s01-audit.ts",
+    "clean": "tsx src/stages/s02-clean.ts",
+    "status": "tsx src/stages/s03-status.ts",
+    "judge": "tsx src/stages/s04-judge.ts",
+    "corpus": "tsx src/stages/s05-corpus.ts",
+    "discover": "tsx src/stages/s06-discover.ts",
+    "mergedoc": "tsx src/stages/s07-mergedoc.ts",
+    "classify": "tsx src/stages/s08-classify.ts",
+    "gaps": "tsx src/stages/s09-gaps.ts",
+    "dups": "tsx src/stages/s10-dups.ts",
+    "aggregate": "tsx src/stages/s11-aggregate.ts",
+    "themes-csv": "tsx src/stages/s18-themes-csv.ts",
+    "vizdata": "tsx src/stages/s12-vizdata.ts",
+    "rooms": "tsx src/stages/s13-rooms.ts",
+    "crosswalk": "tsx src/stages/s15-crosswalk.ts",
+    "classify-ideas": "tsx src/stages/s14-idea-concept.ts",
+    "figjam-linkage": "tsx src/stages/s16-figjam-linkage.ts",
+    "funnel": "tsx src/stages/s17-funnel.ts",
+    "respondents-readable": "tsx src/stages/s19-respondents-readable.ts",
+    "typecheck": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.116.0",
+    "csv-parse": "^7.0.2",
+    "csv-stringify": "^6.8.3",
+    "dotenv": "^17.4.2",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2"
+  }
+}

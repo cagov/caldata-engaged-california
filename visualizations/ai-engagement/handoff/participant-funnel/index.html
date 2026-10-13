@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Who participated — EngagedCA AI consultation</title>
+    <!-- Noto Sans only — the source app also reserves Noto Sans Display and
+         Public Sans for other sections; nothing here needs them. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400;1,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="ec-tokens.css" />
+    <link rel="stylesheet" href="funnel.css" />
+  </head>
+  <body>
+    <div class="page">
+      <div class="funnel-cloud">
+        <!-- Header — ported from FunnelSectionHeader.svelte. A constant
+             heading, a per-stage phase/title/subtitle block (with an
+             optional (i) tooltip, wired but unused today — see README),
+             and a right-hand stat callout. -->
+        <div class="funnel-section-header">
+          <div class="copy-col">
+            <h2 id="heading"></h2>
+            <div class="stage-copy" id="stage-copy">
+              <p class="phase" id="stage-phase"></p>
+              <div class="title-row">
+                <h3 id="stage-title"></h3>
+              </div>
+              <p class="sub" id="stage-sub">
+                <span id="stage-sub-text"></span>
+                <span class="info-wrap">
+                  <button type="button" id="info-icon" class="info-icon" aria-describedby="info-tooltip" hidden>i</button>
+                  <span class="info-tooltip" id="info-tooltip" role="tooltip"></span>
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <div class="stat-col" id="stat-col">
+            <svg id="stat-icon-people" class="ec-stat-glyph" width="40" height="40" viewBox="0 0 80 80" fill="none" aria-hidden="true">
+              <path d="M61.5625 37.5C66.4187 37.5 70.7281 40.4469 73.4375 45" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M5 45C6.74499 42.6697 9.00937 40.7785 11.6133 39.4765C14.2171 38.1746 17.0888 37.4978 20 37.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M40 57.5C46.9036 57.5 52.5 51.9036 52.5 45C52.5 38.0964 46.9036 32.5 40 32.5C33.0964 32.5 27.5 38.0964 27.5 45C27.5 51.9036 33.0964 57.5 40 57.5Z" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M22.5 67.5C24.2947 64.4545 26.853 61.9301 29.9222 60.1763C32.9913 58.4225 36.4651 57.5 40 57.5C43.5349 57.5 47.0086 58.4225 50.0778 60.1763C53.147 61.9301 55.7053 64.4545 57.5 67.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M50.3125 25C50.78 23.1893 51.746 21.5459 53.1006 20.2566C54.4552 18.9672 56.1442 18.0836 57.9758 17.706C59.8074 17.3284 61.7082 17.4719 63.4623 18.1204C65.2164 18.7688 66.7535 19.8961 67.8991 21.3743C69.0447 22.8525 69.7528 24.6223 69.9431 26.4827C70.1333 28.3431 69.7981 30.2196 68.9754 31.899C68.1527 33.5785 66.8756 34.9936 65.2891 35.9837C63.7025 36.9737 61.8701 37.4991 60 37.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M20.0002 37.5C18.1301 37.4991 16.2977 36.9737 14.7112 35.9837C13.1246 34.9936 11.8475 33.5785 11.0248 31.899C10.2021 30.2196 9.86688 28.3431 10.0571 26.4827C10.2474 24.6223 10.9555 22.8525 12.1011 21.3743C13.2467 19.8961 14.7838 18.7688 16.5379 18.1204C18.292 17.4719 20.1928 17.3284 22.0244 17.706C23.856 18.0836 25.545 18.9672 26.8997 20.2566C28.2543 21.5459 29.2202 23.1893 29.6877 25" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <svg id="stat-icon-chats" class="ec-stat-glyph" width="40" height="40" viewBox="0 0 84 84" fill="none" aria-hidden="true" hidden>
+              <path
+                d="M74.7437 61.1592C76.5863 57.5256 77.5106 53.4958 77.4358 49.4224C77.361 45.349 76.2893 41.3559 74.3144 37.7925C72.3395 34.229 69.5217 31.2036 66.1073 28.981C62.6929 26.7583 58.7859 25.4061 54.728 25.0425C53.4907 21.9085 51.631 19.0577 49.2613 16.6624C46.8917 14.267 44.0612 12.3767 40.9407 11.1056C37.8202 9.83443 34.4745 9.20885 31.1056 9.2666C27.7366 9.32435 24.4143 10.0642 21.3393 11.4415C18.2642 12.8189 15.5001 14.8051 13.214 17.2803C10.9278 19.7554 9.16693 22.6682 8.03768 25.8428C6.90844 29.0174 6.43424 32.3879 6.64372 35.7508C6.85319 39.1137 7.742 42.3993 9.25647 45.4092L6.72663 54.0093C6.52686 54.6881 6.51365 55.4081 6.6884 56.0937C6.86315 56.7792 7.21939 57.4051 7.71967 57.9054C8.21996 58.4056 8.84579 58.7619 9.53138 58.9366C10.217 59.1114 10.937 59.0982 11.6157 58.8984L20.2158 56.3686C23.0423 57.8006 26.116 58.6804 29.2721 58.9608C30.5386 62.2005 32.4689 65.1395 34.9389 67.5888C37.4089 70.0381 40.364 71.9435 43.6143 73.1827C46.8646 74.4219 50.3382 74.9674 53.8118 74.7841C57.2855 74.6008 60.6824 73.6929 63.7843 72.1186L72.3844 74.6484C73.0632 74.8482 73.7832 74.8614 74.4688 74.6866C75.1543 74.5119 75.7802 74.1556 76.2805 73.6554C76.7807 73.1551 77.137 72.5292 77.3117 71.8437C77.4865 71.1581 77.4733 70.4381 77.2735 69.7593L74.7437 61.1592ZM19.9829 53.7009L10.8741 56.3817C10.6461 56.4519 10.4032 56.4586 10.1716 56.4011C9.94005 56.3436 9.72853 56.2241 9.5598 56.0554C9.39108 55.8867 9.27155 55.6751 9.21405 55.4436C9.15656 55.212 9.16328 54.9691 9.2335 54.7411L11.9143 45.6323C12.0077 45.3033 11.9713 44.9509 11.8126 44.6479C9.29184 39.9288 8.55072 34.461 9.72428 29.2412C10.8978 24.0213 13.9079 19.3969 18.206 16.2108C22.504 13.0247 27.8038 11.489 33.1393 11.8837C38.4749 12.2784 43.4911 14.5771 47.2735 18.3609C51.056 22.1447 53.3529 27.1617 53.7457 32.4974C54.1384 37.8332 52.6009 43.1324 49.4132 47.4293C46.2256 51.7261 41.6001 54.7346 36.3798 55.9063C31.1595 57.078 25.692 56.3349 20.9738 53.8125C20.6704 53.6484 20.3152 53.6084 19.9829 53.7009ZM74.4254 71.8003C74.257 71.969 74.0459 72.0887 73.8147 72.1465C73.5834 72.2043 73.3408 72.198 73.1129 72.1284L64.0041 69.4476C63.6751 69.3542 63.3227 69.3906 63.0198 69.5493C60.3252 70.9916 57.363 71.8649 54.317 72.115C51.271 72.3652 48.206 71.9869 45.3122 71.0037C42.4184 70.0204 39.7575 68.4531 37.4944 66.399C35.2314 64.3449 33.4144 61.8478 32.1563 59.0625C35.9141 58.9632 39.6008 58.0157 42.9408 56.2908C46.2807 54.5659 49.1875 52.1082 51.4438 49.1015C53.7001 46.0949 55.2474 42.617 55.9701 38.9281C56.6928 35.2391 56.5722 31.4345 55.6173 27.7987C59.1717 28.2995 62.5528 29.6504 65.4736 31.7368C68.3945 33.8232 70.7689 36.5835 72.3953 39.7835C74.0216 42.9834 74.852 46.5284 74.8158 50.1178C74.7797 53.7071 73.8781 57.2347 72.1876 60.4012C72.0288 60.7042 71.9924 61.0565 72.0858 61.3856L74.7666 70.4943C74.8334 70.7225 74.8369 70.9645 74.7767 71.1945C74.7166 71.4245 74.5952 71.6339 74.4254 71.8003Z"
+                fill="currentColor"
+              />
+            </svg>
+            <p class="stat-value" id="stat-value"></p>
+            <p class="stat-caption" id="stat-caption"></p>
+          </div>
+        </div>
+
+        <div id="stage">
+          <canvas id="funnel-canvas" width="1040" height="636"></canvas>
+
+          <div class="dimension-toggle" id="dimension-toggle" role="group" aria-label="Color dots by">
+            <button type="button" class="dimension-option" data-dimension="region" aria-pressed="true">Region</button>
+            <button type="button" class="dimension-option" data-dimension="fieldOfWork" aria-pressed="false">Field of work</button>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button type="button" id="play" class="ec-button primary">Pause</button>
+          <button type="button" id="restart" class="ec-button outline">Restart</button>
+          <div class="spacer"></div>
+          <div id="stage-pills"></div>
+          <button type="button" id="loop" class="ec-button pill" aria-pressed="true">Loop</button>
+          <button type="button" class="ec-button pill" data-motion="orbit" aria-pressed="true">Orbit</button>
+          <button type="button" class="ec-button pill" data-motion="pulse" aria-pressed="false">Pulse</button>
+        </div>
+
+        <p class="hint" id="hint"></p>
+      </div>
+    </div>
+
+    <script src="funnel-data.js"></script>
+    <script src="funnel-layout.js"></script>
+    <script src="funnel.js"></script>
+  </body>
+</html>

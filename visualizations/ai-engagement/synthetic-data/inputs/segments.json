@@ -1,0 +1,308 @@
+[
+  {
+    "key": "REGION",
+    "label": "Region",
+    "values": [
+      "Los Angeles",
+      "Bay Area",
+      "Southern California",
+      "Sacramento Valley / Sierra Foothills",
+      "Central Valley",
+      "Far North / North Coast",
+      "Central Coast",
+      "Sierra Region",
+      "(not stated)"
+    ],
+    "rawValues": [
+      "Los Angeles",
+      "Bay Area",
+      "Southern California",
+      "Sacramento Valley / Sierra Foothills",
+      "Central Valley",
+      "Far North / North Coast",
+      "Central Coast",
+      "Sierra Region",
+      "(not stated)"
+    ],
+    "rawToValue": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "key": "AGE",
+    "label": "Age",
+    "values": [
+      "Under 18",
+      "18-24",
+      "25-44",
+      "45-64",
+      "Over 65",
+      "(not stated)",
+      "I don't want to say"
+    ],
+    "rawValues": [
+      "Under 18",
+      "18-24",
+      "25-44",
+      "45-64",
+      "Over 65",
+      "(not stated)",
+      "I don't want to say"
+    ],
+    "rawToValue": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ]
+  },
+  {
+    "key": "GENDER_CATEGORY",
+    "label": "Gender",
+    "values": [
+      "Woman",
+      "Man",
+      "Another gender identity (like transgender, non-binary, or gender non-conforming)",
+      "Multiple",
+      "(not stated)",
+      "I don't want to say"
+    ],
+    "rawValues": [
+      "Woman",
+      "Man",
+      "Another gender identity (like transgender, non-binary, or gender non-conforming)",
+      "Multiple",
+      "(not stated)",
+      "I don't want to say"
+    ],
+    "rawToValue": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "key": "RACE_ETHNICITY_CATEGORY",
+    "label": "Race / ethnicity",
+    "values": [
+      "White",
+      "Hispanic or Latino",
+      "Asian",
+      "Multiple",
+      "Black or African American",
+      "Middle Eastern or North African",
+      "American Indian or Alaska Native",
+      "Native Hawaiian or Pacific Islander",
+      "(not stated)"
+    ],
+    "rawValues": [
+      "White",
+      "Hispanic or Latino",
+      "Asian",
+      "Multiple",
+      "Black or African American",
+      "Middle Eastern or North African",
+      "American Indian or Alaska Native",
+      "Native Hawaiian or Pacific Islander",
+      "(not stated)"
+    ],
+    "rawToValue": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "key": "CURRENT_WORK_STATUS",
+    "label": "Current work status",
+    "values": [
+      "Yes, I currently work",
+      "No, I don't currently work but I'm looking for work",
+      "No, I'm retired or choose not to work",
+      "(not stated)",
+      "I don't want to say"
+    ],
+    "rawValues": [
+      "Yes, I currently work",
+      "No, I don't currently work but I'm looking for work",
+      "No, I'm retired or choose not to work",
+      "(not stated)",
+      "I don't want to say"
+    ],
+    "rawToValue": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "key": "ROLE_AT_WORK",
+    "label": "Role at work",
+    "values": [
+      "Employee (non-management)",
+      "I don't currently work",
+      "Manager",
+      "Executive or leader",
+      "Contractor, freelancer, or gig worker",
+      "Business owner or entrepreneur",
+      "(not stated)",
+      "I don't want to say"
+    ],
+    "rawValues": [
+      "Employee (non-management)",
+      "I don't currently work",
+      "Manager",
+      "Executive or leader",
+      "Contractor, freelancer, or gig worker",
+      "Business owner or entrepreneur",
+      "(not stated)",
+      "I don't want to say"
+    ],
+    "rawToValue": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  {
+    "key": "FIELD_OF_WORK",
+    "label": "Field of work",
+    "values": [
+      "Other",
+      "Public sector",
+      "Information technology",
+      "Creative industries",
+      "Education",
+      "Professional, scientific, and technical",
+      "Healthcare",
+      "I don't currently work",
+      "Finance & insurance",
+      "Retail",
+      "Logistics",
+      "(not stated)",
+      "I don't want to say"
+    ],
+    "rawValues": [
+      "Government",
+      "Information technology",
+      "Arts, entertainment, or media",
+      "Other",
+      "Education",
+      "Healthcare",
+      "I don't currently work",
+      "Non-profit",
+      "Retail or wholesale trade",
+      "Architecture or engineering",
+      "Finance",
+      "Science",
+      "Legal",
+      "Transportation or warehousing",
+      "Construction",
+      "Manufacturing",
+      "Hospitality",
+      "Real estate or leasing",
+      "Agriculture, forestry, or fishing",
+      "Insurance",
+      "Utilities or waste management",
+      "Corporate ownership or governance",
+      "Mining, quarrying, or oil and gas extraction",
+      "(not stated)",
+      "I don't want to say"
+    ],
+    "rawToValue": [
+      1,
+      2,
+      3,
+      0,
+      4,
+      6,
+      7,
+      0,
+      9,
+      5,
+      8,
+      5,
+      5,
+      10,
+      0,
+      0,
+      0,
+      8,
+      0,
+      8,
+      0,
+      5,
+      0,
+      11,
+      12
+    ]
+  },
+  {
+    "key": "AI_RESPONSE_LABEL",
+    "label": "Stance",
+    "values": [
+      "Negative",
+      "Mixed",
+      "Positive",
+      "Neutral",
+      "(not stated)"
+    ],
+    "rawValues": [
+      "neg",
+      "mix",
+      "pos",
+      "neutral",
+      "(not stated)"
+    ],
+    "rawToValue": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "key": "PHASE",
+    "label": "Phase",
+    "values": [
+      "Phase 1 only (survey)",
+      "Phase 2 (deliberation)"
+    ],
+    "rawValues": [
+      "Phase 1 only (survey)",
+      "Phase 2 (deliberation)"
+    ],
+    "rawToValue": [
+      0,
+      1
+    ]
+  }
+]

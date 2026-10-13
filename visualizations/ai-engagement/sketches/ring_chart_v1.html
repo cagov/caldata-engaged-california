@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phase 1 participants — region and age ring</title>
+<script>
+  (function () {
+    var pref = "auto";
+    try { pref = localStorage.getItem("theme") || "auto"; } catch (e) {}
+    var dark = pref === "dark" || (pref === "auto" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.dataset.theme = pref;
+    document.documentElement.dataset.themeResolved = dark ? "dark" : "light";
+  })();
+</script>
+<style>
+  :root {
+    --surface: #ffffff;
+    --surface-sunken: #f4f4f4;
+    --ink: #1f2225;
+    --ink-secondary: #4c5257;
+    --ink-muted: #6e757b;
+    --border: #d9dad6;
+    --focus: #2E6C8A;
+    color-scheme: light;
+  }
+  :root[data-theme-resolved="dark"] {
+    --surface: #1a1a19;
+    --surface-sunken: #232322;
+    --ink: #f1f1ef;
+    --ink-secondary: #c3c5c2;
+    --ink-muted: #9a9d99;
+    --border: #3a3a38;
+    --focus: #74BCDD;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--surface);
+    color: var(--ink);
+    font: 15px/1.5 "Inter", "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 1240px; margin: 0 auto; padding: 40px 32px 64px; }
+
+  h1 { font-size: 22px; line-height: 1.3; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .lede { margin: 0 0 24px; color: var(--ink-secondary); max-width: 78ch; }
+
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-bottom: 8px; }
+  .toggle {
+    margin-left: auto; display: inline-flex; gap: 2px; padding: 3px;
+    background: var(--surface-sunken); border-radius: 10px;
+  }
+  .toggle button {
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    color: var(--ink-secondary);
+    background: none; border: 0; border-radius: 8px;
+    padding: 9px 14px; cursor: pointer;
+  }
+  .toggle button[aria-pressed="true"] {
+    background: var(--surface); color: var(--ink);
+    box-shadow: 0 1px 2px rgba(0,0,0,.08);
+  }
+  .toggle button:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+  /* --- layout ----------------------------------------------------------- */
+  .figure {
+    display: grid; grid-template-columns: minmax(0, 1fr) 260px;
+    gap: 40px; align-items: start;
+  }
+  @media (max-width: 900px) { .figure { grid-template-columns: 1fr; } }
+
+  .plot { position: relative; }
+  .plot svg { display: block; width: 100%; height: auto; }
+  .dot { stroke: none; }
+  /* Hovered dot gets a surface ring so it stays legible against its neighbours. */
+  .dot.is-active { stroke: var(--surface); stroke-width: 2.5; }
+  .sector-label { font-size: 12.5px; font-weight: 600; fill: var(--ink-secondary); }
+  .sector-count { font-size: 11px; fill: var(--ink-muted); }
+
+  .tooltip {
+    position: absolute; z-index: 5; pointer-events: none; opacity: 0;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 12px; width: max-content; max-width: 280px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.13);
+    font-size: 13px; transition: opacity .08s ease;
+  }
+  .tooltip[data-show="1"] { opacity: 1; }
+  .tooltip .tt-row { display: flex; gap: 18px; justify-content: space-between; white-space: nowrap; line-height: 1.6; }
+  .tooltip .tt-row span:first-child { color: var(--ink-muted); }
+  .tooltip .tt-row b { font-weight: 600; }
+  .tooltip .tt-swatch {
+    display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+    margin-right: 7px; vertical-align: -1px;
+  }
+
+  /* --- legends ---------------------------------------------------------- */
+  .key { margin-bottom: 28px; }
+  .key h3 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: .04em;
+    color: var(--ink-muted); margin: 0 0 10px;
+  }
+  .key p { margin: 0 0 10px; font-size: 12.5px; color: var(--ink-muted); }
+  .key ul { list-style: none; margin: 0; padding: 0; }
+  .key li {
+    display: flex; align-items: center; gap: 9px;
+    font-size: 13px; color: var(--ink-secondary); padding: 2.5px 0;
+  }
+  .key .dotkey { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+  .key .count { margin-left: auto; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+
+  .notes { margin-top: 36px; font-size: 13px; color: var(--ink-muted); max-width: 90ch; }
+  .notes h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-muted); margin: 0 0 8px; }
+  .notes ul { margin: 0; padding-left: 20px; }
+  .notes li { margin-bottom: 5px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Phase 1 participants — region and age</h1>
+  <p class="lede">
+    One dot per respondent, placed on a golden-angle spiral so the dots sit
+    roughly equidistant. Hue is the region (angle around the ring); lightness is
+    the age bucket, oldest at the inner edge and youngest on the outer rim.
+  </p>
+
+  <div class="controls">
+    <div class="toggle" role="group" aria-label="Theme">
+      <button type="button" data-theme-choice="auto" aria-pressed="true">Auto</button>
+      <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
+      <button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <div class="figure">
+    <div class="plot" id="plot"></div>
+    <div>
+      <div class="key" id="key-region">
+        <h3>Region — hue</h3>
+        <p>Each region holds one wedge of the ring, sized by its share of respondents.</p>
+        <ul></ul>
+      </div>
+      <div class="key" id="key-age">
+        <h3>Age — lightness</h3>
+        <p>Light on the outer rim, dark toward the centre, within every region.</p>
+        <ul></ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h3>Notes</h3>
+    <ul id="notes-list"></ul>
+  </div>
+</div>
+
+<!-- DATA:START — generated by build_ring_chart.py; do not edit by hand. -->
+<script>
+window.RING_DATA = {
+  "total": 2678,
+  "ageOrder": [
+    "Under 18",
+    "18-24",
+    "25-44",
+    "45-64",
+    "Over 65",
+    "Not stated"
+  ],
+  "ageLightness": {
+    "Under 18": 0.84,
+    "18-24": 0.76,
+    "25-44": 0.64,
+    "45-64": 0.5,
+    "Over 65": 0.34,
+    "Not stated": 0.62
+  },
+  "ageChromaScale": {
+    "Not stated": 0.12
+  },
+  "regions": [
+    {
+      "name": "Bay Area",
+      "label": "Bay Area",
+      "hue": 250,
+      "counts": [
+        2,
+        15,
+        288,
+        232,
+        65,
+        45
+      ],
+      "total": 647
+    },
+    {
+      "name": "Central Coast",
+      "label": "Central Coast",
+      "hue": 195,
+      "counts": [
+        0,
+        3,
+        43,
+        47,
+        19,
+        11
+      ],
+      "total": 123
+    },
+    {
+      "name": "Central Valley",
+      "label": "Central Valley",
+      "hue": 160,
+      "counts": [
+        0,
+        9,
+        72,
+        56,
+        14,
+        12
+      ],
+      "total": 163
+    },
+    {
+      "name": "Far North / North Coast",
+      "label": "Far North / North Coast",
+      "hue": 130,
+      "counts": [
+        0,
+        5,
+        57,
+        56,
+        32,
+        11
+      ],
+      "total": 161
+    },
+    {
+      "name": "Los Angeles",
+      "label": "Los Angeles",
+      "hue": 25,
+      "counts": [
+        4,
+        31,
+        370,
+        215,
+        57,
+        35
+      ],
+      "total": 712
+    },
+    {
+      "name": "Sacramento Valley / Sierra Foothills",
+      "label": "Sacramento Valley",
+      "hue": 300,
+      "counts": [
+        1,
+        12,
+        191,
+        142,
+        28,
+        44
+      ],
+      "total": 418
+    },
+    {
+      "name": "Sierra Region",
+      "label": "Sierra Region",
+      "hue": 90,
+      "counts": [
+        0,
+        0,
+        6,
+        3,
+        2,
+        1
+      ],
+      "total": 12
+    },
+    {
+      "name": "Southern California",
+      "label": "Southern California",
+      "hue": 340,
+      "counts": [
+        1,
+        32,
+        155,
+        158,
+        73,
+        23
+      ],
+      "total": 442
+    }
+  ],
+  "source": "phase-1.csv"
+};
+</script>
+<!-- DATA:END -->
+<script>
+(function () {
+  const DATA = window.RING_DATA;
+
+  const VIEW_W = 1160, VIEW_H = 880;
+  const CX = VIEW_W / 2, CY = VIEW_H / 2;
+  const R_INNER = 168;
+  const R_OUTER = 352;
+  const DOT_R = 3.4;
+  const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));  // ~137.508 degrees
+  const BASE_CHROMA = 0.135;
+
+  // --- OKLCH -> sRGB hex, with a chroma walk-down to stay in gamut ---------
+  function oklabToLinear(L, a, b) {
+    const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
+    const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
+    const s_ = L - 0.0894841775 * a - 1.2914855480 * b;
+    const l = l_ * l_ * l_, m = m_ * m_ * m_, s = s_ * s_ * s_;
+    return [
+      +4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+      -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+      -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
+    ];
+  }
+  const inGamut = (rgb) => rgb.every((c) => c >= -0.0005 && c <= 1.0005);
+  function encode(c) {
+    const v = Math.max(0, Math.min(1, c));
+    const s = v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
+    return Math.round(s * 255).toString(16).padStart(2, "0");
+  }
+  function oklch(L, C, hDeg) {
+    const h = (hDeg * Math.PI) / 180;
+    let c = C, rgb;
+    // Highly saturated hues leave sRGB at extreme lightness; back the chroma
+    // off until the colour is representable rather than letting it clip.
+    for (let i = 0; i < 40; i++) {
+      rgb = oklabToLinear(L, c * Math.cos(h), c * Math.sin(h));
+      if (inGamut(rgb)) break;
+      c *= 0.92;
+    }
+    return "#" + rgb.map(encode).join("");
+  }
+
+  const ageIndex = {};
+  DATA.ageOrder.forEach((a, i) => (ageIndex[a] = i));
+
+  function colorFor(regionHue, ageName) {
+    const L = DATA.ageLightness[ageName];
+    const scale = DATA.ageChromaScale[ageName] ?? 1;
+    return oklch(L, BASE_CHROMA * scale, regionHue);
+  }
+
+  // --- placement ----------------------------------------------------------
+  // 1. Lay N slots on a golden-angle spiral across the annulus. The sqrt makes
+  //    the radial spacing equal-area, which is what keeps neighbouring dots
+  //    about the same distance apart everywhere.
+  const N = DATA.total;
+  const slots = [];
+  for (let i = 0; i < N; i++) {
+    const t = (i + 0.5) / N;
+    const r = Math.sqrt(R_INNER * R_INNER + (R_OUTER * R_OUTER - R_INNER * R_INNER) * t);
+    let theta = (i * GOLDEN_ANGLE) % (2 * Math.PI);
+    if (theta < 0) theta += 2 * Math.PI;
+    slots.push({ r, theta });
+  }
+
+  // 2. Sort the slots by angle and hand them out in region order, so each
+  //    region owns one contiguous wedge whose width tracks its headcount.
+  slots.sort((a, b) => a.theta - b.theta);
+
+  const dots = [];
+  const sectors = [];
+  let cursor = 0;
+  DATA.regions.forEach((region) => {
+    const mine = slots.slice(cursor, cursor + region.total);
+    cursor += region.total;
+    if (!mine.length) return;
+
+    sectors.push({
+      region,
+      thetaStart: mine[0].theta,
+      thetaEnd: mine[mine.length - 1].theta,
+    });
+
+    // 3. Within the wedge, outermost slot gets the youngest bucket. ageOrder is
+    //    already outer-rim-first, so walking it in order fills inwards.
+    const byRadius = [...mine].sort((a, b) => b.r - a.r);
+    let k = 0;
+    DATA.ageOrder.forEach((ageName, ai) => {
+      const n = region.counts[ai];
+      const fill = colorFor(region.hue, ageName);
+      for (let j = 0; j < n; j++) {
+        const slot = byRadius[k++];
+        dots.push({
+          x: CX + slot.r * Math.cos(slot.theta),
+          y: CY + slot.r * Math.sin(slot.theta),
+          fill,
+          region: region.name,
+          age: ageName,
+        });
+      }
+    });
+  });
+
+  // --- render -------------------------------------------------------------
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (tag, attrs) => {
+    const n = document.createElementNS(NS, tag);
+    for (const k in attrs || {}) n.setAttribute(k, attrs[k]);
+    return n;
+  };
+
+  const plot = document.getElementById("plot");
+  const svg = el("svg", {
+    viewBox: `0 0 ${VIEW_W} ${VIEW_H}`,
+    role: "img",
+    "aria-label": `${N} phase 1 respondents as dots, arranged in a ring by ` +
+                  `region and age`,
+  });
+
+  // Sector labels sit outside the rim at each wedge's mid-angle.
+  sectors.forEach(({ region, thetaStart, thetaEnd }) => {
+    let mid = (thetaStart + thetaEnd) / 2;
+    const rLabel = R_OUTER + 26;
+    const x = CX + rLabel * Math.cos(mid);
+    const y = CY + rLabel * Math.sin(mid);
+    const cos = Math.cos(mid);
+    const anchor = Math.abs(cos) < 0.25 ? "middle" : cos > 0 ? "start" : "end";
+    const name = el("text", {
+      class: "sector-label", x, y, "text-anchor": anchor,
+      "dominant-baseline": "middle",
+    });
+    name.textContent = region.label;
+    const count = el("text", {
+      class: "sector-count", x, y: y + 15, "text-anchor": anchor,
+      "dominant-baseline": "middle",
+    });
+    count.textContent = region.total.toLocaleString();
+    svg.append(name, count);
+  });
+
+  const layer = el("g", {});
+  const nodes = dots.map((d) => {
+    const c = el("circle", {
+      class: "dot", cx: d.x.toFixed(1), cy: d.y.toFixed(1), r: DOT_R,
+      fill: d.fill,
+    });
+    layer.appendChild(c);
+    return c;
+  });
+  svg.appendChild(layer);
+
+  const tooltip = document.createElement("div");
+  tooltip.className = "tooltip";
+  tooltip.setAttribute("role", "status");
+  plot.append(svg, tooltip);
+
+  // A 3.4px dot is a miserable hit target, so hover snaps to the nearest dot
+  // instead of requiring a direct hit. One listener on the svg, brute-force
+  // nearest over 2,678 points — cheap enough at pointer rates.
+  const SNAP = 9;  // viewBox units; a touch under the dot spacing
+  let active = null, activeIndex = -1;
+  function hide() {
+    if (active) active.classList.remove("is-active");
+    active = null;
+    activeIndex = -1;
+    tooltip.dataset.show = "0";
+  }
+  function nearest(vx, vy) {
+    let best = -1, bestD = SNAP * SNAP;
+    for (let i = 0; i < dots.length; i++) {
+      const dx = dots[i].x - vx, dy = dots[i].y - vy;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < bestD) { bestD = d2; best = i; }
+    }
+    return best;
+  }
+  svg.addEventListener("pointermove", (ev) => {
+    const rect0 = plot.getBoundingClientRect();
+    const scale0 = rect0.width / VIEW_W;
+    const i = nearest((ev.clientX - rect0.left) / scale0,
+                      (ev.clientY - rect0.top) / scale0);
+    if (i < 0) { hide(); return; }
+    if (i !== activeIndex) {
+      if (active) active.classList.remove("is-active");
+      activeIndex = i;
+      active = nodes[i];
+      active.classList.add("is-active");
+      const d = dots[i];
+      tooltip.innerHTML =
+        `<div class="tt-row"><span>Region</span>` +
+        `<b><i class="tt-swatch" style="background:${d.fill}"></i>${d.region}</b></div>` +
+        `<div class="tt-row"><span>Age</span><b>${d.age}</b></div>`;
+    }
+    const rect = plot.getBoundingClientRect();
+    const tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
+    const px = ev.clientX - rect.left, py = ev.clientY - rect.top;
+    tooltip.style.left = Math.min(Math.max(px, tw / 2 + 2), rect.width - tw / 2 - 2) + "px";
+    tooltip.style.top = (py - th - 14 >= 0 ? py - th - 14 : py + 18) + "px";
+    tooltip.style.transform = "translateX(-50%)";
+    tooltip.dataset.show = "1";
+  });
+  svg.addEventListener("pointerleave", hide);
+
+  // --- legends ------------------------------------------------------------
+  const regionList = document.querySelector("#key-region ul");
+  regionList.replaceChildren(...DATA.regions.map((r) => {
+    const li = document.createElement("li");
+    const sw = document.createElement("i");
+    sw.className = "dotkey";
+    sw.style.background = oklch(0.58, BASE_CHROMA, r.hue);
+    const name = document.createElement("span");
+    name.textContent = r.label;
+    const count = document.createElement("span");
+    count.className = "count";
+    count.textContent = r.total.toLocaleString();
+    li.append(sw, name, count);
+    return li;
+  }));
+
+  const ageList = document.querySelector("#key-age ul");
+  const ageTotals = {};
+  DATA.ageOrder.forEach((a, i) => {
+    ageTotals[a] = DATA.regions.reduce((s, r) => s + r.counts[i], 0);
+  });
+  ageList.replaceChildren(...DATA.ageOrder.map((a) => {
+    const li = document.createElement("li");
+    const sw = document.createElement("i");
+    sw.className = "dotkey";
+    // Near-neutral chroma so the swatch reads as a lightness step, not as one
+    // particular region's hue.
+    sw.style.background = oklch(
+      DATA.ageLightness[a], 0.02 * (DATA.ageChromaScale[a] ?? 1), 250);
+    sw.style.border = "1px solid var(--border)";
+    const name = document.createElement("span");
+    name.textContent = a;
+    const count = document.createElement("span");
+    count.className = "count";
+    count.textContent = ageTotals[a].toLocaleString();
+    li.append(sw, name, count);
+    return li;
+  }));
+
+  document.getElementById("notes-list").innerHTML = [
+    `${N.toLocaleString()} dots, one per phase 1 respondent, from <code>${DATA.source}</code>.`,
+    `Dot positions come from a golden-angle (${(GOLDEN_ANGLE * 180 / Math.PI).toFixed(3)}°) spiral over the annulus, with radius spaced by area so the packing density is even from rim to centre. Respondents are then assigned to those positions by region and age — the lattice sets the spacing, the data sets which dot goes where.`,
+    `${ageTotals["Not stated"].toLocaleString()} respondents gave no age. They sit in a near-neutral band at the inner edge rather than on the light-to-dark age ramp, so they aren't mistaken for an age.`,
+    `Lightness carries age, so a region's hue shifts appearance between its inner and outer edge. Identity comes from the wedge label and the hover readout as well as the hue.`,
+  ].map((t) => `<li>${t}</li>`).join("");
+
+  // --- theme --------------------------------------------------------------
+  const themeButtons = [...document.querySelectorAll("[data-theme-choice]")];
+  const osDark = window.matchMedia("(prefers-color-scheme: dark)");
+  const root = document.documentElement;
+  function applyTheme(pref) {
+    root.dataset.theme = pref;
+    root.dataset.themeResolved =
+      pref === "auto" ? (osDark.matches ? "dark" : "light") : pref;
+    themeButtons.forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.themeChoice === pref)));
+    try { localStorage.setItem("theme", pref); } catch (e) {}
+  }
+  themeButtons.forEach((b) =>
+    b.addEventListener("click", () => applyTheme(b.dataset.themeChoice)));
+  osDark.addEventListener("change", () => {
+    if (root.dataset.theme === "auto") applyTheme("auto");
+  });
+  applyTheme(root.dataset.theme || "auto");
+})();
+</script>
+</body>
+</html>

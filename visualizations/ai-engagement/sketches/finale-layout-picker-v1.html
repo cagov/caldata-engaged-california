@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finale layout picker — generate, compare, keep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400;1,600&display=swap">
+<style>
+:root{ --navy:#1c2745; --text:#444; --border:#d4d4d7; --bg:#f6f7fa; }
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--text);font-family:"Noto Sans",system-ui,sans-serif;line-height:1.45;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1480px;margin:0 auto;padding:28px 32px 80px}
+h1{font-size:24px;color:var(--navy);margin:0 0 6px}
+.sub{margin:0 0 18px;font-size:14px;color:#666}
+.bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:end;padding:14px 16px;background:var(--bg);border-radius:8px;margin-bottom:14px}
+.bar label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:#555}
+.bar input,.bar select{font:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;min-width:90px}
+button{appearance:none;font:inherit;font-size:14px;font-weight:600;padding:8px 14px;border-radius:30px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer}
+button.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+button:disabled{opacity:.5;cursor:default}
+.stage{border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#fff}
+.stage canvas{display:block;width:100%;height:auto}
+.metrics{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13px;margin:10px 2px 0;color:#555}
+.metrics b{color:var(--navy)}
+.status{font-size:13px;color:#777;margin-top:6px;min-height:1.3em}
+h2{font-size:17px;color:var(--navy);margin:34px 0 10px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.card{border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#fff}
+.card img{display:block;width:100%;height:auto;border-bottom:1px solid var(--border)}
+.card .body{padding:10px 12px 12px;font-size:12.5px;color:#555}
+.card .body b{color:var(--navy)}
+.card .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.card button{padding:5px 10px;font-size:12px}
+.note{margin-top:28px;padding:14px 18px;background:var(--bg);border-radius:8px;font-size:13px;line-height:1.55}
+code{font-size:12px;background:#eef0f4;padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Finale layout picker</h1>
+  <p class="sub">Generates Phase 2 (27 ideas) layouts with the same engine as the sketches — new seed, new layout. Keep the ones you like; download one as <code>whirl-finale-layout.js</code> and drop it next to the sketches and they will use it instead of computing their own.</p>
+
+  <div class="bar">
+    <label>Field (which sketch)
+      <select id="preset">
+        <option value="whirl">Whirl — 2340 × 1140</option>
+        <option value="inline">Inline "Ideas we heard" — 1400 × 820</option>
+      </select></label>
+    <label>Packing
+      <select id="pack">
+        <option value="dense">Dense — classic compact cloud</option>
+        <option value="designed">Designed — skeleton + hole fillers</option>
+      </select></label>
+    <label>Font multiplier <input id="mult" type="number" step="0.02" min="0.3" max="2" value="1"></label>
+    <label>Seed <input id="seed" type="number" step="1" value="1"></label>
+    <button class="primary" id="btn-gen">Generate</button>
+    <button id="btn-next">Next seed →</button>
+    <button id="btn-keep" disabled>★ Keep this layout</button>
+    <label>Candidates per generate <input id="cands" type="number" step="1" min="1" max="64" value="32"></label>
+    <label>Layout area (fraction of field; blank = follows multiplier) <input id="area" type="number" step="0.05" min="0.3" max="1" placeholder="auto"></label>
+  </div>
+
+  <div class="stage"><canvas id="stage"></canvas></div>
+  <div class="metrics" id="metrics"></div>
+  <div class="status" id="status"></div>
+
+  <h2>Kept layouts <span id="kept-count" style="font-weight:400;color:#777"></span></h2>
+  <div class="gallery" id="gallery"></div>
+
+  <div class="note">
+    <b>How a kept layout reaches the sketches.</b> "Download" on a card writes <code>whirl-finale-layout.js</code>,
+    which sets <code>window.WHIRL_FINALE_LAYOUTS</code> keyed by field (<code>"2340x1140"</code>, <code>"1400x820"</code>).
+    Save it into <code>sketches/</code>. Both sketches load that file if present and, when the field, labels, line
+    breaks and font sizes all match, draw those exact positions instead of running their own selection; otherwise
+    they fall back to computing. One layout per field lives in the file — downloading from a card replaces that
+    field's entry and keeps the other field's entry from the file currently loaded (if any). Kept layouts also
+    persist in this browser's localStorage. Positions come from this engine in this browser, so what you see here
+    is what the sketches will draw.
+  </div>
+</div>
+
+<!-- data files change often and the static server sends no Cache-Control, so
+     browsers kept serving stale copies (seen 2026-09-17: old lowercase labels
+     after a regeneration). Load them with a per-load cache-buster; library files
+     below stay ordinary script tags. -->
+<script>
+  document.write('<script src="whirl-data.js?t=' + Date.now() + '"><\/script>');
+  document.write('<script src="whirl-finale-layout.js?t=' + Date.now() + '" onerror="console.info(\'no whirl-finale-layout.js (fine — computing the finale layout)\')"><\/script>');
+</script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="d3-cloud-multiline.js"></script>
+<script src="whirl-layout.js"></script>
+<script>
+(function(){
+  "use strict";
+  const DATA = window.WHIRL_DATA, SUBTHEMES = DATA.subthemes;
+  const MULT_INLINE = 0.638; // fitted by ideas-we-heard-inline-v1 at 1400x820 (render check 2026-09-17)
+  const PRESETS = {
+    whirl:  { w: 2340, h: 1140, mult: 1.0 },   // = the whirl's FINALE_SCALE 1.3 base at multiplier 1
+    inline: { w: 1400, h: 820, mult: MULT_INLINE }, // the inline sketch's fitted multiplier at 1400x820
+  };
+  const MAX_VOTES = Math.max(...DATA.phase2.map(c => c.votes));
+  const phase2Base = v => (17 + 29 * Math.sqrt(v / MAX_VOTES)) * 1.3;
+  function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  const stage = document.getElementById('stage'), sctx = stage.getContext('2d');
+  const meas = document.createElement('canvas').getContext('2d');
+  const $ = id => document.getElementById(id);
+
+  // words are built exactly as the sketches build their finale records
+  function buildWords(WL, mult){
+    return DATA.phase2.map((c, i) => {
+      const fontSize = phase2Base(c.votes) * mult;
+      const lines = WL.wrapTwoLines(c.label, fontSize, 700, fontSize * 11);
+      const w = Math.max(...lines.map(l => WL.textWidth(l, fontSize, 700))) + 8;
+      const h = lines.length * fontSize * 1.22 + 6;
+      return { i, label: c.label, subtheme: c.subtheme, votes: c.votes, fontSize, lines, w, h };
+    });
+  }
+
+  let current = null; // { presetKey, field, mult, seed, words, placed, metrics }
+  function generate(){
+    const presetKey = $('preset').value, P = PRESETS[presetKey];
+    const mult = +$('mult').value, seed = +$('seed').value | 0, cands = Math.max(1, +$('cands').value | 0), pack = $('pack').value;
+    const rand = mulberry32(seed);
+    const WL = WhirlLayout({ rand, cloud: () => d3.layout.cloud(), measureCtx: meas });
+    const words = buildWords(WL, mult);
+    // Pack: lay the words out in a SUB-field centred in the real field. With
+    // the same field regardless of font size, a smaller multiplier only adds
+    // whitespace (the skeleton spreads over the whole field); scaling the
+    // layout area with the multiplier keeps the packing density the same,
+    // so smaller words pack closer together. d3-cloud positions are relative
+    // to the field centre, so drawing them at the real field's centre needs
+    // no offset. Manual override in the "Layout area" box.
+    const packIn = $('area').value.trim();
+    const area = packIn === '' ? Math.min(1, Math.max(0.3, mult / P.mult)) : Math.min(1, Math.max(0.3, +packIn));
+    const LW = Math.round(P.w * area), LH = Math.round(P.h * area);
+    const t0 = performance.now();
+    // temporarily set the candidate count (module constant) via a wrapper: run
+    // layoutFinaleBalanced `cands`/FINALE_CANDIDATES-scaled is not exposed, so
+    // emulate by running the balanced selection once (its own 32 candidates)
+    // when cands >= 32, or a lighter path for quick browsing.
+    let placed;
+    if (cands >= WL.FINALE_CANDIDATES){ placed = WL.layoutFinaleBalanced(words, { width: LW, height: LH, padding: 2, weight: 700, pack }); }
+    else {
+      // quick mode: seeded single runs, keep the best of `cands` by the same metrics
+      let best = null;
+      for (let k = 0; k < cands; k++){
+        words.forEach(w => { delete w.sprite; delete w.x; delete w.y; });
+        (pack === 'dense' ? WL.seedFinaleDense : WL.seedFinaleInterleaved)(words, LW, LH);
+        const p = WL.runCloudLayoutSync(words, { width: LW, height: LH, padding: 2, weight: 700 });
+        const m = WL.finaleCandidateMetrics(words, p, LW, LH); m.pos = words.map(w => p.includes(w) ? [w.x, w.y] : null);
+        if (!best || (m.dropped < best.dropped) || (m.dropped === best.dropped && m.score < best.score)) best = m;
+      }
+      const dx = Math.round(LW/2 - (best.bbox.x0 + best.bbox.x1)/2), dy = Math.round(LH/2 - (best.bbox.y0 + best.bbox.y1)/2);
+      words.forEach((w, i) => { const p = best.pos[i]; if (p){ w.x = p[0] + dx; w.y = p[1] + dy; } });
+      placed = words.filter((w, i) => best.pos[i]);
+      WL._quick = best;
+    }
+    const ms = performance.now() - t0;
+    const m = WL.lastFinale || WL._quick || {};
+    const minGap = minSameSubthemeGap(words, placed, LW, LH);
+    current = { presetKey, field: { w: P.w, h: P.h }, layoutArea: area, pack, mult, seed, words, placed,
+      metrics: { dropped: words.length - placed.length, imbalance: m.imbalance, touching: m.touching, hole: m.hole, minSameGap: minGap, candidate: m.candidate ?? m.k, ms: Math.round(ms) } };
+    draw(sctx, stage, current, Math.min(1400, stage.parentElement.clientWidth || 1400));
+    showMetrics(current.metrics);
+    $('btn-keep').disabled = current.metrics.dropped > 0;
+    const droppedNames = words.filter(w => !placed.includes(w)).map(w => `"${w.label.slice(0, 40)}${w.label.length > 40 ? '…' : ''}"`).join(', ');
+    $('status').textContent = current.metrics.dropped ? `${current.metrics.dropped} label(s) did not fit and are MISSING from this picture: ${droppedNames}. A kept layout must have all ${words.length} — lower the multiplier, raise the layout area, or try another seed.` : `Seed ${seed}, ${presetKey} field, ${pack} packing, multiplier ${mult}, laid out in ${Math.round(area*100)}% of the field (${LW}×${LH}). ${ms|0} ms.`;
+  }
+  function minSameSubthemeGap(words, placed, W, H){
+    let min = Infinity;
+    for (let i = 0; i < placed.length; i++) for (let j = i + 1; j < placed.length; j++){
+      const a = placed[i], b = placed[j]; if (a.subtheme !== b.subtheme) continue;
+      const gap = Math.max(Math.abs(a.x - b.x) - (a.w + b.w)/2, Math.abs(a.y - b.y) - (a.h + b.h)/2);
+      min = Math.min(min, gap);
+    }
+    return isFinite(min) ? Math.round(min) : null;
+  }
+  function showMetrics(m){
+    const f = (v, d) => v == null ? '–' : (+v).toFixed(d);
+    $('metrics').innerHTML = [
+      ['placed', `${current.placed.length}/${current.words.length}`],
+      ['left/right + top/bottom imbalance', f(m.imbalance, 3) + ' (lower is better)'],
+      ['same-subtheme touching weight', f(m.touching, 2) + ' (lower is better)'],
+      ['largest empty pocket', m.hole != null ? m.hole + 'px square' : '–'],
+      ['closest same-colour pair (box gap)', m.minSameGap != null ? m.minSameGap + 'px' : '–'],
+      ['chosen candidate', m.candidate != null ? '#' + m.candidate : '–'],
+    ].map(([k, v]) => `<span>${k}: <b>${v}</b></span>`).join('');
+  }
+  function draw(ctx, cv, L, cssW){
+    const dpr = Math.min(window.devicePixelRatio || 1, 2), s = cssW / L.field.w;
+    cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssW * L.field.h / L.field.w * dpr);
+    cv.style.width = cssW + 'px'; cv.style.height = (cssW * L.field.h / L.field.w) + 'px';
+    ctx.setTransform(s * dpr, 0, 0, s * dpr, 0, 0);
+    ctx.clearRect(0, 0, L.field.w, L.field.h);
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, L.field.w, L.field.h);
+    const WL = WhirlLayout({ rand: Math.random, cloud: () => null, measureCtx: meas });
+    for (const w of L.placed) WL.drawWord(ctx, w.lines, w.x + L.field.w/2, w.y + L.field.h/2, w.fontSize, 700, SUBTHEMES[w.subtheme].color, 1);
+    ctx.globalAlpha = 1;
+  }
+
+  // ---- kept layouts (localStorage) ---------------------------------------------
+  const KEY = 'whirlFinaleKeeps.v1';
+  const kept = JSON.parse(localStorage.getItem(KEY) || '[]');
+  function serialize(L){
+    const WLp = WhirlLayout({ rand: Math.random, cloud: () => null, measureCtx: meas });
+    return { field: L.field, layoutArea: L.layoutArea, pack: L.pack, presetKey: L.presetKey, fontMultiplier: L.mult, seed: L.seed, padding: 2, weight: 700,
+      fontProbe: WLp.fontProbe(), // guards against applying these positions under a fallback font
+      createdAt: new Date().toISOString(), metrics: L.metrics,
+      items: L.placed.map(w => ({ label: w.label, x: w.x, y: w.y, fontSize: w.fontSize, lines: w.lines, subtheme: w.subtheme })) };
+  }
+  function thumb(L){
+    const c = document.createElement('canvas'); draw(c.getContext('2d'), c, L, 520); return c.toDataURL('image/png');
+  }
+  function renderGallery(){
+    $('kept-count').textContent = kept.length ? `(${kept.length})` : '(none yet)';
+    $('gallery').innerHTML = kept.map((k, i) => `
+      <div class="card">
+        <img src="${k.thumb}" alt="">
+        <div class="body">
+          <b>${k.saved.presetKey}</b> · ${k.saved.pack || 'designed'} · seed ${k.saved.seed} · ×${k.saved.fontMultiplier}<br>
+          imbalance ${(+k.saved.metrics.imbalance).toFixed(3)} · touching ${(+k.saved.metrics.touching).toFixed(2)} · pocket ${k.saved.metrics.hole}px · closest same-colour ${k.saved.metrics.minSameGap}px
+          <div class="row">
+            <button data-act="show" data-i="${i}">Show</button>
+            <button data-act="dl" data-i="${i}">Download whirl-finale-layout.js</button>
+            <button data-act="rm" data-i="${i}">Remove</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+  $('gallery').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const i = +b.dataset.i, k = kept[i];
+    if (b.dataset.act === 'rm'){ kept.splice(i, 1); localStorage.setItem(KEY, JSON.stringify(kept)); renderGallery(); }
+    else if (b.dataset.act === 'show'){
+      $('preset').value = k.saved.presetKey; $('mult').value = k.saved.fontMultiplier; $('seed').value = k.saved.seed;
+      current = { presetKey: k.saved.presetKey, field: k.saved.field, mult: k.saved.fontMultiplier, seed: k.saved.seed, words: k.saved.items, placed: k.saved.items, metrics: k.saved.metrics };
+      draw(sctx, stage, current, Math.min(1400, stage.parentElement.clientWidth || 1400)); showMetrics(current.metrics);
+      $('status').textContent = `Showing kept layout (seed ${k.saved.seed}).`; $('btn-keep').disabled = true;
+    }
+    else if (b.dataset.act === 'dl'){
+      const existing = (window.WHIRL_FINALE_LAYOUTS && typeof window.WHIRL_FINALE_LAYOUTS === 'object') ? window.WHIRL_FINALE_LAYOUTS : {};
+      const out = Object.assign({}, existing); out[`${k.saved.field.w}x${k.saved.field.h}`] = k.saved;
+      const js = `// Generated by sketches/finale-layout-picker-v1.html on ${new Date().toISOString()} — do not hand-edit.\n// One kept Phase 2 layout per field; the sketches use it when field, labels, line breaks and font sizes match.\nwindow.WHIRL_FINALE_LAYOUTS = ${JSON.stringify(out, null, 1)};\n`;
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([js], { type: 'text/javascript' })); a.download = 'whirl-finale-layout.js'; a.click();
+      $('status').textContent = 'Downloaded whirl-finale-layout.js — move it into sketches/ (replacing any previous one) and reload a sketch.';
+    }
+  });
+  $('btn-keep').addEventListener('click', () => {
+    if (!current || current.metrics.dropped) return;
+    kept.unshift({ saved: serialize(current), thumb: thumb(current) });
+    localStorage.setItem(KEY, JSON.stringify(kept)); renderGallery();
+    $('status').textContent = `Kept seed ${current.seed}. ${kept.length} kept.`;
+  });
+  // surface layout failures instead of dying silently (an unhandled throw
+  // in generate() left the old layout on screen with no message — that is
+  // what "the layout area option isn't working" looked like)
+  function safeGenerate(){
+    try { generate(); }
+    catch (e){ console.error(e); $('status').textContent = 'Could not lay out: ' + e.message + ' — raise the layout area or lower the multiplier.'; $('btn-keep').disabled = true; }
+  }
+  $('btn-gen').addEventListener('click', safeGenerate);
+  $('btn-next').addEventListener('click', () => { $('seed').value = (+$('seed').value | 0) + 1; safeGenerate(); });
+  $('preset').addEventListener('change', () => { $('mult').value = PRESETS[$('preset').value].mult; });
+
+  async function ensureFontsLoaded(){
+    if (!document.fonts) return;
+    await Promise.all([document.fonts.load("700 16px 'Noto Sans', Arial, sans-serif")]); await document.fonts.ready;
+  }
+  ensureFontsLoaded().then(() => { renderGallery(); safeGenerate(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+/* ideas-scroll.css — styles for THIS component only (the pinned scroll
+ * story). Report-page type/color/grid live in report-tokens.css, dropped at
+ * integration; this file ships with the component either way.
+ *
+ * `.ideas-scroll-story` must be mounted as a SIBLING of `#what-we-heard`'s
+ * `.container` divs, not nested inside one — see the README's integration
+ * note. It only needs `width:100%` here because of that placement; if it
+ * ever ends up inside a centred container, add the standard "break out of
+ * a centred column" rule (`width:100vw;margin-left:calc(50% - 50vw)`).
+ */
+.ideas-scroll-story{position:relative;width:100%}
+
+.narrative-wrapper{position:relative;height:100vh;display:flex;
+  align-items:center;justify-content:center;z-index:2}
+
+/* ---- the copy plate ------------------------------------------------------
+ * One rounded rect per beat, 8px radius (the DS's --ec-radius-sm / what the
+ * report's own cards use), ~85% opacity so cloud words read faintly through
+ * it — no feathered halo (the sketch's old triple box-shadow). Opacity is a
+ * custom property so it can be retuned without touching JS or re-measuring
+ * the plate rect (ideas-scroll.js reads the plate's layout box, not its
+ * opacity, for the ring exclusion radius). */
+.narrative-copy{max-width:640px;margin:0 auto;text-align:center;
+  padding:34px 42px;background:rgba(255,255,255,var(--ideas-plate-opacity,.85));
+  border-radius:8px;
+  opacity:.06}
+.narrative-copy p{margin:0;font-size:clamp(19px,2.2vw,23px);line-height:1.5;
+  color:var(--report-body,#3b3b3b)}
+.narrative-copy p + p{margin-top:14px}
+
+#ideas-scroll-canvas{position:fixed;top:0;left:0;display:block;
+  z-index:0;opacity:0;transition:opacity .5s;pointer-events:none}
+
+/* ---- legend + caption, shown only during the finale beat ------------------ */
+.ideas-scroll-legend{position:fixed;left:0;right:0;bottom:20px;z-index:3;display:flex;
+  flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center;
+  gap:6px 10px;padding:0 24px;opacity:0;transition:opacity .4s;
+  pointer-events:none;font-size:12.5px;line-height:1.3;color:var(--report-body,#3b3b3b)}
+.ideas-scroll-legend.visible{opacity:1}
+.ideas-scroll-legend .item{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.88);
+  padding:4px 10px 4px 7px;border-radius:30px;box-shadow:0 1px 6px rgba(0,0,0,.05)}
+.ideas-scroll-legend .swatch{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.ideas-scroll-caption{position:fixed;top:90px;left:0;right:0;z-index:3;text-align:center;
+  font-size:14px;color:var(--report-body,#3b3b3b);opacity:0;
+  transition:opacity .4s;pointer-events:none}
+.ideas-scroll-caption.visible{opacity:1}
+
+/* ---- hover tooltip, finale beat only --------------------------------------- */
+.ideas-scroll-tooltip{position:fixed;z-index:10;pointer-events:none;background:var(--report-navy,#1c2745);
+  color:var(--report-off-white,#fff4eb);padding:10px 13px;border-radius:6px;font-size:13px;line-height:1.45;
+  max-width:280px;opacity:0;transition:opacity .12s;transform:translate(-50%,-100%)}
+.ideas-scroll-tooltip.visible{opacity:1}
+.ideas-scroll-tooltip b{display:block;margin-bottom:3px;font-weight:700}
+.ideas-scroll-tooltip .sub{color:#c6cbd9;font-size:11px}
+
+@media (max-width:760px){
+  .narrative-copy{max-width:88vw;padding:26px 22px}
+}
+@media (prefers-reduced-motion:reduce){
+  .ideas-scroll-reduced-hide{display:none}
+}
+
+/* Static (reduced-motion) fallback canvases, appended by ideas-scroll.js */
+.narrative-wrapper canvas.ideas-scroll-static{width:min(100%,900px);height:auto;
+  margin-top:16px;display:block}

@@ -1,0 +1,995 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A wide range of ideas — Phase 1 → Phase 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400;1,600&family=Noto+Sans+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* ── EC design-system tokens, copied from viz/src/styles/ec-tokens.css.
+   This sketch is white-surface only (see DiscussionSection.svelte's
+   precedent), so only the light-mode subset is needed. ─────────────── */
+:root{
+  --ec-navy:#1c2745; --ec-text-dark:#444444; --ec-text-navy:#1c2745;
+  --ec-border:#d4d4d7; --ec-orange:#e79450; --ec-orange-dark:#e6883b;
+  --ec-link-light:#0d5d90;
+  --ec-font-sans:"Noto Sans","Noto Sans Display",system-ui,sans-serif;
+  --ec-font-display:"Noto Sans Display","Noto Sans",system-ui,sans-serif;
+  --ec-text-hero:47px; --ec-text-h1:37px; --ec-text-h2:30px; --ec-text-h5:20px;
+  --ec-text-body-lg:23px; --ec-text-body:18px; --ec-text-caption:14px; --ec-text-xs:12px;
+  --ec-tracking-tight:-0.02em;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--ec-text-dark);
+  font-family:var(--ec-font-sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2{font-family:var(--ec-font-display);color:var(--ec-text-navy);letter-spacing:var(--ec-tracking-tight)}
+
+/* ── intro ─────────────────────────────────────────────────────────── */
+.wrap{max-width:900px;margin:0 auto;padding:0 28px}
+.intro{padding:88px 0 40px;max-width:720px}
+.eyebrow{font-family:var(--ec-font-sans);font-weight:700;font-size:var(--ec-text-caption);
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ec-orange-dark);margin:0 0 16px}
+h1{font-size:clamp(30px,4.6vw,var(--ec-text-hero));line-height:1.14;margin:0 0 20px;font-weight:700}
+.standfirst{font-size:var(--ec-text-body-lg);color:var(--ec-text-dark);margin:0}
+.rule{height:1px;background:var(--ec-border);margin:44px 0 0}
+
+
+/* ── the shared canvas: fixed full-viewport, sits behind every pinned
+   narrative wrapper. Fades in once beat 1 starts, stays lit through beat
+   3, fades out only when leaving the whole story — see the "canvas
+   visibility" comment in the script for why this deviates from the
+   reference's per-wrapper fade. ────────────────────────────────────── */
+/* width/height set in JS (resize(), inline style) — see its comment for
+   why that, not this stylesheet, is the source of truth for its size */
+#narrative-canvas{position:fixed;top:0;left:0;display:block;
+  z-index:0;opacity:0;transition:opacity .5s;pointer-events:none}
+
+.narrative-wrapper{position:relative;height:100vh;display:flex;
+  align-items:center;justify-content:center;z-index:2}
+.narrative-copy{max-width:640px;margin:0 auto;text-align:center;
+  padding:34px 42px;background:rgba(255,255,255,.94);border-radius:3px;
+  box-shadow:0 0 0 18px rgba(255,255,255,.55),0 0 34px 18px rgba(255,255,255,.4),
+             0 4px 30px rgba(0,0,0,.05);
+  opacity:.06}
+.narrative-copy p{margin:0;font-size:clamp(19px,2.2vw,var(--ec-text-body-lg));line-height:1.5}
+.narrative-copy p + p{margin-top:14px}
+
+/* ── legend + caption, shown only during beat 3 ──────────────────────── */
+/* stacked list, not horizontal chips — the real POLICY_SUBTHEME strings run
+   up to ~66 chars, too long to wrap-and-center as a row of pills */
+/* Horizontal, wrapping row across the bottom — not a stacked list. Full
+   subtheme names run up to ~66 chars, too long for a single line of 8,
+   so each one gets its own small pill and the row wraps to as many
+   lines as it needs, rather than one subtheme per line. */
+.legend{position:fixed;left:0;right:0;bottom:20px;z-index:3;display:flex;
+  flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center;
+  gap:6px 10px;padding:0 24px;opacity:0;transition:opacity .4s;
+  pointer-events:none;font-size:12.5px;line-height:1.3;color:var(--ec-text-dark)}
+.legend.visible{opacity:1}
+.legend .item{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.88);
+  padding:4px 10px 4px 7px;border-radius:30px;box-shadow:0 1px 6px rgba(0,0,0,.05)}
+.legend .swatch{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.caption{position:fixed;top:90px;left:0;right:0;z-index:3;text-align:center;
+  font-size:var(--ec-text-caption);color:var(--ec-text-dark);opacity:0;
+  transition:opacity .4s;pointer-events:none}
+.caption.visible{opacity:1}
+
+/* ── hover tooltip, beat 3 only ──────────────────────────────────────── */
+.tooltip{position:fixed;z-index:10;pointer-events:none;background:var(--ec-navy);
+  color:#fff4eb;padding:10px 13px;border-radius:6px;font-size:13px;line-height:1.45;
+  max-width:280px;opacity:0;transition:opacity .12s;transform:translate(-50%,-100%)}
+.tooltip.visible{opacity:1}
+.tooltip b{display:block;margin-bottom:3px;font-weight:700}
+.tooltip .sub{color:#c6cbd9;font-size:11px}
+
+/* ── outro ─────────────────────────────────────────────────────────── */
+.outro{padding:30px 0 120px;max-width:720px;position:relative;z-index:2;background:#fff}
+.outro h2{font-size:clamp(22px,2.6vw,var(--ec-text-h2));line-height:1.2;margin:0 0 16px}
+.outro p{font-size:var(--ec-text-body);color:var(--ec-text-dark);margin:0 0 14px}
+.note{margin-top:36px;padding:16px 20px;background:#f6f7fa;border-radius:6px;
+  font-size:13.5px;line-height:1.6;color:var(--ec-text-dark)}
+.note b{color:var(--ec-text-navy)}
+.note + .note{margin-top:14px}
+
+@media (max-width:760px){
+  .narrative-copy{max-width:88vw;padding:26px 22px}
+}
+@media (prefers-reduced-motion:reduce){
+  .reduced-hide{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="intro">
+    <p class="eyebrow">Prototype sketch — Phase 1 → Phase 2</p>
+    <h1>From a wide range of ideas to 27 shared ones</h1>
+    <p class="standfirst">Scroll to see how thousands of open-ended survey answers narrowed into the policy ideas Californians discussed and voted on.</p>
+  </div>
+  <div class="rule"></div>
+</div>
+
+<section class="narrative-wrapper" id="narrative-wrapper-1">
+  <div class="narrative-copy"><p>Our poll asked what you’d like government to do about the impact of AI. It was open to all Californians.</p><p>We got a wide range of ideas for good policies.</p></div>
+</section>
+
+<section class="narrative-wrapper" id="narrative-wrapper-2">
+  <div class="narrative-copy"><p>Then we refined those ideas in 2-hour discussions,</p><p>and grouped what people said in these discussions into 27 distinct ideas.</p></div>
+</section>
+
+<section class="narrative-wrapper" id="narrative-wrapper-3">
+  <div class="narrative-copy" style="opacity:0"><p>&nbsp;</p></div>
+</section>
+
+<canvas id="narrative-canvas" aria-hidden="true"></canvas>
+<div class="caption reduced-hide" id="caption">Word size = votes received in the Phase 2 discussions</div>
+<div class="legend reduced-hide" id="legend"></div>
+<div class="tooltip" id="tooltip"></div>
+
+<div class="wrap">
+  <div class="outro">
+    <h2>What happens next</h2>
+    <p>Placeholder closing copy — this is where the findings, the action plan, or a call to stay involved would sit.</p>
+    <div class="note"><b>Prototype on published data.</b> The Phase 1 ideas are the
+      229 poll labels published on engaged.ca.gov
+      (<code>/public/data/ai-report-ideas-cloud.json</code>), with their published counts and subthemes.
+      An earlier internal version of this sketch used a larger, unpublished label set; it is not in this repo.</div>
+    <div class="note"><b>The two sets are linked by subtheme only.</b> There is no id connecting any
+      of the 337 Phase 1 ideas to any of the 27 Phase 2 ideas — only the 8 subthemes are shared
+      between the two exports. The animation above never claims a specific Phase 1 idea became a
+      specific Phase 2 idea; it shows the 8 subthemes consolidating, then the 27 ideas arriving
+      separately.</div>
+    <div class="note">Self-selected public consultation, not a probability sample. Percentages and
+      counts describe the people who responded, not Californians as a whole.</div>
+  </div>
+</div>
+
+<!-- data files change often and the static server sends no Cache-Control, so
+     browsers kept serving stale copies (seen 2026-09-17: old lowercase labels
+     after a regeneration). Load them with a per-load cache-buster; library files
+     below stay ordinary script tags. -->
+<script>
+  document.write('<script src="whirl-data.js?t=' + Date.now() + '"><\/script>');
+  document.write('<script src="whirl-finale-layout.js?t=' + Date.now() + '" onerror="console.info(\'no whirl-finale-layout.js (fine — computing the finale layout)\')"><\/script>');
+</script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<!-- d3-cloud (Jason Davies) — a purpose-built, widely-used word-cloud
+     layout: pixel-accurate glyph-mask collision (not a box/circle
+     approximation), guaranteeing true zero overlap. Attaches as
+     d3.layout.cloud() when loaded after d3 core, per its own UMD wrapper.
+
+     Self-hosted, not the CDN copy: this is a small fork (d3-cloud-
+     multiline.js) that patches cloudSprite() to draw a word's `.lines`
+     array (multiple fillText calls, one per line) instead of always a
+     single line. Upstream d3-cloud has no concept of wrapped text at
+     all — one fillText per word — and multi-line labels came up as a
+     real requirement, not just a look, so this is a minimal patch to the
+     one function that needed it, not a reason to drop the library.
+
+     2026-09-17: five further patches, each marked "PATCH n" in the file,
+     after a per-word pixel check found the collision mask did not contain
+     the drawn ink: (1) the 2-line sprite box was 0.61em above the first
+     baseline but Noto Sans ascenders reach 0.765em, so the top of every
+     2-line label was outside its own mask — this was 100% of the residual
+     overlap; (2) the mask was rasterized at ~~size+1 px while this file
+     draws at the fractional size, so mask glyphs were ~3% wider and
+     letters drifted off their own mask; (3) sprite width had no room for
+     the padding stroke; (4) an optional per-word search start point
+     (d.seedX/d.seedY) for controlling the layout's texture; (5) a NaN-size
+     guard, since a NaN size makes the spiral loop never terminate.
+     Single-line words no longer render byte-for-byte like unpatched
+     d3-cloud (patch 2 changes the mask's font size), deliberately. The
+     spiral search and the bitmask collision test are untouched. Evidence
+     and the verifier: sketches/wordcloud-verify/. -->
+<script src="d3-cloud-multiline.js"></script>
+<!-- shared layout engine, extracted from this file: measurement, wrapping,
+     seeding, d3-cloud runs, finale selection, drawWord -->
+<script src="whirl-layout.js"></script>
+<script src="https://unpkg.com/lenis@1.3.8/dist/lenis.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+/* =====================================================================
+   Policy-ideas whirl — a 337-word cloud of the Phase 1 concepts, one
+   shared scroll story, one finale cloud of the 27 Phase 2 ideas.
+   ("Drifting currents" and "constellation drift" were two earlier
+   treatments, tried and dropped — the word cloud is now the only one.)
+
+   Scroll mechanic ported from the reference page's actual inline code
+   (engaged.ca.gov/lafires-recovery/action-plan/ — Lenis 1.3.8 + GSAP
+   ScrollTrigger, three pinned beats, non-reversing on scroll-back). Word
+   layout uses d3-cloud (see its own comment further down), not the
+   Archimedean-spiral packer in viz/src/lib/phase1Cloud.ts or cloud.ts.
+   ===================================================================== */
+(function(){
+  "use strict";
+  const DATA = window.WHIRL_DATA;
+  const SUBTHEMES = DATA.subthemes;               // 8, with .color
+
+  // ---- seeded RNG (same mulberry32 as v5 / phase1Cloud.ts) ------------
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  const rand = mulberry32(20260826);
+
+  const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
+  const lerp = (a,b,t) => a + (b-a)*t;
+  const ease = t => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2; // easeInOutCubic
+
+  // ---- canvas / field geometry -----------------------------------------
+  // Enlarged from an original 1100x760 — "spread out to fill the entire
+  // screen" turned out to be a real, measurable constraint, not just an
+  // aesthetic complaint. Tuned against real canvas rasterization with the
+  // actual Noto Sans font file registered (not Node's default fallback
+  // font, which measured ~4.5% narrower than the real one and gave a
+  // false pass at a smaller size) and the real 337/27 label text, not
+  // synthetic stand-ins — both mattered: an earlier pass at 1800x1000
+  // with a placeholder font dropped 0 labels, but at the real font it
+  // dropped 113 of 337. 2400x1300 is what it actually took to place every
+  // one of the 337 (and all 27 finale) labels at their full intended
+  // size with zero drops. Still a widescreen-ish ratio (1.85:1, vs
+  // 16:9's 1.78:1), so most screens letterbox close to filling it.
+  const W = 2400, H = 1300;
+  // Kept at their original 1800x1000-era absolute values, not scaled up
+  // proportionally — the zero-drop verification above was run against
+  // exactly these margins (fieldW/fieldH = W/H minus these), so changing
+  // them without re-testing would silently invalidate that result.
+  const FIELD = { top: 90, bottom: 70, side: 30 };
+  const CX = W/2, CY = FIELD.top + (H - FIELD.top - FIELD.bottom)/2;
+
+  const canvas = document.getElementById('narrative-canvas');
+  let ctx = canvas.getContext('2d');   // reassigned briefly by the reduced-motion fallback
+  const canvasFit = { scale:1, offX:0, offY:0, dpr:1 };
+  function resize(){
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = { w: window.innerWidth, h: window.innerHeight };
+    canvas.width = rect.w * dpr; canvas.height = rect.h * dpr;
+    // Set the CSS box size explicitly via inline style, in px, rather than
+    // trusting `width:100vw;height:100vh` in the stylesheet to win against
+    // the canvas's own width/height attributes (which drive the backing
+    // buffer's resolution, not its layout size) — a <canvas> is a replaced
+    // element, and relying on `inset:0` plus viewport units to override its
+    // intrinsic attribute-driven size was exactly what left it oversized
+    // and running off-screen. An inline style set here always wins.
+    canvas.style.width = rect.w + 'px';
+    canvas.style.height = rect.h + 'px';
+    canvasFit.dpr = dpr;
+    // fit the WxH field inside the viewport, letterboxed, centered
+    const scale = Math.min(rect.w / W, rect.h / H) * 0.94;
+    canvasFit.scale = scale;
+    canvasFit.offX = (rect.w - W*scale)/2;
+    canvasFit.offY = (rect.h - H*scale)/2;
+  }
+  window.addEventListener('resize', () => { resize(); });
+  resize();
+
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- shared layout engine (sketches/whirl-layout.js) --------------------
+  // Text measurement, 2-line wrapping, d3-cloud runs, finale seeding +
+  // candidate selection and drawWord all live in whirl-layout.js, extracted
+  // from this file on 2026-09-17 so ideas-we-heard-inline-v1.html lays out
+  // and draws identically. Multi-line labels: the fork of d3-cloud
+  // (d3-cloud-multiline.js) draws a word's `.lines` array, so word records
+  // carry both `.lines` (what is drawn and what sizes the mask) and `.label`
+  // (the raw string, for hover/tooltips).
+  const WL = WhirlLayout({ rand, cloud: () => d3.layout.cloud(), measureCtx: ctx });
+  const { fontStr, textWidth, wrapTwoLines } = WL;
+
+  // ---- sizing ------------------------------------------------------------
+  const MAX_COUNT = Math.max(...DATA.phase1.map(c => c.count));      // 430
+  const MAX_VOTES = Math.max(...DATA.phase2.map(c => c.votes));      // 44
+  // Poll-cloud sizing has two modes, chosen by ?size=count (default) or
+  // ?size=rank (an experiment asked for on 2026-09-17):
+  //  - count: size grows with the number of people who raised the idea,
+  //    compressed by a 0.6 power so the 430:1 spread stays legible;
+  //  - rank: dense rank of the count (430 -> 1, 366 -> 2, ... ties share a
+  //    rank; 25 distinct counts in this export), size falls linearly with
+  //    rank (or by &pow=). The 298 one-off ideas share the smallest size in
+  //    both modes; the ~26 mid-range ideas spread evenly across sizes in rank
+  //    mode instead of bunching near the bottom. Rank mode makes size
+  //    ordinal, not proportional — the caption must say so.
+  const OPTS = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams(Object.entries(window.__WHIRL_OPTS || {}));
+  const SIZE_MODE = OPTS.get('size') === 'rank' ? 'rank' : 'count';
+  const RANK_POW = +(OPTS.get('pow') || 1);
+  const DISTINCT_COUNTS = [...new Set(DATA.phase1.map(c => c.count))].sort((a, b) => b - a);
+  const rankOf = n => DISTINCT_COUNTS.indexOf(n) + 1;
+  function phase1FontSize(n){
+    if (SIZE_MODE === 'rank') return 11 + 26 * Math.pow(1 - (rankOf(n) - 1) / (DISTINCT_COUNTS.length - 1), RANK_POW);
+    return 11 + 26 * Math.pow(n/MAX_COUNT, 0.6);
+  }
+  if (SIZE_MODE === 'rank') console.log(`whirl: poll cloud sized by RANK (${DISTINCT_COUNTS.length} ranks, pow ${RANK_POW})`);
+  // FINALE_SCALE is one uniform multiplier on the whole finale, so the ratio
+  // between any two ideas' sizes (what "size = votes" communicates) is
+  // untouched; it only sets how much of the shared field the 27 fill. With
+  // the tight central seeding below, 1.3 verified 2026-09-17 at 27/27
+  // placed, zero overlap, 88% of the field spanned; 1.35 also placed all
+  // 27 but 1.4 dropped labels, and the browser's rasterizer differs a
+  // little from the Node one the checks ran on, so 1.3 keeps headroom. A
+  // dropped label would be drawn at the field centre (see
+  // layoutWordClouds), which is exactly the overlap this file must never
+  // show — watch the dev check's dropped count if this is raised.
+  // ?finale=<multiplier> overrides this for side-by-side comparison (the
+  // fork's PATCH 7, 2026-09-17, trimmed ~0.75em of blank mask under every
+  // word, so the 27 now pack much tighter at 1.3 and there is room to go up).
+  // A kept layout for this field (whirl-finale-layout.js) carries its own
+  // font multiplier (relative to the 1.3 base); adopt it, or the saved
+  // positions would never match the font sizes built here and the layout
+  // would silently be recomputed. An explicit ?finale= still wins.
+  const SAVED_FINALE = window.WHIRL_FINALE_LAYOUTS && window.WHIRL_FINALE_LAYOUTS[`${W - FIELD.side*2}x${H - FIELD.top - FIELD.bottom}`];
+  const FINALE_SCALE = +(OPTS.get('finale') || (SAVED_FINALE && SAVED_FINALE.fontMultiplier ? 1.3 * SAVED_FINALE.fontMultiplier : 1.3));
+  if (SAVED_FINALE && !OPTS.get('finale')) console.log(`whirl finale: sizing at the kept layout's multiplier x${SAVED_FINALE.fontMultiplier} (${FINALE_SCALE.toFixed(4)} of base)`);
+  // ?pack=dense: classic compact d3-cloud packing (all words spiral out from
+  // the centre; ~30% denser) instead of the designed skeleton + hole-filling
+  // seeding. Try with a larger ?finale=, e.g. ?pack=dense&finale=1.55.
+  const PACK = OPTS.get('pack') === 'dense' ? 'dense' : 'designed';
+  function phase2FontSize(v){ return (17 + 29 * Math.sqrt(v/MAX_VOTES)) * FINALE_SCALE; }
+
+  // ---- build word records -----------------------------------------------
+  const words337 = DATA.phase1.map((c, i) => {
+    const fontSize = phase1FontSize(c.count);
+    const lines = wrapTwoLines(c.label, fontSize, 400, fontSize*9.5);
+    const w = Math.max(...lines.map(l => textWidth(l, fontSize, 400))) + 6;
+    const h = lines.length * fontSize * 1.22 + 4;
+    return {
+      i, label: c.label, rawLabel: c.rawLabel, subtheme: c.subtheme,
+      count: c.count, fontSize, lines, w, h,
+      arrivalRand: rand(),
+    };
+  });
+
+  // wrapTwoLines, not wrapToWidth: caps every finale label at 2 lines —
+  // same convention as the 337-cloud above — rather than letting the
+  // longest labels (up to 80 chars) run to 3+ narrower lines. The
+  // tradeoff is real (fewer, wider lines instead of more, narrower
+  // ones) and was re-verified against the real registered font after
+  // making this change: still zero drops, zero overlap for all 27.
+  const words27 = DATA.phase2.map((c, i) => {
+    const fontSize = phase2FontSize(c.votes);
+    const lines = wrapTwoLines(c.label, fontSize, 700, fontSize*11);
+    const w = Math.max(...lines.map(l => textWidth(l, fontSize, 700))) + 8;
+    const h = lines.length * fontSize * 1.22 + 6;
+    return {
+      i, label: c.label, subtheme: c.subtheme, votes: c.votes, sessions: c.sessions,
+      order: c.order, fontSize, lines, w, h,
+    };
+  });
+
+  // No ambient "wind field" bob anymore — once a word arrives at its
+  // packed position (cloud/constellation in beat 1, the finale in beat
+  // 3), it now holds there exactly, rather than continuously wobbling.
+  // That wasn't just an aesthetic call: those positions are the ones
+  // d3-cloud verified as non-overlapping, and perturbing them afterward
+  // with a sinusoidal offset — however small — moves words off the exact
+  // spot that guarantee was computed for, which is a real way overlaps
+  // can creep back in on top of an otherwise-correct layout. Only the
+  // arrival animation (the lerp from a word's entrance point to its
+  // settled one) is still animated; the settled state itself is static.
+
+  // =======================================================================
+  // Subtheme anchors on a loose golden-angle ring — the beat-2 dissolve
+  // target the 337 travel toward as they consolidate into 8 masses of
+  // color before the finale fades up (see the "8 masses" note in the
+  // plan: that dissolve target is an independent visual, not tied to the
+  // finale's own — deliberately interleaved — positions). Two prior
+  // treatments that also used this ring ("constellation drift" and
+  // "drifting currents") were dropped from the whirl entirely, leaving
+  // the word cloud as the only beat-1 treatment; this ring survives only
+  // as the dissolve's own destination.
+  // =======================================================================
+  const GOLDEN_ANGLE = 2.399963229728653;
+  const ringRX = (W - FIELD.side*2)/2 * 0.62;
+  const ringRY = (H - FIELD.top - FIELD.bottom)/2 * 0.62;
+  const SUBTHEME_ANCHOR = SUBTHEMES.map((s, i) => {
+    const angle = i * GOLDEN_ANGLE;
+    return [ CX + Math.cos(angle)*ringRX, CY + Math.sin(angle)*ringRY ];
+  });
+  // per-word arrival stagger across beat 1's 0-0.45 arrival window
+  words337.forEach(w => { w._arrivalDelay = w.arrivalRand * 0.75; });
+
+  // =======================================================================
+  // Word-cloud packing — d3-cloud (Jason Davies), a purpose-built,
+  // widely-used word-cloud layout. Used for both Layout 3 (the 337-word
+  // cloud) and the finale (27 ideas).
+  //
+  // Two general-purpose libraries were tried and dropped before this one
+  // — worth recording why, since both looked like the obvious choice at
+  // first:
+  //  - d3-hierarchy's pack() computes guaranteed non-overlapping CIRCLES,
+  //    but reading its actual source (pack/index.js) showed it silently
+  //    skips its own rescale-to-fit-size step whenever a custom .radius()
+  //    accessor is supplied — needed here, since sizes come from measured
+  //    text, not from pack()'s own value-based area accounting. `.size()`
+  //    only sets an initial center offset in that mode, not a size
+  //    constraint. Confirmed empirically too: packing the real 337 labels
+  //    this way produced a layout ~3.5x this canvas's size in each axis.
+  //  - d3-force's forceCollide (a scatter-then-relax simulation) avoided
+  //    that specific bug, but its equilibrium for this data (labels vary
+  //    430:1 by count) settled much LOOSER than the raw box-area math
+  //    suggested was needed — confirmed this wasn't a tuning problem by
+  //    independently sweeping centering strength, repulsion strength,
+  //    tick count, and alpha decay; none of them meaningfully closed the
+  //    gap. Every bit of area a layout needs beyond its target field
+  //    converts directly into smaller rendered text — there's no
+  //    implementation trick around that arithmetic — so this path kept
+  //    trading either overlap or legibility, never actually removing
+  //    the tradeoff.
+  //
+  // d3-cloud sidesteps both problems: it's a real spiral SEARCH (not a
+  // relax-from-scatter or a one-shot enclosing-circle computation) that
+  // tests each candidate position against an actual rasterized glyph
+  // mask — pixel-accurate collision, not a circle/box approximation — and
+  // naturally uses however much of the given size it needs, up to the
+  // full canvas. Verified with real canvas rasterization (Node + the
+  // `canvas` npm package, not just measureText, since collision here
+  // depends on actual rendered pixels) that at this file's enlarged W/H,
+  // every one of the 337 labels (and all 27 finale ones) places at FULL
+  // intended font size with zero drops and zero overlap.
+  //
+  // Still not the Archimedean-spiral word-cloud LOOK this file has
+  // otherwise avoided in its own hand-rolled layouts — that avoidance was
+  // about a specific hand-tuned visual outcome, not a blanket rule against
+  // any algorithm that happens to search outward from a point. A mature,
+  // battle-tested implementation earns re-opening that question where two
+  // different hand-rolled alternatives both failed empirically.
+  //
+  // Upstream d3-cloud rasterizes exactly one fillText() call per word and
+  // has no concept of wrapped multi-line text; the self-hosted fork adds
+  // `.lines` support — see the <script> comment where it is loaded.
+  //
+  // Async — d3-cloud runs its placement loop via setInterval — so this
+  // returns a Promise. Mutates each item in `items` in place (adds x, y,
+  // x0, x1, y0, y1 — d3-cloud's own convention, x/y relative to canvas
+  // CENTER) and resolves with just the subset that placed; dropped items
+  // are left without those fields, which callers must check for.
+  // Seeding (skeleton + hole-filling fillers), synchronous d3-cloud runs and
+  // the best-of-N finale selection: see whirl-layout.js for the code and the
+  // reasoning comments that used to live here.
+  const { layoutWithD3Cloud, layoutFinaleBalanced } = WL;
+
+  const fieldW = W - FIELD.side*2, fieldH = H - FIELD.top - FIELD.bottom;
+
+  // Tried giving the finale its OWN narrower field (less width than the
+  // shared 2340, same height) specifically to fix "large gaps, non-cloud
+  // shape" — the 27 finale words only need ~65% of the shared field's
+  // height, geometrically well-packed on their own terms (packing
+  // density there is already ~65%, and d3-cloud's collision is
+  // pixel-accurate, not boxy — verified, see layoutWithD3Cloud's own
+  // comment) but reading as sparse against all that empty canvas. Also
+  // tried simply enlarging the finale's own font size, for the same
+  // reason, on the SHARED field.
+  //
+  // Reverted both at the time: every version of either change that
+  // improved fill reopened a handful of genuine pixel-level overlaps.
+  // 2026-09-17: that sensitivity is now explained and fixed — it was the
+  // fork's 2-line sprite box clipping the first line's ascenders out of
+  // the collision mask (see the fork's PATCH 1), so whether a neighbour
+  // landed in that unmasked strip was luck of the layout. With the fork
+  // fixed, a narrower finale field (1600 wide) and a 1.25x finale font
+  // both verify at zero overlap (sketches/wordcloud-verify/). The finale
+  // still uses the shared field here; re-tightening it is now a pure
+  // design choice, not a correctness risk.
+  const finaleFieldW = fieldW, finaleFieldH = fieldH;
+  const finaleInsetX = FIELD.side, finaleInsetY = FIELD.top;
+
+  // ---- Layout 3: animating word cloud ------------------------------------
+  // "home" is the beat-1 flight-in scatter (unchanged); "target" is filled
+  // in once the async d3-cloud layout resolves — see boot() at the bottom
+  // of this file, which awaits it before the story can start.
+  const cloudHome = words337.map(w => {
+    // heavier ideas start already nearer the middle; the long tail starts
+    // further out — a natural "big ideas already central" seed.
+    const spread = 60 + 420 * (1 - Math.sqrt(w.count/MAX_COUNT));
+    const a = rand()*Math.PI*2, r = rand()*spread;
+    return [ CX + Math.cos(a)*r, CY + Math.sin(a)*r*0.68 ];
+  });
+  let cloudTarget = null; // [[x,y], ...] aligned to words337 — set below, awaited by boot()
+
+  // ---- Finale: the 27 Phase 2 ideas --------------------------------------
+  let finalePos = null; // set below, awaited by boot()
+  // stagger order for the fade-up: roughly by display order, lightly shuffled
+  const finaleDelay = words27.map((w,i) => (i/words27.length)*0.6 + rand()*0.25);
+
+  /** Runs both d3-cloud layouts, then converts each placed word's
+   * canvas-center-relative (x,y) into this file's absolute field
+   * coordinates, writing the results into `cloudTarget`/`finalePos`.
+   * Dropped words (should be none — verified empirically above, but
+   * d3-cloud gives no compile-time guarantee) fall back to the field
+   * center rather than leaving a hole in the array. */
+  /** A layout kept in finale-layout-picker-v1.html (sketches/whirl-finale-layout.js,
+   * window.WHIRL_FINALE_LAYOUTS keyed "WxH") wins when its field, labels,
+   * line breaks and font sizes all match the words built here; otherwise
+   * the normal best-of-N selection runs. */
+  function useSavedOrLayoutFinale(items, opts){
+    const saved = window.WHIRL_FINALE_LAYOUTS && window.WHIRL_FINALE_LAYOUTS[`${opts.width}x${opts.height}`];
+    if (saved && WL.applySavedFinale(saved, items, opts.width, opts.height)){
+      console.log(`whirl finale: using kept layout seed ${saved.seed} (${saved.createdAt}) from whirl-finale-layout.js`);
+      return items.slice();
+    }
+    if (saved) console.warn('whirl finale: whirl-finale-layout.js present but does not match this field/labels/font sizes — computing instead');
+    // Never ship a layout with dropped labels (a dropped label used to be
+    // drawn at the field centre — on top of whatever was there). The
+    // designed (skeleton) selection needs more room than d3-cloud's plain
+    // seeding, so: balanced first; if it drops, plain seeding at the same
+    // size; if that drops too, rebuild 4% smaller and repeat.
+    let mult = 1;
+    for (let k = 0; k < 10; k++, mult *= 0.96){
+      if (k > 0) items.forEach(w => {
+        w.fontSize = phase2FontSize(w.votes) * mult;
+        w.lines = wrapTwoLines(w.label, w.fontSize, 700, w.fontSize*11);
+        w.w = Math.max(...w.lines.map(l => textWidth(l, w.fontSize, 700))) + 8; w.h = w.lines.length * w.fontSize * 1.22 + 6;
+      });
+      items.forEach(w => { delete w.sprite; delete w.x; delete w.y; delete w.seedX; delete w.seedY; });
+      let placed = layoutFinaleBalanced(items, opts);
+      if (placed.length === items.length){ if (k > 0) console.log(`whirl finale: needed a uniform ${mult.toFixed(3)}x to place all 27 (balanced)`); return placed; }
+      items.forEach(w => { delete w.sprite; delete w.x; delete w.y; delete w.seedX; delete w.seedY; });
+      placed = layoutWithD3Cloud(items, opts);
+      if (placed.length === items.length){ console.log(`whirl finale: balanced selection dropped labels at ${mult.toFixed(3)}x; using plain d3-cloud seeding at that size`); return placed; }
+    }
+    return layoutWithD3Cloud(items, opts);
+  }
+  /** Poll cloud with a safety net: if anything drops at the intended sizes,
+   * rebuild every label at a uniform multiplier 4% smaller and retry (ratios
+   * between ideas unchanged). At the default field and count sizing the
+   * first attempt places all 337, so this is a no-op there. */
+  function layoutCloudFitted(items, opts){
+    let mult = 1;
+    for (let k = 0; k < 12; k++, mult *= 0.96){
+      if (k > 0) items.forEach(w => {
+        w.fontSize = phase1FontSize(w.count) * mult;
+        w.lines = wrapTwoLines(w.label, w.fontSize, 400, w.fontSize*9.5);
+        w.w = Math.max(...w.lines.map(l => textWidth(l, w.fontSize, 400))) + 6; w.h = w.lines.length * w.fontSize * 1.22 + 4;
+        delete w.sprite; delete w.x; delete w.y;
+      });
+      const placed = layoutWithD3Cloud(items, opts);
+      if (placed.length === items.length){ if (k > 0) console.log(`whirl: poll cloud needed a uniform ${mult.toFixed(3)}x to place all ${items.length}`); return placed; }
+    }
+    return layoutWithD3Cloud(items, opts);
+  }
+  async function layoutWordClouds(){
+    // padding 2 (was 1) for the cloud: the non-overlap guarantee is exact in
+    // layout pixels, but the screen canvas resamples the layout by
+    // canvasFit.scale*dpr (~0.6 on a 1x display), so an anti-aliased fringe of
+    // up to 1 screen px = ~1.7 layout px can appear around every glyph. The
+    // padding stroke has to exceed that. Verified 2026-09-17: still 337/337
+    // placed at this field with padding 2 (sketches/wordcloud-verify/).
+    const [cloudPlaced, finalePlaced] = await Promise.all([
+      layoutCloudFitted(words337, { width: fieldW, height: fieldH, padding: 2, weight: 400 }),
+      useSavedOrLayoutFinale(words27, { width: finaleFieldW, height: finaleFieldH, padding: 2, weight: 700, pack: PACK }),
+    ]);
+    // d3-cloud sets d.x/d.y on EVERY word as a placement-search seed
+    // before it knows whether that word will fit — including ones it
+    // ultimately drops. `typeof w.x === 'number'` can't tell placed from
+    // dropped; only membership in the resolved `placed` array can.
+    const cloudPlacedSet = new Set(cloudPlaced);
+    const finalePlacedSet = new Set(finalePlaced);
+    // A dropped label (should never happen — both layouts step their sizes
+    // down until everything places) is NOT drawn: `null` here, skipped by
+    // the draw loops. It used to be drawn at the field centre, on top of
+    // whatever was there — the one way this page could show an overlap.
+    cloudTarget = words337.map(w => cloudPlacedSet.has(w)
+      ? [w.x + fieldW/2 + FIELD.side, w.y + fieldH/2 + FIELD.top]
+      : null);
+    finalePos = words27.map(w => finalePlacedSet.has(w)
+      ? [w.x + finaleFieldW/2 + finaleInsetX, w.y + finaleFieldH/2 + finaleInsetY]
+      : null);
+    devAssertions(words337.length - cloudPlaced.length, words27.length - finalePlaced.length); // function declaration below — hoisted, safe to call here
+  }
+
+  // =======================================================================
+  // Dev assertions — cheap stand-ins for viz/tests/cloud.test.ts's
+  // silhouette checks, logged once on load rather than asserted with a
+  // test runner (sketches/ has no test harness). Called from
+  // layoutWordClouds() once cloudTarget/finalePos are actually populated
+  // — d3-cloud's placement is async, so these can't run at module-load
+  // time the way earlier (synchronous) versions of this section did.
+  //
+  // No overlap-counting here anymore: d3-cloud's pixel-accurate glyph-mask
+  // collision makes that a guarantee, not something worth re-verifying
+  // with a cruder box check on top of it. What IS worth checking: that
+  // nothing got dropped (its only failure mode — see layoutWithD3Cloud's
+  // own warning for the "did" case), and that the finale interleaves
+  // subthemes rather than clustering them. Since 2026-09-17 that is
+  // enforced by seedFinaleInterleaved() (seed assignment maximises the
+  // minimum same-subtheme distance) rather than left to chance, but the
+  // spiral search can still move a word off its seed, so keep checking.
+  // =======================================================================
+  function devAssertions(cloudDropped, finaleDropped){
+    function distinctPositions(list){
+      const seen = new Set();
+      const pts = list.filter(Boolean);
+      for (const p of pts){ seen.add(p[0].toFixed(1)+','+p[1].toFixed(1)); }
+      return seen.size === pts.length;
+    }
+    console.assert(distinctPositions(cloudTarget), 'cloud: all 337 settle at distinct positions');
+    console.assert(distinctPositions(finalePos), 'finale: all 27 at distinct positions');
+
+    console.assert(cloudDropped === 0, `cloud: expected 0 dropped labels, found ${cloudDropped}`);
+    console.assert(finaleDropped === 0, `finale: expected 0 dropped labels, found ${finaleDropped}`);
+    console.log(`whirl dev check: cloud dropped=${cloudDropped} of ${words337.length}, finale dropped=${finaleDropped} of ${words27.length}`);
+
+    // "don't put similar ideas together": mean nearest-neighbor distance
+    // between same-subtheme pairs should exceed cross-subtheme pairs.
+    function nearestDist(i, sameSubOnly){
+      let best = Infinity;
+      for (let j = 0; j < finalePos.length; j++){
+        if (j === i || !finalePos[j] || !finalePos[i]) continue;
+        if (sameSubOnly && words27[j].subtheme !== words27[i].subtheme) continue;
+        if (!sameSubOnly && words27[j].subtheme === words27[i].subtheme) continue;
+        const dx = finalePos[j][0]-finalePos[i][0], dy = finalePos[j][1]-finalePos[i][1];
+        best = Math.min(best, Math.hypot(dx,dy));
+      }
+      return Number.isFinite(best) ? best : null;
+    }
+    const sameVals = [], crossVals = [];
+    words27.forEach((w,i) => {
+      const s = nearestDist(i, true); if (s !== null) sameVals.push(s);
+      const c = nearestDist(i, false); if (c !== null) crossVals.push(c);
+    });
+    const avg = a => a.reduce((x,y)=>x+y,0)/a.length;
+    const sameAvg = avg(sameVals), crossAvg = avg(crossVals);
+    console.assert(sameAvg > crossAvg,
+      `finale interleaving: same-subtheme nearest avg (${sameAvg.toFixed(0)}) should exceed cross-subtheme (${crossAvg.toFixed(0)})`);
+    console.log(`whirl dev check: same-subtheme nearest avg=${sameAvg.toFixed(1)}px, cross-subtheme=${crossAvg.toFixed(1)}px`);
+  }
+
+  // =======================================================================
+  // Beat state + rendering
+  // =======================================================================
+  // All 337 Phase 1 concepts are always shown — no hide/filter toggle.
+  // (One was tried: hiding the 298 one-off concepts. Dropped — not a
+  // direction worth pursuing.)
+
+  let clock = 0;               // seconds, only advances while the story is on screen
+  let step1 = 0, step2 = 0;    // each beat's own effective progress (post scroll-back logic)
+  let activeStep = 0;          // 0 = none yet, 1/2/3 = which pinned beat is active
+  // Reference-page semantics, replicated faithfully: a SINGLE scrollBack
+  // flag shared by all three triggers (mirrors narrativeDisplay.scrollBack
+  // being one property in the original). Forward-direction callbacks
+  // (onEnter/onLeave) clear it; backward ones (onEnterBack/onLeaveBack) set
+  // it — so re-entering a beat by scrolling UP shows it frozen at its
+  // finished state instead of unwinding, while approaching it normally
+  // (scrolling down) always plays live.
+  let scrollBack = false;
+  // Per beat: has it ever run to its end? The "frozen at finished state"
+  // behaviour (scrollBack) is only meaningful for a beat that has finished.
+  // Found with the ?debug probe: when a pinned beat engages, the scroll
+  // position jumps BACK ~90px for one ScrollTrigger update (pin-spacer /
+  // anticipatePin adjustment under Lenis), which fires onLeaveBack and set
+  // scrollBack=true on the very first forward pass — so beat 2 drew its END
+  // state (the full finale) for ~80ms before the dissolve started, and beat 1
+  // flashed its full cloud and hid the canvas. Gating on `completed` makes
+  // that jitter harmless: an unfinished beat just keeps showing its progress.
+  const completed = [false, false, false, false];
+
+  function beatProgress(rawT){ return scrollBack ? 1 : rawT; }
+
+  // ?debug — records every ScrollTrigger callback and what each frame drew,
+  // readable as window.__whirlLog; used to chase a "phase 2 blip" between
+  // beats 1 and 2. No effect without the flag.
+  const DEBUG = typeof location !== 'undefined' && /[?&]debug/.test(location.search || '');
+  const dbg = DEBUG ? (ev, extra) => { (window.__whirlLog = window.__whirlLog || []).push(Object.assign({ t: performance.now()|0, ev, scrollY: window.scrollY|0, activeStep, scrollBack, step1: +step1.toFixed(3), step2: +step2.toFixed(3) }, extra || {})); } : () => {};
+
+  // ---- per-frame draw ----------------------------------------------------
+  /** Renders at the EXACT vertical anchor d3-cloud-multiline.js's patched
+   * cloudSprite() assumed when it built the collision mask this word was
+   * placed against — textBaseline 'alphabetic' (canvas default, and what
+   * cloudSprite uses via a plain, un-set-baseline fillText), each line's
+   * baseline at `y + startY + i*lh` with the SAME lineHeight formula
+   * (fontSize*1.22) and the SAME line-count centering.
+   *
+   * This wasn't cosmetic: this file used to draw with textBaseline
+   * 'middle' instead, which anchors a glyph's visual center at y — a
+   * different point than a baseline sitting at y (real Noto Sans ink
+   * centers roughly a quarter of an em ABOVE its own baseline, since
+   * ascenders run taller than descenders run deep). d3-cloud's own
+   * non-overlap guarantee is real and pixel-accurate, but only for
+   * wherever IT rasterized the glyph — drawing it somewhere else,
+   * however slightly, draws it somewhere that guarantee never covered.
+   * Verified by rasterizing the actual output and checking for
+   * genuinely intersecting opaque pixels (not just box math) before and
+   * after this fix. */
+  function drawWord(text_lines, x, y, fontSize, weight, color, alpha, scale){
+    WL.drawWord(ctx, text_lines, x, y, fontSize, weight, color, alpha, scale);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; // restore render()'s per-frame defaults
+  }
+
+  const hitTargets = []; // rebuilt every frame during beat 3, for hover
+
+  function render(){
+    ctx.save();
+    // ctx.canvas, not the outer `canvas` const, so this also works when the
+    // reduced-motion fallback below briefly points `ctx` at a mini canvas.
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.setTransform(
+      canvasFit.scale * canvasFit.dpr, 0, 0,
+      canvasFit.scale * canvasFit.dpr, 0, 0);
+    ctx.translate(canvasFit.offX/canvasFit.scale, canvasFit.offY/canvasFit.scale);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    hitTargets.length = 0;
+
+    dbg('render');
+    if (activeStep === 1){
+      drawBeat1();
+    } else if (activeStep === 2){
+      drawBeat2();
+    } else if (activeStep >= 3){
+      drawBeat3();
+    }
+
+    ctx.restore();
+  }
+
+  function drawBeat1(){
+    const t = beatProgress(step1);
+    const arrive = w => ease(clamp01((t - w._arrivalDelay*0.6 - 0.02) / 0.5));
+    words337.forEach((w, idx) => {
+      if (!cloudTarget[idx]) return;
+      const a = arrive(w);
+      if (a <= 0.01) return;
+      const k = ease(a);
+      const x = lerp(cloudHome[idx][0], cloudTarget[idx][0], k);
+      const y = lerp(cloudHome[idx][1], cloudTarget[idx][1], k);
+      drawWord(w.lines, x, y, w.fontSize, 400, SUBTHEMES[w.subtheme].color, a);
+    });
+  }
+
+  function drawBeat2(){
+    const t = beatProgress(step2);
+    const dissolveT = clamp01(t / 0.85);
+    const dEase = ease(dissolveT);
+    // where each of the 337 currently sits — its arrived cloud position,
+    // since beat 1 always finishes before beat 2 begins.
+    words337.forEach((w, idx) => {
+      const startPos = cloudTarget[idx];
+      if (!startPos) return;
+      const anchor = SUBTHEME_ANCHOR[w.subtheme];
+      const x = lerp(startPos[0], anchor[0], dEase);
+      const y = lerp(startPos[1], anchor[1], dEase);
+      const scale = lerp(1, 0.12, dEase);
+      const alpha = 1 - Math.pow(dissolveT, 2.4);
+      if (alpha > 0.01){
+        drawWord(w.lines, x, y, w.fontSize, 400, SUBTHEMES[w.subtheme].color, alpha*0.85, scale);
+      }
+    });
+    // the 27 fade up independently, at their own interleaved positions —
+    // no positional link to the dissolving masses above (see file header).
+    const f = clamp01((t - 0.55) / 0.45);
+    words27.forEach((w, idx) => {
+      if (!finalePos[idx]) return;
+      const a = ease(clamp01((f - finaleDelay[idx]*0.5) / 0.5));
+      if (a <= 0.01) return;
+      const scale = lerp(0.55, 1, a);
+      const [x,y] = finalePos[idx];
+      drawWord(w.lines, x, y, w.fontSize, 700, SUBTHEMES[w.subtheme].color, a, scale);
+    });
+  }
+
+  function drawBeat3(){
+    words27.forEach((w, idx) => {
+      if (!finalePos[idx]) return;
+      const [x,y] = finalePos[idx];
+      drawWord(w.lines, x, y, w.fontSize, 700, SUBTHEMES[w.subtheme].color, 1);
+      hitTargets.push({ x, y, w: w.w, h: w.h, word: w });
+    });
+  }
+
+  // ---- hover (beat 3 only) ------------------------------------------------
+  // Listens on the document, not the canvas, so #narrative-canvas can stay
+  // pointer-events:none (it must not intercept scroll/click from whatever's
+  // stacked above it) while hover still works over its full visual area.
+  const tooltipEl = document.getElementById('tooltip');
+  document.addEventListener('mousemove', (e) => {
+    if (activeStep < 3){ tooltipEl.classList.remove('visible'); return; }
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left - canvasFit.offX) / canvasFit.scale;
+    const my = (e.clientY - rect.top - canvasFit.offY) / canvasFit.scale;
+    const hit = hitTargets.find(h =>
+      mx > h.x - h.w/2 && mx < h.x + h.w/2 && my > h.y - h.h/2 && my < h.y + h.h/2);
+    if (hit){
+      const s = SUBTHEMES[hit.word.subtheme];
+      tooltipEl.innerHTML = `<b>${hit.word.label}</b>${hit.word.votes} votes · ${hit.word.sessions} sessions<div class="sub">${s.fullName}</div>`;
+      tooltipEl.style.left = e.clientX + 'px';
+      tooltipEl.style.top = (e.clientY - 14) + 'px';
+      tooltipEl.classList.add('visible');
+    } else {
+      tooltipEl.classList.remove('visible');
+    }
+  });
+
+  // ---- legend / caption visibility ---------------------------------------
+  const legendEl = document.getElementById('legend');
+  legendEl.innerHTML = SUBTHEMES.map(s =>
+    `<span class="item"><span class="swatch" style="background:${s.color}"></span>${s.fullName}</span>`).join('');
+  const captionEl = document.getElementById('caption');
+
+  function setActiveStep(n){
+    activeStep = n;
+    // visible for both the Phase 1 cloud (beat 1) and the Phase 2 finale
+    // (beat 3) — subtheme colors mean the same thing in both. The
+    // caption ("size = votes") is Phase-2-specific, so it stays gated to
+    // the finale only.
+    legendEl.classList.toggle('visible', n >= 1);
+    captionEl.classList.toggle('visible', n >= 3);
+  }
+
+  // =======================================================================
+  // Scroll wiring — Lenis + GSAP ScrollTrigger, matching the reference
+  // page's own inline setup (normalizeScroll, scrollerProxy,
+  // pin+scrub+anticipatePin, start:"center center+=70"); the timing
+  // values (Lenis duration, pin distance, scrub lag) are deliberately
+  // slower than the reference's — see PIN_EXTEND. Skipped entirely under reduced-motion —
+  // pinning + smooth-scroll hijacking is not something a reduced-motion
+  // reader should be subjected to; that path renders three static
+  // end-state sections instead (see bottom of this block).
+  // =======================================================================
+  function boot(){
+    if (REDUCED){
+      bootReduced();
+      return;
+    }
+    gsap.registerPlugin(ScrollTrigger);
+    ScrollTrigger.normalizeScroll(true);
+    const lenis = new Lenis({
+      duration: 1.6, // reference used 1.2; longer = softer smooth-scroll glide
+      easing: t => Math.min(1, 1.001 - Math.pow(2, -10*t)),
+    });
+    function raf(time){ lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+    ScrollTrigger.scrollerProxy(document.body, {
+      scrollTop(value){ return arguments.length ? lenis.scrollTo(value) : window.scrollY; },
+      getBoundingClientRect(){ return { top:0, left:0, width:innerWidth, height:innerHeight }; },
+      pinType: document.body.style.transform ? 'transform' : 'fixed',
+    });
+
+    // canvas visibility: deliberately continuous across all three beats
+    // (not per-wrapper like the reference), because unlike the reference's
+    // three unrelated illustrations, this story is ONE whirl that must
+    // visibly carry its subtheme colors from beat 1 through beat 3 — a
+    // fade-out/back-in between beats would break that continuity.
+    let hideTimer = null;
+    function showCanvas(){ if (hideTimer){ clearTimeout(hideTimer); hideTimer = null; } canvas.style.opacity = 1; }
+    function hideCanvas(){ canvas.style.opacity = 0; }
+    // debounced: the pin-engage scroll jitter (see `completed`) fires
+    // onLeaveBack on beat 1 for ~80ms on a normal forward scroll; a real
+    // scroll-up out of the story lasts longer than that
+    function hideCanvasSoon(){ if (hideTimer) clearTimeout(hideTimer); hideTimer = setTimeout(() => { hideTimer = null; hideCanvas(); }, 180); }
+
+    // Slowed from the reference's end:"+=1000" / scrub:true — that read as
+    // snappy: one flick of the wheel ran a whole beat. A longer pinned
+    // distance spreads each beat across more scroll, and a numeric scrub
+    // lets the drawing ease toward the scroll position over ~1.4s instead
+    // of tracking it instantly.
+    const PIN_EXTEND = 1800;
+    const SCRUB = 1.4;
+    gsap.to({}, { scrollTrigger: {
+      trigger: '#narrative-wrapper-1', start: 'center center+=70', end: `+=${PIN_EXTEND}`,
+      scrub: SCRUB, pin: true, anticipatePin: true,
+      onUpdate(self){ dbg('1.onUpdate', { p: +self.progress.toFixed(3) }); setActiveStep(1); step1 = self.progress; if (step1 >= 1) completed[1] = true; render(); },
+      onEnter(){ dbg('1.onEnter'); scrollBack = false; showCanvas(); setActiveStep(1); },
+      onLeave(){ dbg('1.onLeave'); scrollBack = false; completed[1] = true; },
+      onEnterBack(){ dbg('1.onEnterBack'); scrollBack = completed[1]; showCanvas(); setActiveStep(1); },
+      onLeaveBack(){ dbg('1.onLeaveBack'); scrollBack = completed[1]; hideCanvasSoon(); },
+    }});
+
+    gsap.to({}, { scrollTrigger: {
+      trigger: '#narrative-wrapper-2', start: 'center center+=70', end: `+=${PIN_EXTEND}`,
+      scrub: SCRUB, pin: true, anticipatePin: true,
+      onUpdate(self){ dbg('2.onUpdate', { p: +self.progress.toFixed(3) }); setActiveStep(2); step2 = self.progress; if (step2 >= 1) completed[2] = true; render(); },
+      onEnter(){ dbg('2.onEnter'); scrollBack = false; setActiveStep(2); },
+      onLeave(){ dbg('2.onLeave'); scrollBack = false; completed[2] = true; },
+      onEnterBack(){ dbg('2.onEnterBack'); scrollBack = completed[2]; setActiveStep(2); },
+      onLeaveBack(){ dbg('2.onLeaveBack'); scrollBack = completed[2]; },
+    }});
+
+    gsap.to({}, { scrollTrigger: {
+      trigger: '#narrative-wrapper-3', start: 'center center+=70', end: `+=${PIN_EXTEND}`,
+      scrub: true, pin: false,
+      onUpdate(){ dbg('3.onUpdate'); setActiveStep(3); render(); },
+      onEnter(){ dbg('3.onEnter'); scrollBack = false; setActiveStep(3); completed[3] = true; render(); },
+      onLeave(){ dbg('3.onLeave'); scrollBack = false; completed[3] = true; },
+      onEnterBack(){ dbg('3.onEnterBack'); scrollBack = completed[3]; setActiveStep(3); render(); },
+      // no hideCanvas here: leaving beat 3 upwards goes back INTO the story
+      // (beat 2), and per the "canvas visibility" note the canvas only fades
+      // out when leaving the whole story above beat 1
+      onLeaveBack(){ dbg('3.onLeaveBack'); scrollBack = completed[3]; },
+    }});
+
+    // copy opacity — a separate, non-pinned trigger per wrapper, exactly
+    // the reference's split between the pin trigger and the opacity one.
+    ['#narrative-wrapper-1', '#narrative-wrapper-2'].forEach(sel => {
+      const copy = document.querySelector(sel + ' .narrative-copy');
+      gsap.to({}, { scrollTrigger: {
+        trigger: sel, start: 'top bottom', end: 'bottom top', scrub: true,
+        onUpdate(self){
+          const t = self.progress;
+          let o;
+          if (t < 0.5) o = clamp01((t - 0)/0.3);
+          else o = clamp01(1 - (t - 0.7)/0.3);
+          copy.style.opacity = Math.max(0.06, o).toFixed(3);
+        },
+      }});
+    });
+
+    // ambient rAF: keeps the whirl breathing/drifting/flowing continuously
+    // while any beat is on screen, independent of scroll events.
+    let lastTime = performance.now();
+    function tick(now){
+      const dt = (now - lastTime)/1000; lastTime = now;
+      clock += dt;
+      if (activeStep >= 1) render();
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function bootReduced(){
+    // Static fallback: three plain sections, each with its own small
+    // <canvas> drawn once at that beat's finished state — no Lenis, no
+    // pinning, no continuous animation. Draws by briefly repointing the
+    // module-level `ctx`/`canvasFit` at each mini canvas in turn, since
+    // render()/drawBeat*() close over those rather than taking them as
+    // arguments.
+    document.querySelectorAll('.narrative-copy').forEach(el => el.style.opacity = 1);
+    canvas.style.display = 'none';
+    const savedCtx = ctx;
+    const savedFit = { ...canvasFit };
+    document.querySelectorAll('.narrative-wrapper').forEach((el, i) => {
+      const mini = document.createElement('canvas');
+      mini.width = W; mini.height = H;
+      mini.style.cssText = 'width:min(100%,900px);height:auto;margin-top:16px;display:block';
+      el.style.height = 'auto';
+      el.appendChild(mini);
+
+      ctx = mini.getContext('2d');
+      canvasFit.scale = 1; canvasFit.offX = 0; canvasFit.offY = 0; canvasFit.dpr = 1;
+      step1 = 1; step2 = 1;
+      setActiveStep(i + 1);
+      render();
+    });
+    ctx = savedCtx;
+    Object.assign(canvasFit, savedFit);
+    setActiveStep(3);
+  }
+
+  /** `document.fonts.ready` alone isn't a reliable gate here: it resolves
+   * once every font load the browser has already STARTED finishes, but a
+   * Canvas 2D `ctx.font`/measureText call doesn't itself register as a
+   * "start a font load" trigger the way rendering DOM text does — the
+   * canvas can silently measure/draw with a fallback font while the real
+   * one is still loading, with `.ready` resolving in the meantime none
+   * the wiser. That's the likely cause of overlaps that showed up in the
+   * browser despite the layout verifying at zero overlap in Node (with
+   * the real font file registered directly, sidestepping this exact
+   * gotcha). `document.fonts.load()` for the two exact weight/family
+   * strings this file actually measures with — matching fontStr() and
+   * layoutWithD3Cloud's `.font()` byte-for-byte — forces those specific
+   * loads explicitly rather than hoping something else already triggered
+   * them, before anything measures a single glyph. */
+  async function ensureFontsLoaded(){
+    if (!document.fonts) return;
+    await Promise.all([
+      document.fonts.load("400 16px 'Noto Sans', Arial, sans-serif"),
+      document.fonts.load("700 16px 'Noto Sans', Arial, sans-serif"),
+    ]);
+    await document.fonts.ready; // belt-and-suspenders
+  }
+
+  // The word-cloud layouts must both resolve before boot() — the whole
+  // story is gated on cloudTarget/finalePos existing.
+  ensureFontsLoaded()
+    .then(layoutWordClouds)
+    .then(boot);
+})();
+</script>
+</body>
+</html>

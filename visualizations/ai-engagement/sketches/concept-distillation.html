@@ -1,0 +1,359 @@
+<meta charset="utf-8">
+<title>Phase 1 concepts distilled to Phase 2</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@400;700&family=Noto+Sans:wght@400;600;700&family=Noto+Serif:wght@700&display=swap');
+:root{ --ink:#1E1E1E; --gray:#444444; --line:#DEDEE1; --blue:#0D4F8C; }
+*{box-sizing:border-box}
+body{
+  margin:0;padding:28px 20px 48px;background:#fff;color:var(--ink);
+  font-family:'Noto Sans',Arial,sans-serif;
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+}
+#stage{width:100%;max-width:1040px}
+canvas{width:100%;height:auto;display:block}
+.controls{
+  width:100%;max-width:1040px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+  padding-top:14px;border-top:1px solid var(--line);
+}
+button{
+  font-family:'Noto Sans Mono',ui-monospace,monospace;font-size:12px;letter-spacing:.04em;
+  color:var(--gray);background:transparent;border:1px solid var(--line);border-radius:2px;
+  padding:7px 12px;cursor:pointer;transition:border-color .15s,color .15s;
+}
+button:hover{color:var(--blue);border-color:var(--blue)}
+button[aria-pressed="true"]{color:#fff;background:var(--blue);border-color:var(--blue)}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.scrub{flex:1;min-width:200px;display:flex;align-items:center;gap:9px}
+.scrub label{
+  font-family:'Noto Sans Mono',ui-monospace,monospace;font-size:11px;
+  letter-spacing:.06em;color:var(--gray);white-space:nowrap;
+}
+input[type=range]{flex:1;accent-color:var(--blue);cursor:pointer}
+.hint{width:100%;max-width:1040px;font-size:12.5px;line-height:1.55;color:var(--gray)}
+.hint code{font-family:'Noto Sans Mono',ui-monospace,monospace;font-size:12px;color:var(--blue)}
+.hint b{color:var(--ink);font-weight:600}
+</style>
+
+<div id="stage"><canvas id="c" width="1040" height="800"
+  aria-label="Animation in which 62 loosely defined phase one concepts, sized by how often they were raised, travel into and merge with 25 consolidated phase two concepts, which grow as they absorb them."></canvas></div>
+
+<div class="controls">
+  <button id="play">Pause</button>
+  <button id="restart">Restart</button>
+  <div class="scrub"><label>DISTILL</label><input id="p" type="range" min="0" max="1000" value="0"></div>
+  <button id="loop" aria-pressed="true">Loop</button>
+</div>
+
+<p class="hint"><b>Dummy data</b> — the labels and weights are plausible, not your coded taxonomy. Vocabulary and relative frequencies are drawn from the free-text answers in the two CSVs (<code>data centers</code> 563 mentions, <code>entry level</code> 151, <code>basic income</code> 106, <code>critical thinking</code> 73), then grouped by hand. Replace <code>CONCEPTS</code> with the real thing. Drag the slider to scrub the distillation; space plays or pauses.</p>
+
+<script>
+/* ─────────────────────────────────────────────────────────────
+   DUMMY DATA — replace CONCEPTS with the real coded taxonomy.
+   Each entry is a phase 2 concept; `from` lists the phase 1
+   concepts that collapsed into it, with mention counts.
+   ───────────────────────────────────────────────────────────── */
+const THEMES = [
+  { name:'Jobs & livelihood',      color:'#0D4F8C' },
+  { name:'Economic safety net',    color:'#E3881B' },
+  { name:'Regulation & oversight', color:'#634EAF' },
+  { name:'Data & ownership',       color:'#E45D48' },
+  { name:'Environment & energy',   color:'#3BAA91' },
+  { name:'Trust & judgment',       color:'#A35F0E' }
+];
+
+const CONCEPTS = [
+  { label:'Entry-level job loss', theme:0, from:[['no entry-level roles',151], ['new grads shut out',88], ['internships vanishing',44], ['first rung gone',31]]},
+  { label:'Routine work displaced', theme:0, from:[['customer service',67], ['data entry replaced',52], ['call centers cut',38], ['admin roles cut',35]]},
+  { label:'Middle-class erosion', theme:0, from:[['middle class squeeze',43], ['wage stagnation',37], ['fewer stable careers',29]]},
+  { label:'Jobs created vs lost', theme:0, from:[['new AI jobs',61], ['net job numbers',40], ['work shifts, not gone',33]]},
+  { label:'Retraining', theme:0, from:[['community college',58], ['employer upskilling',41], ['mid-career transitions',30]]},
+  { label:'Universal basic income', theme:1, from:[['UBI pilots',106], ['guaranteed income',47]]},
+  { label:'Taxing automation', theme:1, from:[['robot tax',39], ['tax productivity gains',28]]},
+  { label:'Unemployment support', theme:1, from:[['extended benefits',36], ['transition assistance',26]]},
+  { label:'Who captures the gains', theme:1, from:[['gains to shareholders',54], ['profits over wages',42]]},
+  { label:'State-level AI rules', theme:2, from:[['California acts alone',63], ['state vs federal',45], ['interstate alliances',24]]},
+  { label:'Transparency rules', theme:2, from:[['disclose AI use',72], ['label AI content',49], ['audit the algorithms',33]]},
+  { label:'Limits on AI in hiring', theme:2, from:[['AI screens interviews',57], ['resume filtering bias',34]]},
+  { label:'Liability', theme:2, from:[['who is responsible',48], ['recourse when harmed',30]]},
+  { label:'Pace of regulation', theme:2, from:[['government too slow',56], ['regulate before harm',35]]},
+  { label:'Consent for training', theme:3, from:[['no consent to scrape',64], ['opt out of training',31]]},
+  { label:'Creative work & IP', theme:3, from:[['artists uncompensated',59], ['voice & likeness',37], ['writing ingested',26]]},
+  { label:'Personal data', theme:3, from:[['health data exposure',43], ['workplace surveillance',35]]},
+  { label:'Data center siting', theme:4, from:[['data centers near homes',188], ['local approval fights',63]]},
+  { label:'Water use', theme:4, from:[['cooling water demand',147], ['drought tradeoffs',58]]},
+  { label:'Energy & the grid', theme:4, from:[['electricity costs',122], ['grid strain',67], ['renewables buildout',34]]},
+  { label:'Misinformation', theme:5, from:[['election deepfakes',52], ['can\'t tell what\'s real',46]]},
+  { label:'Critical thinking', theme:5, from:[['outsourced thinking',73], ['deskilling at work',38]]},
+  { label:'Human oversight', theme:5, from:[['human in the loop',55], ['no AI-only decisions',32]]},
+  { label:'Access & equity', theme:5, from:[['digital divide',44], ['rural access',27], ['language access',22]]},
+  { label:'Public understanding', theme:5, from:[['AI literacy',51], ['public campaigns',29]]},
+];
+
+const CONFIG = {
+  hold0: 2000,      // ms on phase 1 before distilling
+  distill: 7600,    // ms of consolidation
+  hold1: 4200,      // ms on phase 2 before looping
+  accent: '#0D4F8C',
+  gray: '#444444',
+  ink: '#1E1E1E'
+};
+
+/* ── derived ──────────────────────────────────────────────── */
+const parents = CONCEPTS.map((c, i) => ({
+  i, label: c.label, theme: c.theme, color: THEMES[c.theme].color,
+  total: c.from.reduce((a, b) => a + b[1], 0)
+}));
+const children = [];
+CONCEPTS.forEach((c, pi) => c.from.forEach(([label, n]) =>
+  children.push({ label, n, parent: pi, theme: c.theme, color: THEMES[c.theme].color })));
+
+const N_CHILD = children.length, N_PARENT = parents.length;
+const MAXC = Math.max(...children.map(c => c.n));
+const MAXP = Math.max(...parents.map(p => p.total));
+const TOTAL = children.reduce((a, c) => a + c.n, 0);
+
+const childSize  = n => 10.5 + 19 * Math.sqrt(n / MAXC);
+const parentSize = w => 12.5 + 28 * Math.sqrt(Math.max(0, w) / MAXP);
+
+/* ── canvas ───────────────────────────────────────────────── */
+const W = 1040, H = 800;
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+function resize(){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+resize();
+addEventListener('resize', resize);
+
+const CX = W / 2, CY = 410;   // field center, below the header
+
+function mulberry32(a){
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const rand = mulberry32(20260826);
+
+/* ── word layout ──────────────────────────────────────────────
+   Archimedean spiral placement with rectangle collision — the
+   classic word-cloud approach. Biggest words are placed first so
+   they land near the middle and the small ones fill the gaps.
+   Runs once at load; deterministic off the seeded RNG.
+   ─────────────────────────────────────────────────────────── */
+function layout(items, font, sizeOf, spread){
+  const placed = [];
+  const order = items.map((it, i) => i).sort((a, b) => sizeOf(items[b]) - sizeOf(items[a]));
+
+  for (const i of order){
+    const it = items[i];
+    let pos = null, fs = sizeOf(it);
+
+    // shrink and retry rather than give up — a word that fails to place
+    // would otherwise be dumped at the centre, silently stacked on others
+    for (const shrink of [1, 0.9, 0.8, 0.7]){
+      fs = sizeOf(it) * shrink;
+      ctx.font = `${font} ${fs}px 'Noto Sans', Arial, sans-serif`;
+      const w = ctx.measureText(it.label).width + 8;
+      const h = fs * 1.32;
+
+      for (let step = 0; step < 60000 && !pos; step++){
+        const t = step * 0.025;
+        const r = 0.35 * t;
+        const x = CX + Math.cos(t) * r * spread;
+        const y = CY + Math.sin(t) * r * 0.52;
+        const b = [x - w / 2, y - h / 2, w, h];
+        if (b[0] > 24 && b[0] + w < W - 24 && b[1] > 140 && b[1] + h < H - 88 &&
+            !placed.some(q => b[0] < q[0] + q[2] && b[0] + b[2] > q[0] &&
+                              b[1] < q[1] + q[3] && b[1] + b[3] > q[1])){
+          pos = [x, y];
+          placed.push(b);
+        }
+      }
+      if (pos) break;
+    }
+    it.home = pos || [CX, CY];
+    it.fs = fs;
+  }
+  return items;
+}
+
+layout(children, '400', c => childSize(c.n), 1.35);
+layout(parents,  '600', p => parentSize(p.total), 1.30);
+
+// each parent absorbs its children in sequence around the layout, so the
+// consolidation reads as a wave rather than 62 words moving at once
+parents.forEach((p, i) => { p.delay = (i / N_PARENT) * 0.52; });
+children.forEach(c => { c.delay = parents[c.parent].delay + rand() * 0.16; });
+const SPAN = 0.30;
+
+/* ── animation ────────────────────────────────────────────── */
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ease = t => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2;
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
+
+let p = 0;                 // 0 = phase 1, 1 = phase 2
+let playing = true, looping = true, dwell = CONFIG.hold0, phase = 'hold0';
+let last = performance.now();
+
+const slider = document.getElementById('p');
+const playBtn = document.getElementById('play');
+
+// how far along each child is in its journey, given global p
+const childProgress = c => ease(clamp01((p - c.delay) / SPAN));
+
+function draw(){
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, W, H);
+
+  // ── header
+  const nLeft = children.reduce((a, c) => a + (childProgress(c) < 1 ? 1 : 0), 0);
+  const nHere = parents.reduce((a, q) => {
+    const acc = q.acc / q.total;
+    return a + (acc > 0.02 ? 1 : 0);
+  }, 0);
+
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.font = "400 11px 'Noto Sans Mono', ui-monospace, monospace";
+  ctx.fillStyle = CONFIG.gray;
+  ctx.fillText('W H A T  W E  H E A R D', 60, 46);
+
+  ctx.font = "700 30px 'Noto Serif', Georgia, serif";
+  ctx.fillStyle = CONFIG.accent;
+  ctx.fillText(p < 0.04 ? 'Phase 1' : p > 0.96 ? 'Phase 2' : 'Distilling', 60, 82);
+
+  ctx.font = "400 14.5px 'Noto Sans', Arial, sans-serif";
+  ctx.fillStyle = CONFIG.gray;
+  ctx.fillText(p < 0.04 ? 'Concepts raised across Phase 1, sized by how often.'
+             : p > 0.96 ? 'What they distilled into, sized by the weight behind each.'
+             : 'Related concepts merge; each surviving concept grows as it absorbs them.',
+             60, 106);
+
+  // two counters, so the reduction is legible mid-flight
+  ctx.textAlign = 'right';
+  ctx.font = "700 44px 'Noto Sans Mono', ui-monospace, monospace";
+  ctx.fillStyle = CONFIG.ink;
+  ctx.fillText(String(nLeft), 905, 80);
+  ctx.font = "400 20px 'Noto Sans Mono', ui-monospace, monospace";
+  ctx.fillStyle = '#B9B9C0';
+  ctx.fillText('/', 928, 80);
+  ctx.font = "700 44px 'Noto Sans Mono', ui-monospace, monospace";
+  ctx.fillStyle = nHere > 0 ? CONFIG.accent : '#B9B9C0';
+  ctx.fillText(String(nHere), 980, 80);
+  ctx.font = "400 12.5px 'Noto Sans', Arial, sans-serif";
+  ctx.fillStyle = CONFIG.gray;
+  ctx.fillText('raised  /  consolidated', 980, 102);
+
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+  // ── phase 1 concepts, travelling toward their parent
+  for (const c of children){
+    const cp = childProgress(c);
+    if (cp >= 1) continue;
+    const par = parents[c.parent];
+    const k = ease(cp);
+    const x = lerp(c.home[0], par.home[0], k);
+    const y = lerp(c.home[1], par.home[1], k);
+    const fs = lerp(c.fs, c.fs * 0.4, k);
+    // hold opacity most of the way, then dissolve on arrival
+    const a = 1 - Math.pow(cp, 2.6);
+    ctx.globalAlpha = a * 0.92;
+    ctx.fillStyle = c.color;
+    ctx.font = `400 ${fs}px 'Noto Sans', Arial, sans-serif`;
+    ctx.fillText(c.label, x, y);
+  }
+
+  // ── phase 2 concepts, growing as they absorb
+  for (const q of parents){
+    if (q.acc <= 0) continue;
+    const frac = q.acc / q.total;
+    ctx.globalAlpha = clamp01(frac * 1.7);
+    ctx.fillStyle = q.color;
+    ctx.font = `600 ${parentSize(q.acc)}px 'Noto Sans', Arial, sans-serif`;
+    ctx.fillText(q.label, q.home[0], q.home[1]);
+  }
+  ctx.globalAlpha = 1;
+
+  themeLegend();
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+}
+
+function themeLegend(){
+  ctx.font = "400 11.5px 'Noto Sans', Arial, sans-serif";
+  const SW = 9, GAP = 7, PAD = 24;
+  const w = THEMES.map(t => SW + GAP + ctx.measureText(t.name).width + PAD);
+  const total = w.reduce((a, b) => a + b, 0) - PAD;
+  let x = (W - total) / 2;
+  const y = H - 42;
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i < THEMES.length; i++){
+    ctx.beginPath(); ctx.arc(x + SW / 2, y, SW / 2, 0, Math.PI * 2);
+    ctx.fillStyle = THEMES[i].color; ctx.fill();
+    ctx.fillStyle = CONFIG.gray; ctx.textAlign = 'left';
+    ctx.fillText(THEMES[i].name, x + SW + GAP, y);
+    x += w[i];
+  }
+}
+
+function recompute(){
+  for (const q of parents) q.acc = 0;
+  for (const c of children) parents[c.parent].acc += c.n * childProgress(c);
+}
+
+function frame(now){
+  const dt = Math.min(now - last, 50); last = now;
+
+  if (playing && !reduced){
+    if (phase === 'hold0'){
+      dwell -= dt;
+      if (dwell <= 0){ phase = 'distill'; }
+    } else if (phase === 'distill'){
+      p = Math.min(1, p + dt / CONFIG.distill);
+      if (p >= 1){ phase = 'hold1'; dwell = CONFIG.hold1; }
+    } else {
+      dwell -= dt;
+      if (dwell <= 0){
+        if (looping){ p = 0; phase = 'hold0'; dwell = CONFIG.hold0; }
+        else { playing = false; playBtn.textContent = 'Play'; }
+      }
+    }
+    slider.value = Math.round(p * 1000);
+  }
+
+  recompute();
+  draw();
+  requestAnimationFrame(frame);
+}
+
+/* ── controls ─────────────────────────────────────────────── */
+playBtn.onclick = () => {
+  playing = !playing;
+  playBtn.textContent = playing ? 'Pause' : 'Play';
+  if (playing && p >= 1){ p = 0; phase = 'hold0'; dwell = CONFIG.hold0; }
+};
+document.getElementById('restart').onclick = () => {
+  p = 0; phase = 'hold0'; dwell = CONFIG.hold0;
+  playing = true; playBtn.textContent = 'Pause';
+};
+document.getElementById('loop').onclick = e => {
+  looping = !looping;
+  e.currentTarget.setAttribute('aria-pressed', String(looping));
+};
+slider.addEventListener('input', () => {
+  p = +slider.value / 1000;
+  playing = false; playBtn.textContent = 'Play';
+  phase = p >= 1 ? 'hold1' : 'distill';
+});
+addEventListener('keydown', e => {
+  if (e.key === ' '){ e.preventDefault(); playBtn.click(); }
+});
+
+(document.fonts ? document.fonts.ready : Promise.resolve())
+  .then(() => { recompute(); requestAnimationFrame(frame); });
+</script>

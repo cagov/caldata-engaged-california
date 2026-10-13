@@ -1,0 +1,231 @@
+/* Engaged California Design System — token bridge for viz/.
+   Sections marked "verbatim" are copied byte-for-byte from
+   design/Engaged California Design System.zip (tokens/colors.css,
+   tokens/typography.css, tokens/spacing.css) — do not hand-edit those
+   values here, re-copy from the zip if the DS updates.
+
+   The "semantic layer" section is this app's own addition: component CSS
+   and ecCanvasTokens.ts read ONLY --ec-surface/--ec-on-surface/etc, never a
+   raw --ec-navy/--ec-orange/etc directly, so the dark-mode block below is
+   the single place light/dark diverges.
+
+   Only four values below are NOT sourced from the DS export (the DS defines
+   no dark mode): --ec-on-surface-muted, --ec-hairline, --ec-nondata, and
+   --ec-dropped in the dark block, each marked "derived" at its definition.
+   Reconcile those first if a future DS export adds real dark tokens. */
+
+/* ---- verbatim: tokens/colors.css ---- */
+:root {
+  /* Primary Palette */
+  --ec-navy: #1c2745; /* rgb(28,39,69) — dark navy, primary background */
+  --ec-navy-deep: #0f152f; /* rgb(15,21,47) — deepest navy */
+  --ec-blue: #5489a3; /* rgb(84,137,163) — medium blue, secondary */
+  --ec-blue-mid: #274d7d; /* rgb(39,77,125) — darker blue */
+  --ec-blue-muted: #577b91; /* rgb(87,123,145) — muted blue */
+  --ec-orange: #e79450; /* rgb(231,148,80) — primary accent/highlight */
+  --ec-orange-dark: #e6883b; /* rgb(230,136,59) — deeper orange */
+  --ec-cream: #fff4eb; /* rgb(255,244,235) — off-white/cream, light surface */
+
+  /* Text Colors */
+  --ec-text-dark: #444444; /* rgb(68,68,68) — primary body text */
+  --ec-text-navy: #1c2745; /* rgb(28,39,69) — heading text on light */
+  --ec-text-deep: #0f152f; /* rgb(15,21,47) — darkest text */
+  --ec-text-light: #fff4eb; /* rgb(255,244,235) — text on dark backgrounds */
+  --ec-text-mid: #3b3a48; /* rgb(59,58,72) — mid-dark text */
+
+  /* Background Colors */
+  --ec-bg-white: #ffffff;
+  --ec-bg-cream: #fff4eb; /* rgb(255,244,235) — warm off-white page bg */
+  --ec-bg-lightgray: #f6f7fa; /* rgb(246,247,250) — cool light gray */
+  --ec-bg-lightblue: #e6f0f5; /* rgb(230,240,245) — light blue tint */
+  --ec-bg-blue: #5489a3; /* rgb(84,137,163) — blue section bg */
+  --ec-bg-navy: #1c2745; /* rgb(28,39,69) — dark section bg */
+
+  /* Borders & Strokes */
+  --ec-border: #d4d4d7; /* rgb(212,212,215) — standard border */
+  --ec-border-mid: #bcbbc1; /* rgb(188,187,193) — slightly darker border */
+
+  /* Link Colors */
+  --ec-link-light: #0d5d90; /* rgb(13,93,144) — link on light background */
+  --ec-link-dark: #38c2db; /* rgb(56,194,219) — link on dark background */
+
+  /* Data Visualization Palette */
+  --ec-dataviz-1: #5489a3; /* blue */
+  --ec-dataviz-2: #e79450; /* orange */
+  --ec-dataviz-3: #5fd0b9; /* teal */
+  --ec-dataviz-4: #70b6e5; /* light blue */
+  --ec-dataviz-5: #ee8176; /* coral */
+  --ec-dataviz-6: #d3d3d3; /* gray */
+  --ec-dataviz-7: #abf7e8; /* mint */
+  --ec-dataviz-8: #e8abf7; /* purple */
+
+  /* Secondary / Tint Colors */
+  --ec-blue-light: #96bbea; /* rgb(150,187,234) */
+  --ec-blue-pale: #abd5f7; /* rgb(171,205,247) */
+  --ec-orange-pale: #f3c9a7; /* rgb(243,201,167) */
+  --ec-orange-light: #e3cab6; /* muted orange */
+  --ec-teal-bright: #abf7e8; /* rgb(171,247,232) */
+  --ec-pink: #f7abba; /* rgb(247,171,186) */
+  --ec-purple: #e8abf7; /* rgb(232,171,247) */
+
+  /* Shadows */
+  --ec-shadow-sm: 0px 4px 4px rgba(0, 0, 0, 0.13);
+  --ec-shadow-xs: 0px 4px 4px rgba(0, 0, 0, 0.08);
+  --ec-shadow-med: 0px 4px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* ---- verbatim: tokens/typography.css ---- */
+:root {
+  /* Font Families */
+  --ec-font-sans: "Noto Sans", "Noto Sans Display", system-ui, sans-serif;
+  --ec-font-display: "Noto Sans Display", "Noto Sans", system-ui, sans-serif;
+  --ec-font-utility: "Public Sans", system-ui, sans-serif;
+
+  /* Font Weights */
+  --ec-weight-regular: 400;
+  --ec-weight-medium: 500;
+  --ec-weight-semibold: 600;
+  --ec-weight-bold: 700;
+  --ec-weight-black: 900;
+
+  /* Type Scale */
+  --ec-text-hero: 47px; /* Hero heading, home header */
+  --ec-text-h1: 37px; /* Section headings */
+  --ec-text-h2: 30px; /* Sub-section headings */
+  --ec-text-h3: 27px; /* Card headings */
+  --ec-text-h4: 23px; /* Small headings */
+  --ec-text-h5: 20px; /* Labels */
+  --ec-text-body-lg: 23px; /* Large body copy */
+  --ec-text-body: 18px; /* Standard body copy */
+  --ec-text-body-sm: 16px; /* Small body */
+  --ec-text-caption: 14px; /* Captions, labels */
+  --ec-text-xs: 12px; /* Tiny text */
+
+  /* Line Heights */
+  --ec-leading-tight: 1;
+  --ec-leading-snug: 1.2;
+  --ec-leading-normal: 1.5;
+  --ec-leading-body: 39px; /* 23px body line height from design */
+  --ec-leading-body-sm: 27px; /* 18px body line height */
+
+  /* Letter Spacing */
+  --ec-tracking-tight: -0.02em; /* Used on headings */
+  --ec-tracking-normal: 0;
+}
+
+/* ---- verbatim: tokens/spacing.css ---- */
+:root {
+  --ec-space-0: 0px;
+  --ec-space-1: 4px;
+  --ec-space-2: 8px;
+  --ec-space-3: 12px;
+  --ec-space-4: 16px;
+  --ec-space-5: 20px;
+  --ec-space-6: 24px;
+  --ec-space-7: 28px;
+  --ec-space-8: 30px;
+  --ec-space-9: 48px;
+  --ec-space-10: 58px;
+  --ec-space-11: 77px; /* Standard section vertical padding */
+
+  /* Page Layout */
+  --ec-page-padding-x: 130px; /* Horizontal page margin */
+  --ec-page-padding-y: 77px; /* Vertical section padding */
+  --ec-content-gap: 30px; /* Gap between content cards */
+  --ec-section-gap: 29px; /* Gap within sections */
+
+  /* Component Spacing */
+  --ec-card-padding: 30px;
+  --ec-card-radius: 24px;
+  --ec-button-radius: 8.368px;
+  --ec-pill-radius: 30px;
+
+  /* Border Radius */
+  --ec-radius-sm: 8px;
+  --ec-radius-md: 16px;
+  --ec-radius-lg: 24px;
+  --ec-radius-full: 9999px;
+}
+
+/* ---- semantic layer (this app's addition, not from the DS export) ---- */
+:root {
+  /* --ec-surface is the page/canvas background; --ec-surface-alt is the
+     "raised" surface (cards, the moments sidebar) that sits on top of it.
+     Cream reads as the base page tone and white as the lifted card, so
+     surface takes cream and surface-alt takes white — the reverse pairing
+     read as a jarring cream sliver behind a near-white scrollbar track. */
+  --ec-surface: var(--ec-bg-white);
+  --ec-surface-alt: var(--ec-bg-white);
+  --ec-on-surface: var(--ec-navy);
+  --ec-on-surface-muted: var(--ec-text-dark); /* #444444 */
+  --ec-hairline: var(--ec-border); /* #D4D4D7 */
+  --ec-emphasis: var(--ec-navy); /* graphic strokes — see ParticipantFunnelCloud's ACCENT comment for why not orange */
+  --ec-link: var(--ec-link-light); /* #0D5D90 */
+  --ec-nondata: #3b3a48; /* facilitator glyph — DS --ec-text-mid */
+  --ec-dropped: var(--ec-dataviz-6); /* #D3D3D3 */
+  /* Non-text graphic strokes that should read as "a quiet outline", not as
+     emphasis — the funnel's top-voted / open-conversation rings. Same value
+     in light and dark: --ec-hairline (#D4D4D7) is only ~1.5:1 on the cream
+     surface, well under the 3:1 WCAG 1.4.11 wants for non-text graphics,
+     and the DS has no mid gray (--ec-border-mid #BCBBC1 is 1.8:1). #8C8C8C
+     measures 3.1:1 on cream, 3.3:1 on white and 4.4:1 on navy, so one value
+     clears the bar on every surface this app renders. */
+  --ec-graphic-hairline: #8c8c8c;
+
+  /* An "ink chip" pair for small dark-fill overlays (tooltips) that must
+     read clearly regardless of the page's own light/dark surface — so,
+     unlike every other token above, this pair INVERTS in the dark block
+     rather than tracking the page. Light theme: navy chip on the white
+     page, same contrast direction as body text. Dark theme: the page
+     itself is navy, so a navy chip would vanish into it — this flips to a
+     cream chip instead, which still reads as "the popover" against a navy
+     page and keeps the same navy/cream contrast pairing either way. */
+  --ec-chip-surface: var(--ec-navy);
+  --ec-chip-on-surface: var(--ec-text-light);
+}
+
+/* Dark theme — not defined by the DS (no dark mode in the source Figma
+   file). Follows the same manual-escape-hatch pattern already used by
+   App.svelte and Beeswarm.svelte/CircleSwarm.svelte: prefers-color-scheme
+   drives it by default, data-theme="light"/"dark" overrides either way. */
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    --ec-surface: var(--ec-bg-navy);
+    --ec-surface-alt: var(--ec-navy-deep);
+    --ec-on-surface: var(--ec-text-light);
+    --ec-on-surface-muted: #c6cbd9; /* derived — 9.1:1 on navy */
+    --ec-hairline: #3a4562; /* derived */
+    --ec-emphasis: var(--ec-orange); /* 6.1:1 on navy */
+    --ec-link: var(--ec-link-dark);
+    --ec-nondata: #c6cbd9; /* derived */
+    --ec-dropped: #3a4562; /* derived */
+    --ec-graphic-hairline: #8c8c8c; /* same value as light — see the light block's comment */
+    --ec-chip-surface: var(--ec-cream); /* inverted — see the light block's comment */
+    --ec-chip-on-surface: var(--ec-navy);
+  }
+}
+:root[data-theme="dark"] {
+  --ec-surface: var(--ec-bg-navy);
+  --ec-surface-alt: var(--ec-navy-deep);
+  --ec-on-surface: var(--ec-text-light);
+  --ec-on-surface-muted: #c6cbd9;
+  --ec-hairline: #3a4562;
+  --ec-emphasis: var(--ec-orange);
+  --ec-link: var(--ec-link-dark);
+  --ec-nondata: #c6cbd9;
+  --ec-dropped: #3a4562;
+  --ec-graphic-hairline: #8c8c8c;
+  --ec-chip-surface: var(--ec-cream);
+  --ec-chip-on-surface: var(--ec-navy);
+}
+
+/* The real <body>/<html> background, not just App.svelte's .viz-root — the
+   browser's default 8px body margin sits outside .viz-root's own box, so
+   without this reset that margin shows the browser's default white/canvas
+   color as a thin sliver around the app rather than --ec-surface, on any
+   page these tokens are loaded into. */
+html,
+body {
+  margin: 0;
+  background: var(--ec-surface);
+}

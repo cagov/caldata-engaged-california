@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Target vs Phase 1 vs Phase 2</title>
+<script>
+  // Runs before paint: "auto" follows the OS, an explicit choice overrides it.
+  (function () {
+    var pref = "auto";
+    try { pref = localStorage.getItem("theme") || "auto"; } catch (e) {}
+    var dark = pref === "dark" || (pref === "auto" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.dataset.theme = pref;
+    document.documentElement.dataset.themeResolved = dark ? "dark" : "light";
+  })();
+</script>
+<style>
+  :root {
+    --surface: #ffffff;
+    --surface-sunken: #f4f4f4;
+    --ink: #1f2225;
+    --ink-secondary: #4c5257;
+    --ink-muted: #6e757b;
+    --border: #d9dad6;
+    --grid: #c2c2c2;
+    --hover-band: #f0f0f0;
+    --series-target: #767C81;
+    --series-phase1: #2E6C8A;
+    --series-phase2: #A85A2B;
+    --focus: #2E6C8A;
+    color-scheme: light;
+  }
+  :root[data-theme-resolved="dark"] {
+    --surface: #1C2745;
+    --surface-sunken: #232322;
+    --ink: #f1f1ef;
+    --ink-secondary: #c3c5c2;
+    --ink-muted: #9a9d99;
+    --border: #3a3a38;
+    --grid: #4a4a48;
+    --hover-band: #2a2a29;
+    --series-target: #9AA0A4;
+    --series-phase1: #74BCDD;
+    --series-phase2: #D98E52;
+    --focus: #74BCDD;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--surface);
+    color: var(--ink);
+    font: 15px/1.5 "Inter", "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 1400px; margin: 0 auto; padding: 40px 32px 64px; }
+
+  h1 { font-size: 22px; line-height: 1.3; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .lede { margin: 0 0 28px; color: var(--ink-secondary); max-width: 78ch; }
+
+  /* --- controls --------------------------------------------------------- */
+  .controls {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 16px;
+    margin-bottom: 20px;
+  }
+  .visually-hidden {
+    position: absolute; width: 1px; height: 1px; margin: -1px;
+    padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+  .select-wrap { position: relative; }
+  select {
+    appearance: none;
+    font-family: inherit;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 60px 18px 24px;
+    min-width: 330px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.10), 0 1px 3px rgba(0,0,0,.07);
+    cursor: pointer;
+  }
+  select:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .select-wrap svg {
+    position: absolute; right: 22px; top: 50%; transform: translateY(-50%);
+    pointer-events: none; color: var(--series-phase1);
+  }
+
+  .toggle {
+    display: inline-flex; gap: 2px; padding: 3px;
+    background: var(--surface-sunken); border-radius: 10px;
+  }
+  .controls .toggle:first-of-type { margin-left: auto; }
+  .toggle button {
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    color: var(--ink-secondary);
+    background: none; border: 0; border-radius: 8px;
+    padding: 9px 14px; cursor: pointer;
+  }
+  .toggle button[aria-pressed="true"] {
+    background: var(--surface); color: var(--ink);
+    box-shadow: 0 1px 2px rgba(0,0,0,.08);
+  }
+  .toggle button:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+  /* --- tab strip -------------------------------------------------------- */
+  .tabrow {
+    display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px;
+    border-bottom: 1px solid var(--border); margin-bottom: 28px;
+  }
+  .tabs { display: flex; gap: 4px; }
+  .tabs button {
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    color: var(--ink-muted);
+    background: none; border: 0;
+    border-bottom: 3px solid transparent;
+    padding: 12px 16px; margin-bottom: -1px; cursor: pointer;
+  }
+  .tabs button:hover { color: var(--ink-secondary); }
+  .tabs button[aria-selected="true"] {
+    color: var(--ink); border-bottom-color: var(--series-phase1);
+  }
+  .tabs button:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
+  .tabrow .toggle { margin-left: auto; margin-bottom: 8px; }
+
+  /* --- charts ----------------------------------------------------------- */
+  .charts { display: grid; gap: 40px; }
+  .charts.cols-2 { grid-template-columns: 1fr 1fr; }
+  .charts.cols-1 { grid-template-columns: 1fr; }
+  @media (max-width: 980px) { .charts.cols-2 { grid-template-columns: 1fr; } }
+
+  .panel { min-width: 0; }
+  .panel h2 { font-size: 16px; margin: 0 0 12px; }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 28px;
+    justify-content: center; margin: 0 0 12px;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-secondary); }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+  /* Legend key for a series drawn as a caliper rule rather than a bar. */
+  .swatch-rule { flex: none; display: block; }
+
+  .morph-controls {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px; margin-bottom: 12px;
+  }
+  .morph-controls .legend { margin: 0; }
+  /* Both phases' bars share the same path command structure (see barPath),
+     just different coordinates, so the browser can interpolate the shape
+     directly on toggle instead of cross-fading two separate shapes. */
+  .morph-bar { transition: d .4s cubic-bezier(.4,0,.2,1), fill .4s cubic-bezier(.4,0,.2,1); }
+
+  /* The target rule sits on top of the bars it measures, so it needs to stay
+     legible where it crosses a filled bar: solid caliper stroke over a
+     surface-coloured casing. */
+  .target-rule { fill: none; stroke-linecap: round; }
+  .target-rule-casing { stroke: var(--surface); stroke-width: 5; }
+  .target-rule-line { stroke: var(--series-target); stroke-width: 2.5; }
+
+  .plot { position: relative; }
+  .plot > svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .gridline {
+    stroke: var(--grid); stroke-width: 1; stroke-dasharray: 6 4;
+    shape-rendering: crispEdges;
+  }
+  /* The zero baseline on the delta view stands in for the target itself, so
+     it reads as a firm reference line rather than another gridline. */
+  .zero-line { stroke: var(--ink); stroke-width: 1.5; shape-rendering: crispEdges; }
+  .tick-text { font-size: 12px; fill: var(--ink-muted); }
+  .on-target-label { font-size: 11.5px; font-weight: 600; fill: var(--ink); }
+  .delta-label {
+    font-size: 12px; font-weight: 600; fill: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .cat-text { font-size: 11.5px; fill: var(--ink-secondary); }
+  .hit { fill: transparent; }
+  .slot.is-active .hit { fill: var(--hover-band); }
+
+  .tooltip {
+    position: absolute; z-index: 5; pointer-events: none; opacity: 0;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 12px; width: max-content; max-width: 300px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.13);
+    font-size: 13px; transition: opacity .1s ease;
+  }
+  .tooltip[data-show="1"] { opacity: 1; }
+  .tooltip .tt-title { font-weight: 600; margin-bottom: 6px; white-space: nowrap; }
+  .tooltip .tt-row {
+    display: flex; align-items: center; gap: 18px;
+    justify-content: space-between; white-space: nowrap; line-height: 1.7;
+  }
+  .tooltip .tt-row b { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .tooltip .tt-key { display: inline-flex; align-items: center; gap: 7px; color: var(--ink-secondary); }
+  .tooltip .tt-delta {
+    margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border);
+    color: var(--ink-muted); font-size: 12px;
+  }
+  .tooltip .tt-delta div { display: flex; gap: 14px; justify-content: space-between; white-space: nowrap; }
+
+  /* --- table view ------------------------------------------------------- */
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  caption { text-align: left; font-weight: 600; padding-bottom: 8px; }
+  th, td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  th:first-child, td:first-child { text-align: left; }
+  thead th { color: var(--ink-muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  td { font-variant-numeric: tabular-nums; }
+
+  [hidden] { display: none !important; }
+
+  .notes { margin-top: 36px; font-size: 13px; color: var(--ink-muted); max-width: 90ch; }
+  .notes h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-muted); margin: 0 0 8px; }
+  .notes ul { margin: 0; padding-left: 20px; }
+  .notes li { margin-bottom: 5px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Target vs Phase 1 vs Phase 2</h1>
+  <p class="lede">
+    Every chart compares the participant mix against the statewide target, so the
+    two phases can be read against the same baseline.
+  </p>
+
+  <div class="controls">
+    <div class="field">
+      <label class="visually-hidden" for="dimension">Demographic</label>
+      <div class="select-wrap">
+        <select id="dimension"></select>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+    </div>
+
+    <div class="toggle" role="group" aria-label="Theme">
+      <button type="button" data-theme-choice="auto" aria-pressed="true">Auto</button>
+      <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
+      <button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <div class="tabrow">
+    <div class="tabs" role="tablist" aria-label="Chart layout" id="tabs"></div>
+    <div class="toggle" role="group" aria-label="View as">
+      <button type="button" id="view-chart" aria-pressed="true">Chart</button>
+      <button type="button" id="view-table" aria-pressed="false">Table</button>
+    </div>
+  </div>
+
+  <div id="chart-view"></div>
+  <div id="table-view" hidden></div>
+
+  <div class="notes">
+    <h3>Notes</h3>
+    <ul id="notes-list"></ul>
+  </div>
+</div>
+
+<!-- DATA:START — generated by build_new_chart.py; do not edit by hand. -->
+<script>
+window.CHART_DATA = {
+  "dimensions": {
+    "REGION": {
+      "id": "REGION",
+      "label": "Region",
+      "categories": [
+        "Bay Area",
+        "Central Coast",
+        "Central Valley",
+        "Far North / North Coast",
+        "Los Angeles",
+        "Sacramento Valley / Sierra Foothills",
+        "Sierra Region",
+        "Southern California"
+      ],
+      "labels": [
+        "Bay Area",
+        "Central Coast",
+        "Central Valley",
+        "Far North / North Coast",
+        "Los Angeles",
+        "Sacramento",
+        "Sierra Region",
+        "Southern California"
+      ],
+      "target": [
+        16.7,
+        8.3,
+        11.7,
+        6.7,
+        25.0,
+        8.3,
+        5.0,
+        18.3
+      ],
+      "phase1": [
+        24.16,
+        4.59,
+        6.09,
+        6.01,
+        26.59,
+        15.61,
+        0.45,
+        16.5
+      ],
+      "phase2": [
+        19.0,
+        8.0,
+        5.0,
+        6.0,
+        24.0,
+        17.0,
+        2.0,
+        19.0
+      ],
+      "totals": {
+        "target": 100.0,
+        "phase1": 100.0,
+        "phase2": 100.0
+      }
+    },
+    "RACE_ETHNICITY_CATEGORY": {
+      "id": "RACE_ETHNICITY_CATEGORY",
+      "label": "Race / ethnicity",
+      "categories": [
+        "American Indian or Alaska Native",
+        "Asian",
+        "Black or African American",
+        "Hispanic or Latino",
+        "Middle Eastern or North African",
+        "Multiple",
+        "Native Hawaiian or Pacific Islander",
+        "White"
+      ],
+      "labels": [
+        "American Indian / Alaska Native",
+        "Asian",
+        "Black or African American",
+        "Hispanic or Latino",
+        "Middle Eastern / North African",
+        "Two or more races",
+        "Native Hawaiian / Pacific Islander",
+        "White"
+      ],
+      "target": [
+        0.8,
+        15.8,
+        5.8,
+        40.0,
+        2.5,
+        4.2,
+        0.8,
+        30.0
+      ],
+      "phase1": [
+        0.99,
+        10.42,
+        4.24,
+        14.27,
+        1.2,
+        6.73,
+        0.77,
+        61.38
+      ],
+      "phase2": [
+        1.0,
+        17.0,
+        6.0,
+        19.0,
+        2.0,
+        3.0,
+        0.0,
+        41.0
+      ],
+      "totals": {
+        "target": 99.9,
+        "phase1": 100.0,
+        "phase2": 89.0
+      }
+    },
+    "AGE": {
+      "id": "AGE",
+      "label": "Age",
+      "categories": [
+        "18-24",
+        "25-44",
+        "45-64",
+        "Over 65"
+      ],
+      "labels": [
+        "18-24",
+        "25-44",
+        "45-64",
+        "Over 65"
+      ],
+      "target": [
+        12.5,
+        37.5,
+        33.3,
+        16.7
+      ],
+      "phase1": [
+        4.26,
+        46.5,
+        35.86,
+        1.64
+      ],
+      "phase2": [
+        4.0,
+        30.0,
+        50.0,
+        13.0
+      ],
+      "totals": {
+        "target": 100.0,
+        "phase1": 88.3,
+        "phase2": 97.0
+      }
+    },
+    "GENDER_CATEGORY": {
+      "id": "GENDER_CATEGORY",
+      "label": "Gender",
+      "categories": [
+        "Woman",
+        "Man",
+        "Nonbinary / multi / other"
+      ],
+      "labels": [
+        "Woman",
+        "Man",
+        "Nonbinary / multi / other"
+      ],
+      "target": [
+        50.0,
+        47.5,
+        2.5
+      ],
+      "phase1": [
+        47.96,
+        42.3,
+        5.05
+      ],
+      "phase2": [
+        47.0,
+        43.0,
+        1.0
+      ],
+      "totals": {
+        "target": 100.0,
+        "phase1": 95.3,
+        "phase2": 91.0
+      }
+    },
+    "FIELD_OF_WORK": {
+      "id": "FIELD_OF_WORK",
+      "label": "Field of work",
+      "categories": [
+        "Arts, entertainment, or media",
+        "Education",
+        "Financial",
+        "Goods producing and harvesting",
+        "Government",
+        "Healthcare",
+        "Hospitality",
+        "Information technology",
+        "Logistics",
+        "Other",
+        "Professional services",
+        "Retail or wholesale trade",
+        "Unemployed, looking"
+      ],
+      "labels": [
+        "Arts & media",
+        "Education",
+        "Financial",
+        "Goods producing",
+        "Government",
+        "Healthcare",
+        "Hospitality",
+        "Info tech",
+        "Logistics",
+        "Other",
+        "Prof. services",
+        "Retail & wholesale",
+        "Unemployed"
+      ],
+      "target": [
+        1.8,
+        2.2,
+        4.0,
+        12.8,
+        13.6,
+        16.0,
+        8.6,
+        2.6,
+        4.2,
+        3.6,
+        14.0,
+        11.3,
+        5.3
+      ],
+      "phase1": [
+        13.03,
+        7.91,
+        3.97,
+        3.64,
+        15.81,
+        6.87,
+        1.45,
+        13.99,
+        2.26,
+        14.25,
+        7.05,
+        2.49,
+        6.2
+      ],
+      "phase2": [
+        13.0,
+        8.0,
+        4.0,
+        5.0,
+        25.0,
+        9.0,
+        0.0,
+        10.0,
+        6.0,
+        7.0,
+        9.0,
+        1.0,
+        3.0
+      ],
+      "totals": {
+        "target": 100.0,
+        "phase1": 98.9,
+        "phase2": 100.0
+      }
+    },
+    "AI_RESPONSE_LABEL": {
+      "id": "AI_RESPONSE_LABEL",
+      "label": "AI response",
+      "categories": [
+        "Positive",
+        "Mixed",
+        "Negative"
+      ],
+      "labels": [
+        "Positive",
+        "Mixed",
+        "Negative"
+      ],
+      "target": [
+        25.0,
+        50.0,
+        25.0
+      ],
+      "phase1": [
+        16.0,
+        28.48,
+        55.53
+      ],
+      "phase2": [
+        32.0,
+        37.0,
+        31.0
+      ],
+      "totals": {
+        "target": 100.0,
+        "phase1": 100.0,
+        "phase2": 100.0
+      }
+    }
+  },
+  "dimensionOrder": [
+    "REGION",
+    "RACE_ETHNICITY_CATEGORY",
+    "AGE",
+    "GENDER_CATEGORY",
+    "FIELD_OF_WORK",
+    "AI_RESPONSE_LABEL"
+  ],
+  "defaultDimension": "REGION",
+  "series": [
+    {
+      "key": "target",
+      "label": "Target"
+    },
+    {
+      "key": "phase1",
+      "label": "Phase 1"
+    },
+    {
+      "key": "phase2",
+      "label": "Phase 2"
+    }
+  ],
+  "views": [
+    {
+      "id": "side",
+      "label": "Side by Side",
+      "wide": false,
+      "panels": [
+        {
+          "title": "Phase 1",
+          "series": [
+            "target",
+            "phase1"
+          ]
+        },
+        {
+          "title": "Phase 2",
+          "series": [
+            "target",
+            "phase2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "combined",
+      "label": "Combined",
+      "wide": true,
+      "panels": [
+        {
+          "title": "Phase 1 and Phase 2 against the statewide target",
+          "series": [
+            "phase1",
+            "phase2"
+          ],
+          "markers": [
+            "target"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grouped",
+      "label": "Grouped",
+      "wide": true,
+      "panels": [
+        {
+          "title": "Phase 1, Target, and Phase 2",
+          "series": [
+            "phase1",
+            "target",
+            "phase2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delta",
+      "label": "Vs. Target",
+      "wide": true,
+      "kind": "delta",
+      "panels": [
+        {
+          "title": "Phase 1 and Phase 2 — percentage points from target",
+          "series": [
+            "phase1",
+            "phase2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "morph",
+      "label": "Morph",
+      "wide": true,
+      "kind": "morph",
+      "panels": [
+        {
+          "title": "Phase 1 or Phase 2 against the statewide target",
+          "series": [
+            "phase1",
+            "phase2"
+          ]
+        }
+      ]
+    }
+  ],
+  "source": "chart_data.csv"
+};
+</script>
+<!-- DATA:END -->
+<script>
+(function () {
+  const DATA = window.CHART_DATA;
+  const SERIES = {};
+  DATA.series.forEach((s) => {
+    SERIES[s.key] = { ...s, color: `var(--series-${s.key})` };
+  });
+
+  // Geometry. Width is a function of the category count and how many series
+  // share a slot, so a 13-category three-bar chart doesn't jam together.
+  const H = 430;
+  const M = { top: 8, right: 14, bottom: 104, left: 48 };
+  const PLOT_H = H - M.top - M.bottom;
+  const MAX_BAR = 24;   // cap; never fill the slot
+  const BAR_GAP = 2;    // surface gap between adjacent bars
+  const RADIUS = 4;     // rounded data-end, square at the baseline
+
+  function geometry(nCats, nSeries, wide) {
+    const basePlotW = wide ? 1180 : 598;
+    const minSlot = (wide ? 30 : 22) + 20 * nSeries;
+    const plotW = Math.max(basePlotW, minSlot * nCats);
+    return { plotW, W: M.left + M.right + plotW };
+  }
+
+  const el = (tag, attrs, children) => {
+    const n = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (const k in attrs || {}) n.setAttribute(k, attrs[k]);
+    (children || []).forEach((c) => n.appendChild(c));
+    return n;
+  };
+  const fmt = (v) => (Math.round(v * 10) / 10).toFixed(1) + "%";
+  const signed = (v) =>
+    (v >= 0 ? "+" : "−") + (Math.round(Math.abs(v) * 10) / 10).toFixed(1);
+
+  function niceMax(v) {
+    const candidates = [10, 15, 20, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100];
+    return candidates.find((c) => c >= v * 1.06) || 100;
+  }
+
+  function ticks(max) {
+    const step = max <= 20 ? 5 : max <= 40 ? 10 : max <= 70 ? 20 : 25;
+    const out = [];
+    for (let t = 0; t <= max + 0.001; t += step) out.push(t);
+    return out;
+  }
+
+  // Same idea as niceMax/ticks, but for a symmetric ±range around a zero
+  // baseline — the deltas-from-target view never needs anywhere near 100%.
+  function niceMaxAbs(v) {
+    const candidates = [2, 4, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50, 75, 100];
+    return candidates.find((c) => c >= v * 1.12) || 100;
+  }
+
+  function symmetricTicks(half) {
+    const step = half <= 4 ? 1 : half <= 8 ? 2 : half <= 16 ? 4 : half <= 30 ? 5 : half <= 60 ? 10 : 20;
+    const out = [0];
+    for (let t = step; t <= half + 0.001; t += step) { out.push(t); out.push(-t); }
+    return out.sort((a, b) => a - b);
+  }
+
+  function wrap(text, maxChars, maxLines) {
+    const words = text.split(/\s+/);
+    const lines = [];
+    let line = "";
+    for (const w of words) {
+      const candidate = line ? line + " " + w : w;
+      if (candidate.length > maxChars && line) {
+        lines.push(line);
+        line = w;
+      } else {
+        line = candidate;
+      }
+    }
+    if (line) lines.push(line);
+    if (lines.length > maxLines) {
+      const kept = lines.slice(0, maxLines - 1);
+      kept.push(lines.slice(maxLines - 1).join(" "));
+      return kept;
+    }
+    return lines;
+  }
+
+  function barPath(x, y, w, h) {
+    if (h <= 0.4) return "";
+    const r = Math.min(RADIUS, w / 2, h);
+    return `M${x} ${y + h} L${x} ${y + r} Q${x} ${y} ${x + r} ${y}` +
+           ` L${x + w - r} ${y} Q${x + w} ${y} ${x + w} ${y + r}` +
+           ` L${x + w} ${y + h} Z`;
+  }
+
+  // A bar that grows up or down from a zero baseline rather than the plot
+  // floor: square where it meets the baseline, rounded at the tip either way.
+  function divergingBarPath(x, w, yBase, yTip) {
+    const h = Math.abs(yTip - yBase);
+    if (h <= 0.4) return "";
+    const r = Math.min(RADIUS, w / 2, h);
+    const tipY = yTip < yBase ? yTip + r : yTip - r;
+    return `M${x} ${yBase} L${x} ${tipY} Q${x} ${yTip} ${x + r} ${yTip}` +
+           ` L${x + w - r} ${yTip} Q${x + w} ${yTip} ${x + w} ${tipY}` +
+           ` L${x + w} ${yBase} Z`;
+  }
+
+  // Small inline SVG matching the caliper mark drawn on the chart itself —
+  // a horizontal rule bracketed by two vertical end-caps — so the legend and
+  // tooltip keys never drift from what's actually plotted.
+  function caliperSwatch(color) {
+    return `<svg class="swatch-rule" width="13" height="12" viewBox="0 0 13 12" aria-hidden="true">` +
+      `<line x1="2" y1="3" x2="2" y2="9" stroke="${color}" stroke-width="1.6" stroke-linecap="round"/>` +
+      `<line x1="11" y1="3" x2="11" y2="9" stroke="${color}" stroke-width="1.6" stroke-linecap="round"/>` +
+      `<line x1="2" y1="6" x2="11" y2="6" stroke="${color}" stroke-width="1.6" stroke-linecap="round"/>` +
+      `</svg>`;
+  }
+
+  function legendFor(barKeys, markerKeys) {
+    const legend = document.createElement("div");
+    legend.className = "legend";
+    const add = (key, asRule) => {
+      const s = SERIES[key];
+      const span = document.createElement("span");
+      span.innerHTML = asRule
+        ? caliperSwatch(s.color)
+        : `<i class="swatch" style="background:${s.color}"></i>`;
+      span.appendChild(document.createTextNode(s.label));
+      legend.appendChild(span);
+    };
+    barKeys.forEach((k) => add(k, false));
+    (markerKeys || []).forEach((k) => add(k, true));
+    return legend;
+  }
+
+  function buildPanel(dim, panelSpec, yMax, wide) {
+    const keys = panelSpec.series;                     // drawn as bars
+    const markers = panelSpec.markers || [];           // drawn as dotted rules
+    const allKeys = [...keys, ...markers];             // for tooltip + scaling
+    const nCats = dim.categories.length;
+    const { plotW: PLOT_W, W } = geometry(nCats, keys.length, wide);
+
+    const panel = document.createElement("section");
+    panel.className = "panel";
+
+    if (panelSpec.title) {
+      const h2 = document.createElement("h2");
+      h2.textContent = panelSpec.title;
+      panel.appendChild(h2);
+    }
+    panel.appendChild(legendFor(keys, markers));
+
+    const plot = document.createElement("div");
+    plot.className = "plot";
+    const tooltip = document.createElement("div");
+    tooltip.className = "tooltip";
+    tooltip.setAttribute("role", "status");
+
+    const svg = el("svg", {
+      viewBox: `0 0 ${W} ${H}`,
+      role: "img",
+      "aria-label": `${allKeys.map((k) => SERIES[k].label).join(", ")} by ` +
+                    dim.label.toLowerCase(),
+    });
+
+    const y = (v) => M.top + PLOT_H - (v / yMax) * PLOT_H;
+
+    ticks(yMax).forEach((t) => {
+      svg.appendChild(el("line", {
+        class: "gridline", x1: M.left, x2: M.left + PLOT_W, y1: y(t), y2: y(t),
+      }));
+      const label = el("text", {
+        class: "tick-text", x: M.left - 10, y: y(t) + 4, "text-anchor": "end",
+      });
+      label.textContent = t + "%";
+      svg.appendChild(label);
+    });
+
+    const slotW = PLOT_W / nCats;
+    const barW = Math.min(
+      MAX_BAR, (slotW * 0.68 - BAR_GAP * (keys.length - 1)) / keys.length);
+    const groupW = barW * keys.length + BAR_GAP * (keys.length - 1);
+
+    dim.categories.forEach((cat, i) => {
+      const cx = M.left + slotW * (i + 0.5);
+      const x0 = cx - groupW / 2;
+      const g = el("g", { class: "slot" });
+
+      g.appendChild(el("rect", {
+        class: "hit", x: M.left + slotW * i + 1, y: M.top,
+        width: slotW - 2, height: PLOT_H, rx: 4,
+      }));
+
+      keys.forEach((key, k) => {
+        const v = dim[key][i];
+        const x = x0 + k * (barW + BAR_GAP);
+        const d = barPath(x, y(v), barW, (v / yMax) * PLOT_H);
+        if (d) g.appendChild(el("path", { d, fill: SERIES[key].color }));
+        else g.appendChild(el("rect", {  // keep zero-ish values visible
+          x, y: M.top + PLOT_H - 1.5, width: barW, height: 1.5,
+          fill: SERIES[key].color,
+        }));
+      });
+
+      // Drawn last so it lies over the bars it measures: a caliper — a
+      // horizontal rule a little wider than the bar group, bracketed by a
+      // vertical end-cap at each side — rather than a dotted line, so the
+      // target reads as a fixed reference mark rather than another series.
+      markers.forEach((key) => {
+        const v = dim[key][i];
+        const half = groupW / 2 + 7;
+        const capHalf = 6;
+        const yv = y(v);
+        const segments = [
+          [cx - half, yv, cx + half, yv],
+          [cx - half, yv - capHalf, cx - half, yv + capHalf],
+          [cx + half, yv - capHalf, cx + half, yv + capHalf],
+        ];
+        segments.forEach(([x1, y1, x2, y2]) => {
+          ["target-rule-casing", "target-rule-line"].forEach((cls) => {
+            g.appendChild(el("line", { class: `target-rule ${cls}`, x1, y1, x2, y2 }));
+          });
+        });
+      });
+
+      const maxChars = Math.max(8, Math.floor(slotW / 6.2));
+      const lines = wrap(dim.labels[i], maxChars, 5);
+      const text = el("text", {
+        class: "cat-text", x: cx, y: M.top + PLOT_H + 20, "text-anchor": "middle",
+      });
+      lines.forEach((ln, li) => {
+        const ts = el("tspan", { x: cx, dy: li === 0 ? 0 : 14 });
+        ts.textContent = ln;
+        text.appendChild(ts);
+      });
+      g.appendChild(text);
+
+      const show = () => {
+        g.classList.add("is-active");
+        const rows = allKeys.map((key) => {
+          // Marker series get the caliper key, matching the legend.
+          const swatch = markers.includes(key)
+            ? caliperSwatch(SERIES[key].color)
+            : `<i class="swatch" style="background:${SERIES[key].color}"></i>`;
+          return `<div class="tt-row"><span class="tt-key">${swatch}` +
+                 `${SERIES[key].label}</span><b>${fmt(dim[key][i])}</b></div>`;
+        }).join("");
+        // Distance from target is the point of the chart, so spell it out.
+        const deltas = allKeys.filter((k) => k !== "target").map((key) =>
+          `<div><span>${SERIES[key].label} vs target</span>` +
+          `<span>${signed(dim[key][i] - dim.target[i])} pts</span></div>`).join("");
+        tooltip.innerHTML = `<div class="tt-title"></div>${rows}` +
+          (allKeys.includes("target") && deltas
+            ? `<div class="tt-delta">${deltas}</div>` : "");
+        tooltip.querySelector(".tt-title").textContent = cat;
+        tooltip.dataset.show = "1";
+
+        const rect = plot.getBoundingClientRect();
+        const scale = rect.width / W;
+        const tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
+        const peak = Math.max(...allKeys.map((k) => dim[k][i]));
+        const anchorY = y(peak) * scale;
+        const left = Math.min(Math.max(cx * scale, tw / 2 + 2),
+                              rect.width - tw / 2 - 2);
+        const above = anchorY - th - 10 >= 0;
+        tooltip.style.left = left + "px";
+        tooltip.style.top = (above ? anchorY - th - 10 : anchorY + 10) + "px";
+        tooltip.style.transform = "translateX(-50%)";
+      };
+      const hide = () => {
+        g.classList.remove("is-active");
+        tooltip.dataset.show = "0";
+      };
+      g.addEventListener("pointerenter", show);
+      g.addEventListener("pointermove", show);
+      g.addEventListener("pointerleave", hide);
+      svg.appendChild(g);
+    });
+
+    plot.append(svg, tooltip);
+    panel.appendChild(plot);
+    return panel;
+  }
+
+  // Diverging version of buildPanel: bars are Δ from target, not the raw
+  // share, so they grow up or down from a shared zero baseline instead of
+  // from the plot floor. Categories stay on the x-axis to match the other
+  // views — only the bar geometry and scale are different.
+  function buildDeltaPanel(dim, panelSpec, wide) {
+    const keys = panelSpec.series;
+    const nCats = dim.categories.length;
+    const { plotW: PLOT_W } = geometry(nCats, keys.length, wide);
+    // A wider left margin than the other views: "On target" replaces "0" as
+    // the zero-tick's axis label, and that phrase needs more room than a
+    // bare number — but it lives in the dedicated axis column, so it can
+    // never collide with a bar the way a label floating over the plot could.
+    const ML = 74;
+    const W = ML + M.right + PLOT_W;
+
+    const panel = document.createElement("section");
+    panel.className = "panel";
+    if (panelSpec.title) {
+      const h2 = document.createElement("h2");
+      h2.textContent = panelSpec.title;
+      panel.appendChild(h2);
+    }
+    panel.appendChild(legendFor(keys, []));
+
+    const plot = document.createElement("div");
+    plot.className = "plot";
+    const tooltip = document.createElement("div");
+    tooltip.className = "tooltip";
+    tooltip.setAttribute("role", "status");
+
+    const deltas = {};
+    keys.forEach((key) => {
+      deltas[key] = dim[key].map((v, i) => v - dim.target[i]);
+    });
+    const peak = Math.max(0.01, ...keys.flatMap((key) => deltas[key].map(Math.abs)));
+    const half = niceMaxAbs(peak);
+
+    const svg = el("svg", {
+      viewBox: `0 0 ${W} ${H}`,
+      role: "img",
+      "aria-label": `${keys.map((k) => SERIES[k].label).join(", ")} percentage points ` +
+                    `from target by ${dim.label.toLowerCase()}`,
+    });
+
+    const yMid = M.top + PLOT_H / 2;
+    const y = (v) => yMid - (v / half) * (PLOT_H / 2);
+
+    symmetricTicks(half).forEach((t) => {
+      const isZero = Math.abs(t) < 0.001;
+      svg.appendChild(el("line", {
+        class: isZero ? "zero-line" : "gridline",
+        x1: ML, x2: ML + PLOT_W, y1: y(t), y2: y(t),
+      }));
+      const label = el("text", {
+        class: isZero ? "tick-text on-target-label" : "tick-text",
+        x: ML - 10, y: y(t) + 4, "text-anchor": "end",
+      });
+      label.textContent = isZero ? "On target" : (t > 0 ? "+" : "−") + Math.abs(t);
+      svg.appendChild(label);
+    });
+
+    const slotW = PLOT_W / nCats;
+    const barW = Math.min(
+      MAX_BAR, (slotW * 0.68 - BAR_GAP * (keys.length - 1)) / keys.length);
+    const groupW = barW * keys.length + BAR_GAP * (keys.length - 1);
+
+    dim.categories.forEach((cat, i) => {
+      const cx = ML + slotW * (i + 0.5);
+      const x0 = cx - groupW / 2;
+      const g = el("g", { class: "slot" });
+
+      g.appendChild(el("rect", {
+        class: "hit", x: ML + slotW * i + 1, y: M.top,
+        width: slotW - 2, height: PLOT_H, rx: 4,
+      }));
+
+      keys.forEach((key, k) => {
+        const v = deltas[key][i];
+        const x = x0 + k * (barW + BAR_GAP);
+        const yTip = y(v);
+        const d = divergingBarPath(x, barW, yMid, yTip);
+        if (d) g.appendChild(el("path", { d, fill: SERIES[key].color }));
+        else g.appendChild(el("rect", {  // keep near-zero deltas visible
+          x, y: yMid - 0.75, width: barW, height: 1.5, fill: SERIES[key].color,
+        }));
+
+        const label = el("text", {
+          class: "delta-label", x: x + barW / 2,
+          y: v >= 0 ? yTip - 7 : yTip + 15, "text-anchor": "middle",
+        });
+        label.textContent = signed(v);
+        g.appendChild(label);
+      });
+
+      const maxChars = Math.max(8, Math.floor(slotW / 6.2));
+      const lines = wrap(dim.labels[i], maxChars, 5);
+      const text = el("text", {
+        class: "cat-text", x: cx, y: M.top + PLOT_H + 20, "text-anchor": "middle",
+      });
+      lines.forEach((ln, li) => {
+        const ts = el("tspan", { x: cx, dy: li === 0 ? 0 : 14 });
+        ts.textContent = ln;
+        text.appendChild(ts);
+      });
+      g.appendChild(text);
+
+      const show = () => {
+        g.classList.add("is-active");
+        // No swatch here — target isn't drawn as its own mark on this chart,
+        // it's the zero baseline (already labeled "On target" on the axis).
+        // The blank spacer just keeps this row's label aligned with the
+        // swatch-led rows below it.
+        const targetRow = `<div class="tt-row"><span class="tt-key">` +
+          `<i class="swatch" style="background:none"></i>${SERIES.target.label}` +
+          `</span><b>${fmt(dim.target[i])}</b></div>`;
+        const rows = keys.map((key) =>
+          `<div class="tt-row"><span class="tt-key">` +
+          `<i class="swatch" style="background:${SERIES[key].color}"></i>${SERIES[key].label}` +
+          `</span><b>${fmt(dim[key][i])}</b></div>`).join("");
+        const deltaRows = keys.map((key) =>
+          `<div><span>${SERIES[key].label} vs target</span>` +
+          `<span>${signed(deltas[key][i])} pts</span></div>`).join("");
+        tooltip.innerHTML = `<div class="tt-title"></div>${targetRow}${rows}` +
+          `<div class="tt-delta">${deltaRows}</div>`;
+        tooltip.querySelector(".tt-title").textContent = cat;
+        tooltip.dataset.show = "1";
+
+        const rect = plot.getBoundingClientRect();
+        const scale = rect.width / W;
+        const tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
+        const extreme = keys.reduce((a, key) =>
+          Math.abs(deltas[key][i]) > Math.abs(deltas[a][i]) ? key : a, keys[0]);
+        const anchorY = y(deltas[extreme][i]) * scale;
+        const left = Math.min(Math.max(cx * scale, tw / 2 + 2),
+                              rect.width - tw / 2 - 2);
+        const above = anchorY - th - 10 >= 0;
+        tooltip.style.left = left + "px";
+        tooltip.style.top = (above ? anchorY - th - 10 : anchorY + 10) + "px";
+        tooltip.style.transform = "translateX(-50%)";
+      };
+      const hide = () => {
+        g.classList.remove("is-active");
+        tooltip.dataset.show = "0";
+      };
+      g.addEventListener("pointerenter", show);
+      g.addEventListener("pointermove", show);
+      g.addEventListener("pointerleave", hide);
+      svg.appendChild(g);
+    });
+
+    plot.append(svg, tooltip);
+    panel.appendChild(plot);
+    return panel;
+  }
+
+  // The Morph tab shows Target next to one togglable bar (Phase 1 or Phase
+  // 2), grouped like buildPanel's grouped view. Unlike every other tab,
+  // toggling here never calls render() — it mutates the existing phase bar
+  // in place so the .morph-bar CSS transition can animate between the two
+  // shapes/colors while the target bar stays untouched.
+  function buildMorphPanel(dim, panelSpec, yMax, wide) {
+    const keys = panelSpec.series;              // togglable phase series
+    const allKeys = ["target", ...keys];
+    const nCats = dim.categories.length;
+    const { plotW: PLOT_W, W } = geometry(nCats, 2, wide);
+
+    const panel = document.createElement("section");
+    panel.className = "panel";
+
+    if (panelSpec.title) {
+      const h2 = document.createElement("h2");
+      h2.textContent = panelSpec.title;
+      panel.appendChild(h2);
+    }
+
+    const controls = document.createElement("div");
+    controls.className = "morph-controls";
+    controls.appendChild(legendFor(allKeys, []));
+
+    const toggle = document.createElement("div");
+    toggle.className = "toggle";
+    toggle.setAttribute("role", "group");
+    toggle.setAttribute("aria-label", "Phase");
+    const toggleButtons = keys.map((key, idx) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = SERIES[key].label;
+      b.setAttribute("aria-pressed", String(idx === 0));
+      toggle.appendChild(b);
+      return b;
+    });
+    controls.appendChild(toggle);
+    panel.appendChild(controls);
+
+    const plot = document.createElement("div");
+    plot.className = "plot";
+    const tooltip = document.createElement("div");
+    tooltip.className = "tooltip";
+    tooltip.setAttribute("role", "status");
+
+    const svg = el("svg", {
+      viewBox: `0 0 ${W} ${H}`,
+      role: "img",
+      "aria-label": `${allKeys.map((k) => SERIES[k].label).join(", ")} by ` +
+                    dim.label.toLowerCase(),
+    });
+
+    const y = (v) => M.top + PLOT_H - (v / yMax) * PLOT_H;
+
+    ticks(yMax).forEach((t) => {
+      svg.appendChild(el("line", {
+        class: "gridline", x1: M.left, x2: M.left + PLOT_W, y1: y(t), y2: y(t),
+      }));
+      const label = el("text", {
+        class: "tick-text", x: M.left - 10, y: y(t) + 4, "text-anchor": "end",
+      });
+      label.textContent = t + "%";
+      svg.appendChild(label);
+    });
+
+    const slotW = PLOT_W / nCats;
+    const barW = Math.min(MAX_BAR, (slotW * 0.68 - BAR_GAP) / 2);
+    const groupW = barW * 2 + BAR_GAP;
+
+    let activeKey = keys[0];
+    const bars = [];   // per-category { path, x }, updated in place on toggle
+
+    // Height floor so a near-zero share still renders as a visible sliver
+    // rather than a degenerate empty path — keeping the path structure
+    // constant across both phases is what makes it interpolatable.
+    const barGeom = (key, i) => {
+      const h = Math.max((dim[key][i] / yMax) * PLOT_H, 1.5);
+      return { yTop: M.top + PLOT_H - h, h };
+    };
+
+    dim.categories.forEach((cat, i) => {
+      const cx = M.left + slotW * (i + 0.5);
+      const x0 = cx - groupW / 2;
+      const xTarget = x0;
+      const xPhase = x0 + barW + BAR_GAP;
+      const g = el("g", { class: "slot" });
+
+      g.appendChild(el("rect", {
+        class: "hit", x: M.left + slotW * i + 1, y: M.top,
+        width: slotW - 2, height: PLOT_H, rx: 4,
+      }));
+
+      const targetGeom = barGeom("target", i);
+      g.appendChild(el("path", {
+        d: barPath(xTarget, targetGeom.yTop, barW, targetGeom.h),
+        fill: SERIES.target.color,
+      }));
+
+      const { yTop, h } = barGeom(activeKey, i);
+      const path = el("path", { class: "morph-bar", d: barPath(xPhase, yTop, barW, h) });
+      path.style.fill = SERIES[activeKey].color;
+      g.appendChild(path);
+      bars.push({ path, x: xPhase });
+
+      const maxChars = Math.max(8, Math.floor(slotW / 6.2));
+      const lines = wrap(dim.labels[i], maxChars, 5);
+      const text = el("text", {
+        class: "cat-text", x: cx, y: M.top + PLOT_H + 20, "text-anchor": "middle",
+      });
+      lines.forEach((ln, li) => {
+        const ts = el("tspan", { x: cx, dy: li === 0 ? 0 : 14 });
+        ts.textContent = ln;
+        text.appendChild(ts);
+      });
+      g.appendChild(text);
+
+      const show = () => {
+        g.classList.add("is-active");
+        const rows = allKeys.map((key) =>
+          `<div class="tt-row"><span class="tt-key">` +
+          `<i class="swatch" style="background:${SERIES[key].color}"></i>${SERIES[key].label}` +
+          `</span><b>${fmt(dim[key][i])}</b></div>`).join("");
+        const deltas = keys.map((key) =>
+          `<div><span>${SERIES[key].label} vs target</span>` +
+          `<span>${signed(dim[key][i] - dim.target[i])} pts</span></div>`).join("");
+        tooltip.innerHTML = `<div class="tt-title"></div>${rows}` +
+          `<div class="tt-delta">${deltas}</div>`;
+        tooltip.querySelector(".tt-title").textContent = cat;
+        tooltip.dataset.show = "1";
+
+        const rect = plot.getBoundingClientRect();
+        const scale = rect.width / W;
+        const tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
+        const peak = Math.max(...allKeys.map((k) => dim[k][i]));
+        const anchorY = y(peak) * scale;
+        const left = Math.min(Math.max(cx * scale, tw / 2 + 2),
+                              rect.width - tw / 2 - 2);
+        const above = anchorY - th - 10 >= 0;
+        tooltip.style.left = left + "px";
+        tooltip.style.top = (above ? anchorY - th - 10 : anchorY + 10) + "px";
+        tooltip.style.transform = "translateX(-50%)";
+      };
+      const hide = () => {
+        g.classList.remove("is-active");
+        tooltip.dataset.show = "0";
+      };
+      g.addEventListener("pointerenter", show);
+      g.addEventListener("pointermove", show);
+      g.addEventListener("pointerleave", hide);
+      svg.appendChild(g);
+    });
+
+    function setActive(key) {
+      if (key === activeKey) return;
+      activeKey = key;
+      toggleButtons.forEach((b, idx) =>
+        b.setAttribute("aria-pressed", String(keys[idx] === key)));
+      bars.forEach(({ path, x }, i) => {
+        const { yTop, h } = barGeom(key, i);
+        path.setAttribute("d", barPath(x, yTop, barW, h));
+        path.style.fill = SERIES[key].color;
+      });
+    }
+    toggleButtons.forEach((b, idx) =>
+      b.addEventListener("click", () => setActive(keys[idx])));
+
+    plot.append(svg, tooltip);
+    panel.appendChild(plot);
+    return panel;
+  }
+
+  // One table covers every view — it's the same three numbers either way.
+  function buildTable(dim) {
+    const wrapEl = document.createElement("section");
+    const table = document.createElement("table");
+    const cap = document.createElement("caption");
+    cap.textContent = `${dim.label} — target vs phase 1 vs phase 2`;
+    table.appendChild(cap);
+
+    const thead = document.createElement("thead");
+    thead.innerHTML = `<tr><th scope="col">${dim.label}</th>` +
+      `<th scope="col">Target</th><th scope="col">Phase 1</th>` +
+      `<th scope="col">Phase 2</th><th scope="col">P1 vs target</th>` +
+      `<th scope="col">P2 vs target</th></tr>`;
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    dim.categories.forEach((cat, i) => {
+      const t = dim.target[i], p1 = dim.phase1[i], p2 = dim.phase2[i];
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<th scope="row">${cat}</th><td>${fmt(t)}</td>` +
+        `<td>${fmt(p1)}</td><td>${fmt(p2)}</td>` +
+        `<td>${signed(p1 - t)} pts</td><td>${signed(p2 - t)} pts</td>`;
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    wrapEl.appendChild(table);
+    return wrapEl;
+  }
+
+  const chartView = document.getElementById("chart-view");
+  const tableView = document.getElementById("table-view");
+  const notesList = document.getElementById("notes-list");
+  const select = document.getElementById("dimension");
+  const tabs = document.getElementById("tabs");
+
+  const dimOrder = DATA.dimensionOrder || Object.keys(DATA.dimensions);
+  select.replaceChildren(...dimOrder.map((id) => {
+    const opt = document.createElement("option");
+    opt.value = id;
+    opt.textContent = DATA.dimensions[id].label;
+    opt.selected = id === DATA.defaultDimension;
+    return opt;
+  }));
+
+  let activeView = DATA.views[0].id;
+
+  tabs.replaceChildren(...DATA.views.map((v) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.role = "tab";
+    b.dataset.view = v.id;
+    b.textContent = v.label;
+    b.setAttribute("aria-selected", String(v.id === activeView));
+    b.addEventListener("click", () => {
+      activeView = v.id;
+      render();
+    });
+    return b;
+  }));
+
+  function render() {
+    const dim = DATA.dimensions[select.value];
+    const view = DATA.views.find((v) => v.id === activeView);
+
+    [...tabs.children].forEach((b) =>
+      b.setAttribute("aria-selected", String(b.dataset.view === activeView)));
+
+    // One y scale across every series and every tab, so switching tabs never
+    // rescales the same numbers.
+    const peak = Math.max(...Object.keys(SERIES).flatMap((k) => dim[k]));
+    const yMax = niceMax(peak);
+
+    chartView.className = "charts cols-" + view.panels.length;
+    chartView.replaceChildren(
+      ...view.panels.map((p) => view.kind === "delta"
+        ? buildDeltaPanel(dim, p, view.wide)
+        : view.kind === "morph"
+        ? buildMorphPanel(dim, p, yMax, view.wide)
+        : buildPanel(dim, p, yMax, view.wide)));
+    tableView.className = "charts cols-1";
+    tableView.replaceChildren(buildTable(dim));
+
+    const off = Object.entries(dim.totals)
+      .filter(([, total]) => Math.abs(total - 100) >= 0.5)
+      .map(([k, total]) => `${SERIES[k].label} ${total.toFixed(1)}%`);
+
+    const items = [
+      `Bars are the shares supplied in <code>${DATA.source}</code>, shown as given — nothing is renormalised.`,
+      off.length
+        ? `For ${dim.label.toLowerCase()}, these columns do not total 100%: ${off.join(", ")}. That gap is unassigned in the source data (non-response or uncategorised).`
+        : `For ${dim.label.toLowerCase()}, all three columns total 100%.`,
+      `On the Combined tab the target is a caliper mark laid across each category's bars rather than a third bar, so the over/under against target is read as the gap between bar top and rule.`,
+      `On the Vs. Target tab, bars are Phase 1 / Phase 2 minus the target share for that category — the zero line is the target itself, so a bar growing up means over target and growing down means under.`,
+      `On the Morph tab, toggle Phase 1 / Phase 2 to watch that phase's bar animate directly to the other phase's share, next to a Target bar that stays fixed as the reference point.`,
+    ];
+    notesList.innerHTML = items.map((t) => `<li>${t}</li>`).join("");
+  }
+
+  select.addEventListener("change", render);
+
+  const btnChart = document.getElementById("view-chart");
+  const btnTable = document.getElementById("view-table");
+  function setView(isChart) {
+    btnChart.setAttribute("aria-pressed", String(isChart));
+    btnTable.setAttribute("aria-pressed", String(!isChart));
+    chartView.hidden = !isChart;
+    tableView.hidden = isChart;
+  }
+  btnChart.addEventListener("click", () => setView(true));
+  btnTable.addEventListener("click", () => setView(false));
+
+  // --- theme -----------------------------------------------------------
+  const themeButtons = [...document.querySelectorAll("[data-theme-choice]")];
+  const osDark = window.matchMedia("(prefers-color-scheme: dark)");
+  const root = document.documentElement;
+
+  function applyTheme(pref) {
+    root.dataset.theme = pref;
+    root.dataset.themeResolved =
+      pref === "auto" ? (osDark.matches ? "dark" : "light") : pref;
+    themeButtons.forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.themeChoice === pref)));
+    try { localStorage.setItem("theme", pref); } catch (e) {}
+  }
+
+  themeButtons.forEach((b) =>
+    b.addEventListener("click", () => applyTheme(b.dataset.themeChoice)));
+  osDark.addEventListener("change", () => {
+    if (root.dataset.theme === "auto") applyTheme("auto");
+  });
+  applyTheme(root.dataset.theme || "auto");
+
+  render();
+  window.addEventListener("resize", () => {
+    document.querySelectorAll(".tooltip").forEach((t) => (t.dataset.show = "0"));
+  });
+})();
+</script>
+</body>
+</html>

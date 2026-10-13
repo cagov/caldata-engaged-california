@@ -1,0 +1,17 @@
+{
+  "name": "synthetic-data",
+  "version": "1.0.0",
+  "description": "Generates fake stand-in data for the viz app and the offline analysis stages. Contains no real responses.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "tsx src/generate.ts",
+    "test": "tsx --test tests/**/*.test.ts",
+    "typecheck": "tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

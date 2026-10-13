@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ideas we heard — inline, self-animating</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;0,900;1,400;1,600&family=Noto+Sans+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* ── EC design-system tokens (light-mode subset), as in policy-ideas-whirl-v1 ── */
+:root{
+  --ec-navy:#1c2745; --ec-text-dark:#444444; --ec-text-navy:#1c2745;
+  --ec-border:#d4d4d7; --ec-orange:#e79450; --ec-orange-dark:#e6883b;
+  --ec-link-light:#0d5d90;
+  --ec-font-sans:"Noto Sans","Noto Sans Display",system-ui,sans-serif;
+  --ec-font-display:"Noto Sans Display","Noto Sans",system-ui,sans-serif;
+  --ec-text-hero:47px; --ec-text-h1:37px; --ec-text-h2:30px; --ec-text-h5:20px;
+  --ec-text-body-lg:23px; --ec-text-body:18px; --ec-text-caption:14px; --ec-text-xs:12px;
+  --ec-tracking-tight:-0.02em;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--ec-text-dark);
+  font-family:var(--ec-font-sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+h2{font-family:var(--ec-font-display);color:var(--ec-text-navy);letter-spacing:var(--ec-tracking-tight);
+  font-size:clamp(30px,4vw,var(--ec-text-h1));line-height:1.14;margin:0 0 20px;font-weight:700}
+.wrap{max-width:1180px;margin:0 auto;padding:72px 32px 120px}
+p,li{font-size:var(--ec-text-body-lg);line-height:1.6;margin:0 0 18px}
+ul{padding-left:1.2em;margin:0 0 18px}
+li{margin-bottom:6px}
+
+/* ── the figure breaks out of the text column: as wide as the viewport allows,
+   up to FIGURE_MAX (matches the logical field's width so the layout renders at
+   scale 1 on a wide screen) ──────────────────────────────────────────────── */
+.figure{position:relative;width:min(1400px,calc(100vw - 48px));
+  margin:28px 0 36px calc(50% - min(700px,50vw - 24px))}
+.figure canvas{display:block;width:100%;height:auto}
+.figure-static{display:none}
+
+/* controls: segmented phase switch + play/pause, quiet, under the canvas */
+.controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:18px;
+  font-size:var(--ec-text-caption)}
+.seg{display:inline-flex;border:1px solid var(--ec-border);border-radius:30px;overflow:hidden;background:#fff}
+.seg button{appearance:none;border:0;background:transparent;color:var(--ec-text-dark);
+  font:inherit;font-weight:600;padding:7px 16px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ec-navy);color:#fff}
+.ctl{appearance:none;border:1px solid var(--ec-border);border-radius:30px;background:#fff;
+  color:var(--ec-text-dark);font:inherit;font-weight:600;padding:7px 14px;cursor:pointer;min-width:84px}
+.caption{text-align:center;font-size:var(--ec-text-caption);color:var(--ec-text-dark);margin:10px 0 0;min-height:1.4em}
+.legend{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 10px;margin-top:12px;
+  font-size:12.5px;line-height:1.3;color:var(--ec-text-dark)}
+.legend .item{display:flex;align-items:center;gap:6px;padding:3px 8px 3px 6px;border-radius:30px;
+  background:#f6f7fa}
+.legend .swatch{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.note{margin-top:36px;padding:16px 20px;background:#f6f7fa;border-radius:6px;
+  font-size:13.5px;line-height:1.6;color:var(--ec-text-dark)}
+.note b{color:var(--ec-text-navy)}
+@media (prefers-reduced-motion:reduce){
+  .figure canvas.live{display:none}
+  .figure-static{display:block}
+  .figure-static canvas{margin-bottom:14px}
+  .ctl{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h2>Ideas we heard</h2>
+  <p>Our poll asked what you’d like government to do about the impact of AI. We got a wide range of ideas for good policies.</p>
+
+  <div class="figure" id="figure">
+    <canvas id="ideas-canvas" class="live" aria-label="Word cloud of policy ideas: the poll's wide range of ideas, then the 27 ideas that came out of the discussions"></canvas>
+    <div class="figure-static" id="figure-static" aria-hidden="true"></div>
+    <div class="legend" id="legend"></div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Which phase to show">
+        <button type="button" id="btn-p1" aria-pressed="true">Poll ideas</button>
+        <button type="button" id="btn-p2" aria-pressed="false">27 discussion ideas</button>
+      </div>
+      <button type="button" class="ctl" id="btn-play" aria-pressed="true">Pause</button>
+    </div>
+    <p class="caption" id="caption"></p>
+  </div>
+
+  <p>Then we refined those ideas in 2-hour discussions. We grouped what people said in these discussions into 27 distinct ideas. Then we ranked them according to:</p>
+  <ul>
+    <li>How often an idea came up across discussions (frequency), and</li>
+    <li>How much support it drew when it did (how often it was a popular idea).</li>
+  </ul>
+  <p>That ranking sorts the concepts into three tiers:</p>
+
+  <div class="note"><b>Prototype on published data.</b> Same inputs and layout engine as <code>policy-ideas-whirl-v1.html</code>; the two phases animate between each other on a timer, and the buttons jump to a phase and pause. Word size = how many people raised the idea (poll) / votes received (discussions). The Phase 1 ideas are the
+      229 poll labels published on engaged.ca.gov
+      (<code>/public/data/ai-report-ideas-cloud.json</code>), with their published counts and subthemes.
+      An earlier internal version of this sketch used a larger, unpublished label set; it is not in this repo.</div>
+</div>
+
+<!-- data files change often and the static server sends no Cache-Control, so
+     browsers kept serving stale copies (seen 2026-09-17: old lowercase labels
+     after a regeneration). Load them with a per-load cache-buster; library files
+     below stay ordinary script tags. -->
+<script>
+  document.write('<script src="whirl-data.js?t=' + Date.now() + '"><\/script>');
+  document.write('<script src="whirl-finale-layout.js?t=' + Date.now() + '" onerror="console.info(\'no whirl-finale-layout.js (fine — computing the finale layout)\')"><\/script>');
+</script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="d3-cloud-multiline.js"></script>
+<script src="whirl-layout.js"></script>
+<script>
+/* =====================================================================
+   Ideas we heard — one inline canvas, two phases, self-animating.
+
+   Layout: identical machinery to policy-ideas-whirl-v1.html via the shared
+   whirl-layout.js (fork of d3-cloud with the mask fixes, skeleton + hole-
+   filling seeding, best-of-N finale selection, exact drawWord). What is
+   different here:
+     - a FIXED logical field (FW x FH) scaled to the figure's width, instead
+       of a full-viewport letterbox;
+     - font scales for both phases are FITTED to that field automatically
+       (largest uniform multiplier at which every label places), because
+       337 labels at the whirl's 11px minimum need ~2.6M px² and this field
+       is smaller — the ratios between ideas are untouched, only the
+       multiplier changes; the chosen multipliers are logged to the console;
+     - a looping timeline instead of scroll beats.
+   ===================================================================== */
+(function(){
+  "use strict";
+  const DATA = window.WHIRL_DATA, SUBTHEMES = DATA.subthemes;
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  const rand = mulberry32(20260826);
+  const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const ease = t => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+
+  // ---- logical field + canvas ---------------------------------------------
+  // 1400 wide so the figure renders at scale 1 on a wide screen (the .figure
+  // rule caps it at 1400px CSS). Height is the trade against the poll
+  // cloud's smallest labels: fitted minimum was 7.7px at 1400x1000 and
+  // 7.2px at 1400x800; 1400x820 keeps the figure from pushing the next
+  // paragraph too far down (asked for "less tall"). The picker's "inline"
+  // preset must match this field exactly.
+  const FW = 1400, FH = 820;
+  const canvas = document.getElementById('ideas-canvas');
+  let ctx = canvas.getContext('2d');   // reassigned only by renderStatic() (reduced motion)
+  const fit = { scale: 1, dpr: 1 };
+  function resize(){
+    const cssW = canvas.parentElement.clientWidth || FW;
+    const cssH = cssW * FH / FW;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
+    canvas.style.height = cssH + 'px';
+    fit.scale = cssW / FW; fit.dpr = dpr;
+    if (ready) render();
+  }
+  window.addEventListener('resize', resize);
+
+  const WL = WhirlLayout({ rand, cloud: () => d3.layout.cloud(), measureCtx: ctx });
+
+  // ---- words ----------------------------------------------------------------
+  const MAX_COUNT = Math.max(...DATA.phase1.map(c => c.count));
+  const MAX_VOTES = Math.max(...DATA.phase2.map(c => c.votes));
+  // same formulas as the whirl; `scale` is the uniform fitted multiplier
+  // ?size=rank sizes the poll cloud by dense rank of the count instead of by
+  // the count itself (see the same switch in policy-ideas-whirl-v1.html)
+  const OPTS = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams(Object.entries(window.__WHIRL_OPTS || {}));
+  const SIZE_MODE = OPTS.get('size') === 'rank' ? 'rank' : 'count', RANK_POW = +(OPTS.get('pow') || 1);
+  const PACK = OPTS.get('pack') === 'dense' ? 'dense' : 'designed'; // see the same switch in the whirl
+  const DISTINCT_COUNTS = [...new Set(DATA.phase1.map(c => c.count))].sort((a, b) => b - a);
+  const phase1Base = n => SIZE_MODE === 'rank'
+    ? 11 + 26 * Math.pow(1 - (DISTINCT_COUNTS.indexOf(n)) / (DISTINCT_COUNTS.length - 1), RANK_POW)
+    : 11 + 26 * Math.pow(n / MAX_COUNT, 0.6);
+  const phase2Base = v => (17 + 29 * Math.sqrt(v / MAX_VOTES)) * 1.3;
+  function buildWords(entries, baseFn, scale, weight, maxLineEm, padW, padH, extra){
+    return entries.map((c, i) => {
+      const fontSize = baseFn(c) * scale;
+      const lines = WL.wrapTwoLines(c.label, fontSize, weight, fontSize * maxLineEm);
+      const w = Math.max(...lines.map(l => WL.textWidth(l, fontSize, weight))) + padW;
+      const h = lines.length * fontSize * 1.22 + padH;
+      return Object.assign({ i, label: c.label, subtheme: c.subtheme, fontSize, lines, w, h }, extra ? extra(c, i) : {});
+    });
+  }
+  /** Largest uniform font multiplier (stepping down 4% from `start`) at which
+   * `layoutFn(words)` places every label. Returns { scale, words, placed }. */
+  function fitScale(entries, baseFn, weight, maxLineEm, padW, padH, layoutFn, start, extra){
+    // two attempts per multiplier: d3-cloud's spiral direction is random, so
+    // one dropped label at a given size is often luck, not a real limit —
+    // without the retry the fitted multiplier wandered between runs.
+    let scale = start;
+    for (let k = 0; k < 14; k++, scale *= 0.96){
+      for (let attempt = 0; attempt < 2; attempt++){
+        const words = buildWords(entries, baseFn, scale, weight, maxLineEm, padW, padH, extra);
+        const placed = layoutFn(words);
+        if (placed.length === words.length) return { scale, words, placed };
+        console.log(`fit: scale ${scale.toFixed(3)} dropped ${words.length - placed.length}${attempt ? ', trying smaller' : ', retrying'}`);
+      }
+    }
+    throw new Error('could not fit labels into the field');
+  }
+
+  let words337, words27, cloudTarget, cloudHome, finalePos, anchors, finaleDelay, ready = false;
+  function layoutAll(){
+    // poll cloud: start from an area-based estimate of the multiplier (the
+    // whirl's 337 need ~2307x1124 at multiplier 1 with padding 2)
+    const est = Math.sqrt((FW * FH) / (2307 * 1124));
+    const c = fitScale(DATA.phase1, e => phase1Base(e.count), 400, 9.5, 6, 4,
+      ws => WL.layoutWithD3Cloud(ws, { width: FW, height: FH, padding: 2, weight: 400 }), est * 1.08,
+      (e) => ({ count: e.count, arrivalRand: rand() }));
+    words337 = c.words;
+    console.log(`ideas: poll cloud font multiplier ${c.scale.toFixed(3)} -> ${(11*c.scale).toFixed(1)}px to ${(37*c.scale).toFixed(1)}px logical`);
+    // discussions cloud: find the multiplier with cheap single layouts (default
+    // d3-cloud seeds), then run the full best-of-N selection once at that
+    // multiplier; if the selection still can't place everything, step down.
+    const fOpts = { width: FW, height: FH, padding: 2, weight: 700, pack: PACK };
+    const saved = window.WHIRL_FINALE_LAYOUTS && window.WHIRL_FINALE_LAYOUTS[`${FW}x${FH}`];
+    let f = null;
+    if (saved){ // a layout kept in finale-layout-picker-v1.html for this field
+      const words = buildWords(DATA.phase2, e => phase2Base(e.votes), saved.fontMultiplier, 700, 11, 8, 6, (e) => ({ votes: e.votes, sessions: e.sessions }));
+      if (WL.applySavedFinale(saved, words, FW, FH)){ f = { scale: saved.fontMultiplier, words, placed: words.slice() }; console.log(`ideas: using kept finale layout seed ${saved.seed} from whirl-finale-layout.js`); }
+      else console.warn('ideas: whirl-finale-layout.js present but does not match — computing instead');
+    }
+    if (!f) f = fitScale(DATA.phase2, e => phase2Base(e.votes), 700, 11, 8, 6,
+      ws => WL.layoutWithD3Cloud(ws, fOpts), Math.min(1, Math.sqrt((FW * FH) / (2340 * 1140)) * 1.1),
+      (e) => ({ votes: e.votes, sessions: e.sessions }));
+    const usedSaved = !!(saved && WL.lastFinale && WL.lastFinale.fromSaved);
+    for (let k = 0; k < 6 && !usedSaved; k++){
+      const words = buildWords(DATA.phase2, e => phase2Base(e.votes), f.scale, 700, 11, 8, 6, (e) => ({ votes: e.votes, sessions: e.sessions }));
+      const placed = WL.layoutFinaleBalanced(words, fOpts);
+      if (placed.length === words.length){ f = { scale: f.scale, words, placed }; break; }
+      f.scale *= 0.96; console.log(`fit: balanced selection dropped ${words.length - placed.length}, retrying at ${f.scale.toFixed(3)}`);
+    }
+    words27 = f.words;
+    console.log(`ideas: discussions cloud font multiplier ${f.scale.toFixed(3)} -> ${(17*1.3*f.scale).toFixed(1)}px to ${(46*1.3*f.scale).toFixed(1)}px logical`);
+
+    cloudTarget = words337.map(w => [w.x + FW/2, w.y + FH/2]);
+    finalePos = words27.map(w => [w.x + FW/2, w.y + FH/2]);
+    // arrival scatter: heavier ideas start nearer the middle
+    cloudHome = words337.map(w => { const spread = (40 + 300 * (1 - Math.sqrt(w.count / MAX_COUNT))) * (FW / 2400); const a = rand() * Math.PI * 2, r = rand() * spread; return [FW/2 + Math.cos(a) * r, FH/2 + Math.sin(a) * r * 0.68]; });
+    // dissolve targets: 8 subtheme masses on a loose golden-angle ring
+    const GA = 2.399963229728653;
+    anchors = SUBTHEMES.map((s, i) => [FW/2 + Math.cos(i * GA) * FW/2 * 0.62, FH/2 + Math.sin(i * GA) * FH/2 * 0.62]);
+    finaleDelay = words27.map((w, i) => (i / words27.length) * 0.6 + rand() * 0.25);
+    ready = true;
+  }
+
+  // ---- drawing --------------------------------------------------------------
+  function drawWord(lines, x, y, fontSize, weight, color, alpha, scale){ WL.drawWord(ctx, lines, x, y, fontSize, weight, color, alpha, scale); }
+  /** mix: 0 = poll cloud fully, 1 = discussion ideas fully; arrive: 0..1 for
+   * the poll cloud's fly-in (1 = arrived). Draws one frame. */
+  function drawState(mix, arrive){
+    ctx.save();
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.setTransform(fit.scale * fit.dpr, 0, 0, fit.scale * fit.dpr, 0, 0);
+    const dEase = ease(clamp01(mix / 0.85));
+    const cloudAlpha = 1 - Math.pow(clamp01(mix / 0.85), 2.4);
+    if (cloudAlpha > 0.01){
+      words337.forEach((w, i) => {
+        const a = ease(clamp01((arrive - w.arrivalRand * 0.45 - 0.02) / 0.5));
+        if (a <= 0.01) return;
+        const home = cloudHome[i], tgt = cloudTarget[i], anc = anchors[w.subtheme];
+        const x0 = lerp(home[0], tgt[0], a), y0 = lerp(home[1], tgt[1], a);
+        const x = lerp(x0, anc[0], dEase), y = lerp(y0, anc[1], dEase);
+        drawWord(w.lines, x, y, w.fontSize, 400, SUBTHEMES[w.subtheme].color, a * cloudAlpha * (mix > 0 ? 0.85 + 0.15 * (1 - mix) : 1), lerp(1, 0.12, dEase));
+      });
+    }
+    const f = clamp01((mix - 0.55) / 0.45);
+    if (f > 0){
+      words27.forEach((w, i) => {
+        const a = ease(clamp01((f - finaleDelay[i] * 0.5) / 0.5));
+        if (a <= 0.01) return;
+        drawWord(w.lines, finalePos[i][0], finalePos[i][1], w.fontSize, 700, SUBTHEMES[w.subtheme].color, a, lerp(0.55, 1, a));
+      });
+    }
+    ctx.restore();
+  }
+
+  // ---- timeline -------------------------------------------------------------
+  // A loop of phases in seconds. `mix` and `arrive` are read off the loop
+  // clock; manual jumps tween `mix` to 0 or 1 and pause the clock.
+  // Slowed from { arrive: 2.6, hold1: 3.8, toP2: 3.0, hold2: 6.5, toP1: 3.0,
+  // hold1b: 3.8 } — the transitions read as snappy at ~3s.
+  const T = { arrive: 4.5, hold1: 4.5, toP2: 5.5, hold2: 7.5, toP1: 5.5, hold1b: 4.5 };
+  const LOOP = T.hold1 + T.toP2 + T.hold2 + T.toP1 + T.hold1b; // after the one-time arrival
+  let clock = 0, playing = !REDUCED, last = performance.now();
+  let manual = null; // { from, to, t0, dur } when a button jump is tweening
+  let mix = 0, arrive = 0;
+  function stateAt(c){
+    if (c < T.arrive) return { mix: 0, arrive: c / T.arrive };
+    let u = (c - T.arrive) % LOOP;
+    if (u < T.hold1) return { mix: 0, arrive: 1 };
+    u -= T.hold1; if (u < T.toP2) return { mix: u / T.toP2, arrive: 1 };
+    u -= T.toP2; if (u < T.hold2) return { mix: 1, arrive: 1 };
+    u -= T.hold2; if (u < T.toP1) return { mix: 1 - u / T.toP1, arrive: 1 };
+    return { mix: 0, arrive: 1 };
+  }
+  function render(){ drawState(mix, arrive); }
+  function tick(now){
+    const dt = Math.min(0.1, (now - last) / 1000); last = now;
+    if (manual){
+      const k = ease(clamp01((now - manual.t0) / manual.dur));
+      mix = lerp(manual.from, manual.to, k); arrive = 1;
+      if (k >= 1) manual = null;
+      render();
+    } else if (playing){
+      clock += dt;
+      const s = stateAt(clock); mix = s.mix; arrive = s.arrive;
+      render();
+    }
+    updateUi();
+    requestAnimationFrame(tick);
+  }
+
+  // ---- UI -------------------------------------------------------------------
+  const btnP1 = document.getElementById('btn-p1'), btnP2 = document.getElementById('btn-p2'), btnPlay = document.getElementById('btn-play');
+  const captionEl = document.getElementById('caption');
+  function jumpTo(target){
+    playing = false; btnPlay.textContent = 'Play'; btnPlay.setAttribute('aria-pressed', 'false');
+    manual = { from: mix, to: target, t0: performance.now(), dur: REDUCED ? 300 : 4000 }; // was 2200
+    arrive = 1;
+    // keep the loop clock consistent with where we land, so Play resumes sensibly
+    clock = T.arrive + (target === 1 ? T.hold1 + T.toP2 : 0);
+  }
+  btnP1.addEventListener('click', () => jumpTo(0));
+  btnP2.addEventListener('click', () => jumpTo(1));
+  btnPlay.addEventListener('click', () => {
+    playing = !playing; manual = null;
+    btnPlay.textContent = playing ? 'Pause' : 'Play'; btnPlay.setAttribute('aria-pressed', String(playing));
+  });
+  let lastUi = '';
+  function updateUi(){
+    const which = mix < 0.5 ? 1 : 2;
+    const key = which + '|' + (arrive >= 1);
+    if (key === lastUi) return; lastUi = key;
+    btnP1.setAttribute('aria-pressed', String(which === 1)); btnP2.setAttribute('aria-pressed', String(which === 2));
+    captionEl.textContent = which === 1
+      ? `${words337.length} ideas from the poll · word size = ${SIZE_MODE === 'rank' ? 'rank by how many people raised it (ties share a size)' : 'how many people raised it'}`
+      : `${words27.length} ideas from the discussions · word size = votes received`;
+  }
+  document.getElementById('legend').innerHTML = SUBTHEMES.map(s =>
+    `<span class="item"><span class="swatch" style="background:${s.color}"></span>${s.fullName}</span>`).join('');
+
+  // ---- reduced motion: two static canvases instead of the live one --------
+  function renderStatic(){
+    const host = document.getElementById('figure-static');
+    [[0, 'Ideas from the poll'], [1, 'The 27 ideas from the discussions']].forEach(([m, label]) => {
+      const c = document.createElement('canvas'); c.width = FW; c.height = FH; c.setAttribute('aria-label', label);
+      c.style.cssText = 'width:100%;height:auto;display:block';
+      host.appendChild(c);
+      const saved = { ctx, fit: { ...fit } };
+      ctx = c.getContext('2d'); fit.scale = 1; fit.dpr = 1;
+      drawState(m, 1);
+      ctx = saved.ctx; Object.assign(fit, saved.fit);
+    });
+  }
+
+  async function ensureFontsLoaded(){
+    if (!document.fonts) return;
+    await Promise.all([document.fonts.load("400 16px 'Noto Sans', Arial, sans-serif"), document.fonts.load("700 16px 'Noto Sans', Arial, sans-serif")]);
+    await document.fonts.ready;
+  }
+  ensureFontsLoaded().then(() => {
+    resize();
+    layoutAll();
+    updateUi();
+    if (REDUCED){ renderStatic(); mix = 0; arrive = 1; render(); }
+    else { last = performance.now(); requestAnimationFrame(tick); }
+    render();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+{
+  "Bay Area": [
+    "Alameda County",
+    "Contra Costa County",
+    "Marin County",
+    "San Francisco County",
+    "San Mateo County",
+    "Santa Clara County",
+    "Solano County"
+  ],
+  "Central Coast": [
+    "Monterey County",
+    "San Benito County",
+    "San Luis Obispo County",
+    "Santa Barbara County",
+    "Santa Cruz County",
+    "Ventura County"
+  ],
+  "Central Valley": [
+    "Fresno County",
+    "Kern County",
+    "Kings County",
+    "Madera County",
+    "Merced County",
+    "San Joaquin County",
+    "Stanislaus County",
+    "Tulare County"
+  ],
+  "Far North / North Coast": [
+    "Butte County",
+    "Del Norte County",
+    "Glenn County",
+    "Humboldt County",
+    "Lake County",
+    "Lassen County",
+    "Mendocino County",
+    "Napa County",
+    "Plumas County",
+    "Shasta County",
+    "Siskiyou County",
+    "Sonoma County",
+    "Tehama County"
+  ],
+  "Los Angeles": [
+    "Los Angeles County",
+    "Orange County"
+  ],
+  "Sacramento Valley / Sierra Foothills": [
+    "Colusa County",
+    "El Dorado County",
+    "Nevada County",
+    "Placer County",
+    "Sacramento County",
+    "Sutter County",
+    "Yolo County",
+    "Yuba County"
+  ],
+  "Sierra Region": [
+    "Amador County",
+    "Calaveras County",
+    "Mariposa County",
+    "Mono County",
+    "Tuolumne County"
+  ],
+  "Southern California": [
+    "Imperial County",
+    "Riverside County",
+    "San Bernardino County",
+    "San Diego County"
+  ]
+}

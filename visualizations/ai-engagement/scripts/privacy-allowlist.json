@@ -1,0 +1,150 @@
+{
+  "about": "Reviewed coincidences for privacy-scan.mjs --real-data: short phrases in this repo's own (staff-written or invented) text that happen to also occur somewhere in a real answer. Each is a common phrase, not a quote. Add an entry only after checking the match by hand.",
+  "entries": [
+    {
+      "file": "analysis/config/codebook.json",
+      "text": "public services and infrastructure",
+      "why": "theme definition (analyst-written)"
+    },
+    {
+      "file": "analysis/config/codebook.json",
+      "text": "about business model viability",
+      "why": "theme exclude note (analyst-written)"
+    },
+    {
+      "file": "analysis/config/codebook.json",
+      "text": "es AI as a normal technological",
+      "why": "theme definition (analyst-written)"
+    },
+    {
+      "file": "analysis/config/codebook.json",
+      "text": "negative public sentiment toward",
+      "why": "theme definition (analyst-written)"
+    },
+    {
+      "file": "analysis/config/codebook.json",
+      "text": "Environmental and energy impact",
+      "why": "public theme label"
+    },
+    {
+      "file": "analysis/config/codebook.json",
+      "text": "photographers, musicians, and",
+      "why": "theme definition (analyst-written)"
+    },
+    {
+      "file": "analysis/config/codebook.json",
+      "text": "ing AI replacement of workers",
+      "why": "theme exclude note (analyst-written)"
+    },
+    {
+      "file": "analysis/config/phase-crosswalk.json",
+      "text": "support for displaced workers",
+      "why": "crosswalk rationale (staff-written)"
+    },
+    {
+      "file": "analysis/config/phase-crosswalk.json",
+      "text": "personal experience of being",
+      "why": "crosswalk rationale (staff-written)"
+    },
+    {
+      "file": "analysis/config/phase-crosswalk.json",
+      "text": "environmental and energy impact",
+      "why": "public theme label quoted in rationale"
+    },
+    {
+      "file": "analysis/tests/ideaLinkage.test.ts",
+      "text": "give tax breaks to companies that",
+      "why": "invented test fixture"
+    },
+    {
+      "file": "analysis/tests/roomsData.test.ts",
+      "text": "reworded for clarity (by wes, streamlit)",
+      "why": "workbook column header, not response text"
+    },
+    {
+      "file": "docs/SOURCE.md",
+      "text": "reworded for clarity (by wes, streamlit)",
+      "why": "workbook column header, not response text"
+    },
+    {
+      "file": "sketches/concept-distillation-real-phase2-themes.html",
+      "text": "AI companies to fund social programs",
+      "why": "invented placeholder concept label"
+    },
+    {
+      "file": "sketches/concept-distillation-real-phase2-themes.html",
+      "text": "losing critical thinking skills",
+      "why": "invented placeholder concept label"
+    },
+    {
+      "file": "analysis/scripts/phase1_keyword_counts.py",
+      "text": "AI companies to fund social programs",
+      "why": "invented placeholder concept label"
+    },
+    {
+      "file": "analysis/scripts/phase1_keyword_counts.py",
+      "text": "losing critical thinking skills",
+      "why": "invented placeholder concept label"
+    },
+    {
+      "file": "viz/src/lib/phase1ConceptsData.ts",
+      "text": "AI companies to fund social programs",
+      "why": "invented placeholder concept label"
+    },
+    {
+      "file": "viz/src/lib/phase1ConceptsData.ts",
+      "text": "losing critical thinking skills",
+      "why": "invented placeholder concept label"
+    },
+    {
+      "file": "handoff/discussion-curtain/README.md",
+      "text": "Hand-authored comms copy containing real participant speech",
+      "why": "quotes insights.json's own meta.note (a description, not speech)"
+    },
+    {
+      "file": "handoff/discussion-curtain/discussion-data.js",
+      "text": "Hand-authored comms copy containing real participant",
+      "why": "quotes insights.json's own meta.note (a description, not speech)"
+    },
+    {
+      "file": "handoff/discussion-curtain/discussion-layout.js",
+      "text": "finance worker in the Bay Area",
+      "why": "demographic byline (published form: \"Finance worker from the Bay Area\")"
+    },
+    {
+      "file": "viz/src/components/DiscussionSection.svelte",
+      "text": "Engaged California early insights preview",
+      "why": "insights.json meta.source title"
+    },
+    {
+      "file": "viz/src/components/ParticipantFunnelCloud.svelte",
+      "text": "Engaged California early insights preview",
+      "why": "insights.json meta.source title"
+    },
+    {
+      "file": "viz/src/components/ParticipantFunnelCloudConcepts.svelte",
+      "text": "Engaged California early insights preview",
+      "why": "insights.json meta.source title"
+    },
+    {
+      "file": "viz/src/lib/insightsData.ts",
+      "text": "Engaged California early insights preview",
+      "why": "insights.json meta.source title"
+    },
+    {
+      "file": "viz/src/lib/insightsData.ts",
+      "text": "produced by an analysis stage",
+      "why": "insights.json meta.note wording"
+    },
+    {
+      "file": "viz/tests/conversationPeek.test.ts",
+      "text": "creative worker in Los Angeles",
+      "why": "demographic byline used as a test fixture"
+    },
+    {
+      "file": "viz/tests/deliberativeMoments.test.ts",
+      "text": "finance worker in the Bay Area",
+      "why": "demographic byline (published form: \"Finance worker from the Bay Area\")"
+    }
+  ]
+}

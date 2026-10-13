@@ -1,0 +1,751 @@
+<meta charset="utf-8">
+<title>Phase 1 to 14 conversations — visible funnel</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@400;700&family=Noto+Sans:wght@400;600&family=Noto+Serif:wght@700&display=swap');
+
+:root{ --ink:#1E1E1E; --gray:#444444; --line:#DEDEE1; --blue:#0D4F8C; }
+*{box-sizing:border-box}
+body{
+  margin:0;padding:28px 20px 48px;background:#fff;color:var(--ink);
+  font-family:'Noto Sans',Arial,sans-serif;
+  display:flex;flex-direction:column;align-items:center;gap:18px;
+}
+#stage{width:100%;max-width:1040px}
+canvas{width:100%;height:auto;display:block}
+.controls{
+  width:100%;max-width:1040px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+  padding-top:14px;border-top:1px solid var(--line);
+}
+button{
+  font-family:'Noto Sans Mono',ui-monospace,monospace;
+  font-size:12px;letter-spacing:.04em;color:var(--gray);
+  background:transparent;border:1px solid var(--line);border-radius:2px;
+  padding:7px 12px;cursor:pointer;transition:border-color .15s,color .15s;
+}
+button:hover{color:var(--blue);border-color:var(--blue)}
+button[aria-pressed="true"]{color:#fff;background:var(--blue);border-color:var(--blue)}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.spacer{flex:1}
+.hint{width:100%;max-width:1040px;font-size:12.5px;line-height:1.55;color:var(--gray)}
+.hint code{font-family:'Noto Sans Mono',ui-monospace,monospace;font-size:12px;color:var(--blue)}
+@media (max-width:640px){.spacer{display:none}}
+</style>
+
+<div id="stage"><canvas id="c" width="1040" height="812"
+  aria-label="Animation showing a drifting cloud of 2,700 phase one participants pouring into a funnel, where most spill away and 103 pass through into phase two, then separate into 14 conversation groups arranged in a ring."></canvas></div>
+
+<div class="controls">
+  <button id="play">Pause</button>
+  <button id="restart">Restart</button>
+  <div class="spacer"></div>
+  <button class="jump" data-s="0">1 · Phase 1</button>
+  <button class="jump" data-s="1">2 · The funnel</button>
+  <button class="jump" data-s="2">3 · Phase 2</button>
+  <button class="jump" data-s="3">4 · Conversations</button>
+  <button id="loop" aria-pressed="true">Loop</button>
+</div>
+
+<p class="hint">Visible-funnel variant. Edit <code>CONFIG.groups</code> for the real per-conversation counts and <code>CONFIG.palette</code> for brand colors. Space plays or pauses; arrow keys step between stages.</p>
+
+<script>
+const REGIONS = [
+  { name:"Los Angeles", short:"Los Angeles", color:'#0D4F8C', survey:712, attend:24 },
+  { name:"Bay Area", short:"Bay Area", color:'#E3881B', survey:647, attend:20 },
+  { name:"Southern California", short:"Southern California", color:'#634EAF', survey:442, attend:19 },
+  { name:"Sacramento Valley / Sierra Foothills", short:"Sacramento Valley", color:'#E45D48', survey:418, attend:17 },
+  { name:"Central Valley", short:"Central Valley", color:'#3BAA91', survey:163, attend:5 },
+  { name:"Far North / North Coast", short:"Far North / North Coast", color:'#A35F0E', survey:161, attend:6 },
+  { name:"Central Coast", short:"Central Coast", color:'#3D6A7F', survey:123, attend:8 },
+  { name:"Sierra Region", short:"Sierra Region", color:'#058A32', survey:12, attend:2 },
+  { name:"Unknown", short:"Not stated", color:'#72717C', survey:24, attend:2 },
+];
+
+// 14 conversations, each as a count per region in REGIONS order
+const SESSIONS = [
+  { date:'2026-07-15', mix:[3, 1, 2, 2, 0, 1, 2, 0, 1] },  // 12
+  { date:'2026-07-30', mix:[5, 3, 2, 1, 0, 0, 1, 0, 0] },  // 12
+  { date:'2026-07-16', mix:[3, 0, 3, 2, 0, 0, 2, 0, 1] },  // 11
+  { date:'2026-08-04', mix:[0, 1, 3, 3, 1, 0, 0, 0, 0] },  // 8
+  { date:'2026-08-05', mix:[0, 2, 1, 1, 3, 1, 0, 0, 0] },  // 8
+  { date:'2026-07-20', mix:[2, 0, 1, 1, 0, 2, 1, 0, 0] },  // 7
+  { date:'2026-08-06', mix:[0, 3, 1, 2, 1, 0, 0, 0, 0] },  // 7
+  { date:'2026-07-22', mix:[1, 1, 2, 2, 0, 0, 1, 0, 0] },  // 7
+  { date:'2026-07-09', mix:[3, 2, 0, 0, 0, 0, 0, 1, 0] },  // 6
+  { date:'2026-07-17', mix:[0, 3, 0, 0, 0, 2, 0, 0, 0] },  // 5
+  { date:'2026-07-19', mix:[1, 2, 1, 1, 0, 0, 0, 0, 0] },  // 5
+  { date:'2026-07-25', mix:[2, 0, 2, 0, 0, 0, 0, 1, 0] },  // 5
+  { date:'2026-07-28', mix:[2, 1, 0, 1, 0, 0, 1, 0, 0] },  // 5
+  { date:'2026-08-12', mix:[2, 1, 1, 1, 0, 0, 0, 0, 0] },  // 5
+];
+
+/* ─────────────────────────────────────────────────────────────
+   CONFIG — the only block you should need to touch
+   ───────────────────────────────────────────────────────────── */
+const CONFIG = {
+  phase1: 2702,
+
+  groups: SESSIONS.map(x => x.mix.reduce((a, b) => a + b, 0)),
+  groupNames: [],
+
+  accent: '#0D4F8C',      // UI chrome only — never a data category
+
+  ink:  '#1E1E1E',
+  gray: '#444444',
+
+  dwell:      1900,
+  finalDwell: 6500,
+  transition: 3000,     // the pour is the longest move in the piece
+  orbitSpeed: 0.34,
+  driftSpeed: 0.30,
+  dotSize:    3.4       // uniform through phase 1 and the funnel
+};
+
+const NEUTRAL = '#72717C';   // palette neutral: chrome, never a data category
+const PHASE2  = CONFIG.groups.reduce((a, b) => a + b, 0);
+const NGROUPS = CONFIG.groups.length;
+
+const COPY = [
+  { eyebrow:'STAGE 1', title:'Phase 1',
+    sub:'Everyone who took part in the opening round.',
+    count:CONFIG.phase1, unit:'participants' },
+  { eyebrow:'STAGE 2', title:'The funnel',
+    sub:'Phase 1 pours in. Most of it does not pass through.',
+    count:PHASE2, unit:'reach the neck' },
+  { eyebrow:'STAGE 3', title:'Phase 2',
+    sub:'Everyone who came through, pooled below.',
+    count:PHASE2, unit:'participants' },
+  { eyebrow:'STAGE 4', title:'The conversations',
+    sub:'Small groups of uneven size, each around a facilitator.',
+    count:NGROUPS, unit:'conversations' }
+];
+
+/* ── canvas ───────────────────────────────────────────────── */
+const W = 1040, H = 812;
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+function resize(){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+resize();
+addEventListener('resize', resize);
+
+/* ── geometry ─────────────────────────────────────────────── */
+const CX = W / 2;
+const CLOUD_Y   = 245;   // the phase 1 cloud, wider than the funnel mouth
+const FUNNEL_TOP = 375, MOUTH_HW = 210;
+const NECK_Y     = 468, NECK_HW  = 14, SPOUT = 22;
+const GATHER_Y   = 600;  // the pool, clear of the spout
+const CY         = 435;  // center of the conversation ring
+
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, lo, hi) => v < lo ? lo : v > hi ? hi : v;
+
+function mulberry32(a){
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const rand = mulberry32(20250825);
+function gauss(){
+  let u = 0, v = 0;
+  while (u === 0) u = rand();
+  while (v === 0) v = rand();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+function packed(n, cx, cy, radius){
+  const out = [];
+  for (let i = 0; i < n; i++){
+    const r = radius * Math.sqrt((i + 0.5) / n);
+    const a = i * 2.39996323;
+    out.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+  }
+  return out;
+}
+
+// half-width of the funnel interior at a given height
+const funnelHW = y =>
+  lerp(MOUTH_HW, NECK_HW, clamp((y - FUNNEL_TOP) / (NECK_Y - FUNNEL_TOP), 0, 1));
+
+// a point on the funnel wall, u = 0 at the mouth, 1 at the neck
+const wallPoint = (side, u) =>
+  [CX + side * lerp(MOUTH_HW, NECK_HW, u), lerp(FUNNEL_TOP, NECK_Y, u)];
+
+// Stage 2: the 103 settle inside the funnel under gravity, resting on
+// each other and on the taper. Runs once at load — deterministic, since
+// it draws from the seeded RNG.
+const PILE_R = 4.8;
+
+function settleFunnelPile(n, r){
+  const FLOOR = NECK_Y + SPOUT - r;
+  const MIN = 2 * r;
+  const pts = [];
+
+  // seed a hex-ish stack bottom-up so the relaxation has little to undo
+  let placed = 0, y = FLOOR, row = 0;
+  while (placed < n){
+    const hw  = Math.max(r, funnelHW(y) - r);
+    const per = Math.max(1, Math.floor(2 * hw / MIN));
+    const off = row % 2 ? r * 0.5 : 0;
+    for (let k = 0; k < per && placed < n; k++, placed++){
+      const x = per === 1 ? CX : CX - hw + 2 * hw * (k / (per - 1));
+      pts.push({
+        x: clamp(x + off + (rand() - 0.5) * 1.2, CX - hw, CX + hw),
+        y, vy: 0
+      });
+    }
+    y -= MIN * 0.87;
+    row++;
+  }
+
+  const STEPS = 340, DAMP = 0.86;
+  for (let step = 0; step < STEPS; step++){
+    // anneal gravity down so the pile locks in rather than jittering
+    const G = step < STEPS - 110 ? 0.45 : step < STEPS - 40 ? 0.12 : 0;
+    for (const p of pts){
+      p.vy = G === 0 ? 0 : p.vy * DAMP + G;
+      p.y += p.vy;
+    }
+
+    for (let it = 0; it < 8; it++){
+      for (let i = 0; i < n; i++){
+        const a = pts[i];
+        for (let j = i + 1; j < n; j++){
+          const b = pts[j];
+          let dx = b.x - a.x, dy = b.y - a.y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 >= MIN * MIN) continue;
+          let d;
+          if (d2 < 1e-6){
+            // exactly coincident — happens where the spout clamps several
+            // dots to the same point. Split them on a fixed axis, or they
+            // stay welded together forever.
+            dx = 0.7071; dy = -0.7071; d = 0;
+          } else {
+            d = Math.sqrt(d2); dx /= d; dy /= d;
+          }
+          const push = (MIN - d) * 0.5;
+          a.x -= dx * push; a.y -= dy * push;
+          b.x += dx * push; b.y += dy * push;
+        }
+      }
+      // the taper: clamping x at each height is what makes dots on the
+      // slope walk inward as they descend
+      for (const p of pts){
+        if (p.y > FLOOR){ p.y = FLOOR; p.vy = 0; }
+        const hw = Math.max(r, funnelHW(p.y) - r);
+        p.x = clamp(p.x, CX - hw, CX + hw);
+      }
+    }
+  }
+  return pts.map(p => [p.x, p.y]);
+}
+
+/* ── the cloud ────────────────────────────────────────────── */
+const BLOBS = 9;
+const blobs = [];
+for (let i = 0; i < BLOBS; i++){
+  const a = rand() * Math.PI * 2, rr = Math.sqrt(rand());
+  blobs.push({
+    x:  CX + Math.cos(a) * rr * 310,
+    y:  CLOUD_Y + Math.sin(a) * rr * 74,
+    sx: 80 + rand() * 118,
+    sy: 30 + rand() * 40
+  });
+}
+
+const dots = [];
+for (let i = 0; i < CONFIG.phase1; i++){
+  const b = blobs[i % BLOBS];
+  const bx = clamp(b.x + gauss() * b.sx, 70, W - 70);
+  const by = clamp(b.y + gauss() * b.sy, 150, 340);
+  const side = bx < CX ? -1 : 1;
+  const u = Math.pow(rand(), 0.7);            // most contact high on the wall
+  const hit = wallPoint(side, u);
+  dots.push({
+    cloud: {
+      x: bx, y: by,
+      ax: 7 + rand() * 15, ay: 5 + rand() * 11,
+      fx: 0.25 + rand() * 0.55, fy: 0.2 + rand() * 0.5,
+      px: rand() * Math.PI * 2, py: rand() * Math.PI * 2
+    },
+    hit,
+    spill: [hit[0] + side * (110 + rand() * 260), H + 60 + rand() * 180],
+    kept: false, group: -1, color: CONFIG.accent,
+    pos: [bx, by], from: [bx, by], alpha: 0, aFrom: 0, delay: 0
+  });
+}
+
+// which dots come through — fixed seed, so it's the same 103 every run
+// Every phase 1 dot carries a region, in the survey's real proportions.
+const regionOfDot = [];
+REGIONS.forEach((r, i) => { for (let k = 0; k < r.survey; k++) regionOfDot.push(i); });
+for (let i = regionOfDot.length - 1; i > 0; i--){
+  const j = Math.floor(rand() * (i + 1));
+  [regionOfDot[i], regionOfDot[j]] = [regionOfDot[j], regionOfDot[i]];
+}
+dots.forEach((d, i) => { d.region = regionOfDot[i]; d.color = REGIONS[d.region].color; });
+
+// The 103 are not a random subset. Draw them so their region mix matches
+// who actually attended, and seat each one in their real conversation.
+const byRegion = REGIONS.map(() => []);
+dots.forEach((d, i) => byRegion[d.region].push(i));
+for (const list of byRegion){
+  for (let i = list.length - 1; i > 0; i--){
+    const j = Math.floor(rand() * (i + 1));
+    [list[i], list[j]] = [list[j], list[i]];
+  }
+}
+const taken = REGIONS.map(() => 0);
+const roster = [];                       // one entry per attendee
+SESSIONS.forEach((sess, g) => {
+  sess.mix.forEach((count, ri) => {
+    for (let k = 0; k < count; k++){
+      const idx = byRegion[ri][taken[ri]++];
+      dots[idx].kept = true;
+      dots[idx].group = g;
+      roster.push({ idx, g });
+    }
+  });
+});
+const keptIdx = roster.map(r => r.idx);
+
+const queue  = settleFunnelPile(PHASE2, PILE_R);
+const gather = packed(PHASE2, CX, GATHER_Y, 5.4 * Math.sqrt(PHASE2) * 1.8);
+
+// match dots to resting spots by horizontal position, so nobody has to
+// cross anyone on the way down
+const pileByX = queue.slice().sort((a, b) => a[0] - b[0]);
+keptIdx.map(idx => ({ idx, x: dots[idx].cloud.x }))
+       .sort((a, b) => a.x - b.x)
+       .forEach((rec, k) => { dots[rec.idx].queue = pileByX[k]; });
+
+
+/* ── conversations ────────────────────────────────────────── */
+const SEAT_SPACING = 15;
+function orbitRings(n){
+  const single = Math.max(20, n * SEAT_SPACING / (2 * Math.PI));
+  if (single <= 46) return [{ r: single, count: n, rate: 1 }];
+  const inner = Math.max(3, Math.round(n * 0.35));
+  const rIn = Math.max(20, inner * SEAT_SPACING / (2 * Math.PI));
+  return [{ r: rIn, count: inner, rate: 1.4 },
+          { r: rIn + 17, count: n - inner, rate: 1 }];
+}
+
+const clusters = CONFIG.groups.map((n, g) => {
+  const rings = orbitRings(n);
+  return {
+    n, rings,
+    rc:  Math.max(...rings.map(r => r.r)) + 7,
+    ang: -Math.PI / 2 + g * (Math.PI * 2 / NGROUPS),
+    name:  CONFIG.groupNames[g] || ''
+  };
+});
+
+const maxRc = Math.max(...clusters.map(c => c.rc));
+const RING_R = Math.min(214, Math.max(150, NGROUPS * (2 * maxRc + 24) / (2 * Math.PI)));
+for (const cl of clusters){
+  cl.x = CX + Math.cos(cl.ang) * RING_R;
+  cl.y = CY + Math.sin(cl.ang) * RING_R;
+}
+
+// Seat each attendee in their real conversation.
+clusters.forEach((cl, g) => {
+  const members = roster.filter(r => r.g === g).map(r => r.idx);
+  let s = 0;
+  for (const ring of cl.rings){
+    for (let k = 0; k < ring.count; k++, s++){
+      dots[members[s]].orbit = {
+        r: ring.r, rate: ring.rate,
+        a0: cl.ang + Math.PI + (k / ring.count) * Math.PI * 2
+      };
+    }
+  }
+});
+
+// Hand out phase 2 positions in ring order, so the bloom fans out cleanly
+// even though conversation membership is now fixed by the data.
+const __ringOrder = [];
+clusters.forEach((cl, g) => roster.forEach(r => { if (r.g === g) __ringOrder.push(r.idx); }));
+const __seatsByAngle = gather.map(p => {
+  let a = Math.atan2(p[1] - (GATHER_Y), p[0] - CX) + Math.PI / 2;
+  if (a < 0) a += Math.PI * 2;
+  return { p, a };
+}).sort((u, v) => u.a - v.a);
+__ringOrder.forEach((idx, k) => { dots[idx].gather = __seatsByAngle[k].p; });
+/* ── targets ──────────────────────────────────────────────── */
+let clock = 0;
+
+function cloudPos(d){
+  const c = d.cloud;
+  return [c.x + Math.sin(clock * c.fx * CONFIG.driftSpeed * 3 + c.px) * c.ax,
+          c.y + Math.cos(clock * c.fy * CONFIG.driftSpeed * 3 + c.py) * c.ay];
+}
+function orbitPos(d){
+  const cl = clusters[d.group];
+  const a  = d.orbit.a0 + clock * CONFIG.orbitSpeed * d.orbit.rate;
+  return [cl.x + Math.cos(a) * d.orbit.r, cl.y + Math.sin(a) * d.orbit.r];
+}
+
+const S = CONFIG.dotSize;
+
+// Color stays blue until the conversations, because that is the first
+// point where color means something — which group you're in. The funnel
+// does the work of showing who continues.
+function target(d, stage){
+  switch (stage){
+    case 0: return { p:cloudPos(d), r:S, a:0.62, c:rgb(d.color) };
+    case 1: return d.kept
+      ? { p:d.queue, r:PILE_R, a:1, c:rgb(d.color) }
+      : { p:d.spill, via:d.hit, r:S, a:0, aPow:3.2, c:rgb(d.color) };
+    case 2: return d.kept
+      ? { p:d.gather, via:[CX + gaussLike(d) * 9, NECK_Y + SPOUT - 4], r:6.5, a:1, c:rgb(d.color) }
+      : { p:d.spill, r:S, a:0, c:rgb(d.color) };
+    case 3: return d.kept
+      ? { p:orbitPos(d), r:6, a:1, c:rgb(d.color) }
+      : { p:d.spill, r:S, a:0, c:rgb(d.color) };
+  }
+}
+// tiny stable jitter so the 103 don't thread the spout in a single file line
+function gaussLike(d){ return Math.sin(d.cloud.px * 7.13) ; }
+
+/* ── color ────────────────────────────────────────────────── */
+const easeInOut = t => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2;
+function toRGB(h){
+  return [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+}
+const rgbCache = new Map();
+function rgb(h){
+  let v = rgbCache.get(h);
+  if (!v){ v = toRGB(h); rgbCache.set(h, v); }
+  return v;
+}
+const mixColor = (A, B, t) => [lerp(A[0],B[0],t), lerp(A[1],B[1],t), lerp(A[2],B[2],t)];
+const css = c => `rgb(${c[0]|0},${c[1]|0},${c[2]|0})`;
+
+/* ── state ────────────────────────────────────────────────── */
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let stage = 0, prevStage = 0, t = 1, playing = true, looping = true, last = performance.now();
+
+function place(d, g, lt){
+  if (g.via){
+    const u = 1 - lt;
+    d.pos[0] = u*u*d.from[0] + 2*u*lt*g.via[0] + lt*lt*g.p[0];
+    d.pos[1] = u*u*d.from[1] + 2*u*lt*g.via[1] + lt*lt*g.p[1];
+  } else {
+    d.pos[0] = lerp(d.from[0], g.p[0], lt);
+    d.pos[1] = lerp(d.from[1], g.p[1], lt);
+  }
+}
+
+function snapTo(s){
+  prevStage = stage = s; t = 1;
+  for (const d of dots){
+    const g = target(d, s);
+    d.pos = [g.p[0], g.p[1]]; d.from = [g.p[0], g.p[1]];
+    d.alpha = d.aFrom = g.a; d.r = d.rFrom = g.r;
+    d.cNow = d.cFrom = g.c;
+  }
+}
+function snapValues(){
+  for (const d of dots){
+    const g = target(d, stage);
+    d.pos = [g.p[0], g.p[1]]; d.alpha = g.a; d.r = g.r; d.cNow = g.c;
+  }
+}
+function goTo(s){
+  if (s === stage && t >= 1) return;
+  prevStage = stage; stage = s; t = reduced ? 1 : 0;
+  for (const d of dots){
+    d.from = [d.pos[0], d.pos[1]];
+    d.aFrom = d.alpha; d.rFrom = d.r; d.cFrom = d.cNow;
+    // the spill runs long and staggered; the 103 settle sooner
+    d.delay = d.kept ? rand() * 0.20 : 0.06 + rand() * 0.36;
+  }
+  if (reduced) snapValues();
+}
+
+snapTo(0);
+const dwellFor = s => s === 3 ? CONFIG.finalDwell : CONFIG.dwell;
+let dwellLeft = CONFIG.dwell;
+
+/* ── draw ─────────────────────────────────────────────────── */
+const fmt = n => n.toLocaleString('en-US');
+const FUNNEL_VIS = [0, 1, 0.5, 0];
+
+function funnelShape(){
+  const vis = lerp(FUNNEL_VIS[prevStage], FUNNEL_VIS[stage], easeInOut(t));
+  if (vis <= 0.01) return;
+
+  const L = CX - MOUTH_HW, R = CX + MOUTH_HW, SY = NECK_Y + SPOUT;
+
+  ctx.save();
+  ctx.globalAlpha = vis * 0.05;
+  ctx.fillStyle = CONFIG.accent;
+  ctx.beginPath();
+  ctx.moveTo(L, FUNNEL_TOP);
+  ctx.lineTo(CX - NECK_HW, NECK_Y);
+  ctx.lineTo(CX - NECK_HW, SY);
+  ctx.lineTo(CX + NECK_HW, SY);
+  ctx.lineTo(CX + NECK_HW, NECK_Y);
+  ctx.lineTo(R, FUNNEL_TOP);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.globalAlpha = vis * 0.42;
+  ctx.strokeStyle = CONFIG.accent;
+  ctx.lineWidth = 1.25;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(L, FUNNEL_TOP); ctx.lineTo(CX - NECK_HW, NECK_Y); ctx.lineTo(CX - NECK_HW, SY);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(R, FUNNEL_TOP); ctx.lineTo(CX + NECK_HW, NECK_Y); ctx.lineTo(CX + NECK_HW, SY);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function header(){
+  const from = COPY[prevStage], to = COPY[stage];
+  const k = easeInOut(Math.min(1, t * 1.6));
+
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.globalAlpha = 1;
+  ctx.font = "400 11px 'Noto Sans Mono', ui-monospace, monospace";
+  ctx.fillStyle = CONFIG.gray;
+  ctx.fillText((k < 0.5 ? from.eyebrow : to.eyebrow).split('').join(' '), 60, 46);
+
+  ctx.globalAlpha = Math.abs(k - 0.5) * 2;
+  ctx.font = "700 30px 'Noto Serif', Georgia, serif";
+  ctx.fillStyle = CONFIG.accent;
+  ctx.fillText(k < 0.5 ? from.title : to.title, 60, 82);
+  ctx.font = "400 14.5px 'Noto Sans', Arial, sans-serif";
+  ctx.fillStyle = CONFIG.gray;
+  ctx.fillText(k < 0.5 ? from.sub : to.sub, 60, 106);
+  ctx.globalAlpha = 1;
+
+  const val = Math.round(lerp(from.count, to.count, easeInOut(t)));
+  ctx.textAlign = 'right';
+  ctx.font = "700 50px 'Noto Sans Mono', ui-monospace, monospace";
+  ctx.fillStyle = CONFIG.ink;
+  ctx.fillText(fmt(val), 980, 84);
+
+  ctx.globalAlpha = Math.abs(k - 0.5) * 2;
+  ctx.font = "400 12.5px 'Noto Sans', Arial, sans-serif";
+  ctx.fillStyle = CONFIG.gray;
+  ctx.fillText(k < 0.5 ? from.unit : to.unit, 980, 106);
+  ctx.globalAlpha = 1;
+}
+
+function ringLabels(){
+  const vis = stage === 3 ? easeInOut(Math.max(0, (t - 0.55) / 0.45)) : 0;
+  if (vis <= 0.01) return;
+
+  for (const cl of clusters){
+    ctx.beginPath();
+    ctx.arc(cl.x, cl.y, cl.rc + 11, 0, Math.PI * 2);
+    ctx.strokeStyle = NEUTRAL;
+    ctx.globalAlpha = vis * 0.28;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    const lr = RING_R + cl.rc + 30;
+    const lx = CX + Math.cos(cl.ang) * lr;
+    const ly = CY + Math.sin(cl.ang) * lr;
+
+    ctx.globalAlpha = vis;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = "700 15px 'Noto Sans Mono', ui-monospace, monospace";
+    ctx.fillStyle = CONFIG.ink;
+    ctx.fillText(String(cl.n), lx, cl.name ? ly - 8 : ly);
+    if (cl.name){
+      ctx.font = "400 11px 'Noto Sans', Arial, sans-serif";
+      ctx.fillStyle = CONFIG.gray;
+      ctx.fillText(cl.name, lx, ly + 8);
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.textBaseline = 'alphabetic';
+}
+
+function facilitators(){
+  const vis = stage === 3 ? easeInOut(Math.max(0, (t - 0.45) / 0.55)) : 0;
+  if (vis <= 0.01) return;
+
+  ctx.globalAlpha = vis;
+  for (const cl of clusters){
+    ctx.beginPath(); ctx.arc(cl.x, cl.y, 11, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.beginPath(); ctx.arc(cl.x, cl.y, 7.5, 0, Math.PI * 2);
+    ctx.fillStyle = NEUTRAL; ctx.fill();
+    ctx.beginPath(); ctx.arc(cl.x, cl.y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff'; ctx.fill();
+  }
+
+  const lx = 60, ly = H - 78;
+  ctx.fillStyle = CONFIG.gray;
+  ctx.beginPath(); ctx.arc(lx, ly, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(lx + 108, ly, 7, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(lx + 108, ly, 2.8, 0, Math.PI * 2);
+  ctx.fillStyle = '#fff'; ctx.fill();
+
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.font = "400 12px 'Noto Sans', Arial, sans-serif";
+  ctx.fillStyle = CONFIG.gray;
+  ctx.fillText('Participant', lx + 12, ly);
+  ctx.fillText('Facilitator', lx + 120, ly);
+  ctx.globalAlpha = 1;
+  ctx.textBaseline = 'alphabetic';
+}
+
+
+// Region legend. Colour encodes one dimension only — which region a person
+// is from — so it needs naming somewhere. Nine categories is above the
+// ~6 that stay reliably separable under colour blindness, so the six
+// largest regions take the palette's workhorse hues and the two smallest
+// take the extended ones; same-family pairs (blue/steel, gold/burnt) are
+// always split across a large region and a small one.
+function regionLegend(){
+  ctx.font = "400 11.5px 'Noto Sans', Arial, sans-serif";
+  ctx.textBaseline = 'middle';
+  const SW = 9, GAP = 7, PAD = 22;
+  const w = REGIONS.map(r => SW + GAP + ctx.measureText(r.short).width + PAD);
+
+  // Balance the rows rather than greedily filling: a greedy fill puts eight
+  // regions on one line and one orphan below it.
+  const total = w.reduce((a, b) => a + b, 0);
+  const nRows = Math.max(1, Math.ceil(total / (W - 90)));
+  const target = total / nRows;
+  const rows = [[]];
+  let cur = 0;
+  w.forEach((wd, i) => {
+    if (rows.length < nRows && cur + wd / 2 > target && rows[rows.length - 1].length){
+      rows.push([]); cur = 0;
+    }
+    rows[rows.length - 1].push(i);
+    cur += wd;
+  });
+
+  let y = H - 52;
+  for (const row of rows){
+    let x = (W - (row.reduce((a, i) => a + w[i], 0) - PAD)) / 2;
+    for (const i of row){
+      ctx.beginPath();
+      ctx.arc(x + SW / 2, y, SW / 2, 0, Math.PI * 2);
+      ctx.fillStyle = REGIONS[i].color;
+      ctx.fill();
+      ctx.fillStyle = CONFIG.gray;
+      ctx.textAlign = 'left';
+      ctx.fillText(REGIONS[i].short, x + SW + GAP, y);
+      x += w[i];
+    }
+    y += 21;
+  }
+  ctx.textBaseline = 'alphabetic';
+}
+
+function draw(){
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, W, H);
+
+  header();
+  funnelShape();   // behind the dots
+  ringLabels();
+
+  for (const d of dots){
+    if (d.alpha <= 0.008) continue;
+    ctx.globalAlpha = d.alpha;
+    ctx.fillStyle = css(d.cNow);
+    ctx.beginPath();
+    ctx.arc(d.pos[0], d.pos[1], d.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  facilitators();
+  regionLegend();
+}
+
+/* ── loop ─────────────────────────────────────────────────── */
+function frame(now){
+  const dt = Math.min(now - last, 50); last = now;
+
+  if (playing){
+    clock += dt / 1000;
+
+    if (t < 1){
+      t = Math.min(1, t + dt / CONFIG.transition);
+      const span = 0.62;
+      for (const d of dots){
+        const g = target(d, stage);
+        const lt = easeInOut(Math.max(0, Math.min(1, (t - d.delay) / span)));
+        place(d, g, lt);
+        d.alpha = lerp(d.aFrom, g.a, g.aPow ? Math.pow(lt, g.aPow) : lt);
+        d.r     = lerp(d.rFrom, g.r, lt);
+        d.cNow  = mixColor(d.cFrom, g.c, lt);
+      }
+      if (t >= 1) dwellLeft = dwellFor(stage);
+    } else {
+      dwellLeft -= dt;
+      if (dwellLeft <= 0){
+        if (stage < 3) goTo(stage + 1);
+        else if (looping) goTo(0);
+        else { playing = false; playBtn.textContent = 'Play'; }
+      }
+    }
+  }
+
+  // ambient motion once a stage has settled
+  if (t >= 1 && (stage === 0 || stage === 3)){
+    for (const d of dots){
+      if (stage === 3 && !d.kept) continue;
+      const p = stage === 3 ? orbitPos(d) : cloudPos(d);
+      d.pos[0] = p[0]; d.pos[1] = p[1];
+    }
+  }
+
+  draw();
+  markButtons();
+  requestAnimationFrame(frame);
+}
+
+/* ── controls ─────────────────────────────────────────────── */
+const playBtn = document.getElementById('play');
+const jumps = [...document.querySelectorAll('.jump')];
+const loopBtn = document.getElementById('loop');
+
+function markButtons(){
+  jumps.forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.s === stage)));
+}
+
+playBtn.onclick = () => {
+  playing = !playing;
+  playBtn.textContent = playing ? 'Pause' : 'Play';
+  if (playing && t >= 1 && stage === 3 && !looping) goTo(0);
+};
+document.getElementById('restart').onclick = () => {
+  clock = 0; snapTo(0); dwellLeft = CONFIG.dwell;
+  playing = true; playBtn.textContent = 'Pause';
+};
+jumps.forEach(b => b.onclick = () => { goTo(+b.dataset.s); dwellLeft = dwellFor(stage); });
+loopBtn.onclick = () => {
+  looping = !looping;
+  loopBtn.setAttribute('aria-pressed', String(looping));
+};
+
+addEventListener('keydown', e => {
+  if (e.key === ' '){ e.preventDefault(); playBtn.click(); }
+  if (e.key === 'ArrowRight' && stage < 3){ goTo(stage + 1); dwellLeft = dwellFor(stage); }
+  if (e.key === 'ArrowLeft'  && stage > 0){ goTo(stage - 1); dwellLeft = dwellFor(stage); }
+});
+
+(document.fonts ? document.fonts.ready : Promise.resolve())
+  .then(() => requestAnimationFrame(frame));
+</script>
