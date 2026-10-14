@@ -55,17 +55,18 @@ macros:
   - name: drop_stale_pr_schemas
     description: |
       Drops CI schemas named GH_CI_PR_[<number>][_<suffix>] whose numbered PR is not open
-      (closed or deleted) or whose last_altered is older than max_age_days.
+      (closed or deleted). Numberless schemas are dropped when their creation date is older
+      than max_age_days. Open PR schemas are kept regardless of age.
     arguments:
       - name: database_name
         type: string
         description: The database to clean up.
       - name: open_pr_numbers
         type: list
-        description: PR numbers that are currently open; their schemas are kept unless too old.
+        description: PR numbers that are currently open; their schemas are always kept.
       - name: max_age_days
         type: integer
-        description: Schemas not altered for longer than this are dropped. Defaults to 14.
+        description: Numberless schemas older than this are dropped based on creation date. Defaults to 14.
 
   - name: format_hms
     description: Formats seconds as an HH:MM:SS string.

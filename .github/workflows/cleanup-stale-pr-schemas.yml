@@ -37,9 +37,11 @@ jobs:
         with:
           python-version-file: ".python-version"
       - name: List open PRs
+        id: list_open_prs
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           open_pr_numbers=$(gh pr list \
             --state open \
             --limit 1000 \
@@ -47,6 +49,7 @@ jobs:
             --jq '[.[].number]' | tr -d ' \n')
           echo "OPEN_PRS=$open_pr_numbers" >> "$GITHUB_ENV"
       - name: Install dbt packages
+        id: install_dbt_packages
         run: uv run dbt deps --project-dir transform --target prd
       - name: Drop stale PR schemas (transform database)
         run: |
@@ -54,7 +57,9 @@ jobs:
           --project-dir transform \
           --args "{\"database_name\": \"$SNOWFLAKE_DATABASE\", \"open_pr_numbers\": $OPEN_PRS, \"max_age_days\": 14}"
       - name: Drop stale PR schemas (analytics database)
-        if: ${{ !cancelled() }}
+        if: >-
+          ${{ !cancelled() && steps.list_open_prs.outcome == 'success' &&
+          steps.install_dbt_packages.outcome == 'success' }}
         run: |
           uv run dbt run-operation drop_stale_pr_schemas \
           --project-dir transform \
