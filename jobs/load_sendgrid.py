@@ -37,10 +37,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def create_retry_session() -> requests.Session:
-    return requests.Session()
-
-
 def _is_retryable(exc: RequestException) -> bool:
     """Retry connection problems, timeouts, and retryable HTTP statuses (incl. 429)."""
     if isinstance(exc, HTTPError) and exc.response is not None:
@@ -151,7 +147,7 @@ def fetch_message_subject_records(session: requests.Session, hours_back: int = H
     recursively until each sub-window returns fewer than 1000 results.
 
     Args:
-        session: A requests.Session with retry logic.
+        session: A requests.Session.
         hours_back: How far back to look.
     Returns:
         A list of dicts with keys: msg_id, short_id, subject.
@@ -176,7 +172,7 @@ def fetch_message_subject_records(session: requests.Session, hours_back: int = H
 
 def main() -> None:
     logger.info("Starting SendGrid load")
-    session = create_retry_session()
+    session = requests.Session()
     snowflake_conn = snowflake_connection_from_environment(schema="SENDGRID")
 
     try:
