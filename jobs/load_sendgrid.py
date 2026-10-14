@@ -1,17 +1,17 @@
 import json
 import logging
 import os
+import time
 from datetime import datetime, timezone, timedelta
 from typing import Any
 from urllib.parse import quote, urlencode
 
+import backoff
 import pandas as pd
 import requests
 from dotenv import load_dotenv
-from requests.adapters import HTTPAdapter
-from requests.exceptions import RequestException
+from requests.exceptions import ConnectionError, HTTPError, RequestException, Timeout
 from snowflake.connector.pandas_tools import write_pandas
-from urllib3.util.retry import Retry
 
 from jobs.utils.snowflake import snowflake_connection_from_environment, table_exists
 
@@ -24,8 +24,8 @@ MIN_WINDOW_SECONDS = 60          # smallest time window the recursive subdivisio
 TS_FMT = "%Y-%m-%dT%H:%M:%SZ"   # timestamp format for SendGrid
 HOURS_BACK = int(os.environ.get("SENDGRID_HOURS_BACK", 8)) #lookback window for fetching messages, in hours.
 REQUEST_TIMEOUT = int(os.environ.get("SENDGRID_REQUEST_TIMEOUT", 30))
-RETRY_TOTAL = int(os.environ.get("SENDGRID_RETRY_TOTAL", 5))
-RETRY_BACKOFF = float(os.environ.get("SENDGRID_RETRY_BACKOFF", 1.0))
+RETRY_TOTAL = int(os.environ.get("SENDGRID_RETRY_TOTAL", 8))
+RETRY_BACKOFF = float(os.environ.get("SENDGRID_RETRY_BACKOFF", 2.0))
 RETRY_STATUS_FORCELIST = [429, 500, 502, 503, 504]
 
 
@@ -37,31 +37,32 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def create_retry_session() -> requests.Session:
-    session = requests.Session()
-    retry_strategy = Retry(
-        total=RETRY_TOTAL,
-        status_forcelist=RETRY_STATUS_FORCELIST,
-        allowed_methods=frozenset(["HEAD", "GET", "POST"]),
-        backoff_factor=RETRY_BACKOFF,
-        raise_on_status=False,
-        respect_retry_after_header=True,
-    )
-    adapter = HTTPAdapter(max_retries=retry_strategy)
-    session.mount("https://", adapter)
-    return session
+def _is_retryable(exc: RequestException) -> bool:
+    """Retry connection problems, timeouts, and retryable HTTP statuses (incl. 429)."""
+    if isinstance(exc, HTTPError) and exc.response is not None:
+        return exc.response.status_code in RETRY_STATUS_FORCELIST
+    return isinstance(exc, (ConnectionError, Timeout))
 
 
+@backoff.on_exception(
+    backoff.expo,
+    RequestException,
+    max_tries=RETRY_TOTAL + 1,
+    giveup=lambda exc: not _is_retryable(exc),
+    factor=RETRY_BACKOFF,
+    jitter=backoff.full_jitter,
+    logger=logger,
+)
 def request_with_backoff(session: requests.Session, method: str, url: str, **kwargs: Any) -> requests.Response:
     kwargs.setdefault("timeout", REQUEST_TIMEOUT)
-    try:
-        logger.debug("Sending %s request to %s", method, url)
-        response = session.request(method, url, **kwargs)
-        response.raise_for_status()
-        return response
-    except RequestException:
-        logger.exception("Request failed: %s %s", method, url)
-        raise
+    logger.debug("Sending %s request to %s", method, url)
+    response = session.request(method, url, **kwargs)
+    if response.status_code == 429:
+        retry_after = response.headers.get("Retry-After", "")
+        if retry_after.isdigit():
+            time.sleep(int(retry_after))
+    response.raise_for_status()
+    return response
 
 
 def _fetch_window(session: requests.Session, start: datetime, end: datetime, headers: dict) -> list:
@@ -146,7 +147,7 @@ def fetch_message_subject_records(session: requests.Session, hours_back: int = H
     recursively until each sub-window returns fewer than 1000 results.
 
     Args:
-        session: A requests.Session with retry logic.
+        session: A requests.Session.
         hours_back: How far back to look.
     Returns:
         A list of dicts with keys: msg_id, short_id, subject.
@@ -171,7 +172,7 @@ def fetch_message_subject_records(session: requests.Session, hours_back: int = H
 
 def main() -> None:
     logger.info("Starting SendGrid load")
-    session = create_retry_session()
+    session = requests.Session()
     snowflake_conn = snowflake_connection_from_environment(schema="SENDGRID")
 
     try:
