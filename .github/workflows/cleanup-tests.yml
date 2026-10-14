@@ -4,6 +4,10 @@ on:
     types:
       - closed
 
+permissions:
+  contents: read
+  actions: read
+
 env:
   DBT_PROFILES_DIR: transform/ci
   DBT_RAW_DB: RAW_ENGCA_PRD
@@ -34,12 +38,34 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version-file: ".python-version"
-      - name: Cleanup after tests
+      - name: Wait for running CI tests of this PR
+        id: wait_for_ci
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
-          uv run dbt deps --project-dir transform --target prd
+          set -euo pipefail
+          for _ in $(seq 1 120); do
+            active=$(gh run list --workflow=tests.yml --branch "$HEAD_REF" \
+              --json status --jq '[.[] | select(.status != "completed")] | length')
+            [ "$active" = "0" ] && exit 0
+            echo "$active tests run(s) still active, waiting..."
+            sleep 30
+          done
+          echo "Timed out waiting for tests to finish" && exit 1
+      - name: Install dbt packages
+        id: install_dbt_packages
+        run: uv run dbt deps --project-dir transform --target prd
+      - name: Cleanup after tests (transform database)
+        run: |
           uv run dbt run-operation drop_schemas_with_prefix \
           --project-dir transform \
           --args "{\"database_name\": \"$SNOWFLAKE_DATABASE\", \"prefix\": \"$SNOWFLAKE_SCHEMA\"}"
+      - name: Cleanup after tests (analytics database)
+        if: >-
+          ${{ !cancelled() && steps.wait_for_ci.outcome == 'success' &&
+          steps.install_dbt_packages.outcome == 'success' }}
+        run: |
           uv run dbt run-operation drop_schemas_with_prefix \
           --project-dir transform \
           --args "{\"database_name\": \"$DBT_ANALYTICS_DB\", \"prefix\": \"$SNOWFLAKE_SCHEMA\"}"
