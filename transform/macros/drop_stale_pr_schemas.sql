@@ -14,7 +14,7 @@
   {% set get_schemas %}
     select
       schema_name,
-      regexp_substr(schema_name, '^GH_CI_PR_([0-9]+)?(_|$)', 1, 1, 'e', 1)::int as pr_number,
+      nullif(regexp_substr(schema_name, '^GH_CI_PR_([0-9]+)?(_|$)', 1, 1, 'e', 1), '')::int as pr_number,
       created < dateadd(day, -{{ max_age_days | int }}, current_timestamp()) as is_old
     from "{{ database_name | upper }}".information_schema.schemata
     where regexp_like(schema_name, '^GH_CI_PR_([0-9]+)?(_.*)?$')

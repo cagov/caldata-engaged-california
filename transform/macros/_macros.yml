@@ -62,7 +62,7 @@ macros:
         type: string
         description: The database to clean up.
       - name: open_pr_numbers
-        type: list
+        type: any
         description: PR numbers that are currently open; their schemas are always kept.
       - name: max_age_days
         type: integer
