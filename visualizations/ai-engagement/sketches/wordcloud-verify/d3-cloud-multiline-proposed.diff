@@ -1,0 +1,76 @@
+--- d3-cloud-multiline.BEFORE-2026-09-17.js	2026-09-17 08:54:37
++++ ../d3-cloud-multiline.js	2026-09-17 09:42:24
+@@ -37,6 +37,7 @@
+   };
+ 
+   cloud.start = function() {
++    if (!(size[0] > 0 && size[1] > 0)) throw new Error("d3-cloud: size must be two positive numbers, got " + size); // PATCH 5: NaN size = infinite spiral
+     var contextAndRatio = getContext(canvas()),
+         board = zeroArray((size[0] >> 5) * size[1]),
+         bounds = null,
+@@ -49,7 +50,7 @@
+           d.style = fontStyle.call(this, d, i);
+           d.weight = fontWeight.call(this, d, i);
+           d.rotate = rotate.call(this, d, i);
+-          d.size = ~~fontSize.call(this, d, i);
++          d.size = +fontSize.call(this, d, i); // PATCH 2: keep the fractional size; the mask must be drawn at exactly the size the app draws
+           d.padding = padding.call(this, d, i);
+           return d;
+         }).sort(function(a, b) { return b.size - a.size; });
+@@ -64,8 +65,11 @@
+       var start = Date.now();
+       while (Date.now() - start < timeInterval && ++i < n && timer) {
+         var d = data[i];
+-        d.x = (size[0] * (random() + .5)) >> 1;
+-        d.y = (size[1] * (random() + .5)) >> 1;
++        // PATCH 4 (optional): caller-provided search start point, so the layout's texture is
++        // set by where words START looking (e.g. a spread-out low-discrepancy set), not by
++        // d3-cloud's default random point in the central 50% box.
++        if (d.seedX != null) { d.x = d.seedX | 0; d.y = d.seedY | 0; }
++        else { d.x = (size[0] * (random() + .5)) >> 1; d.y = (size[1] * (random() + .5)) >> 1; }
+         cloudSprite(contextAndRatio, d, data, i);
+         if (d.hasText && place(board, d, bounds)) {
+           tags.push(d);
+@@ -132,7 +136,12 @@
+       if (tag.x + tag.x0 < 0 || tag.y + tag.y0 < 0 ||
+           tag.x + tag.x1 > size[0] || tag.y + tag.y1 > size[1]) continue;
+       // TODO only check for collisions within current bounds.
+-      if (!bounds || collideRects(tag, bounds)) {
++      // PATCH 6: upstream only accepts a position whose rect touches the
++      // bounding box of the words already placed (that is what keeps a
++      // default cloud connected and compact). A caller-seeded word (PATCH 4)
++      // is exempt, so a deliberately placed skeleton word lands exactly on
++      // its seed instead of walking its spiral until it touches the cluster.
++      if (!bounds || tag.seedX != null || collideRects(tag, bounds)) {
+         if (!cloudCollide(tag, board, size[0])) {
+           var sprite = tag.sprite,
+               w = tag.width >> 5,
+@@ -249,7 +258,7 @@
+   while (++di < n) {
+     d = data[di];
+     c.save();
+-    c.font = d.style + " " + d.weight + " " + ~~((d.size + 1) / ratio) + "px " + d.font;
++    c.font = d.style + " " + d.weight + " " + (d.size / ratio) + "px " + d.font; // PATCH 2: exact px, not ~~size+1 (that made mask glyphs ~3% wider than drawn ones, so letters drifted off their own mask)
+     // --- multi-line patch (not upstream d3-cloud): reads `d.lines`, an
+     // array of strings, if the caller set one; otherwise falls back to
+     // the original single-line `d.text` behavior unchanged. Everything
+@@ -265,13 +274,17 @@
+       if (lw > maxLineWidth) maxLineWidth = lw;
+     }
+     const anchor = -Math.floor(maxLineWidth / 2);
+-    let w = (maxLineWidth + 1) * ratio;
++    let w = (maxLineWidth + 1 + 2 * (d.padding || 0) + 4) * ratio; // PATCH 3: room for the padding stroke and right-side glyph overhang
+     // Internal (pre-ratio) line height, matching this file's own
+     // font-size-to-height convention (d.size << 1 for one line) scaled
+     // per extra line, with the original one-line height as a floor so
+     // single-line words render identically to unpatched d3-cloud.
+     var lineHeightInternal = (d.size * 1.22) / ratio;
+-    let h = Math.max(d.size << 1, Math.ceil(lines.length * lineHeightInternal * ratio));
++    // PATCH 1 (sprite height): the old 1.22em-per-line box left only 0.61em above the
++    // first baseline; Noto Sans ascenders reach 0.765em, so the top of every 2-line
++    // label was never in the collision mask. Now: one line-height per extra line,
++    // plus the single-line 2em envelope (1em above the first baseline, 1em below the last).
++    let h = Math.max(Math.ceil(2 * d.size), Math.ceil(((lines.length - 1) * lineHeightInternal + 2 * d.size) * ratio));
+     if (d.rotate) {
+       var sr = Math.sin(d.rotate * RADIANS),
+           cr = Math.cos(d.rotate * RADIANS),

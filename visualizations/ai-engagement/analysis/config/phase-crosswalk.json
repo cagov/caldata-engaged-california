@@ -1,0 +1,166 @@
+{
+  "version": "2026-08-25a",
+  "codebookVersion": "2026-08-18d",
+  "roomsSourceHash": "033431a6cad0fd8141b707ce842c13db2043146c78b6d4d62b3027c52cb1ad0c",
+  "status": "proposed",
+  "approvedBy": null,
+  "method": "Authored Phase-2-first: for each of the 29 policy concepts, the Phase 1 codebook themes whose definition it plausibly answers. Interpretive, not measured — no edge implies any respondent endorsed the concept, only that their raised theme is thematically continuous with it. A theme cited by no concept is not listed here; it is derived as 'unclaimed' at build time, not hand-picked.",
+  "concepts": [
+    { "conceptId": "C-01", "sources": [
+      { "code": "LABOR_PROTECTION", "field": "government", "strength": "primary", "rationale": "\"Protect workers\" is the direct government-action ask this concept enacts." },
+      { "code": "JOB_LOSS", "field": "economy", "strength": "primary", "rationale": "\"Job losses and displacement\" is the economic worry this concept responds to." },
+      { "code": "JOB_THREAT", "field": "personal", "strength": "secondary", "rationale": "\"Own job feels at risk\" is the personal experience behind wanting jobs kept/added." },
+      { "code": "REPLACEMENT_BAN", "field": "government", "strength": "secondary", "rationale": "A stronger, ban-shaped cousin of the same demand — incentivizing retention overlaps with banning replacement." }
+    ]},
+    { "conceptId": "C-02", "sources": [
+      { "code": "RETRAINING", "field": "government", "strength": "primary", "rationale": "\"Retraining and transition funding\" is exactly what shifting/reskilling employees asks government to fund." },
+      { "code": "CAREER_CHANGE", "field": "personal", "strength": "primary", "rationale": "\"Leaving the field\" is the lived version of needing to shift roles." },
+      { "code": "SKILL_PRESSURE", "field": "personal", "strength": "secondary", "rationale": "\"Pressure to learn AI skills\" motivates a reskilling policy response." },
+      { "code": "JOB_SEARCH_STRAIN", "field": "personal", "strength": "tangential", "rationale": "\"Searching in a flooded market\" is adjacent to needing a path to a new role." }
+    ]},
+    { "conceptId": "C-03", "sources": [
+      { "code": "UBI", "field": "government", "strength": "primary", "rationale": "Universal basic income is a direct form of support for displaced workers." },
+      { "code": "REDISTRIBUTION", "field": "government", "strength": "primary", "rationale": "\"Share the gains\" is the broader redistribution rationale for supporting job-losers." },
+      { "code": "JOB_LOST", "field": "personal", "strength": "primary", "rationale": "\"Already lost work\" is the lived experience this concept is a policy response to." },
+      { "code": "PRECARIOUS_WORK", "field": "economy", "strength": "secondary", "rationale": "\"The jobs left are worse jobs\" is the condition support policies are meant to offset." }
+    ]},
+    { "conceptId": "C-04", "sources": [
+      { "code": "REPLACEMENT_BAN", "field": "government", "strength": "primary", "rationale": "\"Make AI replacement of workers illegal\" is the closest direct government-action match, even though this concept is framed narrowly around firing-for-non-adoption." },
+      { "code": "MANDATED_USE", "field": "personal", "strength": "primary", "rationale": "\"Required to use it\" is the personal experience of being pressured to adopt AI or else." },
+      { "code": "LABOR_PROTECTION", "field": "government", "strength": "secondary", "rationale": "General worker protection covers this narrower prohibition." },
+      { "code": "TOOL_IMPOSED", "field": "personal", "strength": "tangential", "rationale": "\"It showed up in the software\" — imposed tooling is adjacent to imposed use." }
+    ]},
+    { "conceptId": "C-05", "sources": [
+      { "code": "LAYOFF_NOTICE", "field": "government", "strength": "primary", "rationale": "\"Conditions on AI-driven layoffs\" includes reporting requirements like this concept." },
+      { "code": "TRANSPARENCY", "field": "government", "strength": "secondary", "rationale": "\"Corporate disclosure\" is the general transparency principle behind reporting job loss." },
+      { "code": "JOB_LOSS", "field": "economy", "strength": "secondary", "rationale": "The economic concern this reporting requirement would track." }
+    ]},
+    { "conceptId": "C-06", "sources": [
+      { "code": "AUGMENTATION", "field": "economy", "strength": "primary", "rationale": "\"A tool, not a replacement\" is exactly the framing of using AI for undesirable/impossible tasks rather than replacing workers." },
+      { "code": "PRODUCTIVITY", "field": "economy", "strength": "secondary", "rationale": "\"Efficiency and growth\" is the economic upside this framing leans on." },
+      { "code": "POSITIVE_USE", "field": "personal", "strength": "tangential", "rationale": "\"Found it useful\" is the personal-level analog of AI doing unwanted work well." }
+    ]},
+    { "conceptId": "C-07", "sources": [
+      { "code": "TRANSPARENCY", "field": "government", "strength": "primary", "rationale": "\"Corporate disclosure\" is the direct ask behind using data properly and transparently." },
+      { "code": "PRIVACY_SURVEILLANCE", "field": "government", "strength": "primary", "rationale": "\"Privacy and surveillance limits\" covers proper data use." },
+      { "code": "IP_CONSENT", "field": "government", "strength": "secondary", "rationale": "\"Consent and payment for training data\" is a specific instance of proper data use." },
+      { "code": "IP_TAKEN", "field": "personal", "strength": "secondary", "rationale": "\"Own work used without consent\" is the personal harm improper data use causes." }
+    ]},
+    { "conceptId": "C-08", "sources": [
+      { "code": "PRIVACY_SURVEILLANCE", "field": "government", "strength": "primary", "rationale": "Direct match: privacy limits are what preserving privacy asks for." },
+      { "code": "SURVEILLANCE", "field": "personal", "strength": "secondary", "rationale": "\"Monitored by AI at work\" is the personal experience privacy protection responds to." }
+    ]},
+    { "conceptId": "C-09", "sources": [
+      { "code": "PRIVACY_SURVEILLANCE", "field": "government", "strength": "primary", "rationale": "Limiting data collection is a specific mechanism of privacy/surveillance limits." },
+      { "code": "TRANSPARENCY", "field": "government", "strength": "secondary", "rationale": "Disclosure of what's collected is adjacent to limiting collection." },
+      { "code": "HIRING_PROCESS_AI", "field": "personal", "strength": "tangential", "rationale": "\"Screened by AI while job-hunting\" is a lived instance of data being collected and used on a person." }
+    ]},
+    { "conceptId": "C-10", "sources": [
+      { "code": "OPT_OUT", "field": "government", "strength": "primary", "rationale": "Direct match: \"Let people turn it off.\"" },
+      { "code": "REFUSAL", "field": "personal", "strength": "secondary", "rationale": "\"Chooses not to use it\" is the lived version of wanting an opt-out." },
+      { "code": "CONSUMER_ENCOUNTER", "field": "personal", "strength": "tangential", "rationale": "Being met by AI as a customer is the context in which opting out matters." }
+    ]},
+    { "conceptId": "C-11", "sources": [
+      { "code": "CONTENT_LABELING", "field": "government", "strength": "primary", "rationale": "Direct match: \"Label AI-generated output.\"" },
+      { "code": "TRANSPARENCY", "field": "government", "strength": "primary", "rationale": "Disclosure of AI use generally is the broader principle this concept enacts." },
+      { "code": "MISINFORMATION", "field": "personal", "strength": "secondary", "rationale": "\"Was given wrong information\" is a harm labelling/disclosure is meant to prevent." }
+    ]},
+    { "conceptId": "C-12", "sources": [
+      { "code": "HUMAN_DECISION", "field": "government", "strength": "primary", "rationale": "Direct match: \"A human has to decide.\"" },
+      { "code": "DEHUMANIZATION", "field": "personal", "strength": "secondary", "rationale": "\"Loss of the human element\" is the personal experience this concept guards against." },
+      { "code": "SAFETY_OVERSIGHT", "field": "government", "strength": "tangential", "rationale": "General oversight is adjacent to requiring human sign-off." }
+    ]},
+    { "conceptId": "C-13", "sources": [
+      { "code": "OPT_OUT", "field": "government", "strength": "primary", "rationale": "Access to a life outside AI is the broader version of the opt-out ask." },
+      { "code": "COGNITIVE_ATROPHY", "field": "personal", "strength": "secondary", "rationale": "\"Colleagues losing the ability\" is the concern over-reliance on AI raises, which this concept addresses by preserving non-AI life." },
+      { "code": "MEANING_OF_WORK", "field": "economy", "strength": "tangential", "rationale": "\"How work is valued\" touches the same concern about AI crowding out human experience." }
+    ]},
+    { "conceptId": "C-14", "sources": [
+      { "code": "CONTENT_LABELING", "field": "government", "strength": "secondary", "rationale": "Distinguishing AI from human output is a conceptual precursor to labelling it." },
+      { "code": "MISINFORMATION", "field": "personal", "strength": "secondary", "rationale": "Confusion about what's AI-generated is a source of being misinformed." },
+      { "code": "DEHUMANIZATION", "field": "personal", "strength": "tangential", "rationale": "Defining the AI/human boundary relates to preserving the human element." }
+    ]},
+    { "conceptId": "C-15", "sources": [
+      { "code": "EDUCATION", "field": "government", "strength": "primary", "rationale": "Direct match: \"Schools and education policy.\"" },
+      { "code": "EDUCATION_HARM", "field": "personal", "strength": "primary", "rationale": "\"Harm to students' learning\" is the concern improved AI education addresses." },
+      { "code": "SKILL_PRESSURE", "field": "personal", "strength": "tangential", "rationale": "Pressure to learn AI skills extends to students as future workers." }
+    ]},
+    { "conceptId": "C-16", "sources": [
+      { "code": "TEACHING_DISRUPTION", "field": "personal", "strength": "primary", "rationale": "\"Teaching and assessment upended\" is exactly the classroom problem this concept responds to." },
+      { "code": "EDUCATION", "field": "government", "strength": "secondary", "rationale": "General education policy covers rules on student AI use." },
+      { "code": "EDUCATION_HARM", "field": "personal", "strength": "secondary", "rationale": "Harm to learning is the rationale for restricting AI use on schoolwork." }
+    ]},
+    { "conceptId": "C-17", "sources": [
+      { "code": "EDUCATION", "field": "government", "strength": "primary", "rationale": "Parental controls for AI use fall under education/child-safety policy." },
+      { "code": "SAFETY_OVERSIGHT", "field": "government", "strength": "secondary", "rationale": "General safety oversight extends to protecting minors." },
+      { "code": "USER_HARM", "field": "government", "strength": "tangential", "rationale": "\"Protect people the systems interact with\" covers protecting children specifically." }
+    ]},
+    { "conceptId": "C-18", "sources": [
+      { "code": "PUBLIC_CONSENT", "field": "government", "strength": "primary", "rationale": "Direct match: \"Let the affected public decide.\"" },
+      { "code": "EXPERT_INPUT", "field": "government", "strength": "secondary", "rationale": "\"Legislate with people who understand it\" is a complementary form of broadened input." },
+      { "code": "REGULATORY_CAPTURE", "field": "government", "strength": "tangential", "rationale": "Fear that \"industry will control the process\" is the reason public input is demanded." },
+      { "code": "GOV_INCOMPETENCE", "field": "government", "strength": "tangential", "rationale": "Distrust that government alone will get it right also motivates wanting public input." }
+    ]},
+    { "conceptId": "C-19", "sources": [
+      { "code": "PUBLIC_CONSENT", "field": "government", "strength": "primary", "rationale": "The community-scoped version of the same public-input demand as C-18." },
+      { "code": "DATA_CENTER_LIMITS", "field": "government", "strength": "secondary", "rationale": "Communities near data centers are a concrete case of needing input on local AI impacts." },
+      { "code": "LOCAL_ENVIRONMENT", "field": "economy", "strength": "tangential", "rationale": "\"Local environmental cost\" is a typical AI-related impact communities would want input on." }
+    ]},
+    { "conceptId": "C-20", "sources": [
+      { "code": "PERMITTED_USES", "field": "government", "strength": "primary", "rationale": "Direct match: \"Names acceptable uses.\"" },
+      { "code": "SAFETY_OVERSIGHT", "field": "government", "strength": "primary", "rationale": "Determining safe fields of use is a form of safety oversight." },
+      { "code": "RESTRICT_BAN", "field": "government", "strength": "secondary", "rationale": "Naming where AI is safe implies restricting it elsewhere." },
+      { "code": "HIRING_AI_LIMITS", "field": "government", "strength": "tangential", "rationale": "Restricting AI in hiring is one instance of a field where use is deemed unsafe." }
+    ]},
+    { "conceptId": "C-21", "sources": [
+      { "code": "REGULATE", "field": "government", "strength": "primary", "rationale": "Direct, broad match: \"Regulate, unspecified.\"" },
+      { "code": "SAFETY_OVERSIGHT", "field": "government", "strength": "primary", "rationale": "Controlling how AI works is a core safety-oversight function." },
+      { "code": "MISUSE_CRIMES", "field": "government", "strength": "secondary", "rationale": "Criminalizing specific misuses is one mechanism of controlling AI behavior." },
+      { "code": "QUALITY_DOUBT", "field": "economy", "strength": "tangential", "rationale": "\"Doubts the work is any good\" is a concern that controlling how AI works would address." }
+    ]},
+    { "conceptId": "C-22", "sources": [
+      { "code": "IP_CONSENT", "field": "government", "strength": "primary", "rationale": "\"Consent and payment for training data\" is the core copyright mechanism." },
+      { "code": "COPYRIGHT_INELIGIBLE", "field": "government", "strength": "primary", "rationale": "Direct match on the copyright topic, from the opposite (AI-output) side." },
+      { "code": "CREATIVE_PROTECTION", "field": "government", "strength": "secondary", "rationale": "\"Protect creative professions\" is the constituency copyright enforcement serves." },
+      { "code": "IP_TAKEN", "field": "personal", "strength": "secondary", "rationale": "\"Own work used without consent\" is the personal harm this concept remedies." }
+    ]},
+    { "conceptId": "C-23", "sources": [
+      { "code": "GOV_OWN_USE", "field": "government", "strength": "primary", "rationale": "Direct match: \"Rules for government's own use of AI.\"" },
+      { "code": "PRODUCTIVITY", "field": "economy", "strength": "secondary", "rationale": "Efficiency gains are the stated rationale for using AI in government operations." }
+    ]},
+    { "conceptId": "C-24", "sources": [
+      { "code": "TAXATION", "field": "government", "strength": "primary", "rationale": "\"Tax and financial levers\" is a direct mechanism for restricting profits." },
+      { "code": "RESTRICT_BAN", "field": "government", "strength": "primary", "rationale": "Restricting profits is a form of limiting/curbing company behavior." },
+      { "code": "WEALTH_CONCENTRATION_MECHANISM", "field": "economy", "strength": "secondary", "rationale": "\"How the gains get captured\" is the economic concern behind restricting profits." },
+      { "code": "REGULATORY_CAPTURE", "field": "government", "strength": "tangential", "rationale": "Concern over unchecked corporate power motivates profit restriction." }
+    ]},
+    { "conceptId": "C-25", "sources": [
+      { "code": "LIABILITY", "field": "government", "strength": "primary", "rationale": "Direct match: \"Legal accountability for harms.\"" },
+      { "code": "USER_HARM", "field": "government", "strength": "primary", "rationale": "\"Protect people the systems interact with\" is exactly consumer accountability." },
+      { "code": "MISUSE_CRIMES", "field": "government", "strength": "secondary", "rationale": "Criminal accountability is a stronger form of the same demand." },
+      { "code": "CONSUMER_BACKLASH", "field": "economy", "strength": "tangential", "rationale": "\"The public doesn't want it\" is the sentiment behind demanding accountability." }
+    ]},
+    { "conceptId": "C-26", "sources": [
+      { "code": "DATA_CENTER_LIMITS", "field": "government", "strength": "primary", "rationale": "Direct match: \"Control where facilities are built.\"" },
+      { "code": "RATEPAYER_PROTECTION", "field": "government", "strength": "primary", "rationale": "\"Data centres pay their own way\" is the core protect-consumers-from-resource-needs mechanism." },
+      { "code": "ENVIRONMENT", "field": "government", "strength": "secondary", "rationale": "\"Environmental and energy impact\" is the general policy area this concept sits in." },
+      { "code": "LOCAL_ENVIRONMENT", "field": "economy", "strength": "secondary", "rationale": "\"Local environmental cost\" is the lived version of the same resource-needs concern." },
+      { "code": "UTILITY_COSTS", "field": "economy", "strength": "tangential", "rationale": "\"Energy and water bills\" is the consumer-cost angle data-center resource use raises." }
+    ]},
+    { "conceptId": "C-27", "sources": [
+      { "code": "EDUCATION", "field": "government", "strength": "primary", "rationale": "Public awareness campaigns fall under the general education-policy ask." },
+      { "code": "MISINFORMATION", "field": "personal", "strength": "secondary", "rationale": "Awareness of ethical use would reduce being misled by AI outputs." },
+      { "code": "SKILL_PRESSURE", "field": "personal", "strength": "tangential", "rationale": "General AI literacy overlaps with feeling pressure to learn AI skills." }
+    ]},
+    { "conceptId": "C-28", "sources": [
+      { "code": "MORATORIUM", "field": "government", "strength": "primary", "rationale": "Direct match: \"Pause and study first.\"" },
+      { "code": "LEARN_ELSEWHERE", "field": "government", "strength": "secondary", "rationale": "\"Look to other jurisdictions or history\" is a specific research strategy." },
+      { "code": "UNCERTAIN", "field": "economy", "strength": "tangential", "rationale": "Not knowing what to expect is the uncertainty more research is meant to resolve." }
+    ]},
+    { "conceptId": "C-29", "sources": [
+      { "code": "RETRAINING", "field": "government", "strength": "primary", "rationale": "Employer AI training is a specific instance of the broader retraining/transition-funding ask." },
+      { "code": "SKILL_PRESSURE", "field": "personal", "strength": "secondary", "rationale": "\"Pressure to learn AI skills\" is what employee training responds to." },
+      { "code": "POOR_ROLLOUT", "field": "personal", "strength": "secondary", "rationale": "\"Deployed without preparation\" is the failure mode training is meant to prevent." }
+    ]}
+  ]
+}

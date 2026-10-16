@@ -1,0 +1,447 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Impact of AI on work — how ideas were distilled</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@400;700&family=Noto+Sans:wght@400;600;700&family=Noto+Serif:wght@700&display=swap');
+:root{
+  --ink:#1E1E1E; --gray:#444444; --line:#DEDEE1; --blue:#0D4F8C; --paper:#FFFFFF;
+  --wash:#F4F6F9;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:'Noto Sans',Arial,sans-serif; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── intro ─────────────────────────────────────────────── */
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+.intro{padding:96px 0 40px;max-width:720px}
+.eyebrow{
+  font-family:'Noto Sans Mono',ui-monospace,monospace;
+  font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gray);
+  margin:0 0 18px;
+}
+h1{font-family:'Noto Serif',Georgia,serif;font-size:clamp(34px,5vw,54px);line-height:1.12;margin:0 0 22px;font-weight:700}
+.standfirst{font-size:19px;color:#333;margin:0}
+.rule{height:1px;background:var(--line);margin:56px 0 0}
+
+/* ── scrolly ───────────────────────────────────────────── */
+/* graphic and copy occupy the same grid cell, so the text scrolls
+   across the cloud rather than sitting beside it */
+.scrolly{position:relative;display:grid}
+.graphic{
+  grid-area:1/1;position:sticky;top:0;height:100vh;
+  display:flex;align-items:center;justify-content:center;z-index:0;
+  pointer-events:none;
+}
+canvas{width:100%;height:auto;max-height:92vh;display:block;transition:none}
+
+.steps{grid-area:1/1;position:relative;z-index:2;padding:30vh 0 40vh}
+.step{min-height:96vh;display:flex;align-items:center;justify-content:center}
+.step-inner{
+  max-width:660px;margin:0 auto;text-align:center;
+  opacity:.06;
+  /* a soft white halo keeps the copy legible over the densest part
+     of the cloud, on top of the dimming */
+  text-shadow:0 0 10px #fff, 0 0 26px #fff, 0 0 46px #fff;
+}
+.step p{margin:0;font-size:clamp(19px,2.3vw,26px);line-height:1.48}
+.step p + p{margin-top:16px}
+.step .lede{font-family:'Noto Serif',Georgia,serif;font-weight:700;font-size:clamp(23px,2.9vw,34px);line-height:1.3}
+.step .count{
+  font-family:'Noto Sans Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--gray);display:block;margin-bottom:16px;
+}
+
+/* ── outro ─────────────────────────────────────────────── */
+.outro{padding:20px 0 120px;max-width:720px}
+.outro h2{font-family:'Noto Serif',Georgia,serif;font-size:clamp(24px,3vw,34px);line-height:1.2;margin:0 0 18px}
+.outro p{font-size:18px;color:#333;margin:0 0 16px}
+.note{
+  margin-top:40px;padding:18px 20px;background:var(--wash);border-radius:3px;
+  font-size:13.5px;line-height:1.6;color:var(--gray);
+}
+.note b{color:var(--ink)}
+.note code{font-family:'Noto Sans Mono',ui-monospace,monospace;font-size:12.5px;color:var(--blue)}
+
+@media (max-width:760px){
+  .step-inner{max-width:88vw}
+  .step{min-height:88vh}
+  canvas{max-height:76vh}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+}
+</style>
+
+<div class="wrap">
+  <div class="intro">
+    <p class="eyebrow">Impact of AI on work</p>
+    <h1>From thousands of reactions to one shared idea</h1>
+    <p class="standfirst">Scroll to follow how a public forum's many loose concerns were distilled into a small set of concrete policy directions.</p>
+  </div>
+  <div class="rule"></div>
+
+  <section class="scrolly" id="scrolly">
+    <div class="steps" id="steps">
+      <div class="step"><div class="step-inner">
+        <span class="count">Phase 1</span>
+        <p>In May 2026, we opened a public forum on the Impact of AI on work.</p>
+        <p>Over many months, a cross-section of the public came together to give us their thoughts. They took polls and joined facilitated group discussions.</p>
+      </div></div>
+      <div class="step"><div class="step-inner">
+        <span class="count">From phase 1 to phase 2</span>
+        <p>They shared their own experiences, and listened to their peers.</p>
+        <p>Then they refined gut reactions into concrete policy ideas.</p>
+      </div></div>
+      <div class="step"><div class="step-inner">
+        <span class="count">Phase 2</span>
+        <p class="lede">One idea came up consistently: We need humans in the AI policy loop.</p>
+        <p>Not only in how AI tools are used day-to-day, but in how they are built and governed.</p>
+      </div></div>
+    </div>
+    <div class="graphic"><canvas id="c" width="1040" height="840"
+      aria-label="A word cloud of every concept raised in the forum, each sized by how many people raised it. As the story advances the words merge into a smaller set of consolidated policy ideas, ending on the idea of keeping humans in the AI policy loop."></canvas></div>
+  </section>
+
+  <div class="outro">
+    <h2>What happens next</h2>
+    <p>Placeholder closing copy — this is where the findings, the action plan, or a call to stay involved would sit.</p>
+    <p class="note"><b>Prototype on dummy data.</b> The 122 concepts and their counts are plausible stand-ins built from vocabulary in the forum's free-text answers; the groupings are invented. Replace <code>CONCEPTS</code> with the real coded taxonomy and everything recalculates. Scroll position drives the visualization continuously, so the copy and the graphic stay in sync at any scroll speed.</p>
+  </div>
+</div>
+
+<script>
+const THEMES = [
+  { name:'Jobs & livelihood',      color:'#0D4F8C' },
+  { name:'Economic safety net',    color:'#E3881B' },
+  { name:'Regulation & oversight', color:'#634EAF' },
+  { name:'Data & ownership',       color:'#E45D48' },
+  { name:'Environment & energy',   color:'#3BAA91' },
+  { name:'Trust & judgment',       color:'#A35F0E' }
+];
+
+const CONCEPTS = [
+  { label:"Entry-level job loss", theme:0, from:[["no entry roles","no entry-level roles",109], ["new grads","new grads shut out",50], ["internships","internships vanishing",35], ["first rung","first rung gone",28], ["junior freeze","hiring freeze for juniors",23], ["apprentices","apprenticeships cut",20], ["needs 5 yrs","experience required for everything",18], ["no trainers","no one left to train juniors",16], ["pipeline","graduate pipeline broken",15]]},
+  { label:"Routine work displaced", theme:0, from:[["support desks","customer service automated",69], ["data entry","data entry replaced",32], ["call centers","call centers cut",23], ["admin roles","admin roles cut",18], ["scheduling","scheduling automated",15], ["bookkeeping","bookkeeping automated",13], ["transcripts","transcription gone",12], ["triage","first-line triage automated",10]]},
+  { label:"Middle-class erosion", theme:0, from:[["the squeeze","middle class squeeze",53], ["flat wages","wage stagnation",25], ["less stable","fewer stable careers",17], ["two jobs","two jobs to get by",14]]},
+  { label:"Jobs created vs lost", theme:0, from:[["new AI jobs","new AI jobs appear",60], ["net numbers","net job numbers",27], ["work shifts","work shifts, not gone",19], ["prompt roles","prompt engineering roles",15], ["more created","more created than lost",13]]},
+  { label:"Retraining", theme:0, from:[["comm college","community college retraining",57], ["employer pays","employer-paid upskilling",26], ["mid-career","mid-career transitions",19], ["who pays","who pays for retraining",15], ["too slow","retraining too slow",12]]},
+  { label:"Universal basic income", theme:1, from:[["UBI pilots","UBI pilots",63], ["basic income","guaranteed income",29], ["AI dividend","dividend from AI profits",20], ["unaffordable","UBI is unaffordable",16], ["neg tax","negative income tax",13], ["one county","pilot in one county",12]]},
+  { label:"Taxing automation", theme:1, from:[["robot tax","robot tax",38], ["tax gains","tax productivity gains",17], ["payroll gap","payroll tax loophole",12]]},
+  { label:"Unemployment support", theme:1, from:[["longer UI","extended benefits",35], ["transition aid","transition assistance",16], ["portable","portable benefits",11]]},
+  { label:"Who captures gains", theme:1, from:[["shareholders","gains go to shareholders",47], ["wages last","profits over wages",22], ["profit share","worker profit sharing",15], ["public stake","public stake in AI",12]]},
+  { label:"State-level AI rules", theme:2, from:[["CA acts","California acts alone",58], ["state vs fed","state vs federal",27], ["state pacts","interstate alliances",19], ["preemption","federal preemption worries",15], ["local rules","local ordinances",13]]},
+  { label:"Transparency rules", theme:2, from:[["disclose use","disclose when AI is used",63], ["label content","label AI content",29], ["audits","audit the algorithms",20], ["name sources","publish training sources",16], ["watermarks","watermark outputs",14], ["explain no","explain automated denials",12]]},
+  { label:"Limits on AI hiring", theme:2, from:[["AI screening","AI screens interviews",50], ["resume bias","resume filtering bias",24], ["human review","right to a human reviewer",17]]},
+  { label:"Liability", theme:2, from:[["who is liable","who is responsible",44], ["recourse","recourse when harmed",20], ["vendor or boss","vendor vs employer",14]]},
+  { label:"Pace of regulation", theme:2, from:[["govt too slow","government too slow",50], ["act early","regulate before harm",24], ["sandbox","sandbox and iterate",17]]},
+  { label:"Consent for training", theme:3, from:[["scraped","no consent to scrape",46], ["opt out","opt out of training",22], ["pay for data","pay for the data",15], ["licensing","licensing regime",12]]},
+  { label:"Creative work & IP", theme:3, from:[["unpaid artists","artists uncompensated",53], ["voice clones","voice & likeness",25], ["books used","writing ingested",18], ["style copied","style imitation",14], ["royalties","royalties for training",12]]},
+  { label:"Personal data", theme:3, from:[["health data","health data exposure",44], ["work tracking","workplace surveillance",20], ["data brokers","data broker resale",14]]},
+  { label:"Data center siting", theme:4, from:[["near homes","data centers near homes",87], ["approvals","local approval fights",40], ["home values","property values",28], ["noise","noise complaints",22], ["tax breaks","tax breaks for builders",19], ["rezoning","zoning changes",16], ["jobs promised","jobs promised vs delivered",14], ["farmland","farmland converted",13], ["no benefit","no community benefit",12]]},
+  { label:"Water use", theme:4, from:[["cooling water","cooling water demand",75], ["drought","drought tradeoffs",34], ["aquifers","aquifer depletion",24], ["water rights","water rights conflicts",19], ["recycled","recycled water required",16], ["farms lose","agriculture competes",14], ["report usage","disclose water use",12], ["river temps","river temperature",11]]},
+  { label:"Energy & the grid", theme:4, from:[["power bills","electricity costs rising",82], ["grid strain","grid strain",37], ["renewables","renewables buildout",26], ["gas plants","new gas plants",21], ["who upgrades","who pays for upgrades",17], ["peak demand","peak demand",15], ["nuclear","nuclear restart talk",13], ["rooftop solar","rooftop solar offset",12]]},
+  { label:"Misinformation", theme:5, from:[["deepfakes","election deepfakes",48], ["what is real","cannot tell what is real",22], ["voice scams","scam calls with voices",16], ["unverifiable","news you cannot verify",12]]},
+  { label:"Critical thinking", theme:5, from:[["outsourced","outsourced thinking",54], ["deskilling","deskilling at work",25], ["no struggle","students stop struggling",18], ["cannot write","losing how to write",14]]},
+  { label:"Human oversight", theme:5, from:[["in the loop","human in the loop",48], ["not AI alone","no AI-only decisions",23], ["appeal","appeal to a person",16]]},
+  { label:"Access & equity", theme:5, from:[["digital divide","digital divide",45], ["rural access","rural access",21], ["languages","language access",15], ["disability","disability access",12]]},
+  { label:"Public understanding", theme:5, from:[["AI literacy","AI literacy",44], ["campaigns","public campaigns",21], ["in schools","teach it in schools",15]]},
+];
+
+
+const CONFIG = {
+  accent:'#0D4F8C', gray:'#444444', ink:'#1E1E1E'
+};
+
+/* ── derived ──────────────────────────────────────────────── */
+const parents = CONCEPTS.map((c, i) => ({
+  i, label:c.label, theme:c.theme, color:THEMES[c.theme].color,
+  total:c.from.reduce((a, b) => a + b[2], 0)      // [title, full, count]
+}));
+const children = [];
+CONCEPTS.forEach((c, pi) => c.from.forEach(([label, full, n]) =>
+  children.push({ label, full, n, parent:pi, theme:c.theme, color:THEMES[c.theme].color })));
+
+const MAXC = Math.max(...children.map(c => c.n));
+const MAXP = Math.max(...parents.map(p => p.total));
+const childSize  = n => 10.5 + 19 * Math.sqrt(n / MAXC);
+const parentSize = w => 14   + 28 * Math.sqrt(Math.max(0, w) / MAXP);
+
+/* ── canvas ───────────────────────────────────────────────── */
+const W = 1040, H = 840;
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+function resize(){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+resize();
+addEventListener('resize', () => { resize(); draw(); });
+const CX = W / 2, CY = 470;
+
+function mulberry32(a){
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const rand = mulberry32(20260826);
+
+/* ── word layout ──────────────────────────────────────────────
+   Archimedean spiral with rectangle collision. Biggest words go
+   first so they land near the middle. The spiral steps finely —
+   a coarse one runs out of candidate positions and strands words.
+   ─────────────────────────────────────────────────────────── */
+function layout(items, font, sizeOf, spread){
+  const placed = [];
+  const order = items.map((it, i) => i).sort((a, b) => sizeOf(items[b]) - sizeOf(items[a]));
+  for (const i of order){
+    const it = items[i];
+    let pos = null, fs = sizeOf(it);
+    // shrink and retry rather than give up — an unplaced word would
+    // otherwise be dumped at the centre, silently stacked on others
+    for (const shrink of [1, 0.9, 0.8, 0.7]){
+      fs = sizeOf(it) * shrink;
+      ctx.font = `${font} ${fs}px 'Noto Sans', Arial, sans-serif`;
+      const w = ctx.measureText(it.label).width + 8;
+      const h = fs * 1.32;
+      for (let step = 0; step < 60000 && !pos; step++){
+        const t = step * 0.025;
+        const r = 0.35 * t;
+        const x = CX + Math.cos(t) * r * spread;
+        const y = CY + Math.sin(t) * r * 0.52;
+        const b = [x - w / 2, y - h / 2, w, h];
+        if (b[0] > 24 && b[0] + w < W - 24 && b[1] > 150 && b[1] + h < H - 92 &&
+            !placed.some(q => b[0] < q[0] + q[2] && b[0] + b[2] > q[0] &&
+                              b[1] < q[1] + q[3] && b[1] + b[3] > q[1])){
+          pos = [x, y]; placed.push(b);
+        }
+      }
+      if (pos) break;
+    }
+    it.home = pos || [CX, CY];
+    it.fs = fs;
+  }
+  return items;
+}
+layout(children, '400', c => childSize(c.n), 1.35);
+layout(parents,  '600', p => parentSize(p.total), 1.30);
+
+children.forEach(c => { c.rev = rand(); });   // arrival order as the cloud assembles
+
+// A small private wobble on top of the shared wind, so words aren't locked
+// rigidly to their neighbours.
+[...children, ...parents].forEach(o => {
+  o.ax = 1.6 + rand() * 2.2;   o.ay = 1.2 + rand() * 1.8;
+  o.fx = 0.38 + rand() * 0.52; o.fy = 0.31 + rand() * 0.46;
+  o.px = rand() * Math.PI * 2; o.py = rand() * Math.PI * 2;
+});
+
+// each idea claims its concepts in turn, so consolidation reads as a wave
+parents.forEach((q, i) => { q.delay = (i / parents.length) * 0.52; });
+children.forEach(c => { c.delay = parents[c.parent].delay + rand() * 0.16; });
+const SPAN = 0.30;
+
+/* ── state, driven entirely by scroll ─────────────────────── */
+const ease = t => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2;
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
+
+let p = 0, appear = 0;
+const prog = c => ease(clamp01((p - c.delay) / SPAN));
+
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let clock = 0;
+
+// A flow field, not independent jitter. Each word samples the same smooth
+// vector field at its own position, so neighbours get almost the same push
+// and the cloud travels as a body — the look of wind rather than fidgeting.
+// The spatial wavelength (~1400px) is far longer than the gap between words:
+// that is what keeps a 45px sway from tearing the layout apart, since two
+// neighbours 90px apart never differ by more than about 17px.
+const WIND = {
+  ax1: 26, ax2: 15, ay1: 14, ay2: 10,          // how far it carries them
+  k1: 0.0045, k2: 0.0060, k3: 0.0075, k4: 0.0050,
+  w1: 0.68, w2: -0.48, w3: -0.57, w4: 0.79     // radians/sec — 8 to 13s waves
+};
+
+// damp fades the motion out as a word merges, so it lands cleanly
+function drift(o, damp){
+  if (REDUCED || damp <= 0) return [0, 0];
+  const hx = o.home[0], hy = o.home[1];
+  const gust = 0.72 + 0.28 * Math.sin(clock * 0.19);   // it comes in waves
+  const dx = WIND.ax1 * Math.sin(hy * WIND.k2 + clock * WIND.w1)
+           + WIND.ax2 * Math.sin(hx * WIND.k3 + clock * WIND.w2 + 1.7)
+           + Math.sin(clock * o.fx + o.px) * o.ax;
+  const dy = WIND.ay1 * Math.cos(hx * WIND.k1 + clock * WIND.w3)
+           + WIND.ay2 * Math.cos(hy * WIND.k4 + clock * WIND.w4 + 0.9)
+           + Math.cos(clock * o.fy + o.py) * o.ay;
+  return [dx * gust * damp, dy * gust * damp];
+}
+
+function recompute(){
+  for (const q of parents) q.acc = 0;
+  for (const c of children){
+    c.t = prog(c);
+    parents[c.parent].acc += c.n * c.t;
+  }
+  for (const q of parents){
+    const frac = q.acc / q.total;
+    q.fs = parentSize(q.acc);
+    const d = drift(q, frac);
+    q.x = q.home[0] + d[0];
+    q.y = q.home[1] + d[1];
+    q.alpha = clamp01(frac * 1.7);
+  }
+  for (const c of children){
+    const q = parents[c.parent];
+    const k = c.t;
+    const d = drift(c, 1 - k);
+    // travel toward the parent's resting spot, not its drifting one
+    c.x  = lerp(c.home[0], q.home[0], k) + d[0];
+    c.y  = lerp(c.home[1], q.home[1], k) + d[1];
+    c.sz = lerp(childSize(c.n), childSize(c.n) * 0.4, k);
+    // fade in on arrival, hold, then dissolve as it merges
+    c.alpha = (1 - Math.pow(k, 2.6)) * clamp01((appear - c.rev * 0.8) * 5);
+  }
+}
+
+function counters(){
+  if (appear <= 0.01) return;
+  const left = children.reduce((a, c) => a + (c.t < 1 && c.alpha > 0.12 ? 1 : 0), 0);
+  const here = parents.reduce((a, q) => a + (q.acc / q.total > 0.02 ? 1 : 0), 0);
+  ctx.globalAlpha = appear;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.font = "400 11px 'Noto Sans Mono', ui-monospace, monospace";
+  ctx.fillStyle = CONFIG.gray;
+  ctx.fillText('C O N C E P T S', 42, 44);
+  ctx.font = "700 34px 'Noto Sans Mono', ui-monospace, monospace";
+  ctx.fillStyle = CONFIG.ink;
+  ctx.fillText(String(left), 42, 82);
+  const wNum = ctx.measureText(String(left)).width;
+  ctx.font = "400 15px 'Noto Sans Mono', ui-monospace, monospace";
+  ctx.fillStyle = '#B9B9C0';
+  ctx.fillText('→', 42 + wNum + 12, 82);
+  ctx.font = "700 34px 'Noto Sans Mono', ui-monospace, monospace";
+  ctx.fillStyle = here > 0 ? CONFIG.accent : '#B9B9C0';
+  ctx.fillText(String(here), 42 + wNum + 36, 82);
+  ctx.font = "400 12px 'Noto Sans', Arial, sans-serif";
+  ctx.fillStyle = CONFIG.gray;
+  ctx.fillText('raised          consolidated', 42, 102);
+  ctx.globalAlpha = 1;
+}
+
+function themeLegend(){
+  if (appear <= 0.01) return;
+  ctx.globalAlpha = appear;
+  ctx.font = "400 11.5px 'Noto Sans', Arial, sans-serif";
+  const SW = 9, GAP = 7, PAD = 24;
+  const w = THEMES.map(t => SW + GAP + ctx.measureText(t.name).width + PAD);
+  let x = (W - (w.reduce((a, b) => a + b, 0) - PAD)) / 2;
+  const y = H - 38;
+  ctx.textBaseline = 'middle';
+  THEMES.forEach((t, i) => {
+    ctx.beginPath(); ctx.arc(x + SW / 2, y, SW / 2, 0, Math.PI * 2);
+    ctx.fillStyle = t.color; ctx.fill();
+    ctx.fillStyle = CONFIG.gray; ctx.textAlign = 'left';
+    ctx.fillText(t.name, x + SW + GAP, y);
+    x += w[i];
+  });
+  ctx.globalAlpha = 1;
+  ctx.textBaseline = 'alphabetic';
+}
+
+function draw(){
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+  counters();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+  // phase 1 concepts, travelling toward the idea they fed
+  for (const c of children){
+    if (c.alpha <= 0.01) continue;
+    ctx.globalAlpha = c.alpha * 0.92;
+    ctx.fillStyle = c.color;
+    ctx.font = `400 ${c.sz}px 'Noto Sans', Arial, sans-serif`;
+    ctx.fillText(c.label, c.x, c.y);
+  }
+  // consolidated ideas, growing as they absorb
+  for (const q of parents){
+    if (q.alpha <= 0.01) continue;
+    ctx.globalAlpha = q.alpha;
+    ctx.fillStyle = q.color;
+    ctx.font = `600 ${q.fs}px 'Noto Sans', Arial, sans-serif`;
+    ctx.fillText(q.label, q.x, q.y);
+  }
+  ctx.globalAlpha = 1;
+  themeLegend();
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+}
+
+/* ── scroll wiring ────────────────────────────────────────── */
+const scrolly = document.getElementById('scrolly');
+const stepEls = [...document.querySelectorAll('.step')];
+
+// Split the scroller explicitly rather than one keyframe per step: phase 1
+// holds while the first block is read, the distillation runs underneath the
+// second, and the single idea resolves under the third.
+const seg = (t, a, b) => clamp01((t - a) / (b - a));
+
+function onScroll(){
+  const r = scrolly.getBoundingClientRect();
+  const span = r.height - innerHeight;
+  const t = span > 0 ? clamp01(-r.top / span) : 0;
+
+  // Blocks of copy reach the middle of the screen at roughly t = 0.11, 0.48
+  // and 0.85. The first is read over a clean page; the cloud assembles once
+  // it has passed, the distillation runs under the second, and phase 2 is
+  // settled before the third arrives to describe it.
+  appear = ease(seg(t, 0.15, 0.30));
+  p      = ease(seg(t, 0.32, 0.74));
+
+  // One proximity measure drives both: copy fades up as it nears the middle
+  // of the screen, and the cloud dims by the same amount underneath it.
+  let over = 0;
+  stepEls.forEach(el => {
+    const b = el.getBoundingClientRect();
+    const d = Math.abs(b.top + b.height / 2 - innerHeight / 2);
+    const vis = clamp01(1 - d / (innerHeight * 0.45));
+    el.firstElementChild.style.opacity = (0.06 + 0.94 * vis * vis).toFixed(3);
+    over = Math.max(over, vis);
+  });
+  canvas.style.opacity = (1 - 0.66 * over).toFixed(3);
+
+  if (REDUCED){ recompute(); draw(); }
+}
+
+// The words wander continuously, so this redraws every frame rather than only
+// on scroll — but only while the section is actually on screen.
+function tick(now){
+  clock = now / 1000;
+  const r = scrolly.getBoundingClientRect();
+  if (r.top < innerHeight && r.bottom > 0){ recompute(); draw(); }
+  requestAnimationFrame(tick);
+}
+
+let ticking = false;
+addEventListener('scroll', () => {
+  if (ticking) return;
+  ticking = true;
+  requestAnimationFrame(() => { onScroll(); ticking = false; });
+}, { passive:true });
+
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(() => {
+  // fonts change text metrics, so lay out only once they're ready
+  layout(children, '400', c => childSize(c.n), 1.35);
+  layout(parents,  '600', p => parentSize(p.total), 1.30);
+  onScroll();
+  recompute(); draw();
+  if (!REDUCED) requestAnimationFrame(tick);
+});
+</script>

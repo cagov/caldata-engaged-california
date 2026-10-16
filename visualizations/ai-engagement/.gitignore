@@ -1,0 +1,40 @@
+# --- Real data never goes in this repo (README data rule 2) ------------------
+data/
+analysis/data/
+analysis/corpus/
+analysis/artifacts/
+analysis/reports/
+*.csv
+*.tsv
+*.xlsx
+*.xls
+*.parquet
+*.jsonl
+
+# --- Secrets -----------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# --- Generated ----------------------------------------------------------------
+synthetic-data/out/
+sketches/wordcloud-verify/fonts/
+node_modules/
+dist/
+
+# --- Media (this folder is code only) ---------------------------------------
+*.mov
+*.mp4
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.fig
+*.zip
+*.pdf
+
+.DS_Store
+
+# --- Un-ignore code the repo root's Python .gitignore would hide ------------
+# (its `lib/` rule matches viz/src/lib/ and analysis/src/lib/)
+!lib/

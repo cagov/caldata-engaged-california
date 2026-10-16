@@ -1,0 +1,1200 @@
+{
+ "meta": {
+  "source": "ai_impact_participants_with_demo_data 2026-09-21.csv",
+  "attendeeSource": "attendee demographics, 2026-08-18-1424.csv",
+  "note": "Aggregate counts plus one anonymous {region, fieldOfWork} pair per discussion attendee, grouped by session date. Built by scripts/ai_report_data/build_funnel.py."
+ },
+ "phase1Total": 2702,
+ "regions": [
+  {
+   "name": "Los Angeles",
+   "surveyCount": 712,
+   "attendCount": 24
+  },
+  {
+   "name": "Bay Area",
+   "surveyCount": 647,
+   "attendCount": 20
+  },
+  {
+   "name": "Southern California",
+   "surveyCount": 442,
+   "attendCount": 19
+  },
+  {
+   "name": "Sacramento Valley / Sierra Foothills",
+   "surveyCount": 418,
+   "attendCount": 17
+  },
+  {
+   "name": "Central Valley",
+   "surveyCount": 163,
+   "attendCount": 5
+  },
+  {
+   "name": "Far North / North Coast",
+   "surveyCount": 161,
+   "attendCount": 6
+  },
+  {
+   "name": "Central Coast",
+   "surveyCount": 123,
+   "attendCount": 8
+  },
+  {
+   "name": "Sierra Region",
+   "surveyCount": 12,
+   "attendCount": 2
+  },
+  {
+   "name": "(not stated)",
+   "surveyCount": 24,
+   "attendCount": 2
+  }
+ ],
+ "fieldOfWork": [
+  {
+   "name": "Government",
+   "surveyCount": 426,
+   "attendCount": 25
+  },
+  {
+   "name": "Other",
+   "surveyCount": 384,
+   "attendCount": 7
+  },
+  {
+   "name": "Information technology",
+   "surveyCount": 377,
+   "attendCount": 10
+  },
+  {
+   "name": "Arts, entertainment, or media",
+   "surveyCount": 351,
+   "attendCount": 13
+  },
+  {
+   "name": "Education",
+   "surveyCount": 213,
+   "attendCount": 8
+  },
+  {
+   "name": "Professional services",
+   "surveyCount": 190,
+   "attendCount": 9
+  },
+  {
+   "name": "Healthcare",
+   "surveyCount": 185,
+   "attendCount": 9
+  },
+  {
+   "name": "Unemployed, looking",
+   "surveyCount": 167,
+   "attendCount": 3
+  },
+  {
+   "name": "Financial",
+   "surveyCount": 107,
+   "attendCount": 4
+  },
+  {
+   "name": "Goods producing and harvesting",
+   "surveyCount": 98,
+   "attendCount": 5
+  },
+  {
+   "name": "Retail or wholesale trade",
+   "surveyCount": 67,
+   "attendCount": 1
+  },
+  {
+   "name": "Logistics",
+   "surveyCount": 61,
+   "attendCount": 6
+  },
+  {
+   "name": "Hospitality",
+   "surveyCount": 39,
+   "attendCount": 0
+  },
+  {
+   "name": "(not stated)",
+   "surveyCount": 0,
+   "attendCount": 3
+  },
+  {
+   "name": "I don't want to say",
+   "surveyCount": 37,
+   "attendCount": 0
+  }
+ ],
+ "age": [
+  {
+   "name": "18-24",
+   "surveyCount": 109,
+   "attendCount": 4
+  },
+  {
+   "name": "25-44",
+   "surveyCount": 1189,
+   "attendCount": 30
+  },
+  {
+   "name": "45-64",
+   "surveyCount": 917,
+   "attendCount": 50
+  },
+  {
+   "name": "Over 65",
+   "surveyCount": 290,
+   "attendCount": 13
+  },
+  {
+   "name": "Under 18",
+   "surveyCount": 10,
+   "attendCount": 0
+  },
+  {
+   "name": "(not stated)",
+   "surveyCount": 145,
+   "attendCount": 3
+  },
+  {
+   "name": "I don't want to say",
+   "surveyCount": 42,
+   "attendCount": 3
+  }
+ ],
+ "aiResponse": [
+  {
+   "name": "Positive",
+   "surveyCount": 405,
+   "attendCount": 20
+  },
+  {
+   "name": "Mixed",
+   "surveyCount": 721,
+   "attendCount": 43
+  },
+  {
+   "name": "Negative",
+   "surveyCount": 1406,
+   "attendCount": 37
+  },
+  {
+   "name": "(not stated)",
+   "surveyCount": 170,
+   "attendCount": 3
+  }
+ ],
+ "race": [
+  {
+   "name": "White",
+   "surveyCount": 1432,
+   "attendCount": 41
+  },
+  {
+   "name": "Hispanic or Latino",
+   "surveyCount": 333,
+   "attendCount": 19
+  },
+  {
+   "name": "Asian",
+   "surveyCount": 243,
+   "attendCount": 17
+  },
+  {
+   "name": "Multiple",
+   "surveyCount": 157,
+   "attendCount": 3
+  },
+  {
+   "name": "Black or African American",
+   "surveyCount": 99,
+   "attendCount": 6
+  },
+  {
+   "name": "Middle Eastern or North African",
+   "surveyCount": 28,
+   "attendCount": 2
+  },
+  {
+   "name": "American Indian or Alaska Native",
+   "surveyCount": 23,
+   "attendCount": 1
+  },
+  {
+   "name": "Native Hawaiian or Pacific Islander",
+   "surveyCount": 18,
+   "attendCount": 0
+  },
+  {
+   "name": "(not stated)",
+   "surveyCount": 369,
+   "attendCount": 14
+  }
+ ],
+ "gender": [
+  {
+   "name": "Woman",
+   "surveyCount": 1177,
+   "attendCount": 47
+  },
+  {
+   "name": "Man",
+   "surveyCount": 1038,
+   "attendCount": 43
+  },
+  {
+   "name": "Nonbinary / multi / other",
+   "surveyCount": 124,
+   "attendCount": 1
+  },
+  {
+   "name": "(not stated)",
+   "surveyCount": 248,
+   "attendCount": 7
+  },
+  {
+   "name": "I don't want to say",
+   "surveyCount": 115,
+   "attendCount": 5
+  }
+ ],
+ "sessions": [
+  {
+   "date": "2026-07-09",
+   "attendees": [
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Professional services",
+     "age": "45-64",
+     "aiResponse": "Negative",
+     "race": "(not stated)",
+     "gender": "Woman"
+    },
+    {
+     "region": "Sierra Region",
+     "fieldOfWork": "Government",
+     "age": "Over 65",
+     "aiResponse": "Positive",
+     "race": "(not stated)",
+     "gender": "Woman"
+    },
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Government",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Asian",
+     "gender": "Man"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Financial",
+     "age": "25-44",
+     "aiResponse": "Negative",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Healthcare",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Hispanic or Latino",
+     "gender": "Woman"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Healthcare",
+     "age": "25-44",
+     "aiResponse": "Mixed",
+     "race": "Asian",
+     "gender": "Man"
+    }
+   ]
+  },
+  {
+   "date": "2026-07-15",
+   "attendees": [
+    {
+     "region": "Central Coast",
+     "fieldOfWork": "Government",
+     "age": "25-44",
+     "aiResponse": "Mixed",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Sacramento Valley / Sierra Foothills",
+     "fieldOfWork": "Goods producing and harvesting",
+     "age": "25-44",
+     "aiResponse": "Negative",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Information technology",
+     "age": "25-44",
+     "aiResponse": "Positive",
+     "race": "Hispanic or Latino",
+     "gender": "Man"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Arts, entertainment, or media",
+     "age": "Over 65",
+     "aiResponse": "Mixed",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Healthcare",
+     "age": "45-64",
+     "aiResponse": "Negative",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Central Coast",
+     "fieldOfWork": "Information technology",
+     "age": "25-44",
+     "aiResponse": "Negative",
+     "race": "White",
+     "gender": "Woman"
+    },
+    {
+     "region": "Sacramento Valley / Sierra Foothills",
+     "fieldOfWork": "Other",
+     "age": "Over 65",
+     "aiResponse": "Positive",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Other",
+     "age": "Over 65",
+     "aiResponse": "Positive",
+     "race": "White",
+     "gender": "Woman"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Unemployed, looking",
+     "age": "18-24",
+     "aiResponse": "Negative",
+     "race": "Hispanic or Latino",
+     "gender": "Woman"
+    },
+    {
+     "region": "Far North / North Coast",
+     "fieldOfWork": "Retail or wholesale trade",
+     "age": "Over 65",
+     "aiResponse": "Negative",
+     "race": "Multiple",
+     "gender": "Woman"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Financial",
+     "age": "45-64",
+     "aiResponse": "Negative",
+     "race": "White",
+     "gender": "Woman"
+    },
+    {
+     "region": "(not stated)",
+     "fieldOfWork": "(not stated)",
+     "age": "(not stated)",
+     "aiResponse": "(not stated)",
+     "race": "(not stated)",
+     "gender": "(not stated)"
+    }
+   ]
+  },
+  {
+   "date": "2026-07-16",
+   "attendees": [
+    {
+     "region": "Central Coast",
+     "fieldOfWork": "Other",
+     "age": "Over 65",
+     "aiResponse": "Negative",
+     "race": "White",
+     "gender": "Woman"
+    },
+    {
+     "region": "Sacramento Valley / Sierra Foothills",
+     "fieldOfWork": "Logistics",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Black or African American",
+     "gender": "Woman"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Healthcare",
+     "age": "25-44",
+     "aiResponse": "Negative",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Professional services",
+     "age": "45-64",
+     "aiResponse": "Negative",
+     "race": "White",
+     "gender": "Woman"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Logistics",
+     "age": "I don't want to say",
+     "aiResponse": "Negative",
+     "race": "Asian",
+     "gender": "I don't want to say"
+    },
+    {
+     "region": "Sacramento Valley / Sierra Foothills",
+     "fieldOfWork": "Professional services",
+     "age": "25-44",
+     "aiResponse": "Mixed",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Central Coast",
+     "fieldOfWork": "Government",
+     "age": "45-64",
+     "aiResponse": "Negative",
+     "race": "White",
+     "gender": "Woman"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Arts, entertainment, or media",
+     "age": "45-64",
+     "aiResponse": "Negative",
+     "race": "Hispanic or Latino",
+     "gender": "(not stated)"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Other",
+     "age": "25-44",
+     "aiResponse": "Mixed",
+     "race": "Hispanic or Latino",
+     "gender": "Man"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Information technology",
+     "age": "Over 65",
+     "aiResponse": "Positive",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "(not stated)",
+     "fieldOfWork": "(not stated)",
+     "age": "(not stated)",
+     "aiResponse": "(not stated)",
+     "race": "(not stated)",
+     "gender": "(not stated)"
+    }
+   ]
+  },
+  {
+   "date": "2026-07-17",
+   "attendees": [
+    {
+     "region": "Far North / North Coast",
+     "fieldOfWork": "Arts, entertainment, or media",
+     "age": "18-24",
+     "aiResponse": "Negative",
+     "race": "(not stated)",
+     "gender": "I don't want to say"
+    },
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Government",
+     "age": "25-44",
+     "aiResponse": "Mixed",
+     "race": "Asian",
+     "gender": "I don't want to say"
+    },
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Professional services",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Asian",
+     "gender": "Man"
+    },
+    {
+     "region": "Far North / North Coast",
+     "fieldOfWork": "Healthcare",
+     "age": "25-44",
+     "aiResponse": "Negative",
+     "race": "(not stated)",
+     "gender": "Woman"
+    },
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Goods producing and harvesting",
+     "age": "45-64",
+     "aiResponse": "Positive",
+     "race": "Asian",
+     "gender": "Man"
+    }
+   ]
+  },
+  {
+   "date": "2026-07-19",
+   "attendees": [
+    {
+     "region": "Sacramento Valley / Sierra Foothills",
+     "fieldOfWork": "Government",
+     "age": "18-24",
+     "aiResponse": "Mixed",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "(not stated)",
+     "age": "(not stated)",
+     "aiResponse": "(not stated)",
+     "race": "(not stated)",
+     "gender": "(not stated)"
+    },
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Education",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Multiple",
+     "gender": "Woman"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Other",
+     "age": "Over 65",
+     "aiResponse": "Mixed",
+     "race": "White",
+     "gender": "Woman"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Logistics",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Asian",
+     "gender": "Woman"
+    }
+   ]
+  },
+  {
+   "date": "2026-07-20",
+   "attendees": [
+    {
+     "region": "Sacramento Valley / Sierra Foothills",
+     "fieldOfWork": "Government",
+     "age": "Over 65",
+     "aiResponse": "Positive",
+     "race": "White",
+     "gender": "Woman"
+    },
+    {
+     "region": "Far North / North Coast",
+     "fieldOfWork": "Unemployed, looking",
+     "age": "25-44",
+     "aiResponse": "Negative",
+     "race": "White",
+     "gender": "Woman"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Education",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Middle Eastern or North African",
+     "gender": "Woman"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Healthcare",
+     "age": "25-44",
+     "aiResponse": "Mixed",
+     "race": "Asian",
+     "gender": "Woman"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Professional services",
+     "age": "25-44",
+     "aiResponse": "Negative",
+     "race": "Asian",
+     "gender": "Man"
+    },
+    {
+     "region": "Central Coast",
+     "fieldOfWork": "Healthcare",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Black or African American",
+     "gender": "Man"
+    },
+    {
+     "region": "Far North / North Coast",
+     "fieldOfWork": "Government",
+     "age": "25-44",
+     "aiResponse": "Mixed",
+     "race": "Hispanic or Latino",
+     "gender": "Woman"
+    }
+   ]
+  },
+  {
+   "date": "2026-07-22",
+   "attendees": [
+    {
+     "region": "Sacramento Valley / Sierra Foothills",
+     "fieldOfWork": "Information technology",
+     "age": "45-64",
+     "aiResponse": "Positive",
+     "race": "Asian",
+     "gender": "Man"
+    },
+    {
+     "region": "Central Coast",
+     "fieldOfWork": "Professional services",
+     "age": "45-64",
+     "aiResponse": "Negative",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Other",
+     "age": "Over 65",
+     "aiResponse": "Mixed",
+     "race": "Hispanic or Latino",
+     "gender": "Man"
+    },
+    {
+     "region": "Sacramento Valley / Sierra Foothills",
+     "fieldOfWork": "Logistics",
+     "age": "Over 65",
+     "aiResponse": "Negative",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Information technology",
+     "age": "Over 65",
+     "aiResponse": "Mixed",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Arts, entertainment, or media",
+     "age": "25-44",
+     "aiResponse": "Negative",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Information technology",
+     "age": "25-44",
+     "aiResponse": "Negative",
+     "race": "Hispanic or Latino",
+     "gender": "Woman"
+    }
+   ]
+  },
+  {
+   "date": "2026-07-25",
+   "attendees": [
+    {
+     "region": "Sierra Region",
+     "fieldOfWork": "Information technology",
+     "age": "Over 65",
+     "aiResponse": "Positive",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Goods producing and harvesting",
+     "age": "45-64",
+     "aiResponse": "Negative",
+     "race": "Hispanic or Latino",
+     "gender": "Woman"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Arts, entertainment, or media",
+     "age": "25-44",
+     "aiResponse": "Negative",
+     "race": "Hispanic or Latino",
+     "gender": "Man"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Education",
+     "age": "25-44",
+     "aiResponse": "Negative",
+     "race": "Hispanic or Latino",
+     "gender": "Woman"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Arts, entertainment, or media",
+     "age": "25-44",
+     "aiResponse": "Negative",
+     "race": "Hispanic or Latino",
+     "gender": "Man"
+    }
+   ]
+  },
+  {
+   "date": "2026-07-28",
+   "attendees": [
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Arts, entertainment, or media",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Black or African American",
+     "gender": "Woman"
+    },
+    {
+     "region": "Sacramento Valley / Sierra Foothills",
+     "fieldOfWork": "Goods producing and harvesting",
+     "age": "45-64",
+     "aiResponse": "Negative",
+     "race": "(not stated)",
+     "gender": "(not stated)"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Arts, entertainment, or media",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Asian",
+     "gender": "Man"
+    },
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Arts, entertainment, or media",
+     "age": "25-44",
+     "aiResponse": "Negative",
+     "race": "White",
+     "gender": "Woman"
+    },
+    {
+     "region": "Central Coast",
+     "fieldOfWork": "Government",
+     "age": "45-64",
+     "aiResponse": "Positive",
+     "race": "White",
+     "gender": "Woman"
+    }
+   ]
+  },
+  {
+   "date": "2026-07-30",
+   "attendees": [
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Arts, entertainment, or media",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "(not stated)",
+     "gender": "Woman"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Other",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Hispanic or Latino",
+     "gender": "Man"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Government",
+     "age": "I don't want to say",
+     "aiResponse": "Mixed",
+     "race": "(not stated)",
+     "gender": "I don't want to say"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Healthcare",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "White",
+     "gender": "Woman"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Healthcare",
+     "age": "25-44",
+     "aiResponse": "Negative",
+     "race": "Black or African American",
+     "gender": "Nonbinary / multi / other"
+    },
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Financial",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Asian",
+     "gender": "Man"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Government",
+     "age": "25-44",
+     "aiResponse": "Positive",
+     "race": "Asian",
+     "gender": "Woman"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Education",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Hispanic or Latino",
+     "gender": "Woman"
+    },
+    {
+     "region": "Sacramento Valley / Sierra Foothills",
+     "fieldOfWork": "Goods producing and harvesting",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Multiple",
+     "gender": "Woman"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Education",
+     "age": "45-64",
+     "aiResponse": "Negative",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Central Coast",
+     "fieldOfWork": "Information technology",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Professional services",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Asian",
+     "gender": "Woman"
+    }
+   ]
+  },
+  {
+   "date": "2026-08-04",
+   "attendees": [
+    {
+     "region": "Sacramento Valley / Sierra Foothills",
+     "fieldOfWork": "Government",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Black or African American",
+     "gender": "Man"
+    },
+    {
+     "region": "Central Valley",
+     "fieldOfWork": "Government",
+     "age": "45-64",
+     "aiResponse": "Positive",
+     "race": "Hispanic or Latino",
+     "gender": "Man"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Logistics",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Hispanic or Latino",
+     "gender": "Woman"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Government",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Hispanic or Latino",
+     "gender": "Man"
+    },
+    {
+     "region": "Sacramento Valley / Sierra Foothills",
+     "fieldOfWork": "Government",
+     "age": "25-44",
+     "aiResponse": "Positive",
+     "race": "(not stated)",
+     "gender": "Woman"
+    },
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Education",
+     "age": "18-24",
+     "aiResponse": "Negative",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Sacramento Valley / Sierra Foothills",
+     "fieldOfWork": "Government",
+     "age": "25-44",
+     "aiResponse": "Positive",
+     "race": "Asian",
+     "gender": "Woman"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Professional services",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "Hispanic or Latino",
+     "gender": "Woman"
+    }
+   ]
+  },
+  {
+   "date": "2026-08-05",
+   "attendees": [
+    {
+     "region": "Central Valley",
+     "fieldOfWork": "Education",
+     "age": "45-64",
+     "aiResponse": "Negative",
+     "race": "White",
+     "gender": "Woman"
+    },
+    {
+     "region": "Central Valley",
+     "fieldOfWork": "Education",
+     "age": "45-64",
+     "aiResponse": "Negative",
+     "race": "Black or African American",
+     "gender": "Woman"
+    },
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Government",
+     "age": "45-64",
+     "aiResponse": "Positive",
+     "race": "(not stated)",
+     "gender": "Woman"
+    },
+    {
+     "region": "Sacramento Valley / Sierra Foothills",
+     "fieldOfWork": "Government",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "White",
+     "gender": "Woman"
+    },
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Logistics",
+     "age": "25-44",
+     "aiResponse": "Mixed",
+     "race": "Asian",
+     "gender": "Woman"
+    },
+    {
+     "region": "Far North / North Coast",
+     "fieldOfWork": "Government",
+     "age": "45-64",
+     "aiResponse": "Positive",
+     "race": "Asian",
+     "gender": "Man"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Government",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Central Valley",
+     "fieldOfWork": "Government",
+     "age": "45-64",
+     "aiResponse": "Negative",
+     "race": "White",
+     "gender": "Woman"
+    }
+   ]
+  },
+  {
+   "date": "2026-08-06",
+   "attendees": [
+    {
+     "region": "Sacramento Valley / Sierra Foothills",
+     "fieldOfWork": "Professional services",
+     "age": "25-44",
+     "aiResponse": "Mixed",
+     "race": "(not stated)",
+     "gender": "(not stated)"
+    },
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Arts, entertainment, or media",
+     "age": "45-64",
+     "aiResponse": "Positive",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Sacramento Valley / Sierra Foothills",
+     "fieldOfWork": "Government",
+     "age": "45-64",
+     "aiResponse": "Mixed",
+     "race": "White",
+     "gender": "Woman"
+    },
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Information technology",
+     "age": "45-64",
+     "aiResponse": "Negative",
+     "race": "Middle Eastern or North African",
+     "gender": "Woman"
+    },
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Unemployed, looking",
+     "age": "45-64",
+     "aiResponse": "Negative",
+     "race": "Hispanic or Latino",
+     "gender": "Woman"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Financial",
+     "age": "45-64",
+     "aiResponse": "Positive",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Central Valley",
+     "fieldOfWork": "Information technology",
+     "age": "45-64",
+     "aiResponse": "Positive",
+     "race": "White",
+     "gender": "Man"
+    }
+   ]
+  },
+  {
+   "date": "2026-08-12",
+   "attendees": [
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Arts, entertainment, or media",
+     "age": "25-44",
+     "aiResponse": "Mixed",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Sacramento Valley / Sierra Foothills",
+     "fieldOfWork": "Government",
+     "age": "I don't want to say",
+     "aiResponse": "Positive",
+     "race": "(not stated)",
+     "gender": "(not stated)"
+    },
+    {
+     "region": "Los Angeles",
+     "fieldOfWork": "Government",
+     "age": "25-44",
+     "aiResponse": "Mixed",
+     "race": "White",
+     "gender": "Man"
+    },
+    {
+     "region": "Bay Area",
+     "fieldOfWork": "Government",
+     "age": "25-44",
+     "aiResponse": "Mixed",
+     "race": "White",
+     "gender": "Woman"
+    },
+    {
+     "region": "Southern California",
+     "fieldOfWork": "Arts, entertainment, or media",
+     "age": "45-64",
+     "aiResponse": "Negative",
+     "race": "American Indian or Alaska Native",
+     "gender": "I don't want to say"
+    }
+   ]
+  }
+ ],
+ "invitedByRegion": [
+  {
+   "name": "Los Angeles",
+   "count": 242
+  },
+  {
+   "name": "Bay Area",
+   "count": 198
+  },
+  {
+   "name": "Southern California",
+   "count": 155
+  },
+  {
+   "name": "Sacramento Valley / Sierra Foothills",
+   "count": 124
+  },
+  {
+   "name": "Central Valley",
+   "count": 98
+  },
+  {
+   "name": "Far North / North Coast",
+   "count": 49
+  },
+  {
+   "name": "Central Coast",
+   "count": 62
+  },
+  {
+   "name": "Sierra Region",
+   "count": 9
+  },
+  {
+   "name": "(not stated)",
+   "count": 0
+  }
+ ],
+ "invitedTotal": 937
+}

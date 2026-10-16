@@ -1,0 +1,2272 @@
+{
+  "version": "2026-08-18d",
+  "supersedes": "2026-08-10",
+  "engagement": "California public consultation on AI",
+  "notes": [
+    "One codebook per free-text question. Themes are multi-label; stance is single-label and coded separately, because a response can raise a theme while taking either side on it. This version merges the 2026-08-10 codebook with themes from a second inductive open-coding pass. No 2026-08-10 theme was deleted; two were split, and the mapping is recorded in retiredCodes.",
+    "[SYNTHETIC] In this public copy every theme's `examples` are synthetic stand-ins; the originals were verbatim survey answers."
+  ],
+  "unit": "IDEA_ID",
+  "sampleCaveat": "Self-selected public consultation, not a probability sample. Percentages describe the people who responded, not Californians.",
+  "provenance": {
+    "v1": "Present in the 2026-08-10 codebook.",
+    "v2": "Added from the second open-coding pass.",
+    "v3": "Added from the third pass (personal question re-run).",
+    "v1_split": "Derived from a 2026-08-10 code that was split into finer codes. See retiredCodes."
+  },
+  "verification": {
+    "supported": "At least one verbatim quote from an identified response is attached.",
+    "needs_verification": "Proposed by the coding pass but returned without a citable quote. Confirm against the data before reporting any number for this code. If unsupported after review, delete it rather than leaving it at zero.",
+    "_why": "Codes flagged here were proposed to satisfy a content quota and could not be evidenced. Audits of all three coding passes (2026-08-18) found the same root cause with three different symptoms. Where a quota was unsatisfiable the personal pass invented quotes and attached real IDs to them; the economy pass re-sliced four genuinely optimistic responses into six positive and uncertainty codes; the government pass declined to quote and wrote a placeholder instead, which is the correct behaviour. Quote accuracy was otherwise high: 37 of 38 economy quotes and all 29 government quotes were verbatim or near-verbatim. Treat a citation as a pointer to check rather than as evidence, and make quotas conditional in any re-run. This failure requires the model to generate an ID and so does not apply to the tagging pass, where IDs come from the input."
+  },
+  "nonAnswers": [
+    "n/a",
+    "na",
+    "none",
+    "nothing",
+    "no",
+    "nope",
+    ".",
+    "-",
+    "idk",
+    "no idea",
+    "nil",
+    "no comment",
+    "unsure",
+    "?"
+  ],
+  "refusalMarker": "I don't want to say",
+  "stance": {
+    "question": "Overall orientation toward AI expressed in this response",
+    "values": [
+      {
+        "code": "NEGATIVE",
+        "definition": "Expresses concern, harm, or opposition without meaningful counterweight."
+      },
+      {
+        "code": "POSITIVE",
+        "definition": "Expresses benefit, optimism, or support without meaningful counterweight."
+      },
+      {
+        "code": "MIXED",
+        "definition": "Names both a benefit and a concern, or endorses an action while warning about it. Use this rather than forcing a side."
+      },
+      {
+        "code": "NEUTRAL",
+        "definition": "Descriptive or procedural with no evaluative content."
+      }
+    ]
+  },
+  "timeframe": {
+    "question": "Optional single-label dimension for the economy and personal questions. Coded separately so that experienced and anticipated impact are never merged into one theme count.",
+    "appliesTo": [
+      "economy",
+      "personal"
+    ],
+    "values": [
+      {
+        "code": "ALREADY",
+        "definition": "Describes something that has already happened."
+      },
+      {
+        "code": "NEAR",
+        "definition": "Expected within roughly the next few years."
+      },
+      {
+        "code": "LONG",
+        "definition": "Expected over a generation or longer."
+      },
+      {
+        "code": "UNSPECIFIED",
+        "definition": "No timeframe stated or inferable."
+      }
+    ]
+  },
+  "retiredCodes": [
+    {
+      "code": "WAGES_PRICES",
+      "question": "economy",
+      "reason": "Conflated pay effects with consumer price effects, which respondents raise separately and which imply different policy responses.",
+      "replacedBy": [
+        "WAGE_SUPPRESSION",
+        "COST_OF_LIVING"
+      ],
+      "migration": "Re-code any response previously tagged WAGES_PRICES against both successors. A response may receive one, the other, or both."
+    },
+    {
+      "code": "NON_USER",
+      "question": "personal",
+      "reason": "Collapsed four distinct situations that differ in who made the decision: the respondent, the employer, or the nature of the work.",
+      "replacedBy": [
+        "NON_USER",
+        "REFUSAL",
+        "NOT_ADOPTED",
+        "NOT_APPLICABLE"
+      ],
+      "migration": "NON_USER is retained with a narrowed definition. Re-code existing NON_USER responses against all four."
+    }
+  ],
+  "questions": [
+    {
+      "column": "ECONOMIC_IMPACT_EXPECTATION",
+      "id": "economy",
+      "prompt": "How do you expect AI to impact the economy?",
+      "themes": [
+        {
+          "code": "JOB_LOSS",
+          "label": "Job losses and displacement",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Work disappearing, being automated away, or people being replaced.",
+          "includes": [
+            "layoffs",
+            "roles automated",
+            "unemployment"
+          ],
+          "excludes": [
+            "Effects on the respondent's own job (that belongs to the personal question)",
+            "Loss of the entry route specifically (use ENTRY_PATHWAY_LOSS)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly layoffs.",
+            "[SYNTHETIC] Worried about roles automated."
+          ]
+        },
+        {
+          "code": "ENTRY_PATHWAY_LOSS",
+          "label": "The way in disappears",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Concern that AI removes junior and entry-level work, so there is no longer a route into a profession or a way to build expertise.",
+          "includes": [
+            "entry-level roles cut",
+            "no way to gain experience",
+            "broken career ladder"
+          ],
+          "excludes": [
+            "General displacement with no career-progression claim (use JOB_LOSS)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly entry-level roles cut.",
+            "[SYNTHETIC] Worried about no way to gain experience."
+          ]
+        },
+        {
+          "code": "JOB_CREATION",
+          "label": "New jobs and roles",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "AI creating employment, new occupations, or new demand for skills.",
+          "includes": [
+            "AI jobs",
+            "new roles",
+            "retraining demand"
+          ],
+          "excludes": [
+            "Vague optimism with no employment claim"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly AI jobs."
+          ]
+        },
+        {
+          "code": "SECTOR_SHIFT",
+          "label": "Gains in one area, losses in another",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Explicitly frames the effect as redistribution between sectors rather than net gain or loss.",
+          "includes": [
+            "winners and losers",
+            "shifting between industries"
+          ],
+          "excludes": [
+            "Only one direction named (use JOB_LOSS or JOB_CREATION)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly winners and losers."
+          ]
+        },
+        {
+          "code": "KNOWLEDGE_WORK_TARGETED",
+          "label": "Hits white-collar and creative work hardest",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Claims the burden falls specifically on creative, professional, or college-educated knowledge work rather than on labour generally.",
+          "includes": [
+            "creative industries",
+            "clerical jobs",
+            "degree-holding middle earners"
+          ],
+          "excludes": [
+            "Displacement claims with no sector specified (use JOB_LOSS)",
+            "Claims framed around income class rather than occupation (use MIDDLE_CLASS_EROSION)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly creative industries.",
+            "[SYNTHETIC] Worried about clerical jobs."
+          ]
+        },
+        {
+          "code": "INEQUALITY",
+          "label": "Who benefits",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Gains concentrating among owners, executives, or the wealthy while workers lose ground. Use for the general distributional claim.",
+          "includes": [
+            "oligarchs",
+            "working class",
+            "riches pooling at the top"
+          ],
+          "excludes": [
+            "Job loss with no distributional claim (use JOB_LOSS)",
+            "An explanation of the mechanism (use WEALTH_CONCENTRATION_MECHANISM)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly oligarchs.",
+            "[SYNTHETIC] Worried about working class."
+          ]
+        },
+        {
+          "code": "WEALTH_CONCENTRATION_MECHANISM",
+          "label": "How the gains get captured",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Explains the causal route by which value moves to capital owners: labour costs cut, ownership of the models, replacing wages with margin.",
+          "includes": [
+            "cheaper labor through automation",
+            "gains flow to the top",
+            "who owns the technology"
+          ],
+          "excludes": [
+            "Stating the outcome without the route (use INEQUALITY)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly cheaper labor through automation.",
+            "[SYNTHETIC] Worried about gains flow to the top."
+          ]
+        },
+        {
+          "code": "MIDDLE_CLASS_EROSION",
+          "label": "The middle disappears",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Specifically claims the middle class is hollowed out, producing a polarised two-tier economy.",
+          "includes": [
+            "polarisation",
+            "no middle remaining"
+          ],
+          "excludes": [
+            "General inequality (use INEQUALITY)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly polarisation."
+          ]
+        },
+        {
+          "code": "PERMANENT_UNDERCLASS",
+          "label": "Structural, not temporary",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Claims the displacement is permanent — a population that will not be re-absorbed into work rather than a transition.",
+          "includes": [
+            "lasting economic exclusion",
+            "shut out of work for good"
+          ],
+          "excludes": [
+            "Displacement described as a transition or adjustment (use JOB_LOSS)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly lasting economic exclusion.",
+            "[SYNTHETIC] Worried about shut out of work for good."
+          ]
+        },
+        {
+          "code": "DEMAND_COLLAPSE",
+          "label": "Knock-on collapse in spending",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Reasons that unemployment feeds back into the wider economy through lost consumer spending.",
+          "includes": [
+            "nobody has money to spend",
+            "everything tanks"
+          ],
+          "excludes": [
+            "Job loss alone (use JOB_LOSS)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly nobody has money to spend.",
+            "[SYNTHETIC] Worried about everything tanks."
+          ]
+        },
+        {
+          "code": "FISCAL_EROSION",
+          "label": "Shrinking tax base and public services",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Reasons from lost employment to lost income tax revenue to degraded public services and infrastructure.",
+          "includes": [
+            "income tax receipts",
+            "funding for schools",
+            "social security"
+          ],
+          "excludes": [
+            "Consumer spending effects (use DEMAND_COLLAPSE)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly income tax receipts."
+          ]
+        },
+        {
+          "code": "BUBBLE_BURST",
+          "label": "It's a bubble",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Expects current AI investment to be speculative and to collapse, damaging the wider economy when it does. Note the premise: the harm comes from AI failing, not from AI working.",
+          "includes": [
+            "dotcom comparison",
+            "overcommitted companies",
+            "financial collapse when it pops"
+          ],
+          "excludes": [
+            "Harm premised on AI succeeding (use JOB_LOSS or INEQUALITY)",
+            "Reasoning specifically about business model viability (use UNPROFITABLE_MODEL)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly dotcom comparison.",
+            "[SYNTHETIC] Worried about overcommitted companies."
+          ]
+        },
+        {
+          "code": "UNPROFITABLE_MODEL",
+          "label": "The businesses don't work",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Argues AI firms have no viable path to profit and that circular investment between them is propping up the economy.",
+          "includes": [
+            "money-losing firms",
+            "circular deals",
+            "spending without payoff"
+          ],
+          "excludes": [
+            "Bubble claims with no business-model reasoning (use BUBBLE_BURST)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly money-losing firms.",
+            "[SYNTHETIC] Worried about circular deals."
+          ]
+        },
+        {
+          "code": "COST_BLOAT",
+          "label": "Cost and inefficiency",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "AI being expensive, wasteful, or adding overhead rather than saving money.",
+          "includes": [
+            "running costs",
+            "bloat",
+            "poor return"
+          ],
+          "excludes": [
+            "Environmental cost (use LOCAL_ENVIRONMENT)",
+            "Claims about the sector's solvency (use UNPROFITABLE_MODEL)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly running costs."
+          ]
+        },
+        {
+          "code": "PRODUCTIVITY",
+          "label": "Efficiency and growth",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "AI raising output, speed, or economic growth.",
+          "includes": [
+            "faster work",
+            "growth",
+            "competitiveness"
+          ],
+          "excludes": [
+            "Job creation claims (use JOB_CREATION)",
+            "Growth expected only under stated conditions (use CONDITIONAL_OUTCOME)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly faster work."
+          ]
+        },
+        {
+          "code": "AUGMENTATION",
+          "label": "A tool, not a replacement",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Expects AI to extend what workers can do rather than substitute for them, with human judgement still required.",
+          "includes": [
+            "workers get more done",
+            "a person stays accountable"
+          ],
+          "excludes": [
+            "Productivity claims with no human-role argument (use PRODUCTIVITY)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly workers get more done."
+          ]
+        },
+        {
+          "code": "HISTORICAL_PRECEDENT",
+          "label": "Like previous technology waves",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Frames AI as a normal technological transition, reasoning from past waves that displaced work and then settled.",
+          "includes": [
+            "like the internet",
+            "each prior technology"
+          ],
+          "excludes": [
+            "Optimism with no precedent argument (use PRODUCTIVITY)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly like the internet."
+          ]
+        },
+        {
+          "code": "CONDITIONAL_OUTCOME",
+          "label": "Depends what we do about it",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Makes the forecast explicitly contingent on policy, regulation, adoption speed, or how well workers and institutions adapt.",
+          "includes": [
+            "hinges on the pace of adoption",
+            "unless government acts",
+            "conditional on gains being distributed widely"
+          ],
+          "excludes": [
+            "Not knowing what will happen (use UNCERTAIN)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly hinges on the pace of adoption.",
+            "[SYNTHETIC] Worried about unless government acts."
+          ]
+        },
+        {
+          "code": "QUALITY_DOUBT",
+          "label": "Doubts the work is any good",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Questions whether AI output is competent enough to justify its economic role.",
+          "includes": [
+            "poor quality output",
+            "not capable",
+            "rework negates the savings"
+          ],
+          "excludes": [
+            "Cost complaints (use COST_BLOAT)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly poor quality output.",
+            "[SYNTHETIC] Worried about not capable."
+          ]
+        },
+        {
+          "code": "WAGE_SUPPRESSION",
+          "label": "Downward pressure on pay",
+          "provenance": "v1_split",
+          "verification": "supported",
+          "definition": "Pay falling or stagnating for the jobs that remain, as distinct from jobs disappearing.",
+          "includes": [
+            "stagnant wages",
+            "forced into lower-paying work",
+            "lower pay for remaining jobs"
+          ],
+          "excludes": [
+            "Consumer prices (use COST_OF_LIVING)",
+            "Job elimination (use JOB_LOSS)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly stagnant wages.",
+            "[SYNTHETIC] Worried about forced into lower-paying work."
+          ]
+        },
+        {
+          "code": "COST_OF_LIVING",
+          "label": "Things get more expensive",
+          "provenance": "v1_split",
+          "verification": "supported",
+          "definition": "Rising prices for households — food, housing, energy, everyday goods — as an economic consequence of AI.",
+          "includes": [
+            "costlier goods for shoppers",
+            "affordability worsening"
+          ],
+          "excludes": [
+            "Pay effects (use WAGE_SUPPRESSION)",
+            "Utility bills traced specifically to data centres (use UTILITY_COSTS)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly costlier goods for shoppers.",
+            "[SYNTHETIC] Worried about affordability worsening."
+          ]
+        },
+        {
+          "code": "UTILITY_COSTS",
+          "label": "Energy and water bills",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Data centre demand passing through to residents as higher electricity or water rates.",
+          "includes": [
+            "utility bills",
+            "energy prices near data centres",
+            "ratepayers subsidising"
+          ],
+          "excludes": [
+            "Environmental damage framed as harm to a place (use LOCAL_ENVIRONMENT)",
+            "General price rises (use COST_OF_LIVING)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly utility bills.",
+            "[SYNTHETIC] Worried about energy prices near data centres."
+          ]
+        },
+        {
+          "code": "LOCAL_ENVIRONMENT",
+          "label": "Local environmental cost",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Water, land, power, or agricultural damage framed as an economic harm to a place, including effects on property values and local livability.",
+          "includes": [
+            "data centres",
+            "freshwater",
+            "farm trade abroad",
+            "property values"
+          ],
+          "excludes": [
+            "Environmental policy asks (use the government codebook)",
+            "Bill increases (use UTILITY_COSTS)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly data centres.",
+            "[SYNTHETIC] Worried about freshwater."
+          ]
+        },
+        {
+          "code": "ENV_ECONOMIC_CASCADE",
+          "label": "Environmental damage spreads through the economy",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Chain reasoning from environmental harm outward to costs across unrelated sectors — food, manufacturing, retail, insurance.",
+          "includes": [
+            "affects the cost of everything",
+            "climate costs compounding"
+          ],
+          "excludes": [
+            "Damage confined to the host community (use LOCAL_ENVIRONMENT)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly affects the cost of everything."
+          ]
+        },
+        {
+          "code": "HEALTH_COSTS",
+          "label": "Health as an economic factor",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Population health effects reasoned through to economic consequences.",
+          "includes": [
+            "pollution-related illness",
+            "poor health limits work"
+          ],
+          "excludes": [
+            "Health mentioned with no economic link"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly pollution-related illness."
+          ]
+        },
+        {
+          "code": "CALIFORNIA_SCOPE",
+          "label": "California specifically",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Frames the economic effect as particular to California — its rates, land, water, industries, or cost base — rather than general.",
+          "includes": [
+            "California's electricity rates",
+            "residents priced out of California",
+            "farming areas of the state"
+          ],
+          "excludes": [
+            "National or global claims with no California framing"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly California's electricity rates.",
+            "[SYNTHETIC] Worried about residents priced out of California."
+          ]
+        },
+        {
+          "code": "MEANING_OF_WORK",
+          "label": "How work is valued",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Questions how people should be compensated, or where meaning comes from, if AI does the work.",
+          "includes": [
+            "sources of meaning in life",
+            "rethinking compensation"
+          ],
+          "excludes": [
+            "Straightforward job loss (use JOB_LOSS)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly sources of meaning in life."
+          ]
+        },
+        {
+          "code": "UNREST",
+          "label": "Social and political instability",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Expects mass unemployment or inequality to produce civil unrest, or expects surveillance to be used to contain it.",
+          "includes": [
+            "civil unrest",
+            "revolt",
+            "surveillance to prevent organising"
+          ],
+          "excludes": [
+            "Inequality with no instability claim (use INEQUALITY)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly civil unrest.",
+            "[SYNTHETIC] Worried about revolt."
+          ]
+        },
+        {
+          "code": "HARDWARE_SCARCITY",
+          "label": "Components and electronics cost more",
+          "provenance": "v3",
+          "verification": "supported",
+          "definition": "AI build-out bidding up memory, chips, and computer parts, raising prices for consumer electronics and equipment in unrelated industries.",
+          "includes": [
+            "RAM price spike",
+            "component shortages",
+            "electronics market distorted"
+          ],
+          "excludes": [
+            "Electricity and water bills (use UTILITY_COSTS)",
+            "General price rises (use COST_OF_LIVING)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly RAM price spike.",
+            "[SYNTHETIC] Worried about component shortages.",
+            "[SYNTHETIC] We've seen electronics market distorted already."
+          ]
+        },
+        {
+          "code": "ROLLBACK_REHIRE",
+          "label": "Firms will reverse course",
+          "provenance": "v3",
+          "verification": "supported",
+          "definition": "Expects employers to abandon AI deployments and rehire people once the costs and failures land — a prediction of correction rather than permanent displacement.",
+          "includes": [
+            "technical debt AI can't maintain",
+            "rolling tools back",
+            "rehired at lower pay"
+          ],
+          "excludes": [
+            "Bubble claims about investors (use BUBBLE_BURST)",
+            "Doubts about output quality alone (use QUALITY_DOUBT)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly technical debt AI can't maintain.",
+            "[SYNTHETIC] Worried about rolling tools back.",
+            "[SYNTHETIC] We've seen rehired at lower pay already."
+          ]
+        },
+        {
+          "code": "PRECARIOUS_WORK",
+          "label": "The jobs left are worse jobs",
+          "provenance": "v3",
+          "verification": "supported",
+          "definition": "Expects AI to generate gig, contract, and annotation work with lower pay and no protections, replacing salaried employment rather than eliminating work outright.",
+          "includes": [
+            "gig roles maintaining AI",
+            "data annotation work",
+            "1099 with no benefits"
+          ],
+          "excludes": [
+            "Net new employment framed positively (use JOB_CREATION)",
+            "Pay falling in existing roles (use WAGE_SUPPRESSION)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly gig roles maintaining AI.",
+            "[SYNTHETIC] Worried about data annotation work."
+          ]
+        },
+        {
+          "code": "CONSUMER_BACKLASH",
+          "label": "The public doesn't want it",
+          "provenance": "v3",
+          "verification": "supported",
+          "definition": "Expects negative public sentiment toward AI output to limit adoption or damage the businesses that rely on it.",
+          "includes": [
+            "public distaste for AI output",
+            "readers wary of AI-flooded markets",
+            "broad adoption impossible"
+          ],
+          "excludes": [
+            "Doubts about capability (use QUALITY_DOUBT)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly public distaste for AI output.",
+            "[SYNTHETIC] Worried about readers wary of AI-flooded markets."
+          ]
+        },
+        {
+          "code": "DATA_CENTER_JOBS",
+          "label": "Facilities don't deliver the jobs promised",
+          "provenance": "v3",
+          "verification": "supported",
+          "definition": "Disputes the economic development case for data centres — few permanent jobs relative to the land, power, and public cost consumed.",
+          "includes": [
+            "handful of jobs",
+            "no lasting job security",
+            "not worth the resources"
+          ],
+          "excludes": [
+            "Environmental harm to the area (use LOCAL_ENVIRONMENT)",
+            "Bill increases (use UTILITY_COSTS)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly handful of jobs.",
+            "[SYNTHETIC] Worried about no lasting job security."
+          ]
+        },
+        {
+          "code": "HIGHER_ED_RETREAT",
+          "label": "Fewer people will pursue education",
+          "provenance": "v3",
+          "verification": "supported",
+          "definition": "Expects the collapse of graduate career paths to reduce enrolment in higher education, with knock-on effects on the skill base and civic life.",
+          "includes": [
+            "degrees no longer worth it",
+            "graduates pushed into manual jobs",
+            "weakened civic engagement"
+          ],
+          "excludes": [
+            "Entry-level jobs disappearing (use ENTRY_PATHWAY_LOSS)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly degrees no longer worth it.",
+            "[SYNTHETIC] Worried about graduates pushed into manual jobs.",
+            "[SYNTHETIC] We've seen weakened civic engagement already."
+          ]
+        },
+        {
+          "code": "UNCERTAIN",
+          "label": "Doesn't know or won't predict",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Declines to forecast, or says the outcome is unknowable.",
+          "includes": [
+            "too early to say",
+            "no idea",
+            "could go either way"
+          ],
+          "excludes": [
+            "Blank or non-answers, which are excluded before coding",
+            "A forecast conditioned on a named factor (use CONDITIONAL_OUTCOME)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly too early to say.",
+            "[SYNTHETIC] Worried about no idea."
+          ]
+        }
+      ]
+    },
+    {
+      "column": "GOVERNMENT_ACTION_SUGGESTION",
+      "id": "government",
+      "prompt": "What do you think the government should do about these impacts?",
+      "themes": [
+        {
+          "code": "REGULATE",
+          "label": "Regulate, unspecified",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Calls for regulation, rules, or oversight without naming a specific mechanism.",
+          "includes": [
+            "more regulation",
+            "checks and balances"
+          ],
+          "excludes": [
+            "A named mechanism such as tax or disclosure (code that instead)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly more regulation."
+          ]
+        },
+        {
+          "code": "RESTRICT_BAN",
+          "label": "Limit, curb, or ban",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Calls to stop, reverse, or forbid AI use in some or all domains.",
+          "includes": [
+            "ban outright",
+            "prohibit specific uses"
+          ],
+          "excludes": [
+            "Regulation that permits continued use (use REGULATE)",
+            "Bans aimed at facilities (use DATA_CENTER_LIMITS)",
+            "Pausing rather than prohibiting (use MORATORIUM)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly ban outright.",
+            "[SYNTHETIC] Worried about prohibit specific uses."
+          ]
+        },
+        {
+          "code": "MORATORIUM",
+          "label": "Pause and study first",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Asks for deployment to slow or stop temporarily while impacts are assessed, rather than for a permanent prohibition.",
+          "includes": [
+            "stop and examine outcomes",
+            "slow the rollout",
+            "assess before implementing"
+          ],
+          "excludes": [
+            "Permanent bans (use RESTRICT_BAN)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly stop and examine outcomes."
+          ]
+        },
+        {
+          "code": "TRANSPARENCY",
+          "label": "Corporate disclosure",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Requiring companies to publish information they currently withhold about their operations, training, ownership, or impacts.",
+          "includes": [
+            "ecological impact disclosure",
+            "model training practices",
+            "ownership of data centre sites",
+            "public registry"
+          ],
+          "excludes": [
+            "Labelling AI output (use CONTENT_LABELING)",
+            "General regulation (use REGULATE)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly ecological impact disclosure.",
+            "[SYNTHETIC] Worried about model training practices."
+          ]
+        },
+        {
+          "code": "CONTENT_LABELING",
+          "label": "Label AI-generated output",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Requiring AI-produced content or AI involvement to be marked so people can tell and can choose.",
+          "includes": [
+            "disclosure on generated content",
+            "visible AI labels on goods"
+          ],
+          "excludes": [
+            "Corporate reporting obligations (use TRANSPARENCY)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly disclosure on generated content.",
+            "[SYNTHETIC] Worried about visible AI labels on goods."
+          ]
+        },
+        {
+          "code": "ENVIRONMENT",
+          "label": "Environmental and energy impact",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Water, power, emissions, or footprint given as the reason for action.",
+          "includes": [
+            "energy use",
+            "emissions",
+            "water"
+          ],
+          "excludes": [
+            "Financial cost (use TAXATION)",
+            "The specific instrument of siting control (use DATA_CENTER_LIMITS)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly energy use."
+          ]
+        },
+        {
+          "code": "DATA_CENTER_LIMITS",
+          "label": "Control where facilities are built",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Siting, permitting, land-use, or construction controls on AI infrastructure — the instrument, whatever the stated rationale.",
+          "includes": [
+            "ban new data centres",
+            "mandatory environmental assessment",
+            "utility hookup conditions",
+            "voter approval for sites"
+          ],
+          "excludes": [
+            "Environmental concern with no facility-level ask (use ENVIRONMENT)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly ban new data centres.",
+            "[SYNTHETIC] Worried about mandatory environmental assessment."
+          ]
+        },
+        {
+          "code": "TAXATION",
+          "label": "Tax and financial levers",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Taxes, levies, subsidies, or funding conditions aimed at AI companies.",
+          "includes": [
+            "tax AI companies",
+            "automation tax",
+            "remove subsidies"
+          ],
+          "excludes": [
+            "Non-financial regulation (use REGULATE)",
+            "Taxation with a stated destination for the revenue (also code REDISTRIBUTION or UBI)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly tax AI companies.",
+            "[SYNTHETIC] Worried about automation tax."
+          ]
+        },
+        {
+          "code": "UBI",
+          "label": "Universal basic income",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Names basic income, a living wage stipend, or an equivalent unconditional payment as the response to displacement.",
+          "includes": [
+            "UBI",
+            "Andrew Yang's proposal",
+            "living wage stipend"
+          ],
+          "excludes": [
+            "Other social spending (use REDISTRIBUTION)",
+            "Retraining (use RETRAINING)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly UBI.",
+            "[SYNTHETIC] Worried about Andrew Yang's proposal."
+          ]
+        },
+        {
+          "code": "REDISTRIBUTION",
+          "label": "Share the gains",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Proposals to spread AI-generated wealth through social programs, public services, or shared ownership.",
+          "includes": [
+            "AI tax revenue for safety nets",
+            "spread the gains",
+            "public ownership",
+            "better-funded public services"
+          ],
+          "excludes": [
+            "Taxation with no stated use of the revenue (use TAXATION)",
+            "Unconditional cash payments (use UBI)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly AI tax revenue for safety nets.",
+            "[SYNTHETIC] Worried about spread the gains."
+          ]
+        },
+        {
+          "code": "RETRAINING",
+          "label": "Retraining and transition funding",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Publicly funded or employer-funded reskilling, continuing education, and workforce transition support.",
+          "includes": [
+            "retraining fund",
+            "ongoing adult learning",
+            "job skills programs"
+          ],
+          "excludes": [
+            "Income support (use UBI or REDISTRIBUTION)",
+            "School policy (use EDUCATION)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly retraining fund.",
+            "[SYNTHETIC] Worried about ongoing adult learning."
+          ]
+        },
+        {
+          "code": "LABOR_PROTECTION",
+          "label": "Protect workers",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "General job security, displacement support, or limits on replacing workers.",
+          "includes": [
+            "hiring protections",
+            "severance",
+            "job guarantees"
+          ],
+          "excludes": [
+            "An outright prohibition on AI replacing people (use REPLACEMENT_BAN)",
+            "Notice and reporting requirements (use LAYOFF_NOTICE)",
+            "Collective bargaining specifically (use UNION_POWER)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly hiring protections."
+          ]
+        },
+        {
+          "code": "REPLACEMENT_BAN",
+          "label": "Make AI replacement of workers illegal",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Asks for a legal prohibition on eliminating, demoting, or reducing the pay of a human because of AI, rather than for mitigation of it.",
+          "includes": [
+            "ban on replacing workers",
+            "favoring people over automation in hiring",
+            "no loss of income to AI"
+          ],
+          "excludes": [
+            "Softer protections and support (use LABOR_PROTECTION)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly ban on replacing workers.",
+            "[SYNTHETIC] Worried about favoring people over automation in hiring."
+          ]
+        },
+        {
+          "code": "LAYOFF_NOTICE",
+          "label": "Conditions on AI-driven layoffs",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Procedural requirements when roles are cut for AI — notice periods, reporting, WARN-style rules.",
+          "includes": [
+            "WARN notifications",
+            "advance notice",
+            "reporting obligations"
+          ],
+          "excludes": [
+            "General worker protection (use LABOR_PROTECTION)",
+            "Prohibition rather than procedure (use REPLACEMENT_BAN)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly WARN notifications."
+          ]
+        },
+        {
+          "code": "UNION_POWER",
+          "label": "Collective bargaining",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Strengthening unions or bargaining rights as the route to controlling AI in the workplace.",
+          "includes": [
+            "protect union and non-union labourers",
+            "bargaining over AI deployment"
+          ],
+          "excludes": [
+            "Individual protections (use LABOR_PROTECTION)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly protect union and non-union labourers."
+          ]
+        },
+        {
+          "code": "LIABILITY",
+          "label": "Legal accountability for harms",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Making companies legally answerable for damage their AI systems cause or for the consequences of deploying them.",
+          "includes": [
+            "held accountable",
+            "liable for harms",
+            "false advertising enforcement"
+          ],
+          "excludes": [
+            "Taxation (use TAXATION)",
+            "Disclosure obligations (use TRANSPARENCY)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly held accountable.",
+            "[SYNTHETIC] Worried about liable for harms."
+          ]
+        },
+        {
+          "code": "IP_CONSENT",
+          "label": "Consent and payment for training data",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Requiring permission, credit, or compensation for work used to train models, and enforcing copyright against developers.",
+          "includes": [
+            "permission, attribution, payment",
+            "opt out of training",
+            "copyright applies to Gen-AI"
+          ],
+          "excludes": [
+            "Protecting creative livelihoods generally (use CREATIVE_PROTECTION)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly permission, attribution, payment.",
+            "[SYNTHETIC] Worried about opt out of training."
+          ]
+        },
+        {
+          "code": "CREATIVE_PROTECTION",
+          "label": "Protect creative professions",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Action aimed at the livelihoods of artists, writers, photographers, musicians, and other creative workers.",
+          "includes": [
+            "creative-sector workers",
+            "artist livelihoods"
+          ],
+          "excludes": [
+            "Training-data rights specifically (use IP_CONSENT)",
+            "Generic worker protection (use LABOR_PROTECTION)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly creative-sector workers."
+          ]
+        },
+        {
+          "code": "PRIVACY_SURVEILLANCE",
+          "label": "Privacy and surveillance limits",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Restricting AI-enabled monitoring, data collection, or use of personal information — including of employees.",
+          "includes": [
+            "employee monitoring",
+            "personal data protection",
+            "look to countries with stronger privacy law"
+          ],
+          "excludes": [
+            "Intellectual property (use IP_CONSENT)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly employee monitoring.",
+            "[SYNTHETIC] Worried about personal data protection."
+          ]
+        },
+        {
+          "code": "SAFETY_OVERSIGHT",
+          "label": "Safety oversight",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Oversight framed specifically around safety or harm prevention.",
+          "includes": [
+            "safety review",
+            "harm prevention",
+            "testing standards"
+          ],
+          "excludes": [
+            "Generic calls to regulate (use REGULATE)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly safety review."
+          ]
+        },
+        {
+          "code": "GOV_OWN_USE",
+          "label": "Rules for government's own use of AI",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "How public agencies should adopt, restrict, or govern AI in their own operations — including procurement, data handling, and human oversight of automated decisions.",
+          "includes": [
+            "run models locally on government data",
+            "human review of AI decisions",
+            "don't deploy untested software in public services",
+            "AI for paperwork"
+          ],
+          "excludes": [
+            "Rules aimed at private companies (code those instead)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly run models locally on government data.",
+            "[SYNTHETIC] Worried about human review of AI decisions.",
+            "[SYNTHETIC] We've seen don't deploy untested software in public services already."
+          ]
+        },
+        {
+          "code": "EDUCATION",
+          "label": "Schools and education policy",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Action aimed at how AI is used in teaching, learning, or academic integrity.",
+          "includes": [
+            "classroom rules",
+            "academic honesty",
+            "AI literacy"
+          ],
+          "excludes": [
+            "Workforce retraining (use RETRAINING)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly classroom rules."
+          ]
+        },
+        {
+          "code": "PERMITTED_USES",
+          "label": "Names acceptable uses",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Carves out domains where AI should be allowed or encouraged, usually alongside restrictions elsewhere.",
+          "includes": [
+            "medical research",
+            "faster scientific progress",
+            "repetitive office tasks"
+          ],
+          "excludes": [
+            "Unqualified support for AI (that is stance, not a theme)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly medical research."
+          ]
+        },
+        {
+          "code": "PUBLIC_CONSENT",
+          "label": "Let the affected public decide",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Requires direct community or voter approval for AI infrastructure and policy, rather than decisions by officials alone.",
+          "includes": [
+            "voter consent for data centre siting",
+            "involving the community"
+          ],
+          "excludes": [
+            "Technical expert input (use EXPERT_INPUT)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly voter consent for data centre siting."
+          ]
+        },
+        {
+          "code": "EXPERT_INPUT",
+          "label": "Legislate with people who understand it",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Argues rules must be drafted in consultation with technical subject-matter experts, usually citing past legislation that was unworkable.",
+          "includes": [
+            "involving domain experts",
+            "policymakers out of their depth on tech"
+          ],
+          "excludes": [
+            "Public or community consultation (use PUBLIC_CONSENT)",
+            "Doubt about government capability with no remedy (use GOV_INCOMPETENCE)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly involving domain experts."
+          ]
+        },
+        {
+          "code": "LEARN_ELSEWHERE",
+          "label": "Look to other jurisdictions or history",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Points to other countries, states, or historical precedent as a model.",
+          "includes": [
+            "EU approach",
+            "China's rules",
+            "historical parallels"
+          ],
+          "excludes": [
+            "Vague calls to regulate (use REGULATE)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly EU approach.",
+            "[SYNTHETIC] Worried about China's rules."
+          ]
+        },
+        {
+          "code": "GOV_INCOMPETENCE",
+          "label": "Government can't do this well",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Doubts the state's technical or institutional capacity to regulate AI, citing a poor track record. Distinct from opposing intervention in principle.",
+          "includes": [
+            "abysmal track record",
+            "unworkable in practice",
+            "drafted without expertise"
+          ],
+          "excludes": [
+            "Principled opposition to intervention (use NO_ACTION)",
+            "Concern about corporate influence (use REGULATORY_CAPTURE)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly abysmal track record.",
+            "[SYNTHETIC] Worried about unworkable in practice."
+          ]
+        },
+        {
+          "code": "REGULATORY_CAPTURE",
+          "label": "Industry will control the process",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Expects any regulation to be shaped or neutralised by the companies it targets, or doubts anything will be enforced.",
+          "includes": [
+            "policy bent toward corporate power",
+            "rules need enforcement to matter",
+            "self-regulation won't work"
+          ],
+          "excludes": [
+            "Doubt about competence (use GOV_INCOMPETENCE)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly policy bent toward corporate power.",
+            "[SYNTHETIC] Worried about rules need enforcement to matter."
+          ]
+        },
+        {
+          "code": "SPEECH_CAUTION",
+          "label": "Warns against overreach or censorship",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Cautions that government action could suppress speech, stifle innovation, or go too far. Code this even when it appears alongside a call for regulation.",
+          "includes": [
+            "slippery slope",
+            "free speech",
+            "don't stifle innovation"
+          ],
+          "excludes": [
+            "Straightforward opposition to all action (use NO_ACTION)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly slippery slope."
+          ]
+        },
+        {
+          "code": "OPT_OUT",
+          "label": "Let people turn it off",
+          "provenance": "v3",
+          "verification": "supported",
+          "definition": "A right to decline AI — opt-in defaults, a working off switch, and no penalty in price or service for refusing.",
+          "includes": [
+            "opt in only",
+            "no pre-loaded AI",
+            "protect workers who decline to use it",
+            "prices unchanged"
+          ],
+          "excludes": [
+            "Labelling requirements (use CONTENT_LABELING)",
+            "Training-data opt-out (use IP_CONSENT)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly opt in only.",
+            "[SYNTHETIC] Worried about no pre-loaded AI.",
+            "[SYNTHETIC] We've seen protect workers who decline to use it already."
+          ]
+        },
+        {
+          "code": "HUMAN_DECISION",
+          "label": "A human has to decide",
+          "provenance": "v3",
+          "verification": "supported",
+          "definition": "Requires a person to make or review consequential decisions — employment, healthcare, benefits, safety-critical and military systems — with AI confined to an advisory role.",
+          "includes": [
+            "people check machine decisions",
+            "mandate humans in named occupations",
+            "humans must decide in high-stakes sectors",
+            "AI may only advise"
+          ],
+          "excludes": [
+            "General safety review (use SAFETY_OVERSIGHT)",
+            "Prohibiting AI replacement of workers (use REPLACEMENT_BAN)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly people check machine decisions.",
+            "[SYNTHETIC] Worried about mandate humans in named occupations.",
+            "[SYNTHETIC] We've seen humans must decide in high-stakes sectors already."
+          ]
+        },
+        {
+          "code": "HIRING_AI_LIMITS",
+          "label": "Restrict AI in recruitment",
+          "provenance": "v3",
+          "verification": "supported",
+          "definition": "Rules aimed specifically at automated screening and hiring — prohibition, bias testing, or disclosure that AI was used.",
+          "includes": [
+            "keep AI out of hiring",
+            "bias testing for hiring tools",
+            "openness on AI in personnel choices"
+          ],
+          "excludes": [
+            "Human review of decisions generally (use HUMAN_DECISION)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly keep AI out of hiring.",
+            "[SYNTHETIC] Worried about bias testing for hiring tools.",
+            "[SYNTHETIC] We've seen openness on AI in personnel choices already."
+          ]
+        },
+        {
+          "code": "RATEPAYER_PROTECTION",
+          "label": "Data centres pay their own way",
+          "provenance": "v3",
+          "verification": "supported",
+          "definition": "Requires AI infrastructure to bear its own utility and grid costs rather than passing them to residents, including rate freezes and separate accounting.",
+          "includes": [
+            "cover grid upgrade costs themselves",
+            "cap household utility rates",
+            "don't drive up bills for residents",
+            "offsetting strain on utilities"
+          ],
+          "excludes": [
+            "Siting and construction controls (use DATA_CENTER_LIMITS)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly cover grid upgrade costs themselves.",
+            "[SYNTHETIC] Worried about cap household utility rates.",
+            "[SYNTHETIC] We've seen don't drive up bills for residents already."
+          ]
+        },
+        {
+          "code": "COPYRIGHT_INELIGIBLE",
+          "label": "AI output shouldn't be copyrightable",
+          "provenance": "v3",
+          "verification": "supported",
+          "definition": "Denies copyright protection to AI-generated material, as distinct from protecting the work used to train the model.",
+          "includes": [
+            "prompt writers get no copyright",
+            "GenAI works never registrable"
+          ],
+          "excludes": [
+            "Consent and payment for training data (use IP_CONSENT)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly prompt writers get no copyright.",
+            "[SYNTHETIC] Worried about GenAI works never registrable."
+          ]
+        },
+        {
+          "code": "MISUSE_CRIMES",
+          "label": "Criminalise specific misuses",
+          "provenance": "v3",
+          "verification": "supported",
+          "definition": "Targets named malicious applications — deepfakes, impersonation, fraud, malware, non-consensual imagery — rather than AI development generally.",
+          "includes": [
+            "deepfakes of public figures",
+            "fake evidence and insurance fraud",
+            "malware",
+            "non-consensual imagery"
+          ],
+          "excludes": [
+            "Broad regulation (use REGULATE)",
+            "Liability for negligent harm (use LIABILITY)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly deepfakes of public figures.",
+            "[SYNTHETIC] Worried about fake evidence and insurance fraud.",
+            "[SYNTHETIC] We've seen malware already."
+          ]
+        },
+        {
+          "code": "USER_HARM",
+          "label": "Protect people the systems interact with",
+          "provenance": "v3",
+          "verification": "supported",
+          "definition": "Accountability for psychological and medical harm to people using AI directly — chatbots substituting for care, reinforcing delusion, or giving dangerous advice.",
+          "includes": [
+            "AI as mental health substitute",
+            "reinforcing false beliefs",
+            "harmful advice to vulnerable users"
+          ],
+          "excludes": [
+            "Errors affecting the respondent's work (use the personal codebook)",
+            "Product liability generally (use LIABILITY)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly AI as mental health substitute.",
+            "[SYNTHETIC] Worried about reinforcing false beliefs.",
+            "[SYNTHETIC] We've seen harmful advice to vulnerable users already."
+          ]
+        },
+        {
+          "code": "NO_ACTION",
+          "label": "Government should stay out",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Opposes intervention, or argues the market or existing law is sufficient.",
+          "includes": [
+            "leave it alone",
+            "don't regulate"
+          ],
+          "excludes": [
+            "Support for action with a caveat (use SPEECH_CAUTION alongside the action)",
+            "Wanting action but doubting competence (use GOV_INCOMPETENCE)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly leave it alone."
+          ]
+        }
+      ]
+    },
+    {
+      "column": "PERSONAL_AI_IMPACT",
+      "id": "personal",
+      "prompt": "How has AI impacted your job and workplace, if at all?",
+      "themes": [
+        {
+          "code": "MANDATED_USE",
+          "label": "Required to use it",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "The employer requires, pressures, or pushes AI use regardless of whether it helps. The defining feature is that the decision came from above.",
+          "includes": [
+            "forced to use it daily",
+            "mandatory training",
+            "administrators pushing Copilot"
+          ],
+          "excludes": [
+            "AI appearing in software without anyone choosing it (use TOOL_IMPOSED)",
+            "Pressure to work faster (use PACE_PRESSURE)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly forced to use it daily.",
+            "[SYNTHETIC] Worried about mandatory training.",
+            "[SYNTHETIC] We've seen administrators pushing Copilot already."
+          ]
+        },
+        {
+          "code": "TOOL_IMPOSED",
+          "label": "It showed up in the software",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "AI features added to existing tools by vendors without the organisation or user asking for them, and often without a way to opt out.",
+          "includes": [
+            "prompts added to every email draft",
+            "AI built into all software",
+            "imposed on clients unasked"
+          ],
+          "excludes": [
+            "An employer mandating use (use MANDATED_USE)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly prompts added to every email draft.",
+            "[SYNTHETIC] Worried about AI built into all software.",
+            "[SYNTHETIC] We've seen imposed on clients unasked already."
+          ]
+        },
+        {
+          "code": "POOR_ROLLOUT",
+          "label": "Deployed without preparation",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Tools introduced with inadequate training, guidance, or thought about purpose, so staff absorb the cost of figuring it out.",
+          "includes": [
+            "very few guidelines",
+            "adopted without clear purpose"
+          ],
+          "excludes": [
+            "The requirement to use it (use MANDATED_USE)",
+            "The output being wrong (use MISINFORMATION)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly very few guidelines.",
+            "[SYNTHETIC] Worried about adopted without clear purpose."
+          ]
+        },
+        {
+          "code": "ADDED_WORKLOAD",
+          "label": "More work, not less",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "AI increasing the respondent's workload rather than reducing it.",
+          "includes": [
+            "extra tasks",
+            "added duties"
+          ],
+          "excludes": [
+            "Checking AI output specifically (use VALIDATION_WORK)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly extra tasks.",
+            "[SYNTHETIC] Worried about added duties."
+          ]
+        },
+        {
+          "code": "VALIDATION_WORK",
+          "label": "Checking the machine's work",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "A new role or workflow built around verifying, correcting, or cleaning up AI output the respondent's own workflow produced.",
+          "includes": [
+            "quality assurance of AI",
+            "fact-checking output",
+            "fixing AI mistakes"
+          ],
+          "excludes": [
+            "Cleaning up after colleagues' AI use (use COWORKER_AI)",
+            "General workload increase (use ADDED_WORKLOAD)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly quality assurance of AI.",
+            "[SYNTHETIC] Worried about fact-checking output."
+          ]
+        },
+        {
+          "code": "COWORKER_AI",
+          "label": "Absorbing colleagues' AI use",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Other people's use of AI creating work or problems for the respondent.",
+          "includes": [
+            "cleaning up colleagues' AI output",
+            "verifying colleagues' output"
+          ],
+          "excludes": [
+            "The respondent's own AI output (use VALIDATION_WORK)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly cleaning up colleagues' AI output.",
+            "[SYNTHETIC] Worried about verifying colleagues' output."
+          ]
+        },
+        {
+          "code": "MISINFORMATION",
+          "label": "Was given wrong information",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "AI producing errors that affected the respondent's work or decisions.",
+          "includes": [
+            "incorrect output",
+            "hallucinated facts",
+            "false citations"
+          ],
+          "excludes": [
+            "Doubts about quality in the abstract (use the economy codebook)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly incorrect output.",
+            "[SYNTHETIC] Worried about hallucinated facts."
+          ]
+        },
+        {
+          "code": "COMMUNICATION",
+          "label": "Communication broke down",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "AI degrading communication between people or teams.",
+          "includes": [
+            "miscommunication among coworkers",
+            "unclear AI-mediated messages"
+          ],
+          "excludes": [
+            "Factual errors (use MISINFORMATION)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly miscommunication among coworkers.",
+            "[SYNTHETIC] Worried about unclear AI-mediated messages."
+          ]
+        },
+        {
+          "code": "DEHUMANIZATION",
+          "label": "Loss of the human element",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Work or interaction feeling less human, more mechanical, or less meaningful.",
+          "includes": [
+            "feature creep",
+            "losing the human touch",
+            "can't reach a person"
+          ],
+          "excludes": [
+            "Job loss fears (use JOB_THREAT)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly feature creep.",
+            "[SYNTHETIC] Worried about losing the human touch."
+          ]
+        },
+        {
+          "code": "SURVEILLANCE",
+          "label": "Monitored by AI at work",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Employer AI systems monitoring the respondent, or their work artefacts being harvested to train models.",
+          "includes": [
+            "emails and messages used to train AI",
+            "productivity monitoring"
+          ],
+          "excludes": [
+            "Privacy policy asks (use the government codebook)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly emails and messages used to train AI.",
+            "[SYNTHETIC] Worried about productivity monitoring.",
+            "[SYNTHETIC] We've seen emails and messages used to train AI already."
+          ]
+        },
+        {
+          "code": "TRAINING_REPLACEMENT",
+          "label": "Training the thing that replaces you",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Being asked to build, train, or improve an AI system the respondent believes will eliminate their own or colleagues' jobs.",
+          "includes": [
+            "training a model that will replace me",
+            "job listings only for AI trainers"
+          ],
+          "excludes": [
+            "Ordinary mandated use (use MANDATED_USE)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly training a model that will replace me.",
+            "[SYNTHETIC] Worried about job listings only for AI trainers."
+          ]
+        },
+        {
+          "code": "JOB_LOST",
+          "label": "Already lost work",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "The respondent's role has actually been eliminated, or they have already lost income. Past tense, not anticipated.",
+          "includes": [
+            "position eliminated",
+            "laid off",
+            "department closed"
+          ],
+          "excludes": [
+            "Fear about the future (use JOB_THREAT)",
+            "Freelance client loss (use CLIENT_LOSS)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly position eliminated.",
+            "[SYNTHETIC] Worried about laid off."
+          ]
+        },
+        {
+          "code": "JOB_THREAT",
+          "label": "Own job feels at risk",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Anticipated risk to the respondent's own role, not yet realised.",
+          "includes": [
+            "worried about redundancy",
+            "expect to be replaced"
+          ],
+          "excludes": [
+            "Loss that has already happened (use JOB_LOST)",
+            "Economy-wide predictions (use the economy codebook)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly worried about redundancy.",
+            "[SYNTHETIC] Worried about expect to be replaced."
+          ]
+        },
+        {
+          "code": "CLIENT_LOSS",
+          "label": "Lost clients or commissions",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Self-employed, freelance, or contract workers losing custom to AI-generated substitutes.",
+          "includes": [
+            "clients switching to AI",
+            "commissions drying up"
+          ],
+          "excludes": [
+            "Salaried job loss (use JOB_LOST)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly clients switching to AI."
+          ]
+        },
+        {
+          "code": "FIELD_COLLAPSE",
+          "label": "The field, not just the job",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Hiring across the respondent's whole occupation drying up — freezes, ghost listings, peers out of work — whether or not the respondent personally lost a role.",
+          "includes": [
+            "hiring freeze",
+            "ghost jobs",
+            "peers out of work",
+            "industry failing"
+          ],
+          "excludes": [
+            "The respondent's own role ending (use JOB_LOST)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly hiring freeze.",
+            "[SYNTHETIC] Worried about ghost jobs.",
+            "[SYNTHETIC] We've seen peers out of work already."
+          ]
+        },
+        {
+          "code": "ENTRY_BARRIER",
+          "label": "No way in for new people",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Junior roles and internships disappearing, so newcomers cannot get the experience the field requires.",
+          "includes": [
+            "internships no longer lead to jobs",
+            "fewer starter jobs",
+            "nobody knows how new people will train"
+          ],
+          "excludes": [
+            "Displacement of experienced workers (use FIELD_COLLAPSE)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly internships no longer lead to jobs.",
+            "[SYNTHETIC] Worried about fewer starter jobs.",
+            "[SYNTHETIC] We've seen nobody knows how new people will train already."
+          ]
+        },
+        {
+          "code": "CAREER_CHANGE",
+          "label": "Leaving the field",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Changing occupation, or actively planning to, because of AI.",
+          "includes": [
+            "retraining into another industry",
+            "seeking work elsewhere"
+          ],
+          "excludes": [
+            "Job loss with no stated change of direction (use JOB_LOST)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly retraining into another industry."
+          ]
+        },
+        {
+          "code": "PACE_PRESSURE",
+          "label": "Pressure to work faster",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Expectations rising because AI is assumed to make the work quicker.",
+          "includes": [
+            "management pressure",
+            "unrealistic deadlines",
+            "produce more, more quickly"
+          ],
+          "excludes": [
+            "More tasks without a speed framing (use ADDED_WORKLOAD)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly management pressure.",
+            "[SYNTHETIC] Worried about unrealistic deadlines."
+          ]
+        },
+        {
+          "code": "IP_TAKEN",
+          "label": "Own work used without consent",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "The respondent's own creative or professional output scraped, trained on, or imitated without permission or payment.",
+          "includes": [
+            "copyrighted work stolen",
+            "a model trained on my style",
+            "bad copies flooding my field"
+          ],
+          "excludes": [
+            "Concern for creative work in general (use CREATIVITY_LOSS)",
+            "Policy asks (use the government codebook)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly copyrighted work stolen.",
+            "[SYNTHETIC] Worried about a model trained on my style."
+          ]
+        },
+        {
+          "code": "CREATIVITY_LOSS",
+          "label": "Threat to creative work",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "AI displacing or devaluing art, writing, or creative practice as a category.",
+          "includes": [
+            "art",
+            "human creativity"
+          ],
+          "excludes": [
+            "The respondent's own work being scraped (use IP_TAKEN)",
+            "Generic job loss (use JOB_THREAT)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly art.",
+            "[SYNTHETIC] Worried about human creativity."
+          ]
+        },
+        {
+          "code": "FIELD_CREDIBILITY",
+          "label": "Damage to the profession's standing",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "AI eroding public trust in, or the quality standards of, the respondent's profession.",
+          "includes": [
+            "corrupted public perception",
+            "professionals filing AI-written work"
+          ],
+          "excludes": [
+            "Employment effects (use FIELD_COLLAPSE)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly corrupted public perception.",
+            "[SYNTHETIC] Worried about professionals filing AI-written work."
+          ]
+        },
+        {
+          "code": "EDUCATION_HARM",
+          "label": "Harm to students' learning",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Students over-relying on AI, undermining learning, retention, or critical thinking.",
+          "includes": [
+            "cheating",
+            "not retaining material",
+            "letting AI shape views"
+          ],
+          "excludes": [
+            "Educators' own difficulties (use TEACHING_DISRUPTION)",
+            "Colleagues losing skills (use COGNITIVE_ATROPHY)",
+            "Policy asks about schools (use the government codebook)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly cheating.",
+            "[SYNTHETIC] Worried about not retaining material."
+          ]
+        },
+        {
+          "code": "TEACHING_DISRUPTION",
+          "label": "Teaching and assessment upended",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Educators struggling to design assignments, assess honestly, or teach evaluation skills in AI's presence.",
+          "includes": [
+            "redesigning assignments",
+            "detection arms race",
+            "can't teach source evaluation"
+          ],
+          "excludes": [
+            "Student behaviour itself (use EDUCATION_HARM)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly redesigning assignments.",
+            "[SYNTHETIC] Worried about detection arms race."
+          ]
+        },
+        {
+          "code": "COGNITIVE_ATROPHY",
+          "label": "Colleagues losing the ability",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Adults around the respondent losing the capacity to do work, think, or generate ideas without AI.",
+          "includes": [
+            "dependence on AI for reasoning",
+            "nobody has their own ideas"
+          ],
+          "excludes": [
+            "Students (use EDUCATION_HARM)",
+            "The respondent's own skill loss (also code here, noting it)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly dependence on AI for reasoning.",
+            "[SYNTHETIC] Worried about nobody has their own ideas.",
+            "[SYNTHETIC] We've seen dependence on AI for reasoning already."
+          ]
+        },
+        {
+          "code": "POSITIVE_USE",
+          "label": "Found it useful",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "AI helping the respondent with a concrete task, in their own account.",
+          "includes": [
+            "saves time",
+            "summarising long documents",
+            "first drafts",
+            "finding information"
+          ],
+          "excludes": [
+            "Abstract optimism (that is stance)",
+            "Usefulness reported alongside a net-negative verdict (code both)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly saves time.",
+            "[SYNTHETIC] Worried about summarising long documents.",
+            "[SYNTHETIC] We've seen first drafts already."
+          ]
+        },
+        {
+          "code": "REFUSAL",
+          "label": "Chooses not to use it",
+          "provenance": "v1_split",
+          "verification": "supported",
+          "definition": "AI is available but the respondent declines to use it, usually on ethical, professional, or risk grounds. The decision is theirs.",
+          "includes": [
+            "morally opposed",
+            "won't use the platform introduced",
+            "disallowed it at our own workplace"
+          ],
+          "excludes": [
+            "Not having access (use NOT_ADOPTED)",
+            "Not being relevant to the work (use NOT_APPLICABLE)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly morally opposed.",
+            "[SYNTHETIC] Worried about won't use the platform introduced.",
+            "[SYNTHETIC] We've seen disallowed it at our own workplace already."
+          ]
+        },
+        {
+          "code": "NON_USER",
+          "label": "Doesn't use it",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Reports not using AI personally, with no stated reason, whether or not others around them do.",
+          "includes": [
+            "never uses AI"
+          ],
+          "excludes": [
+            "A stated decision to refuse (use REFUSAL)",
+            "Uses it and finds no effect (use NO_IMPACT)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly never uses AI."
+          ]
+        },
+        {
+          "code": "NOT_ADOPTED",
+          "label": "Employer hasn't taken it up",
+          "provenance": "v1_split",
+          "verification": "needs_verification",
+          "definition": "The organisation has not introduced AI tools, so the question of personal use has not arisen.",
+          "includes": [
+            "no AI tools available here"
+          ],
+          "excludes": [
+            "Available but declined (use REFUSAL)"
+          ],
+          "examples": [],
+          "reviewNote": "Three passes, no support. Of 44 audited responses none reported an employer that had not adopted AI. Recommend deletion unless a targeted search finds cases; a code that is genuinely at or near zero should be reported as an absence in prose, not carried as a theme."
+        },
+        {
+          "code": "NOT_APPLICABLE",
+          "label": "Doesn't apply to this kind of work",
+          "provenance": "v1_split",
+          "verification": "supported",
+          "definition": "The nature of the work — relational, hands-on, physical, or requiring human presence — puts it outside AI's reach in the respondent's view.",
+          "includes": [
+            "my job can't be automated",
+            "relational work",
+            "hands-on trades"
+          ],
+          "excludes": [
+            "Available but declined (use REFUSAL)",
+            "Simply reporting no effect (use NO_IMPACT)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly my job can't be automated.",
+            "[SYNTHETIC] Worried about relational work."
+          ]
+        },
+        {
+          "code": "NO_IMPACT",
+          "label": "Little or no personal effect",
+          "provenance": "v1",
+          "verification": "supported",
+          "definition": "Explicitly reports that AI has not meaningfully touched their work or life.",
+          "includes": [
+            "no effect on own work",
+            "so far, not much"
+          ],
+          "excludes": [
+            "Blank or non-answers, which are excluded before coding",
+            "No effect on their own work but damage to their field (code FIELD_COLLAPSE as well or instead)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly no effect on own work.",
+            "[SYNTHETIC] Worried about so far, not much."
+          ]
+        },
+        {
+          "code": "MINOR_ANNOYANCE",
+          "label": "Present but trivial",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "AI is noticeable but registers only as a low-level irritation rather than a change to the work.",
+          "includes": [
+            "prompts are annoying",
+            "slows down the computer"
+          ],
+          "excludes": [
+            "No effect at all (use NO_IMPACT)",
+            "Substantive workload or quality effects (code those)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly prompts are annoying.",
+            "[SYNTHETIC] Worried about slows down the computer."
+          ]
+        },
+        {
+          "code": "OUTPUT_QUALITY_DECLINE",
+          "label": "The product itself got worse",
+          "provenance": "v3",
+          "verification": "supported",
+          "definition": "The end result of the work is worse than before AI, as a standing condition rather than a discrete error to be caught.",
+          "includes": [
+            "extra effort, lower quality",
+            "mediocre output now normal"
+          ],
+          "excludes": [
+            "Specific factual errors (use MISINFORMATION)",
+            "The labour of catching errors (use VALIDATION_WORK)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly extra effort, lower quality."
+          ]
+        },
+        {
+          "code": "WORK_TRANSFORMED",
+          "label": "Same job, different work",
+          "provenance": "v3",
+          "verification": "supported",
+          "definition": "The role persists but its content changes — often from producing to reviewing, or from craft to oversight. Distinct from losing the job or from simply having more of it.",
+          "includes": [
+            "shifted from creating to reviewing AI output",
+            "craft turned into mass production"
+          ],
+          "excludes": [
+            "Job loss (use JOB_LOST)",
+            "Volume increases (use ADDED_WORKLOAD)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly shifted from creating to reviewing AI output.",
+            "[SYNTHETIC] Worried about craft turned into mass production."
+          ]
+        },
+        {
+          "code": "JOB_SEARCH_STRAIN",
+          "label": "Searching in a flooded market",
+          "provenance": "v3",
+          "verification": "supported",
+          "definition": "The experience of job-hunting against a field crowded with displaced applicants and thinned postings. Note that a large share of respondents are not currently working.",
+          "includes": [
+            "hundreds of applications",
+            "competing with displaced workers"
+          ],
+          "excludes": [
+            "The field having no openings, described from inside a job (use FIELD_COLLAPSE)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly hundreds of applications."
+          ]
+        },
+        {
+          "code": "CRAFT_DEVALUED",
+          "label": "The work stopped feeling worth doing",
+          "provenance": "v3",
+          "verification": "supported",
+          "definition": "Loss of pride, dignity, or interest in the work itself because AI performs the part the respondent valued, or because effort is no longer legible to others.",
+          "includes": [
+            "lost enjoyment of the craft",
+            "erodes the dignity of labor",
+            "reading writing nobody bothered to write"
+          ],
+          "excludes": [
+            "The role's content changing (use WORK_TRANSFORMED)",
+            "Threat to creative practice as a category (use CREATIVITY_LOSS)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly lost enjoyment of the craft.",
+            "[SYNTHETIC] Worried about erodes the dignity of labor.",
+            "[SYNTHETIC] We've seen reading writing nobody bothered to write already."
+          ]
+        },
+        {
+          "code": "MORALE_DECLINE",
+          "label": "Morale and team dynamics",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Stress, anxiety, or falling job satisfaction across a team or workplace attributed to AI, as distinct from the respondent's own job fears.",
+          "includes": [
+            "widespread frustration",
+            "causes worker stress",
+            "collective anxiety about AI"
+          ],
+          "excludes": [
+            "The respondent's own job security worries (use JOB_THREAT)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly widespread frustration.",
+            "[SYNTHETIC] Worried about causes worker stress."
+          ]
+        },
+        {
+          "code": "SKILL_PRESSURE",
+          "label": "Pressure to learn AI skills",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Needing to acquire AI literacy or upskill to stay employable, framed as an expectation on the worker rather than as a tool they must operate.",
+          "includes": [
+            "expectation of up-skilling",
+            "AI skills now expected at work"
+          ],
+          "excludes": [
+            "Being required to use a specific tool (use MANDATED_USE)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly expectation of up-skilling.",
+            "[SYNTHETIC] Worried about AI skills now expected at work."
+          ]
+        },
+        {
+          "code": "HIRING_PROCESS_AI",
+          "label": "Screened by AI while job-hunting",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Applicant tracking systems or other AI sorting résumés before a human sees them, experienced by the respondent as a job-seeker.",
+          "includes": [
+            "automated resume screening tools",
+            "applications auto-rejected",
+            "AI sorting applications"
+          ],
+          "excludes": [
+            "Hiring drying up (use FIELD_COLLAPSE)",
+            "Employers wanting AI-using candidates (use SKILL_PRESSURE)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly automated resume screening tools.",
+            "[SYNTHETIC] Worried about applications auto-rejected.",
+            "[SYNTHETIC] We've seen AI sorting applications already."
+          ]
+        },
+        {
+          "code": "GENERATIONAL_DIVIDE",
+          "label": "Split by age or seniority",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Adoption or resistance falling along generational lines within the workplace.",
+          "includes": [
+            "younger staff more open",
+            "older decision makers reluctant"
+          ],
+          "excludes": [
+            "Concerns about students (use EDUCATION_HARM)"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly younger staff more open."
+          ]
+        },
+        {
+          "code": "CONSUMER_ENCOUNTER",
+          "label": "Met it as a customer, not a worker",
+          "provenance": "v2",
+          "verification": "supported",
+          "definition": "Experiences of AI as a patient, customer, or member of the public rather than through work. Off the question as asked, but recurrent enough to code rather than discard.",
+          "includes": [
+            "chatbots instead of service staff",
+            "AI in medical notes",
+            "AI in apps they use"
+          ],
+          "excludes": [
+            "Anything occurring in the respondent's own workplace"
+          ],
+          "examples": [
+            "[SYNTHETIC] Mostly chatbots instead of service staff.",
+            "[SYNTHETIC] Worried about AI in medical notes.",
+            "[SYNTHETIC] We've seen AI in apps they use already."
+          ]
+        }
+      ]
+    }
+  ]
+}

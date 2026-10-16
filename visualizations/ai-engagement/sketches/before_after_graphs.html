@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phase 1 vs Phase 2 participant demographics</title>
+<style>
+  :root {
+    --surface: #ffffff;
+    --surface-sunken: #f4f4f4;
+    --ink: #1f2225;
+    --ink-secondary: #4c5257;
+    --ink-muted: #6e757b;
+    --border: #d9dad6;
+    --grid: #c2c2c2;
+    --hover-band: #f0f0f0;
+    --series-pop: #8C9298;
+    --series-participants: #2E6C8A;
+    --focus: #2E6C8A;
+    color-scheme: light;
+  }
+  /* Light is the default regardless of the OS setting; the dark palette is
+     opt-in via <html data-theme="dark">. */
+  :root[data-theme="dark"] {
+    --surface: #1a1a19;
+    --surface-sunken: #232322;
+    --ink: #f1f1ef;
+    --ink-secondary: #c3c5c2;
+    --ink-muted: #9a9d99;
+    --border: #3a3a38;
+    --grid: #4a4a48;
+    --hover-band: #2a2a29;
+    --series-pop: #6F777E;
+    --series-participants: #74BCDD;
+    --focus: #74BCDD;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--surface);
+    color: var(--ink);
+    font: 15px/1.5 "Inter", "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 1400px; margin: 0 auto; padding: 40px 32px 64px; }
+
+  h1 { font-size: 22px; line-height: 1.3; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .lede { margin: 0 0 28px; color: var(--ink-secondary); max-width: 78ch; }
+
+  /* --- filter row ------------------------------------------------------ */
+  .controls {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 16px;
+    margin-bottom: 28px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  /* The select's own value is the label, as in the mockup; keep an accessible
+     name without a visible caption. */
+  .visually-hidden {
+    position: absolute; width: 1px; height: 1px; margin: -1px;
+    padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+  .select-wrap { position: relative; }
+  select {
+    appearance: none;
+    font-family: inherit;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 60px 18px 24px;
+    min-width: 330px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.10), 0 1px 3px rgba(0,0,0,.07);
+    cursor: pointer;
+  }
+  select:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .select-wrap svg {
+    position: absolute; right: 22px; top: 50%; transform: translateY(-50%);
+    pointer-events: none; color: var(--series-participants);
+  }
+
+  .toggle {
+    margin-left: auto; display: inline-flex; gap: 2px; padding: 3px;
+    background: var(--surface-sunken); border-radius: 10px;
+  }
+  .toggle button {
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    color: var(--ink-secondary);
+    background: none; border: 0; border-radius: 8px;
+    padding: 9px 14px; cursor: pointer;
+  }
+  .toggle button[aria-pressed="true"] {
+    background: var(--surface); color: var(--ink);
+    box-shadow: 0 1px 2px rgba(0,0,0,.08);
+  }
+  .toggle button:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+  /* --- chart pair ------------------------------------------------------ */
+  .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  @media (max-width: 980px) { .charts { grid-template-columns: 1fr; } }
+
+  .panel { min-width: 0; }
+  .panel h2 { font-size: 16px; margin: 0 0 2px; }
+  .panel .meta { font-size: 13px; color: var(--ink-muted); margin: 0 0 14px; }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 28px;
+    justify-content: center; margin: 0 0 12px;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-secondary); }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+
+  .plot { position: relative; }
+  .plot svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .gridline {
+    stroke: var(--grid); stroke-width: 1; stroke-dasharray: 6 4;
+    shape-rendering: crispEdges;
+  }
+  .axis-text { font-size: 12px; fill: var(--ink-muted); }
+  .tick-text { font-size: 12px; fill: var(--ink-muted); }
+  .cat-text { font-size: 11.5px; fill: var(--ink-secondary); }
+  .hit { fill: transparent; }
+  .slot.is-active .hit { fill: var(--hover-band); }
+
+  .tooltip {
+    position: absolute; z-index: 5; pointer-events: none; opacity: 0;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 12px; width: max-content; max-width: 260px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.13);
+    font-size: 13px; transition: opacity .1s ease;
+  }
+  .tooltip[data-show="1"] { opacity: 1; }
+  .tooltip .tt-title { font-weight: 600; margin-bottom: 6px; white-space: nowrap; }
+  .tooltip .tt-row {
+    display: flex; align-items: center; gap: 18px;
+    justify-content: space-between; white-space: nowrap; line-height: 1.7;
+  }
+  .tooltip .tt-row b { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .tooltip .tt-key { display: inline-flex; align-items: center; gap: 7px; color: var(--ink-secondary); }
+  .tooltip .tt-delta { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border); color: var(--ink-muted); font-size: 12px; }
+
+  /* --- table view ------------------------------------------------------ */
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  caption { text-align: left; font-weight: 600; padding-bottom: 8px; }
+  th, td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  th:first-child, td:first-child { text-align: left; }
+  thead th { color: var(--ink-muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  td { font-variant-numeric: tabular-nums; }
+
+  [hidden] { display: none !important; }
+
+  .notes { margin-top: 36px; font-size: 13px; color: var(--ink-muted); max-width: 90ch; }
+  .notes h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-muted); margin: 0 0 8px; }
+  .notes ul { margin: 0; padding-left: 20px; }
+  .notes li { margin-bottom: 5px; }
+  .notes a { color: var(--series-participants); }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Phase 1 vs Phase 2</h1>
+  <p class="lede">
+    Each chart compares the participant mix against the statewide population, so
+    the two phases can be read against the same baseline.
+  </p>
+
+  <div class="controls">
+    <div class="field">
+      <label class="visually-hidden" for="dimension">Demographic</label>
+      <div class="select-wrap">
+        <select id="dimension">
+          <option value="ethnicity">Race / ethnicity</option>
+          <option value="region" selected>Region</option>
+        </select>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+    </div>
+
+    <div class="toggle" role="group" aria-label="View as">
+      <button type="button" id="view-chart" aria-pressed="true">Chart</button>
+      <button type="button" id="view-table" aria-pressed="false">Table</button>
+    </div>
+  </div>
+
+  <div class="charts" id="chart-view"></div>
+  <div class="charts" id="table-view" hidden></div>
+
+  <div class="notes">
+    <h3>Notes</h3>
+    <ul id="notes-list"></ul>
+  </div>
+</div>
+
+<!-- DATA:START — generated by build_data.py; do not edit by hand. -->
+<script>
+window.CHART_DATA = {
+  "dimensions": {
+    "region": {
+      "id": "region",
+      "label": "Region",
+      "categories": [
+        "Bay Area",
+        "Central Coast",
+        "Central Valley",
+        "Far North / North Coast",
+        "Los Angeles",
+        "Sacramento Valley / Sierra Foothills",
+        "Sierra Region",
+        "Southern California"
+      ],
+      "labels": [
+        "Bay Area",
+        "Central Coast",
+        "Central Valley",
+        "Far North / North Coast",
+        "Los Angeles",
+        "Sacramento",
+        "Sierra Region",
+        "Southern California"
+      ],
+      "population": [
+        17.8,
+        5.9,
+        11.3,
+        3.9,
+        32.6,
+        7.1,
+        0.5,
+        20.9
+      ],
+      "phase1": [
+        24.2,
+        4.6,
+        6.1,
+        6.0,
+        26.6,
+        15.6,
+        0.4,
+        16.5
+      ],
+      "phase2": [
+        20.2,
+        8.7,
+        8.1,
+        5.8,
+        23.7,
+        15.0,
+        2.3,
+        16.2
+      ],
+      "n": {
+        "phase1": 2678,
+        "phase2": 173
+      },
+      "nonResponse": {
+        "phase1": 0,
+        "phase2": 0
+      },
+      "baselineNote": "Statewide shares computed from Jan 1, 2025 county populations, grouped into the same regions used by the survey."
+    },
+    "ethnicity": {
+      "id": "ethnicity",
+      "label": "Race / ethnicity",
+      "categories": [
+        "Hispanic or Latino",
+        "White",
+        "Asian",
+        "Black or African American",
+        "Multiple",
+        "Middle Eastern or North African",
+        "American Indian or Alaska Native",
+        "Native Hawaiian or Pacific Islander"
+      ],
+      "labels": [
+        "Hispanic or Latino",
+        "White",
+        "Asian",
+        "Black or African American",
+        "Two or more races",
+        "Middle Eastern / North African",
+        "American Indian / Alaska Native",
+        "Native Hawaiian / Pacific Islander"
+      ],
+      "population": [
+        40.3,
+        33.0,
+        15.5,
+        5.3,
+        3.7,
+        1.4,
+        0.4,
+        0.4
+      ],
+      "phase1": [
+        14.3,
+        61.4,
+        10.5,
+        4.2,
+        6.8,
+        1.2,
+        0.9,
+        0.7
+      ],
+      "phase2": [
+        28.5,
+        43.7,
+        13.9,
+        6.6,
+        4.0,
+        1.3,
+        2.0,
+        0.0
+      ],
+      "n": {
+        "phase1": 2315,
+        "phase2": 151
+      },
+      "nonResponse": {
+        "phase1": 363,
+        "phase2": 22
+      },
+      "baselineNote": "Hispanic or Latino is counted as one group and the remaining groups as non-Hispanic. Middle Eastern / North African is not a US Census category; that bar is an ancestry-based estimate."
+    }
+  },
+  "totals": {
+    "phase1": 2678,
+    "phase2": 173,
+    "phase2Sessions": 15
+  },
+  "sources": [
+    {
+      "label": "PPIC \u2014 California's Population (2024)",
+      "url": "https://www.ppic.org/publication/californias-population/"
+    },
+    {
+      "label": "US Census 2020 via Demographics of California",
+      "url": "https://en.wikipedia.org/wiki/Demographics_of_California"
+    },
+    {
+      "label": "CA Dept. of Finance E-1 county estimates (Jan 1, 2025)",
+      "url": "https://dof.ca.gov/forecasting/demographics/estimates-e1/"
+    }
+  ]
+};
+</script>
+<!-- DATA:END -->
+<script>
+(function () {
+  const DATA = window.CHART_DATA;
+  const PHASES = [
+    { key: "phase1", title: "Phase 1", series: "Phase 1 participants" },
+    { key: "phase2", title: "Phase 2", series: "Phase 2 participants" },
+  ];
+  const POP_SERIES = "California population";
+
+  // Geometry. One coordinate system for both panels so the pair reads as one figure.
+  const W = 660, H = 430;
+  const M = { top: 8, right: 14, bottom: 104, left: 48 };
+  const PLOT_W = W - M.left - M.right;
+  const PLOT_H = H - M.top - M.bottom;
+  const MAX_BAR = 24;       // cap; never fill the slot
+  const BAR_GAP = 2;        // surface gap between the two adjacent bars
+  const RADIUS = 4;         // rounded data-end, square at the baseline
+
+  const el = (tag, attrs, children) => {
+    const n = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (const k in attrs || {}) n.setAttribute(k, attrs[k]);
+    (children || []).forEach((c) => n.appendChild(c));
+    return n;
+  };
+  const fmt = (v) => (Math.round(v * 10) / 10).toFixed(1) + "%";
+
+  function niceMax(v) {
+    const candidates = [10, 15, 20, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100];
+    return candidates.find((c) => c >= v * 1.06) || 100;
+  }
+
+  function ticks(max) {
+    const step = max <= 20 ? 5 : max <= 40 ? 10 : max <= 70 ? 20 : 25;
+    const out = [];
+    for (let t = 0; t <= max + 0.001; t += step) out.push(t);
+    return out;
+  }
+
+  // Greedy word wrap for the category axis.
+  function wrap(text, maxChars, maxLines) {
+    const words = text.split(/\s+/);
+    const lines = [];
+    let line = "";
+    for (const w of words) {
+      const candidate = line ? line + " " + w : w;
+      if (candidate.length > maxChars && line) {
+        lines.push(line);
+        line = w;
+      } else {
+        line = candidate;
+      }
+    }
+    if (line) lines.push(line);
+    if (lines.length > maxLines) {
+      const kept = lines.slice(0, maxLines - 1);
+      kept.push(lines.slice(maxLines - 1).join(" "));
+      return kept;
+    }
+    return lines;
+  }
+
+  // Rounded top, square bottom.
+  function barPath(x, y, w, h) {
+    if (h <= 0.4) return "";
+    const r = Math.min(RADIUS, w / 2, h);
+    return `M${x} ${y + h} L${x} ${y + r} Q${x} ${y} ${x + r} ${y}` +
+           ` L${x + w - r} ${y} Q${x + w} ${y} ${x + w} ${y + r}` +
+           ` L${x + w} ${y + h} Z`;
+  }
+
+  function buildPanel(dim, phase, yMax) {
+    const panel = document.createElement("section");
+    panel.className = "panel";
+
+    const answered = dim.n[phase.key];
+    const skipped = dim.nonResponse[phase.key];
+    const h2 = document.createElement("h2");
+    h2.textContent = phase.title;
+    const meta = document.createElement("p");
+    meta.className = "meta";
+    meta.textContent = `n = ${answered.toLocaleString()} who answered` +
+      (skipped ? ` · ${skipped.toLocaleString()} did not answer` : "");
+    panel.append(h2, meta);
+
+    const legend = document.createElement("div");
+    legend.className = "legend";
+    [[POP_SERIES, "var(--series-pop)"], [phase.series, "var(--series-participants)"]]
+      .forEach(([label, color]) => {
+        const s = document.createElement("span");
+        const sw = document.createElement("i");
+        sw.className = "swatch";
+        sw.style.background = color;
+        s.append(sw, document.createTextNode(label));
+        legend.appendChild(s);
+      });
+    panel.appendChild(legend);
+
+    const plot = document.createElement("div");
+    plot.className = "plot";
+    const tooltip = document.createElement("div");
+    tooltip.className = "tooltip";
+    tooltip.setAttribute("role", "status");
+
+    const svg = el("svg", {
+      viewBox: `0 0 ${W} ${H}`,
+      role: "img",
+      "aria-label": `${phase.series} versus California population, by ${dim.label.toLowerCase()}`,
+    });
+
+    const y = (v) => M.top + PLOT_H - (v / yMax) * PLOT_H;
+
+    // Gridlines + y ticks (hairline, solid, recessive).
+    ticks(yMax).forEach((t) => {
+      svg.appendChild(el("line", {
+        class: "gridline", x1: M.left, x2: M.left + PLOT_W, y1: y(t), y2: y(t),
+      }));
+      const label = el("text", {
+        class: "tick-text", x: M.left - 10, y: y(t) + 4, "text-anchor": "end",
+      });
+      label.textContent = t + "%";
+      svg.appendChild(label);
+    });
+
+    const slotW = PLOT_W / dim.categories.length;
+    const barW = Math.min(MAX_BAR, (slotW * 0.62 - BAR_GAP) / 2);
+    const pairW = barW * 2 + BAR_GAP;
+
+    dim.categories.forEach((cat, i) => {
+      const popVal = dim.population[i];
+      const partVal = dim[phase.key][i];
+      const cx = M.left + slotW * (i + 0.5);
+      const x0 = cx - pairW / 2;
+
+      const g = el("g", { class: "slot" });
+
+      g.appendChild(el("rect", {
+        class: "hit", x: M.left + slotW * i + 1, y: M.top,
+        width: slotW - 2, height: PLOT_H, rx: 4,
+      }));
+
+      [[popVal, "var(--series-pop)", x0],
+       [partVal, "var(--series-participants)", x0 + barW + BAR_GAP]]
+        .forEach(([v, fill, x]) => {
+          const h = (v / yMax) * PLOT_H;
+          const d = barPath(x, y(v), barW, h);
+          if (d) g.appendChild(el("path", { d, fill }));
+          else g.appendChild(el("rect", {  // keep zero-ish values visible
+            x, y: M.top + PLOT_H - 1.5, width: barW, height: 1.5, fill,
+          }));
+        });
+
+      // Category label, wrapped.
+      const maxChars = Math.max(9, Math.floor(slotW / 6.2));
+      const lines = wrap(dim.labels[i], maxChars, 4);
+      const text = el("text", {
+        class: "cat-text", x: cx, y: M.top + PLOT_H + 20, "text-anchor": "middle",
+      });
+      lines.forEach((ln, li) => {
+        const ts = el("tspan", { x: cx, dy: li === 0 ? 0 : 14 });
+        ts.textContent = ln;
+        text.appendChild(ts);
+      });
+      g.appendChild(text);
+
+      const show = () => {
+        g.classList.add("is-active");
+        const delta = partVal - popVal;
+        tooltip.innerHTML =
+          `<div class="tt-title"></div>
+           <div class="tt-row"><span class="tt-key"><i class="swatch" style="background:var(--series-pop)"></i>${POP_SERIES}</span><b>${fmt(popVal)}</b></div>
+           <div class="tt-row"><span class="tt-key"><i class="swatch" style="background:var(--series-participants)"></i>${phase.series}</span><b>${fmt(partVal)}</b></div>
+           <div class="tt-delta">${delta >= 0 ? "+" : "−"}${fmt(Math.abs(delta)).replace("%", "")} pts vs. population</div>`;
+        tooltip.querySelector(".tt-title").textContent = cat;
+        tooltip.dataset.show = "1";
+
+        // Anchor above the taller bar, but keep the box inside the plot: clamp
+        // horizontally and flip below when there is no headroom.
+        const rect = plot.getBoundingClientRect();
+        const scale = rect.width / W;
+        const tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
+        const anchorY = y(Math.max(popVal, partVal)) * scale;
+        const left = Math.min(Math.max(cx * scale, tw / 2 + 2),
+                              rect.width - tw / 2 - 2);
+        const above = anchorY - th - 10 >= 0;
+        tooltip.style.left = left + "px";
+        tooltip.style.top = (above ? anchorY - th - 10 : anchorY + 10) + "px";
+        tooltip.style.transform = "translateX(-50%)";
+      };
+      const hide = () => {
+        g.classList.remove("is-active");
+        tooltip.dataset.show = "0";
+      };
+      g.addEventListener("pointerenter", show);
+      g.addEventListener("pointermove", show);
+      g.addEventListener("pointerleave", hide);
+      svg.appendChild(g);
+    });
+
+    plot.append(svg, tooltip);
+    panel.appendChild(plot);
+    return panel;
+  }
+
+  function buildTable(dim, phase) {
+    const wrapEl = document.createElement("section");
+    const table = document.createElement("table");
+    const cap = document.createElement("caption");
+    cap.textContent = `${phase.title} — ${dim.label} (share of those who answered, n = ${dim.n[phase.key].toLocaleString()})`;
+    table.appendChild(cap);
+
+    const thead = document.createElement("thead");
+    thead.innerHTML = `<tr><th scope="col">${dim.label}</th>` +
+      `<th scope="col">${POP_SERIES}</th><th scope="col">${phase.series}</th>` +
+      `<th scope="col">Difference</th></tr>`;
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    dim.categories.forEach((cat, i) => {
+      const pop = dim.population[i], part = dim[phase.key][i];
+      const d = part - pop;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<th scope="row">${cat}</th><td>${fmt(pop)}</td>` +
+        `<td>${fmt(part)}</td>` +
+        `<td>${d >= 0 ? "+" : "−"}${fmt(Math.abs(d)).replace("%", "")} pts</td>`;
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    wrapEl.appendChild(table);
+    return wrapEl;
+  }
+
+  const chartView = document.getElementById("chart-view");
+  const tableView = document.getElementById("table-view");
+  const notesList = document.getElementById("notes-list");
+  const select = document.getElementById("dimension");
+
+  function render() {
+    const dim = DATA.dimensions[select.value];
+    // A shared y scale across both panels — the panels are only comparable if
+    // the axis is identical.
+    const peak = Math.max(...dim.population, ...dim.phase1, ...dim.phase2);
+    const yMax = niceMax(peak);
+
+    chartView.replaceChildren(...PHASES.map((p) => buildPanel(dim, p, yMax)));
+    tableView.replaceChildren(...PHASES.map((p) => buildTable(dim, p)));
+
+    const items = [
+      `Participant bars show the share of respondents <em>who answered this question</em>; non-responses are excluded so the comparison against the statewide baseline is like-for-like.`,
+      dim.baselineNote,
+      `Phase 1: ${DATA.totals.phase1.toLocaleString()} responses (phase-1.csv). Phase 2: ${DATA.totals.phase2.toLocaleString()} registered attendees pooled across ${DATA.totals.phase2Sessions} conversation sessions.`,
+      `Sources: ` + DATA.sources.map((s) => `<a href="${s.url}">${s.label}</a>`).join(" · "),
+    ];
+    notesList.innerHTML = items.map((t) => `<li>${t}</li>`).join("");
+  }
+
+  select.addEventListener("change", render);
+
+  const btnChart = document.getElementById("view-chart");
+  const btnTable = document.getElementById("view-table");
+  function setView(isChart) {
+    btnChart.setAttribute("aria-pressed", String(isChart));
+    btnTable.setAttribute("aria-pressed", String(!isChart));
+    chartView.hidden = !isChart;
+    tableView.hidden = isChart;
+  }
+  btnChart.addEventListener("click", () => setView(true));
+  btnTable.addEventListener("click", () => setView(false));
+
+  render();
+  window.addEventListener("resize", () => {
+    document.querySelectorAll(".tooltip").forEach((t) => (t.dataset.show = "0"));
+  });
+})();
+</script>
+</body>
+</html>

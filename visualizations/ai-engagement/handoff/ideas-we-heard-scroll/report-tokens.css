@@ -1,0 +1,44 @@
+/* report-tokens.css — the AI-impact report page's own design vocabulary,
+ * copied from its live /css/ai-impact-report.css and /css/index.css
+ * (fetched 2026-09-18 from the pr-preview
+ * engaged.ca.gov), NOT the sketch's
+ * ec-tokens.css. The report page is a separate codebase (CA.gov template +
+ * Bootstrap + its own report CSS) — this file is a hand-picked subset: the
+ * `--report-*` custom properties, the h1/h2 overrides, `.section-body`, and
+ * a minimal `.container`/`.row`/`.col-lg-8` approximation of its Bootstrap
+ * grid at the two breakpoints this component actually needs (not the full
+ * 5-breakpoint system). Drop this whole file at integration time — the real
+ * page already defines everything in it; it exists so this bundle previews
+ * correctly stand-alone (same role ec-tokens.css plays for the sketches).
+ */
+:root{
+  --report-navy:#1c2745;
+  --report-ink:#0f152f;
+  --report-off-white:#fff4eb;
+  --report-orange:#e79450;
+  --report-orange-light:#f0b07a;
+  --report-link:#1a5a96;
+  --report-rule:#d9dbe0;
+  --report-body:#3b3b3b;
+  --report-font-display:"Noto Sans Display","Noto Sans",system-ui,-apple-system,Roboto,"Helvetica Neue",sans-serif;
+  --report-font-sans:"Noto Sans","Noto Sans Display",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--report-body);
+  font-family:var(--report-font-sans);-webkit-font-smoothing:antialiased}
+h1,h2{font-family:var(--report-font-display);font-weight:900;margin:0 0 1.8rem}
+h1{font-size:47px;color:var(--report-off-white)}
+h2{font-size:37px;color:var(--report-ink)}
+
+/* ---- minimal grid approximation — see file header ---- */
+.container{max-width:1140px;margin:0 auto;padding:0 1.25rem}
+.row{display:flex;flex-wrap:wrap;margin:0 -0.75rem}
+.row > [class*="col-"]{padding:0 0.75rem}
+.col-lg-8{flex:0 0 100%;max-width:100%}
+@media (min-width:992px){ .col-lg-8{flex:0 0 66.6667%;max-width:66.6667%} }
+
+.section-body{line-height:1.75;font-size:1.125rem}
+.section-body p{margin:0 0 1rem}
+.section-off-white{background:var(--report-off-white)}
+
+section#what-we-heard{padding:3rem 0;background:#fff}

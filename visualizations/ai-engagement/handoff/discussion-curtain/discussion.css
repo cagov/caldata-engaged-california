@@ -1,0 +1,459 @@
+/**
+ * De-scoped styles for "Behind the curtain" (tab 1 of "The power of the
+ * discussion"). Merged from DiscussionSection.svelte's own scoped styles
+ * (the shared chrome + this tab's own peek-hotspot/leader/panel rules —
+ * the .moments-sidebar/.info-wrap/.view-toggle blocks belong to the other
+ * two tabs and are dropped), ConversationPeekCard.svelte, and the small
+ * EcCard/EcGlyph/EcStatusPill primitives — real class names instead of
+ * Svelte's scoping hashes. FunnelSectionHeader.svelte's and EcButton's
+ * styles are byte-identical to the sibling participant-funnel handoff's
+ * copies (not repeated here — see that folder's funnel.css if you're
+ * diffing the two).
+ *
+ * White-only surface: this prototype's reference mockups never show a dark
+ * theme (viz/src/App.svelte pins it via a page-level ".white-surface"
+ * override). The two rules below reproduce that pin — see index.html for
+ * the matching `data-theme="light"` attribute that keeps ec-tokens.css's
+ * own OS-dark-mode block from ever applying.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: #ffffff;
+}
+
+:root {
+  /* viz/src/App.svelte's .viz-root.white-surface override, reproduced —
+     the light theme's own defaults are --ec-surface: cream / --ec-surface-
+     alt: white; this section pins both to white. Every other semantic
+     token's light-theme default already matches what that override sets,
+     so no other property needs repinning here. */
+  --ec-surface: var(--ec-bg-white);
+  --ec-surface-alt: var(--ec-bg-white);
+}
+
+.page {
+  min-height: 100vh;
+  padding: 48px 24px;
+  display: flex;
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.discussion-section {
+  font-family: var(--ec-font-sans);
+  color: var(--ec-on-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+}
+
+/* ---- header (shares FunnelSectionHeader.svelte's markup/CSS with the
+   sibling handoff — reproduced here so this folder stays independently
+   self-contained) ---- */
+
+.funnel-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  font-family: var(--ec-font-sans);
+  width: 100%;
+  max-width: 1040px;
+  padding: 0 5.77%;
+  box-sizing: border-box;
+}
+
+.copy-col {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.funnel-section-header h2 {
+  margin: 0 0 20px;
+  font-size: var(--ec-text-h2);
+  font-weight: var(--ec-weight-black);
+  letter-spacing: var(--ec-tracking-tight);
+  color: var(--ec-on-surface);
+}
+
+.phase {
+  margin: 0 0 4px;
+  font-size: var(--ec-text-body-sm);
+  font-weight: var(--ec-weight-semibold);
+  color: var(--ec-on-surface-muted);
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.funnel-section-header h3 {
+  margin: 0;
+  font-size: var(--ec-text-h4);
+  font-weight: var(--ec-weight-bold);
+  letter-spacing: var(--ec-tracking-tight);
+  color: var(--ec-on-surface);
+}
+
+.sub {
+  margin: 6px 0 0;
+  font-size: var(--ec-text-body);
+  color: var(--ec-on-surface-muted);
+}
+
+.stat-col {
+  flex: 0 0 11rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.ec-stat-glyph {
+  color: var(--ec-on-surface);
+  flex: 0 0 auto;
+}
+
+.stat-value {
+  margin: 6px 0 0;
+  font-size: var(--ec-text-h1);
+  font-weight: var(--ec-weight-black);
+  letter-spacing: var(--ec-tracking-tight);
+  color: var(--ec-on-surface);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.stat-caption {
+  margin: 4px 0 0;
+  font-size: var(--ec-text-body-sm);
+  color: var(--ec-on-surface-muted);
+  white-space: nowrap;
+}
+
+/* ---- stage / ring ---- */
+
+#stage {
+  width: 100%;
+  max-width: 1040px;
+  position: relative;
+}
+
+canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Bottom-left, matching the sibling participant-funnel handoff's own
+   .dimension-toggle. */
+.dimension-toggle {
+  position: absolute;
+  left: 5.77%;
+  bottom: 11.38%;
+  display: inline-flex;
+  border-radius: var(--ec-pill-radius);
+  overflow: hidden;
+  border: 1px solid var(--ec-navy);
+}
+
+.dimension-option {
+  font: inherit;
+  font-family: var(--ec-font-sans);
+  font-size: var(--ec-text-caption);
+  font-weight: var(--ec-weight-semibold);
+  padding: 6px 16px;
+  border: none;
+  cursor: pointer;
+  background: var(--ec-surface-alt);
+  color: var(--ec-link);
+}
+
+.dimension-option[aria-pressed="true"] {
+  background: var(--ec-navy);
+  color: var(--ec-text-light);
+}
+
+.dimension-option:focus-visible {
+  outline: 2px solid var(--ec-link);
+  outline-offset: -2px;
+}
+
+.peek-hotspot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.peek-leader {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: none;
+}
+
+/* 38% (SIDEBAR_WIDTH_FRAC in discussion.js) — keep the two in sync by hand
+   if either changes; a plain stylesheet can't read a script const. */
+.peek-panel {
+  position: absolute;
+  right: 0;
+  width: 38%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms ease;
+}
+
+.peek-panel.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.controls {
+  width: 100%;
+  max-width: 1040px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ec-hairline);
+}
+
+.hint {
+  width: 100%;
+  max-width: 1040px;
+  font-size: var(--ec-text-body-sm);
+  line-height: 1.55;
+  color: var(--ec-on-surface-muted);
+  margin: 0;
+}
+
+/* ---- EcCard / EcGlyph / EcStatusPill, de-scoped ---- */
+
+.ec-card {
+  background: var(--ec-surface-alt);
+  border-radius: var(--ec-radius-lg);
+  box-shadow: var(--ec-shadow-sm);
+  padding: 18px 20px;
+  box-sizing: border-box;
+}
+
+/* This prototype's own card treatment on white — a 1px warm-orange outline
+   with no shadow, in place of ec-card's default fill+shadow. */
+.peek-panel .ec-card {
+  border: 1px solid var(--ec-orange);
+  border-radius: var(--ec-radius-md);
+  box-shadow: none;
+}
+
+.ec-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: var(--size, 20px);
+  height: var(--size, 20px);
+  border-radius: 50%;
+  border: 1px solid var(--ec-hairline);
+  color: var(--ec-on-surface-muted);
+}
+
+.ec-status-pill {
+  display: inline-block;
+  font-family: var(--ec-font-sans);
+  font-size: var(--ec-text-xs);
+  font-weight: var(--ec-weight-regular);
+  color: var(--tone, var(--ec-hairline));
+  box-shadow: inset 0 0 0 1px var(--tone, var(--ec-hairline));
+  border-radius: var(--ec-pill-radius);
+  padding: 1px 10px;
+  vertical-align: middle;
+}
+
+/* ---- ConversationPeekCard, de-scoped ---- */
+
+.peek-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  color: var(--ec-on-surface);
+}
+
+.peek-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  width: 100%;
+}
+
+.peek-title {
+  font-size: var(--ec-text-h5);
+  font-weight: var(--ec-weight-semibold);
+}
+
+.peek-turns {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.peek-quote-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.peek-quote-icon {
+  flex: 0 0 auto;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.15rem;
+  color: var(--ec-on-surface-muted);
+}
+
+.peek-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0 0 0.2rem;
+  font-size: var(--ec-text-body-sm);
+  line-height: var(--ec-leading-normal);
+}
+
+.peek-byline {
+  margin: 0;
+  padding-left: 1.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--ec-text-caption);
+  color: var(--ec-on-surface-muted);
+}
+
+.speaker-dot {
+  flex: 0 0 auto;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+}
+
+.peek-footer {
+  border-top: 1px solid var(--ec-hairline);
+  padding-top: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.peek-meta {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: var(--ec-text-caption);
+  font-weight: var(--ec-weight-semibold);
+}
+
+.peek-caption {
+  margin: 0;
+  font-size: var(--ec-text-caption);
+  line-height: 1.4;
+  color: var(--ec-on-surface-muted);
+}
+
+.peek-turned-into {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.turned-into-label {
+  margin: 0;
+  font-size: var(--ec-text-caption);
+  color: var(--ec-on-surface-muted);
+}
+
+.turned-into-concept {
+  margin: 0;
+  font-size: var(--ec-text-body-sm);
+  font-weight: var(--ec-weight-semibold);
+  color: var(--ec-on-surface);
+}
+
+.concept-kicker {
+  display: block;
+  font-size: var(--ec-text-xs);
+  font-weight: var(--ec-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ec-on-surface-muted);
+}
+
+/* ---- EcButton (pill only — the only variant this page uses) ---- */
+
+.ec-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--ec-font-sans);
+  line-height: 1.5;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.ec-button:focus-visible {
+  outline: 2px solid var(--ec-link);
+  outline-offset: 2px;
+}
+
+.ec-button.pill {
+  background: transparent;
+  color: var(--ec-on-surface-muted);
+  border: none;
+  box-shadow: inset 0 0 0 1px var(--ec-hairline);
+  border-radius: var(--ec-pill-radius);
+  padding: 4px 14px;
+  font-size: var(--ec-text-caption);
+  font-weight: var(--ec-weight-regular);
+}
+.ec-button.pill:hover:not(:disabled) {
+  color: var(--ec-link);
+  box-shadow: inset 0 0 0 1px var(--ec-link);
+}
+.ec-button.pill[aria-pressed="true"] {
+  background: var(--ec-navy);
+  color: var(--ec-surface);
+  box-shadow: inset 0 0 0 1px var(--ec-navy);
+  font-weight: var(--ec-weight-semibold);
+}
+.ec-button.pill[aria-pressed="true"]:hover:not(:disabled) {
+  color: #b7c7cf;
+}

@@ -1,0 +1,391 @@
+/**
+ * De-scoped styles for the "Who participated" participant-funnel sketch.
+ * Merged from three Svelte components' scoped <style> blocks
+ * (ParticipantFunnelSelection.svelte, FunnelSectionHeader.svelte,
+ * EcButton.svelte) — real class names instead of Svelte's scoping hashes,
+ * since a one-page document doesn't need the isolation. Byte-identical
+ * property values throughout; only the selectors changed.
+ *
+ * Also includes the page-shell rules the component relied on but did not
+ * own (viz/src/App.svelte's .viz-root) — background, padding, and
+ * tabular-nums, ported to `.page` below. Without tabular-nums the hero
+ * stats visibly jitter width between stages.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--ec-surface);
+}
+
+/* Ported from App.svelte's .viz-root — page background, padding, and
+   tabular figures so the hero stat number doesn't jitter width as it
+   changes each stage. */
+.page {
+  min-height: 100vh;
+  padding: 48px 24px;
+  display: flex;
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- ParticipantFunnelSelection.svelte ---- */
+
+.funnel-cloud {
+  font-family: var(--ec-font-sans);
+  color: var(--ec-on-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+}
+
+#stage {
+  width: 100%;
+  max-width: 1040px;
+  position: relative;
+}
+
+canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Bottom-left (mockup match) — left edge lines up with the header's own
+   5.77% padding and the canvas legend's x=60 margin. `bottom` is set
+   inline from funnel.js's dimensionTogglePct, converted from the
+   Participant/Facilitator key's own y so the toggle stays level with that
+   key row at any window width. translateY(50%) makes the percentage refer
+   to this element's own vertical center rather than its bottom edge. */
+.dimension-toggle {
+  position: absolute;
+  left: 5.77%;
+  bottom: 11.73%;
+  transform: translateY(50%);
+  display: inline-flex;
+  /* Rounded rectangle, not a full pill/stadium — matches the Play/Restart
+     buttons' own corner radius below the canvas. */
+  border-radius: var(--ec-button-radius);
+  overflow: hidden;
+  border: 1px solid var(--ec-navy);
+}
+
+/* A single joined segmented control (mockup match) rather than two separate
+   pills. */
+.dimension-option {
+  font: inherit;
+  font-family: var(--ec-font-sans);
+  font-size: var(--ec-text-caption);
+  font-weight: var(--ec-weight-semibold);
+  padding: 6px 16px;
+  border: none;
+  cursor: pointer;
+  background: var(--ec-surface-alt);
+  color: var(--ec-link);
+}
+
+.dimension-option[aria-pressed="true"] {
+  background: var(--ec-navy);
+  color: var(--ec-text-light);
+}
+
+.dimension-option:focus-visible {
+  outline: 2px solid var(--ec-link);
+  outline-offset: -2px;
+}
+
+.controls {
+  width: 100%;
+  max-width: 1040px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ec-hairline);
+}
+
+#stage-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.hint {
+  width: 100%;
+  max-width: 1040px;
+  font-size: var(--ec-text-body-sm);
+  line-height: 1.55;
+  color: var(--ec-on-surface-muted);
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .spacer {
+    display: none;
+  }
+}
+
+/* ---- FunnelSectionHeader.svelte ---- */
+
+.funnel-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  font-family: var(--ec-font-sans);
+  /* Own explicit width, not just a flex item's content size — the parent
+     (.funnel-cloud) is a centered flex column, so without this the header
+     would shrink to its content instead of spanning the same 1040px box as
+     #stage/.controls/.hint below it. */
+  width: 100%;
+  max-width: 1040px;
+  /* Percentages of the 1040px canvas below, so the heading's left edge and
+     the stat's right edge stay aligned with the canvas's own text margins
+     (x=60) at any width. */
+  padding: 0 5.77%;
+  box-sizing: border-box;
+}
+
+.copy-col {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.funnel-section-header h2 {
+  margin: 0 0 20px;
+  font-size: var(--ec-text-h2);
+  font-weight: var(--ec-weight-black);
+  letter-spacing: var(--ec-tracking-tight);
+  color: var(--ec-on-surface);
+}
+
+.stage-copy {
+  transition: opacity 120ms linear;
+}
+
+.phase {
+  margin: 0 0 4px;
+  font-size: var(--ec-text-body-sm);
+  font-weight: var(--ec-weight-semibold);
+  color: var(--ec-on-surface-muted);
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.funnel-section-header h3 {
+  margin: 0;
+  font-size: var(--ec-text-h4);
+  font-weight: var(--ec-weight-bold);
+  letter-spacing: var(--ec-tracking-tight);
+  color: var(--ec-on-surface);
+}
+
+.sub {
+  margin: 6px 0 0;
+  font-size: var(--ec-text-body);
+  color: var(--ec-on-surface-muted);
+  /* Wide enough that the (i) icon never wraps onto its own line — copy-col's
+     own flex-basis (bounded by the header's 1040px max-width minus the stat
+     column) is the only real limit. */
+  max-width: none;
+}
+
+.info-wrap {
+  position: relative;
+  display: inline-flex;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* Wired but unused today — every current stage sets info: false in
+   funnel-layout.js's buildSelectionStages, so this affordance never shows.
+   Kept for parity with the source; see README.md. */
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--ec-on-surface-muted);
+  background: none;
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-style: italic;
+  font-weight: var(--ec-weight-bold);
+  color: var(--ec-on-surface-muted);
+  cursor: help;
+}
+
+/* CSS-driven, not a native `title` tooltip — a native tooltip's browser
+   debounce means it won't reliably re-show on a second hover of the same
+   element without first moving away for a beat. This shows every time. */
+.info-tooltip {
+  position: absolute;
+  top: 130%;
+  left: 0;
+  z-index: 20;
+  width: 18rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--ec-chip-surface);
+  color: var(--ec-chip-on-surface);
+  font-size: var(--ec-text-caption);
+  line-height: var(--ec-leading-normal);
+  border-radius: var(--ec-radius-sm);
+  box-shadow: var(--ec-shadow-sm);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 120ms ease;
+  pointer-events: none;
+}
+
+.info-icon:hover + .info-tooltip,
+.info-icon:focus-visible + .info-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.stat-col {
+  /* Fixed, not content-sized — the 4 stages' captions range from
+     "invited"/"attended" to "survey respondents", and with a content-sized
+     column the icon+number visibly jump horizontally as the header
+     crossfades between stages. 11rem comfortably fits "survey respondents"
+     at --ec-text-body-sm with room to spare. */
+  flex: 0 0 11rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: opacity 120ms linear;
+}
+
+.ec-stat-glyph {
+  color: var(--ec-on-surface);
+  flex: 0 0 auto;
+}
+
+.stat-value {
+  margin: 6px 0 0;
+  font-size: var(--ec-text-h1);
+  font-weight: var(--ec-weight-black);
+  letter-spacing: var(--ec-tracking-tight);
+  color: var(--ec-on-surface);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.stat-caption {
+  margin: 4px 0 0;
+  font-size: var(--ec-text-body-sm);
+  color: var(--ec-on-surface-muted);
+  white-space: nowrap;
+}
+
+/* ---- EcButton.svelte -> .ec-button ---- */
+
+.ec-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--ec-font-sans);
+  line-height: 1.5;
+  cursor: pointer;
+  white-space: nowrap;
+  /* No scale transform on hover, per the design system: "Hover: slight
+     darkening of fill; no scale transform." */
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.ec-button:focus-visible {
+  outline: 2px solid var(--ec-link);
+  outline-offset: 2px;
+}
+
+.ec-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Fill / Primary */
+.ec-button.primary {
+  background: var(--ec-orange);
+  color: var(--ec-navy);
+  border: none;
+  border-radius: var(--ec-button-radius);
+  padding: 8px 17px;
+  font-size: 18px;
+  font-weight: var(--ec-weight-bold);
+}
+.ec-button.primary:hover:not(:disabled) {
+  background: var(--ec-orange-dark);
+}
+.ec-button.primary[aria-pressed="true"] {
+  background: var(--ec-navy);
+  color: var(--ec-surface);
+}
+
+/* Outline / Secondary */
+.ec-button.outline {
+  background: transparent;
+  color: var(--ec-on-surface);
+  border: none;
+  box-shadow: inset 0 0 0 2px var(--ec-on-surface);
+  border-radius: var(--ec-button-radius);
+  padding: 8px 17px;
+  font-size: 18px;
+  font-weight: var(--ec-weight-bold);
+}
+.ec-button.outline:hover:not(:disabled) {
+  background: var(--ec-hairline);
+}
+.ec-button.outline[aria-pressed="true"] {
+  background: var(--ec-on-surface);
+  color: var(--ec-surface);
+}
+
+/* Pill — sized per the design system's "Pill status badge", used here for
+   toggles rather than status display. */
+.ec-button.pill {
+  background: transparent;
+  color: var(--ec-on-surface-muted);
+  border: none;
+  box-shadow: inset 0 0 0 1px var(--ec-hairline);
+  border-radius: var(--ec-pill-radius);
+  padding: 4px 14px;
+  font-size: var(--ec-text-caption);
+  font-weight: var(--ec-weight-regular);
+}
+.ec-button.pill:hover:not(:disabled) {
+  color: var(--ec-link);
+  box-shadow: inset 0 0 0 1px var(--ec-link);
+}
+.ec-button.pill[aria-pressed="true"] {
+  background: var(--ec-navy);
+  color: var(--ec-surface);
+  box-shadow: inset 0 0 0 1px var(--ec-navy);
+  font-weight: var(--ec-weight-semibold);
+}
+/* An already-pressed pill (e.g. the active stage) keeps its navy fill and
+   navy border on hover — the plain hover rule's --ec-link text reads as a
+   washed-out light blue on that dark background (well under 4.5:1);
+   #b7c7cf clears ~9:1 against navy. */
+.ec-button.pill[aria-pressed="true"]:hover:not(:disabled) {
+  color: #b7c7cf;
+}

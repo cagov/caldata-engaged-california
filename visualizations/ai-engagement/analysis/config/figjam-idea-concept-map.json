@@ -1,0 +1,1922 @@
+{
+  "meta": {
+    "source": "Figma FigJam board",
+    "url": "(internal FigJam board — not public)",
+    "fileKey": "(redacted)",
+    "nodeId": "(redacted)",
+    "extracted": "2026-08-26",
+    "note": "[SYNTHETIC] Sticky text replaced; positions, colors, sections and concept labels are unchanged. Frozen snapshot of sticky-note positions and concept-label text. Board content may change over time; this file is what analysis/src/stages/s16-figjam-linkage.ts actually processes, not a live fetch."
+  },
+  "sections": [
+    {
+      "id": "705:1925",
+      "name": "Learning and adapting to an AI reality",
+      "x": 15320,
+      "y": 1683,
+      "width": 3064,
+      "height": 2653
+    },
+    {
+      "id": "705:1924",
+      "name": "Protecting people's way of life",
+      "x": 736,
+      "y": 1683,
+      "width": 7784,
+      "height": 6989
+    },
+    {
+      "id": "705:1923",
+      "name": "Regulating AI companies",
+      "x": 9104,
+      "y": 1680,
+      "width": 5632,
+      "height": 4080
+    },
+    {
+      "id": "510:686",
+      "name": "Key",
+      "x": 736,
+      "y": 403,
+      "width": 1824,
+      "height": 1264
+    }
+  ],
+  "labels": [
+    {
+      "id": "172:353",
+      "text": "Increase public awareness around how to use AI ethically (7 sessions; 21 votes; 7 policy ideas; 0 top ideas)",
+      "x": 198,
+      "y": 369.2724609375,
+      "width": 2022,
+      "height": 60,
+      "sectionId": "705:1925",
+      "level": "concept"
+    },
+    {
+      "id": "551:1159",
+      "text": "Do more research on AI (4 sessions; 18 votes; 6 policy ideas; 3 top ideas)",
+      "x": 194,
+      "y": 1193.2724609375,
+      "width": 1331,
+      "height": 60,
+      "sectionId": "705:1925",
+      "level": "concept"
+    },
+    {
+      "id": "878:1680",
+      "text": "Create employee training about AI (3 sessions; 9 votes; 3 policy ideas; 1 top ideas)",
+      "x": 192,
+      "y": 1889.2724609375,
+      "width": 1501,
+      "height": 60,
+      "sectionId": "705:1925",
+      "level": "concept"
+    },
+    {
+      "id": "795:978",
+      "text": "Incentivize keeping or adding jobs; prevent firing (6 sessions; 34 votes; 8 policy ideas; 3 top ideas)",
+      "x": 128,
+      "y": 468.7275390625,
+      "width": 1797,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "795:985",
+      "text": "Shift or reskill employees (5 sessions; 20 votes; 5 policy ideas; 4 top ideas)",
+      "x": 128,
+      "y": 1197.27294921875,
+      "width": 1365,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "795:1035",
+      "text": "Support workers who lose jobs due to AI (2 sessions; 9 votes; 2 policy ideas; 2 top ideas)",
+      "x": 131,
+      "y": 1945.27294921875,
+      "width": 1620,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "795:1082",
+      "text": "Prohibit firing employees for not using AI (2 sessions; 6 votes; 2 policy ideas; 0 top ideas)",
+      "x": 128,
+      "y": 2301.27294921875,
+      "width": 1623,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "795:1108",
+      "text": "Report on job loss due to AI (1 sessions; 3 votes; 1 policy ideas; 0 top ideas)",
+      "x": 131,
+      "y": 2704,
+      "width": 1374,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "795:1134",
+      "text": "Use AI for jobs people don't want to or can't do (1 sessions; 2 votes; 1 policy ideas; 0 top ideas)",
+      "x": 131,
+      "y": 3076,
+      "width": 1723,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "172:392",
+      "text": "Prevent students from using AI for school work (3 sessions; 9 votes; 3 policy ideas; 0 top ideas)",
+      "x": 2909,
+      "y": 3709,
+      "width": 1740,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "863:1341",
+      "text": "Require parental controls for AI use (2 sessions; 8 votes; 2 policy ideas; 1 top ideas)",
+      "x": 2909,
+      "y": 4248,
+      "width": 1516,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "871:1358",
+      "text": "Improve education for students about AI (4 sessions; 14 votes; 4 policy ideas; 2 top ideas)",
+      "x": 2909,
+      "y": 3277,
+      "width": 1639,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "172:448",
+      "text": "Limit data collection (4 sessions; 17 votes; 4 policy ideas; 3 top ideas)",
+      "x": 134,
+      "y": 5489.00048828125,
+      "width": 1269,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "182:946",
+      "text": "Allow people to opt-out of AI (4 sessions; 14 votes; 5 policy ideas; 0 top ideas)",
+      "x": 136,
+      "y": 5905.00048828125,
+      "width": 1427,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "547:1012",
+      "text": "Preserve privacy (3 sessions; 25 votes; 6 policy ideas; 1 top ideas)",
+      "x": 132,
+      "y": 5050,
+      "width": 1208,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "856:1226",
+      "text": "Ensure companies use data properly and transparently (5 sessions; 38 votes; 11 policy ideas; 4 top ideas)",
+      "x": 132,
+      "y": 4373,
+      "width": 1919,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "172:381",
+      "text": "Promoting access to life outside of AI (3 sessions; 7 votes; 4 policy ideas; 0 top ideas)",
+      "x": 2895.5,
+      "y": 1769.818359375,
+      "width": 1776.5,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "172:480",
+      "text": "Disclosing or labelling when AI is used (7 sessions; 30 votes; 9 policy ideas; 2 top ideas)",
+      "x": 2886,
+      "y": 508.2734375,
+      "width": 1610,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "546:1008",
+      "text": "Keeping humans in the loop (3 sessions; 10 votes; 3 policy ideas; 0 top ideas)",
+      "x": 2895.5,
+      "y": 1333.818359375,
+      "width": 1424.5,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "638:1186",
+      "text": "Defining AI vs. humans (1 sessions; 2 votes; 1 policy ideas; 0 top ideas)",
+      "x": 2886.5,
+      "y": 2177.818359375,
+      "width": 1288,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "873:1476",
+      "text": "Enable more public input on AI policy (6 sessions; 27 votes; 8 policy ideas; 3 top ideas)",
+      "x": 5694,
+      "y": 606,
+      "width": 1578,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "182:877",
+      "text": "Ensure communities have input on AI-related impacts (2 sessions; 11 votes; 2 policy ideas; 2 top ideas)",
+      "x": 5696,
+      "y": 1459,
+      "width": 1868,
+      "height": 60,
+      "sectionId": "705:1924",
+      "level": "concept"
+    },
+    {
+      "id": "579:930",
+      "text": "Ensuring public input around AI aspects that directly affect them (8 sessions; 38 votes; 10 policy ideas)",
+      "x": 5690,
+      "y": 347,
+      "width": 1891,
+      "height": 192,
+      "sectionId": "705:1924",
+      "level": "subtheme",
+      "note": "this is a SUBTHEME-level banner (ST-05), not a concept - its two concepts (C-18, C-19) are the two entries above/below it"
+    },
+    {
+      "id": "182:963",
+      "text": "Control how AI works (8 sessions; 23 votes; 8 policy ideas; 2 top ideas)",
+      "x": 380,
+      "y": 1198,
+      "width": 1297,
+      "height": 60,
+      "sectionId": "705:1923",
+      "level": "concept"
+    },
+    {
+      "id": "226:409",
+      "text": "Enforce copyright protections (4 sessions; 20 votes; 5 policy ideas; 3 top ideas)",
+      "x": 380,
+      "y": 1945,
+      "width": 1452,
+      "height": 60,
+      "sectionId": "705:1923",
+      "level": "concept"
+    },
+    {
+      "id": "551:1263",
+      "text": "Determine fields/areas where AI can be used safely (7 sessions; 31 votes; 9 policy ideas; 4 top ideas)",
+      "x": 380,
+      "y": 416,
+      "width": 1898,
+      "height": 60,
+      "sectionId": "705:1923",
+      "level": "concept"
+    },
+    {
+      "id": "636:1134",
+      "text": "Restrict AI companies' profits (5 sessions; 18 votes; 6 policy ideas; 2 top ideas)",
+      "x": 380,
+      "y": 2975,
+      "width": 1434,
+      "height": 60,
+      "sectionId": "705:1923",
+      "level": "concept"
+    },
+    {
+      "id": "689:942",
+      "text": "Protect the environment and consumers from the resource needs of data centers (6 sessions; 35 votes; 8 policy ideas; 4 top ideas)",
+      "x": 3076,
+      "y": 1214.272705078125,
+      "width": 2549,
+      "height": 60,
+      "sectionId": "705:1923",
+      "level": "concept"
+    },
+    {
+      "id": "701:933",
+      "text": "Use AI to improve government operations (3 sessions; 20 votes; 5 policy ideas; 1 top ideas)",
+      "x": 380,
+      "y": 2487,
+      "width": 1689,
+      "height": 60,
+      "sectionId": "705:1923",
+      "level": "concept"
+    },
+    {
+      "id": "551:1320",
+      "text": "Hold AI companies accountable for protecting consumers (7 sessions; 37 votes; 11 policy ideas; 4 top ideas)",
+      "x": 3076,
+      "y": 428.2724609375,
+      "width": 1968,
+      "height": 60,
+      "sectionId": "705:1923",
+      "level": "concept",
+      "note": "Board itself had a placeholder \"Text\" label here; resolved by position + matching stated ideas count (11) against rooms.json concept C-25."
+    }
+  ],
+  "stickies": [
+    {
+      "id": "550:909",
+      "text": "[SYNTHETIC] Participant idea #1 (original sticky text removed)",
+      "x": 739,
+      "y": 1967.2724609375,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1925"
+    },
+    {
+      "id": "480:588",
+      "text": "[SYNTHETIC] Participant idea #2 (original sticky text removed)",
+      "x": 193,
+      "y": 1271.2724609375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GRAY_UI3",
+      "sectionId": "705:1925"
+    },
+    {
+      "id": "172:269",
+      "text": "[SYNTHETIC] Participant idea #3 (original sticky text removed)",
+      "x": 192,
+      "y": 1973.2724609375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GREEN",
+      "sectionId": "705:1925"
+    },
+    {
+      "id": "172:309",
+      "text": "[SYNTHETIC] Participant idea #4 (original sticky text removed)",
+      "x": 198,
+      "y": 448.8173828125,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GREEN",
+      "sectionId": "705:1925"
+    },
+    {
+      "id": "174:651",
+      "text": "[SYNTHETIC] Participant idea #5 (original sticky text removed)",
+      "x": 745,
+      "y": 453.08984375,
+      "width": 240,
+      "height": 328,
+      "color": "STICKY_TEAL",
+      "sectionId": "705:1925"
+    },
+    {
+      "id": "174:745",
+      "text": "[SYNTHETIC] Participant idea #6 (original sticky text removed)",
+      "x": 1026,
+      "y": 1270.36328125,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_VIOLET",
+      "sectionId": "705:1925"
+    },
+    {
+      "id": "510:961",
+      "text": "[SYNTHETIC] Participant idea #7 (original sticky text removed)",
+      "x": 471,
+      "y": 738.08984375,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1925"
+    },
+    {
+      "id": "510:967",
+      "text": "[SYNTHETIC] Participant idea #8 (original sticky text removed)",
+      "x": 753,
+      "y": 1265.8173828125,
+      "width": 240,
+      "height": 352,
+      "color": "CUSTOM",
+      "sectionId": "705:1925"
+    },
+    {
+      "id": "510:837",
+      "text": "[SYNTHETIC] Participant idea #9 (original sticky text removed)",
+      "x": 198,
+      "y": 738.08984375,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1925"
+    },
+    {
+      "id": "525:1254",
+      "text": "[SYNTHETIC] Participant idea #10 (original sticky text removed)",
+      "x": 1016,
+      "y": 453.08984375,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1925"
+    },
+    {
+      "id": "510:965",
+      "text": "[SYNTHETIC] Participant idea #11 (original sticky text removed)",
+      "x": 467,
+      "y": 1270.8173828125,
+      "width": 252,
+      "height": 291.9876708984375,
+      "color": "CUSTOM",
+      "sectionId": "705:1925"
+    },
+    {
+      "id": "480:628",
+      "text": "[SYNTHETIC] Participant idea #12 (original sticky text removed)",
+      "x": 1039,
+      "y": 1546.2724609375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GRAY_UI3",
+      "sectionId": "705:1925"
+    },
+    {
+      "id": "510:1083",
+      "text": "[SYNTHETIC] Participant idea #13 (original sticky text removed)",
+      "x": 466,
+      "y": 1966.8173828125,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1925"
+    },
+    {
+      "id": "480:626",
+      "text": "[SYNTHETIC] Participant idea #14 (original sticky text removed)",
+      "x": 474,
+      "y": 449.08984375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GRAY_UI3",
+      "sectionId": "705:1925"
+    },
+    {
+      "id": "637:2106",
+      "text": "[SYNTHETIC] Participant idea #15 (original sticky text removed)",
+      "x": 744,
+      "y": 805.08984375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_BLUE",
+      "sectionId": "705:1925"
+    },
+    {
+      "id": "686:937",
+      "text": "[SYNTHETIC] Participant idea #16 (original sticky text removed)",
+      "x": 198,
+      "y": 1546.2724609375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_PINK",
+      "sectionId": "705:1925"
+    },
+    {
+      "id": "629:2013",
+      "text": "[SYNTHETIC] Participant idea #17 (original sticky text removed)",
+      "x": 665,
+      "y": 1263,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_BLUE",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "172:225",
+      "text": "[SYNTHETIC] Participant idea #18 (original sticky text removed)",
+      "x": 128,
+      "y": 552.09130859375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GREEN",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "172:229",
+      "text": "[SYNTHETIC] Participant idea #19 (original sticky text removed)",
+      "x": 128,
+      "y": 1264,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GREEN",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "172:317",
+      "text": "[SYNTHETIC] Participant idea #20 (original sticky text removed)",
+      "x": 131,
+      "y": 818,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GREEN",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "172:325",
+      "text": "[SYNTHETIC] Participant idea #21 (original sticky text removed)",
+      "x": 3195,
+      "y": 3809.908203125,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GREEN",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "172:453",
+      "text": "[SYNTHETIC] Participant idea #22 (original sticky text removed)",
+      "x": 670,
+      "y": 552,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_ORANGE",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "172:499",
+      "text": "[SYNTHETIC] Participant idea #23 (original sticky text removed)",
+      "x": 393,
+      "y": 2372.27294921875,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_ORANGE",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "172:538",
+      "text": "[SYNTHETIC] Participant idea #24 (original sticky text removed)",
+      "x": 393,
+      "y": 818,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_ORANGE",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "174:655",
+      "text": "[SYNTHETIC] Participant idea #25 (original sticky text removed)",
+      "x": 403,
+      "y": 2008.00048828125,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_TEAL",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "174:663",
+      "text": "[SYNTHETIC] Participant idea #26 (original sticky text removed)",
+      "x": 131,
+      "y": 2776.7275390625,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_TEAL",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "174:700",
+      "text": "[SYNTHETIC] Participant idea #27 (original sticky text removed)",
+      "x": 674,
+      "y": 815.27294921875,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_TEAL",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "174:737",
+      "text": "[SYNTHETIC] Participant idea #28 (original sticky text removed)",
+      "x": 131,
+      "y": 2008.00048828125,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_VIOLET",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "174:741",
+      "text": "[SYNTHETIC] Participant idea #29 (original sticky text removed)",
+      "x": 2912,
+      "y": 3810,
+      "width": 240,
+      "height": 328,
+      "color": "STICKY_VIOLET",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "226:456",
+      "text": "[SYNTHETIC] Participant idea #30 (original sticky text removed)",
+      "x": 3487,
+      "y": 3810.2734375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_YELLOW",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "226:480",
+      "text": "[SYNTHETIC] Participant idea #31 (original sticky text removed)",
+      "x": 393,
+      "y": 1263,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_YELLOW",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "227:494",
+      "text": "[SYNTHETIC] Participant idea #32 (original sticky text removed)",
+      "x": 3180,
+      "y": 3360.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_YELLOW",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "510:711",
+      "text": "[SYNTHETIC] Participant idea #33 (original sticky text removed)",
+      "x": 1224,
+      "y": 553.27294921875,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "510:713",
+      "text": "[SYNTHETIC] Participant idea #34 (original sticky text removed)",
+      "x": 3724,
+      "y": 3360.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "525:1246",
+      "text": "[SYNTHETIC] Participant idea #35 (original sticky text removed)",
+      "x": 128,
+      "y": 1526,
+      "width": 240,
+      "height": 328,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "525:1228",
+      "text": "[SYNTHETIC] Participant idea #36 (original sticky text removed)",
+      "x": 2909,
+      "y": 4352.54541015625,
+      "width": 240,
+      "height": 472,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "525:1250",
+      "text": "[SYNTHETIC] Participant idea #37 (original sticky text removed)",
+      "x": 948,
+      "y": 553.27294921875,
+      "width": 240,
+      "height": 448,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "510:1086",
+      "text": "[SYNTHETIC] Participant idea #38 (original sticky text removed)",
+      "x": 131,
+      "y": 3143.7275390625,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "510:1084",
+      "text": "[SYNTHETIC] Participant idea #39 (original sticky text removed)",
+      "x": 3451,
+      "y": 3360.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "510:1081",
+      "text": "[SYNTHETIC] Participant idea #40 (original sticky text removed)",
+      "x": 393,
+      "y": 552,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "637:2156",
+      "text": "[SYNTHETIC] Participant idea #41 (original sticky text removed)",
+      "x": 128,
+      "y": 2368.00048828125,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_BLUE",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "686:912",
+      "text": "[SYNTHETIC] Participant idea #42 (original sticky text removed)",
+      "x": 930,
+      "y": 1263,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_PINK",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "686:925",
+      "text": "[SYNTHETIC] Participant idea #43 (original sticky text removed)",
+      "x": 2909,
+      "y": 3360.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_PINK",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "174:696",
+      "text": "[SYNTHETIC] Participant idea #44 (original sticky text removed)",
+      "x": 5696,
+      "y": 1059.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_TEAL",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "174:749",
+      "text": "[SYNTHETIC] Participant idea #45 (original sticky text removed)",
+      "x": 5698,
+      "y": 1551.7275390625,
+      "width": 240,
+      "height": 376,
+      "color": "STICKY_VIOLET",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "226:472",
+      "text": "[SYNTHETIC] Participant idea #46 (original sticky text removed)",
+      "x": 5966,
+      "y": 698.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_YELLOW",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "510:714",
+      "text": "[SYNTHETIC] Participant idea #47 (original sticky text removed)",
+      "x": 6521,
+      "y": 707.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "510:962",
+      "text": "[SYNTHETIC] Participant idea #48 (original sticky text removed)",
+      "x": 6521,
+      "y": 1002.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "174:849",
+      "text": "[SYNTHETIC] Participant idea #49 (original sticky text removed)",
+      "x": 6236,
+      "y": 707.54541015625,
+      "width": 240,
+      "height": 592,
+      "color": "STICKY_YELLOW",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "525:1242",
+      "text": "[SYNTHETIC] Participant idea #50 (original sticky text removed)",
+      "x": 6806,
+      "y": 707.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "525:1233",
+      "text": "[SYNTHETIC] Participant idea #51 (original sticky text removed)",
+      "x": 5696,
+      "y": 698.54541015625,
+      "width": 240,
+      "height": 328,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "510:830",
+      "text": "[SYNTHETIC] Participant idea #52 (original sticky text removed)",
+      "x": 5968,
+      "y": 1551.7275390625,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "636:1089",
+      "text": "[SYNTHETIC] Participant idea #53 (original sticky text removed)",
+      "x": 5966,
+      "y": 1002.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_BLUE",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "629:2051",
+      "text": "[SYNTHETIC] Participant idea #54 (original sticky text removed)",
+      "x": 965,
+      "y": 5127.81787109375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_BLUE",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "550:899",
+      "text": "[SYNTHETIC] Participant idea #55 (original sticky text removed)",
+      "x": 948,
+      "y": 4723,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "550:900",
+      "text": "[SYNTHETIC] Participant idea #56 (original sticky text removed)",
+      "x": 975,
+      "y": 5983.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "550:901",
+      "text": "[SYNTHETIC] Participant idea #57 (original sticky text removed)",
+      "x": 132,
+      "y": 4453,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "550:902",
+      "text": "[SYNTHETIC] Participant idea #58 (original sticky text removed)",
+      "x": 399,
+      "y": 4452.544921875,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "550:903",
+      "text": "[SYNTHETIC] Participant idea #59 (original sticky text removed)",
+      "x": 136,
+      "y": 5128,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "550:908",
+      "text": "[SYNTHETIC] Participant idea #60 (original sticky text removed)",
+      "x": 1260,
+      "y": 5983.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "172:427",
+      "text": "[SYNTHETIC] Participant idea #61 (original sticky text removed)",
+      "x": 134,
+      "y": 5568.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_ORANGE",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "174:671",
+      "text": "[SYNTHETIC] Participant idea #62 (original sticky text removed)",
+      "x": 134,
+      "y": 5983.36376953125,
+      "width": 240,
+      "height": 280,
+      "color": "STICKY_TEAL",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "174:757",
+      "text": "[SYNTHETIC] Participant idea #63 (original sticky text removed)",
+      "x": 406,
+      "y": 5568.00048828125,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_VIOLET",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "174:761",
+      "text": "[SYNTHETIC] Participant idea #64 (original sticky text removed)",
+      "x": 1225,
+      "y": 5568.00048828125,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_VIOLET",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "174:768",
+      "text": "[SYNTHETIC] Participant idea #65 (original sticky text removed)",
+      "x": 406,
+      "y": 5983.36376953125,
+      "width": 240,
+      "height": 400,
+      "color": "STICKY_VIOLET",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "510:703",
+      "text": "[SYNTHETIC] Participant idea #66 (original sticky text removed)",
+      "x": 678,
+      "y": 5568.00048828125,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "550:898",
+      "text": "[SYNTHETIC] Participant idea #67 (original sticky text removed)",
+      "x": 413,
+      "y": 5130,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "510:838",
+      "text": "[SYNTHETIC] Participant idea #68 (original sticky text removed)",
+      "x": 132,
+      "y": 4723,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "510:832",
+      "text": "[SYNTHETIC] Participant idea #69 (original sticky text removed)",
+      "x": 686,
+      "y": 5128.09033203125,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "480:612",
+      "text": "[SYNTHETIC] Participant idea #70 (original sticky text removed)",
+      "x": 404,
+      "y": 4723,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GRAY_UI3",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "480:592",
+      "text": "[SYNTHETIC] Participant idea #71 (original sticky text removed)",
+      "x": 666,
+      "y": 4453,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GRAY_UI3",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "480:610",
+      "text": "[SYNTHETIC] Participant idea #72 (original sticky text removed)",
+      "x": 691,
+      "y": 5983.81884765625,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GRAY_UI3",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "637:2142",
+      "text": "[SYNTHETIC] Participant idea #73 (original sticky text removed)",
+      "x": 1244,
+      "y": 5127.81787109375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_BLUE",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "636:1123",
+      "text": "[SYNTHETIC] Participant idea #74 (original sticky text removed)",
+      "x": 676,
+      "y": 4723,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_BLUE",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "686:929",
+      "text": "[SYNTHETIC] Participant idea #75 (original sticky text removed)",
+      "x": 933,
+      "y": 4452,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_PINK",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "686:941",
+      "text": "[SYNTHETIC] Participant idea #76 (original sticky text removed)",
+      "x": 953,
+      "y": 5568.00048828125,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_PINK",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "510:712",
+      "text": "[SYNTHETIC] Participant idea #77 (original sticky text removed)",
+      "x": 3172,
+      "y": 4352.54541015625,
+      "width": 240,
+      "height": 328,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "629:1999",
+      "text": "[SYNTHETIC] Participant idea #78 (original sticky text removed)",
+      "x": 3704.5,
+      "y": 587.728515625,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_BLUE",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "172:333",
+      "text": "[SYNTHETIC] Participant idea #79 (original sticky text removed)",
+      "x": 2895.5,
+      "y": 1849.818359375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GREEN",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "172:472",
+      "text": "[SYNTHETIC] Participant idea #80 (original sticky text removed)",
+      "x": 2886,
+      "y": 587.818359375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_ORANGE",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "172:488",
+      "text": "[SYNTHETIC] Participant idea #81 (original sticky text removed)",
+      "x": 3159,
+      "y": 587.818359375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_ORANGE",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "174:675",
+      "text": "[SYNTHETIC] Participant idea #82 (original sticky text removed)",
+      "x": 2886,
+      "y": 860.2734375,
+      "width": 240,
+      "height": 376,
+      "color": "STICKY_TEAL",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "510:729",
+      "text": "[SYNTHETIC] Participant idea #83 (original sticky text removed)",
+      "x": 3432,
+      "y": 860,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "510:833",
+      "text": "[SYNTHETIC] Participant idea #84 (original sticky text removed)",
+      "x": 3443.5,
+      "y": 1431.3642578125,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "525:1258",
+      "text": "[SYNTHETIC] Participant idea #85 (original sticky text removed)",
+      "x": 3431,
+      "y": 587.2734375,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "480:629",
+      "text": "[SYNTHETIC] Participant idea #86 (original sticky text removed)",
+      "x": 2895.5,
+      "y": 1430.455078125,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GRAY_UI3",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "510:1087",
+      "text": "[SYNTHETIC] Participant idea #87 (original sticky text removed)",
+      "x": 3172.5,
+      "y": 1849.818359375,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "480:609",
+      "text": "[SYNTHETIC] Participant idea #88 (original sticky text removed)",
+      "x": 3159,
+      "y": 860.2734375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GRAY_UI3",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "637:2098",
+      "text": "[SYNTHETIC] Participant idea #89 (original sticky text removed)",
+      "x": 3169.5,
+      "y": 1430.91015625,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_BLUE",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "637:2114",
+      "text": "[SYNTHETIC] Participant idea #90 (original sticky text removed)",
+      "x": 3449.5,
+      "y": 1849.818359375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_BLUE",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "638:1178",
+      "text": "[SYNTHETIC] Participant idea #91 (original sticky text removed)",
+      "x": 2886.5,
+      "y": 2275.3642578125,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_YELLOW",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "643:1196",
+      "text": "[SYNTHETIC] Participant idea #92 (original sticky text removed)",
+      "x": 3977.5,
+      "y": 587.818359375,
+      "width": 240,
+      "height": 328,
+      "color": "STICKY_GRAY_UI3",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "686:951",
+      "text": "[SYNTHETIC] Participant idea #93 (original sticky text removed)",
+      "x": 3705.5,
+      "y": 859.728515625,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_PINK",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "878:1726",
+      "text": "[SYNTHETIC] Participant idea #94 (original sticky text removed)",
+      "x": 3727,
+      "y": 1850,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_BLUE",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "885:1833",
+      "text": "[SYNTHETIC] Participant idea #95 (original sticky text removed)",
+      "x": 1205,
+      "y": 4453,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GRAY_UI3",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "885:1895",
+      "text": "[SYNTHETIC] Participant idea #96 (original sticky text removed)",
+      "x": 1517,
+      "y": 5128,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "888:1944",
+      "text": "[SYNTHETIC] Participant idea #97 (original sticky text removed)",
+      "x": 1472,
+      "y": 4453,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GRAY_UI3",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "888:1945",
+      "text": "[SYNTHETIC] Participant idea #98 (original sticky text removed)",
+      "x": 1205,
+      "y": 4723,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_BLUE",
+      "sectionId": "705:1924"
+    },
+    {
+      "id": "550:907",
+      "text": "[SYNTHETIC] Participant idea #99 (original sticky text removed)",
+      "x": 664,
+      "y": 2579.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "550:906",
+      "text": "[SYNTHETIC] Participant idea #100 (original sticky text removed)",
+      "x": 380,
+      "y": 1558,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "172:285",
+      "text": "[SYNTHETIC] Participant idea #101 (original sticky text removed)",
+      "x": 649,
+      "y": 512.0908203125,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GREEN",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "172:293",
+      "text": "[SYNTHETIC] Participant idea #102 (original sticky text removed)",
+      "x": 380,
+      "y": 2580,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GREEN",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "172:301",
+      "text": "[SYNTHETIC] Participant idea #103 (original sticky text removed)",
+      "x": 1518,
+      "y": 2580,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GREEN",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "172:517",
+      "text": "[SYNTHETIC] Participant idea #104 (original sticky text removed)",
+      "x": 1245,
+      "y": 2579.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_ORANGE",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "172:554",
+      "text": "[SYNTHETIC] Participant idea #105 (original sticky text removed)",
+      "x": 1497,
+      "y": 1558,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_ORANGE",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "172:593",
+      "text": "[SYNTHETIC] Participant idea #106 (original sticky text removed)",
+      "x": 4170,
+      "y": 1309.818115234375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_ORANGE",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "172:617",
+      "text": "[SYNTHETIC] Participant idea #107 (original sticky text removed)",
+      "x": 3351,
+      "y": 1589.818115234375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_ORANGE",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "173:624",
+      "text": "[SYNTHETIC] Participant idea #108 (original sticky text removed)",
+      "x": 953,
+      "y": 2579.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_ORANGE",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "174:644",
+      "text": "[SYNTHETIC] Participant idea #109 (original sticky text removed)",
+      "x": 380.2890625,
+      "y": 2032.85205078125,
+      "width": 223,
+      "height": 223,
+      "color": "STICKY_TEAL",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "174:659",
+      "text": "[SYNTHETIC] Participant idea #110 (original sticky text removed)",
+      "x": 3357,
+      "y": 1305.818115234375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_TEAL",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "174:692",
+      "text": "[SYNTHETIC] Participant idea #111 (original sticky text removed)",
+      "x": 925,
+      "y": 3063.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_TEAL",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "174:730",
+      "text": "[SYNTHETIC] Participant idea #112 (original sticky text removed)",
+      "x": 3076,
+      "y": 1596.818115234375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_VIOLET",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "174:772",
+      "text": "[SYNTHETIC] Participant idea #113 (original sticky text removed)",
+      "x": 1198,
+      "y": 3065.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_VIOLET",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "174:776",
+      "text": "[SYNTHETIC] Participant idea #114 (original sticky text removed)",
+      "x": 941,
+      "y": 1280,
+      "width": 240,
+      "height": 424,
+      "color": "STICKY_VIOLET",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "227:505",
+      "text": "[SYNTHETIC] Participant idea #115 (original sticky text removed)",
+      "x": 669,
+      "y": 1558,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_YELLOW",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "227:521",
+      "text": "[SYNTHETIC] Participant idea #116 (original sticky text removed)",
+      "x": 1181,
+      "y": 778.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_YELLOW",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:690",
+      "text": "[SYNTHETIC] Participant idea #117 (original sticky text removed)",
+      "x": 380,
+      "y": 3063.54541015625,
+      "width": 240,
+      "height": 592,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:728",
+      "text": "[SYNTHETIC] Participant idea #118 (original sticky text removed)",
+      "x": 650,
+      "y": 779.0908203125,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:730",
+      "text": "[SYNTHETIC] Participant idea #119 (original sticky text removed)",
+      "x": 1494,
+      "y": 1280,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:834",
+      "text": "[SYNTHETIC] Participant idea #120 (original sticky text removed)",
+      "x": 1471,
+      "y": 3066,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:963",
+      "text": "[SYNTHETIC] Participant idea #121 (original sticky text removed)",
+      "x": 1219,
+      "y": 1280,
+      "width": 240,
+      "height": 352,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:964",
+      "text": "[SYNTHETIC] Participant idea #122 (original sticky text removed)",
+      "x": 3626,
+      "y": 1305.818115234375,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:968",
+      "text": "[SYNTHETIC] Participant idea #123 (original sticky text removed)",
+      "x": 918,
+      "y": 771.0908203125,
+      "width": 240,
+      "height": 256,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "172:569",
+      "text": "[SYNTHETIC] Participant idea #124 (original sticky text removed)",
+      "x": 1132,
+      "y": 2032.54541015625,
+      "width": 240,
+      "height": 400,
+      "color": "STICKY_ORANGE",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:702",
+      "text": "[SYNTHETIC] Participant idea #125 (original sticky text removed)",
+      "x": 653,
+      "y": 3065.54541015625,
+      "width": 240,
+      "height": 448,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:966",
+      "text": "[SYNTHETIC] Participant idea #126 (original sticky text removed)",
+      "x": 380,
+      "y": 507.0908203125,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:836",
+      "text": "[SYNTHETIC] Participant idea #127 (original sticky text removed)",
+      "x": 380,
+      "y": 779.0908203125,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:831",
+      "text": "[SYNTHETIC] Participant idea #128 (original sticky text removed)",
+      "x": 380,
+      "y": 1280,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "480:627",
+      "text": "[SYNTHETIC] Participant idea #129 (original sticky text removed)",
+      "x": 1404,
+      "y": 2032.54541015625,
+      "width": 223,
+      "height": 223,
+      "color": "STICKY_GRAY_UI3",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "480:601",
+      "text": "[SYNTHETIC] Participant idea #130 (original sticky text removed)",
+      "x": 3898,
+      "y": 1305.818115234375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_GRAY_UI3",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:1085",
+      "text": "[SYNTHETIC] Participant idea #131 (original sticky text removed)",
+      "x": 925,
+      "y": 3332.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:1082",
+      "text": "[SYNTHETIC] Participant idea #132 (original sticky text removed)",
+      "x": 884,
+      "y": 2032.54541015625,
+      "width": 223,
+      "height": 223,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:1080",
+      "text": "[SYNTHETIC] Participant idea #133 (original sticky text removed)",
+      "x": 629.21875,
+      "y": 2032.85205078125,
+      "width": 223,
+      "height": 223,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "686:917",
+      "text": "[SYNTHETIC] Participant idea #134 (original sticky text removed)",
+      "x": 662,
+      "y": 1280,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_PINK",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "686:921",
+      "text": "[SYNTHETIC] Participant idea #135 (original sticky text removed)",
+      "x": 4446,
+      "y": 1309.818115234375,
+      "width": 240,
+      "height": 400,
+      "color": "STICKY_PINK",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "686:933",
+      "text": "[SYNTHETIC] Participant idea #136 (original sticky text removed)",
+      "x": 3081,
+      "y": 1305.818115234375,
+      "width": 240,
+      "height": 256,
+      "color": "STICKY_PINK",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "227:513",
+      "text": "[SYNTHETIC] Participant idea #137 (original sticky text removed)",
+      "x": 1459,
+      "y": 513,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_YELLOW",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "550:905",
+      "text": "[SYNTHETIC] Participant idea #138 (original sticky text removed)",
+      "x": 3606,
+      "y": 812.0908203125,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "550:910",
+      "text": "[SYNTHETIC] Participant idea #139 (original sticky text removed)",
+      "x": 3878,
+      "y": 812.0908203125,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "172:586",
+      "text": "[SYNTHETIC] Participant idea #140 (original sticky text removed)",
+      "x": 3338,
+      "y": 548.0908203125,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_ORANGE",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "172:605",
+      "text": "[SYNTHETIC] Participant idea #141 (original sticky text removed)",
+      "x": 915,
+      "y": 512.54541015625,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_ORANGE",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "226:425",
+      "text": "[SYNTHETIC] Participant idea #142 (original sticky text removed)",
+      "x": 4146,
+      "y": 548.818359375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_YELLOW",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:694",
+      "text": "[SYNTHETIC] Participant idea #143 (original sticky text removed)",
+      "x": 3070,
+      "y": 549.0908203125,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:731",
+      "text": "[SYNTHETIC] Participant idea #144 (original sticky text removed)",
+      "x": 4156,
+      "y": 812.0908203125,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:835",
+      "text": "[SYNTHETIC] Participant idea #145 (original sticky text removed)",
+      "x": 3338,
+      "y": 812.0908203125,
+      "width": 240,
+      "height": 256,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:839",
+      "text": "[SYNTHETIC] Participant idea #146 (original sticky text removed)",
+      "x": 3070,
+      "y": 812.0908203125,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "510:829",
+      "text": "[SYNTHETIC] Participant idea #147 (original sticky text removed)",
+      "x": 3878,
+      "y": 548.818359375,
+      "width": 240,
+      "height": 240,
+      "color": "CUSTOM",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "686:955",
+      "text": "[SYNTHETIC] Participant idea #148 (original sticky text removed)",
+      "x": 4446,
+      "y": 812.0908203125,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_PINK",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "174:685",
+      "text": "[SYNTHETIC] Participant idea #149 (original sticky text removed)",
+      "x": 3606,
+      "y": 546.818359375,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_TEAL",
+      "sectionId": "705:1923"
+    },
+    {
+      "id": "889:1988",
+      "text": "[SYNTHETIC] Participant idea #150 (original sticky text removed)",
+      "x": 1181,
+      "y": 517,
+      "width": 240,
+      "height": 240,
+      "color": "STICKY_VIOLET",
+      "sectionId": "705:1923"
+    }
+  ],
+  "colorKey": [
+    {
+      "color": "STICKY_GREEN",
+      "sessionNumber": 1,
+      "date": "2026-07-09",
+      "attendees": 6,
+      "notes": null
+    },
+    {
+      "color": "STICKY_ORANGE",
+      "sessionNumber": 2,
+      "date": "2026-07-15",
+      "attendees": 12,
+      "notes": null
+    },
+    {
+      "color": "STICKY_TEAL",
+      "sessionNumber": 3,
+      "date": "2026-07-16",
+      "attendees": 11,
+      "notes": null
+    },
+    {
+      "color": "STICKY_VIOLET",
+      "sessionNumber": 4,
+      "date": "2026-07-17",
+      "attendees": 5,
+      "notes": null
+    },
+    {
+      "color": "STICKY_YELLOW",
+      "sessionNumber": 5,
+      "date": "2026-07-19",
+      "attendees": 5,
+      "notes": null
+    },
+    {
+      "color": "STICKY_BLUE",
+      "sessionNumber": 6,
+      "date": "2026-07-20",
+      "attendees": 7,
+      "notes": "top 1/3 of votes: 3"
+    },
+    {
+      "color": "STICKY_GRAY_UI3",
+      "sessionNumber": 7,
+      "date": "2026-07-22",
+      "attendees": 6,
+      "notes": "6 attendees but only 5 voting; top 1/3 of votes: 4"
+    },
+    {
+      "color": "CUSTOM",
+      "sessionNumber": null,
+      "date": null,
+      "attendees": null,
+      "notes": "AMBIGUOUS: shared by sessions 8 (7/25, 5 attendees), 9 (7/28, 5 attendees), 10 (7/30, 12 attendees), 11 (8/4, 8 attendees), 12 (8/5, 8 attendees), 13 (8/6, 7 attendees) - color alone cannot distinguish which of these 6 sessions a CUSTOM sticky belongs to"
+    },
+    {
+      "color": "STICKY_PINK",
+      "sessionNumber": 14,
+      "date": "2026-08-12",
+      "attendees": 5,
+      "notes": "top 1/3 of votes: 5 (three-way tie for 2nd place)"
+    },
+    {
+      "color": "WHITE",
+      "sessionNumber": 15,
+      "date": "2026-08-13",
+      "attendees": 0,
+      "notes": "excluded from viz (0 attendees)"
+    }
+  ]
+}

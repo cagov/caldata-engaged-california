@@ -1,0 +1,234 @@
+{
+  "themes": [
+    {
+      "id": "T1",
+      "name": "Protecting people’s way of life"
+    },
+    {
+      "id": "T2",
+      "name": "Regulating AI companies"
+    },
+    {
+      "id": "T3",
+      "name": "Learning and adapting to an AI reality"
+    }
+  ],
+  "subthemes": [
+    {
+      "id": "ST-01",
+      "themeId": "T1",
+      "name": "Protecting jobs and employees"
+    },
+    {
+      "id": "ST-02",
+      "themeId": "T1",
+      "name": "Empowering people to protect their data"
+    },
+    {
+      "id": "ST-03",
+      "themeId": "T1",
+      "name": "Preserving human decision-making and choice"
+    },
+    {
+      "id": "ST-04",
+      "themeId": "T1",
+      "name": "Protecting kids and education"
+    },
+    {
+      "id": "ST-05",
+      "themeId": "T1",
+      "name": "Ensuring public input around AI aspects that directly affect them"
+    },
+    {
+      "id": "ST-06",
+      "themeId": "T2",
+      "name": "Regulating how AI works and where it’s used"
+    },
+    {
+      "id": "ST-07",
+      "themeId": "T2",
+      "name": "Protecting people and the planet from the effects of AI"
+    },
+    {
+      "id": "ST-08",
+      "themeId": "T3",
+      "name": "Learning more about AI & educating about AI"
+    }
+  ],
+  "concepts": [
+    {
+      "id": "C-01",
+      "subthemeId": "ST-01",
+      "themeId": "T1",
+      "name": "Incentivize keeping or adding jobs; prevent firing"
+    },
+    {
+      "id": "C-02",
+      "subthemeId": "ST-01",
+      "themeId": "T1",
+      "name": "Shift or reskill employees"
+    },
+    {
+      "id": "C-03",
+      "subthemeId": "ST-01",
+      "themeId": "T1",
+      "name": "Support workers who lose jobs due to AI"
+    },
+    {
+      "id": "C-04",
+      "subthemeId": "ST-01",
+      "themeId": "T1",
+      "name": "Prohibit firing employees for not using AI"
+    },
+    {
+      "id": "C-05",
+      "subthemeId": "ST-01",
+      "themeId": "T1",
+      "name": "Report on job loss due to AI"
+    },
+    {
+      "id": "C-06",
+      "subthemeId": "ST-01",
+      "themeId": "T1",
+      "name": "Use AI for jobs people don’t want to or can’t do"
+    },
+    {
+      "id": "C-07",
+      "subthemeId": "ST-02",
+      "themeId": "T1",
+      "name": "Ensure companies use data properly and transparently"
+    },
+    {
+      "id": "C-08",
+      "subthemeId": "ST-02",
+      "themeId": "T1",
+      "name": "Preserve privacy"
+    },
+    {
+      "id": "C-09",
+      "subthemeId": "ST-02",
+      "themeId": "T1",
+      "name": "Limit data collection"
+    },
+    {
+      "id": "C-10",
+      "subthemeId": "ST-02",
+      "themeId": "T1",
+      "name": "Allow people to opt-out of AI"
+    },
+    {
+      "id": "C-11",
+      "subthemeId": "ST-03",
+      "themeId": "T1",
+      "name": "Disclosing or labelling when AI is used"
+    },
+    {
+      "id": "C-12",
+      "subthemeId": "ST-03",
+      "themeId": "T1",
+      "name": "Keeping humans in the loop"
+    },
+    {
+      "id": "C-13",
+      "subthemeId": "ST-03",
+      "themeId": "T1",
+      "name": "Promoting access to life outside of AI"
+    },
+    {
+      "id": "C-14",
+      "subthemeId": "ST-03",
+      "themeId": "T1",
+      "name": "Defining AI vs. humans"
+    },
+    {
+      "id": "C-15",
+      "subthemeId": "ST-04",
+      "themeId": "T1",
+      "name": "Improve education for students about AI"
+    },
+    {
+      "id": "C-16",
+      "subthemeId": "ST-04",
+      "themeId": "T1",
+      "name": "Prevent students from using AI for school work"
+    },
+    {
+      "id": "C-17",
+      "subthemeId": "ST-04",
+      "themeId": "T1",
+      "name": "Require parental controls for AI use"
+    },
+    {
+      "id": "C-18",
+      "subthemeId": "ST-05",
+      "themeId": "T1",
+      "name": "Enable more public input on AI policy"
+    },
+    {
+      "id": "C-19",
+      "subthemeId": "ST-05",
+      "themeId": "T1",
+      "name": "Ensure communities have input on AI-related impacts"
+    },
+    {
+      "id": "C-20",
+      "subthemeId": "ST-06",
+      "themeId": "T2",
+      "name": "Determine fields/areas where AI can be used safely"
+    },
+    {
+      "id": "C-21",
+      "subthemeId": "ST-06",
+      "themeId": "T2",
+      "name": "Control how AI works"
+    },
+    {
+      "id": "C-22",
+      "subthemeId": "ST-06",
+      "themeId": "T2",
+      "name": "Enforce copyright protections"
+    },
+    {
+      "id": "C-23",
+      "subthemeId": "ST-06",
+      "themeId": "T2",
+      "name": "Use AI to improve government operations"
+    },
+    {
+      "id": "C-24",
+      "subthemeId": "ST-06",
+      "themeId": "T2",
+      "name": "Restrict AI companies’ profits"
+    },
+    {
+      "id": "C-25",
+      "subthemeId": "ST-07",
+      "themeId": "T2",
+      "name": "Hold AI companies accountable for protecting consumers"
+    },
+    {
+      "id": "C-26",
+      "subthemeId": "ST-07",
+      "themeId": "T2",
+      "name": "Protect the environment and consumers from the resource needs of data centers"
+    },
+    {
+      "id": "C-27",
+      "subthemeId": "ST-08",
+      "themeId": "T3",
+      "name": "Increase public awareness around how to use AI ethically"
+    },
+    {
+      "id": "C-28",
+      "subthemeId": "ST-08",
+      "themeId": "T3",
+      "name": "Do more research on AI"
+    },
+    {
+      "id": "C-29",
+      "subthemeId": "ST-08",
+      "themeId": "T3",
+      "name": "Create employee training about AI"
+    }
+  ]
+}

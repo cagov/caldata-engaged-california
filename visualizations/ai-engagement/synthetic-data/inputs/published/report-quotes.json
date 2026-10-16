@@ -1,0 +1,51 @@
+{
+  "source": "https://engaged.ca.gov/ai-impact/report/",
+  "fetched": "2026-10-13",
+  "quotes": [
+    {
+      "conceptId": "C-25",
+      "text": "With social media, we didn’t hold companies accountable, and it tore down our democracy. I think that the era of saying that companies aren't responsible for how people use tools like this should end. I bet they would change policy and invest in certain tools to manage better if we ended that lack of accountability.",
+      "byline": "Arts, entertainment and media worker from the Bay Area"
+    },
+    {
+      "conceptId": "C-25",
+      "text": "To your point, Section 230 of the CDA made it so that a media company would be actively punished if they tried to police user content, rather than making it something that would align their values to the public good. So, if we're looking at incentive structures holistically: where can we structure the rules so that following the rules works towards the public good and to the bottom line, rather than creating tension between them?",
+      "byline": "Information technology worker from the Central Coast"
+    },
+    {
+      "conceptId": "C-25",
+      "text": "One thing could be who's accountable for the outputs. If there's a human evaluation, then the human is accountable, because a human should be the final decision maker. But the way AI is being used, if human evaluation is not involved, then who's accountable for the mistakes that AI is making?",
+      "byline": "Finance worker from the Bay Area"
+    },
+    {
+      "conceptId": "C-26",
+      "text": "I think we should protect our natural resources, and a clean environment. Because I know people in Texas where data farms or data centers have moved in, and the water has been polluted, and electric bills go way up.",
+      "byline": "Arts/entertainment/media worker from Southern California"
+    },
+    {
+      "conceptId": "C-26",
+      "text": "My biggest concern is the amount of water and electricity AI is using. You hear of the data center in Georgia that illegally tapped into some city’s or county's water supply and took millions of gallons from it without anybody realizing.",
+      "byline": "Government worker from LA"
+    },
+    {
+      "conceptId": "C-26",
+      "text": "When I think about the state as a physical place, we could set environmental regulations, we could set data privacy requirements for states that operate here. I get really excited about what floor we are setting for environmental protection when it comes to energy use, space use, etc.",
+      "byline": "Government worker from the Bay Area"
+    },
+    {
+      "conceptId": "C-20",
+      "text": "When it comes to employment, it should be a human decision. We should not let technology do that for us.",
+      "byline": "Manufacturing worker from the Bay Area"
+    },
+    {
+      "conceptId": "C-20",
+      "text": "The criteria that is used by AI is often a black box. For example, it could be biased towards screening resumes that are younger candidates over older candidates.",
+      "byline": "Science worker from the Bay Area"
+    },
+    {
+      "conceptId": "C-20",
+      "text": "Maybe a requirement to release an AI model to the public requires it to pass some bias testing?",
+      "byline": "Manufacturing worker from the Bay Area"
+    }
+  ]
+}
