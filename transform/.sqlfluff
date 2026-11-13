@@ -6,7 +6,7 @@ max_line_length = 120
 # 1. I decide my column ordering, not you!
 # 2. dbt macros can put in a lot of newlines that we ultimately don't care about,
 #    and the fixer doesn't work well in those cases.
-exclude_rules = structure.column_order, layout.newlines
+exclude_rules = structure.column_order, layout.newlines, ambiguous.column_count
 
 # Probably a controversial exclusion, so adding some justification here:
 # This disables the rule that prevents unreserved keywords from being
