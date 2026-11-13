@@ -1,0 +1,1 @@
+select * from TRANSFORM_ENGCA_PRD.ethelo.int_participant_perspective_and_priority
