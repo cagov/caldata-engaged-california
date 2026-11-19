@@ -1,0 +1,4 @@
+SELECT
+    id AS seniority_id,
+    name AS seniority_name
+FROM RAW_ENGCA_PRD.ENGAGED_CA_LINKEDIN_COMPANY_PAGES.SENIORITY
